@@ -1,0 +1,54 @@
+{
+  "name": "Cactus",
+  "version": "1.0.0",
+  "description": "Gaze Interaction Browser",
+  "main": "main.js",
+  "scripts": {
+    "start": "gulp mainCss && gulp webviewCss && gulp bookmarksCss && electron .",
+    "dist": "build"
+  },
+  "author": "Daniel Vella",
+  "license": "ISC",
+  "build": {
+    "appId": "cactus",
+    "asar": false,
+    "dmg": {
+      "contents": [
+        {
+          "x": 110,
+          "y": 150
+        },
+        {
+          "x": 240,
+          "y": 150,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ]
+    },
+    "win": {
+      "target": "squirrel",
+      "icon": "build/icon.ico"
+    }
+  },
+  "devDependencies": {
+    "electron": "^4.1.2",
+    "devtron": "^1.4.0",
+    "electron-builder": "^20.39.0",
+    "eslint": "^5.15.3",
+    "gulp": "^4.0.0",
+    "gulp-sass": "^4.0.2",
+    "node-sass": "^4.11.0"
+  },
+  "dependencies": {
+    "lodash": "^4.17.11",
+    "original-fs": "^1.0.0",
+    "path": "^0.12.7"
+  }
+}

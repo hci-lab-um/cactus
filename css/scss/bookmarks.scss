@@ -1,0 +1,120 @@
+@import './_vars.scss';
+@import './_components.scss';
+
+body {
+  height: 100%;
+  width: 85%;
+  display: block;
+  font-family: 'Roboto', sans-serif;
+  color: $black;
+  background-color: $offwhite;
+  cursor: none;
+  user-select: none;
+}
+
+a, input, button, div {
+  cursor: none;
+}
+
+#cursor {
+  font-size: 2em;
+}
+
+#bookmarks {
+  &Title {
+    display: flex;
+    align-items: center;
+    color: $blue-2;
+    margin-bottom: 40px;
+    margin-top: 40px;
+    margin-left: 30px;
+
+    span {
+      font-size: 0.8em;
+      margin-left: 10px;
+      margin-right: 25px;
+    }
+
+    h1 {
+      font-size: 1.5em;
+      font-weight: 400;
+    }
+  }
+
+  &Boxes {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    margin-left: 50px;
+    
+    .bookmark {
+      &Box {
+        @extend .dwellBtn;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        width: 200px;
+        height: 120px;
+        margin-right: 30px;
+        margin-bottom: 30px;
+        padding: 20px;
+        border: none;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: -5px 8px 20px $blue-light;
+        transition: 
+          color 0.5s,
+          opacity $dwellTime cubic-bezier(0,0,.2,1),
+          transform $dwellTime cubic-bezier(0,0,.2,1),
+          box-shadow $dwellTime;
+
+        &:hover {
+          color: $black;
+          background-color: $green;
+        }
+      }
+
+      &Title {
+        font-size: 0.8em;
+        margin-bottom: 15px;
+        word-wrap: break-word;
+      }
+
+      &Link {
+        font-size: 0.65em;
+        color: $lightblue;
+        word-wrap: break-word;
+      }
+    }
+  }
+
+  &Close {
+    @extend .dwellBtn;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: none;
+    background-color: $lightred;
+    color: $red;
+    width: 200px;
+    border-radius: 10px;
+    font-size: 1em;
+    padding: 30px;
+    margin-top: 50px;
+    margin-left: 50px;
+
+    svg {
+      margin-right: 15px;
+      font-size: 1.3em;
+    }
+
+    &:hover {
+      background-color: $red;
+      color: $lightred;
+    }
+
+    &:before {
+      background: $white;
+    }
+  }
+}

@@ -1,0 +1,125 @@
+#navbar {
+  display: flex;
+  width: 100%;
+  height: $navHeight;
+  background: $white;
+  top: 0;
+  left: 0;
+  border-bottom: 1px solid $lightgrey;
+  box-sizing: border-box;
+
+  #backOrForwardBtn {
+    @extend .dwellBtn;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 19%;
+
+    #backBtn {
+      margin-right: 10px;
+    }
+
+    #forwardBtn  {
+      margin-left: 10px;
+    }
+  }
+
+  #menuBtn  {
+    @extend .dwellBtn;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 19%;
+  }
+
+  #omnibox  {
+    flex: 1;
+    display: flex;
+    align-content: space-between;
+    justify-content: center;
+    align-items: center;
+    color: $blue-2;
+    background-color: $blue-light;
+    box-sizing: border-box;
+    border: 15px solid $white;    
+    border-radius: 20px;
+    // cursor: pointer;
+    transition: $dwellTime;
+    outline: none;
+    overflow: hidden;
+    position: relative;
+
+    input {
+      border: none;
+      outline: none;
+      height: 95%;
+      width: 90%;
+      border-radius: 5px;
+      font-size: 18px;
+      color: $blue-2;
+      background-color : $blue-light;
+      // cursor: pointer;
+      transition: $dwellTime;
+    }
+
+    &:before {
+      content: '';
+      background: $darkblue;
+      width: 10em;
+      height: 10em;
+      border-radius: 50%;
+      display: inline-block;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      margin: {
+        left: (10em / -2);
+        top: (10em / -2);
+      }
+      opacity: 0;
+      transform: scale(1);
+      transition:
+        opacity $dwellTime cubic-bezier(0,0,.2,1),
+        transform $dwellTime cubic-bezier(0,0,.2,1);
+    }
+
+    &:hover {
+      color: $blue-light;
+      background-color: $blue-2;
+      &:before {
+        opacity: 0.6;
+        transform: scale(0);
+      }
+
+      input {
+        color: $blue-light;
+        background-color: $blue-2;
+      }
+    }
+
+    #loader {
+      display: block;
+      border: 2px solid $offerwhite;
+      border-top: 2px solid $blue;
+      border-bottom: 2px solid $blue;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s cubic-bezier(.5,.27,.22,.5)  infinite;
+      margin-right: auto;
+      margin-left: auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    #favicon {
+      display: none;
+      margin-right: auto;
+      color: $green;
+      margin-left: auto;
+    }
+  }
+}

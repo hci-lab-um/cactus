@@ -1,0 +1,269 @@
+.overlay {
+  display: none;
+  position: absolute;
+  width: 100%;
+  height: calc(100vh - #{$navHeight});
+  // opacity: 0.9;
+  z-index: 3;
+  background-color: rgba($bluegrey, 0.3);;
+}
+
+#overlay-nav {
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-areas:
+  'back forward'
+  'back forward'
+  'back forward'
+  'cancel cancel';
+
+  #goBackBtn {
+    grid-area: back;
+  }
+
+  #goForwardBtn {
+    grid-area: forward;
+  }
+}
+
+#overlay-nav-back-only {
+  grid-template-columns: repeat(1, 1fr);
+  grid-template-areas:
+  'back'
+  'back'
+  'back'
+  'cancel';
+
+  #goBackBtn {
+    grid-area: back;
+  }
+}
+
+#overlay-nav-forward-only {
+  grid-template-columns: repeat(1, 1fr);
+  grid-template-areas:
+  'forward'
+  'forward'
+  'forward'
+  'cancel';
+
+  #goForwardBtn {
+    grid-area: forward;
+  }
+}
+
+#overlay-omnibox {
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-areas:
+  'refresh search'
+  'bookmark bookmarks'
+  'cancel cancel';
+
+  #bookmarkPageBtn {
+    grid-area: bookmark;
+  }
+
+  #showBookmarksBtn {
+    grid-area: bookmarks;
+  }
+
+  #refreshPageBtn {
+    grid-area: refresh;
+  }
+
+  #searchBtn {
+    grid-area: search;
+  }
+
+  #closeBtn {
+    grid-area: close;
+  }
+}
+
+
+#overlay-options {
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-areas:
+  'zoomIn zoomOut'
+  'reset about'
+  'cancel cancel';
+
+  #resetZoomBtn {
+    grid-area: reset;
+  }
+
+  #aboutBtn {
+    grid-area: about;
+  }
+
+  #zoomInBtn {
+    grid-area: zoomIn;
+  }
+
+  #zoomOutBtn {
+    grid-area: zoomOut;
+  }
+}
+
+#overlay-search {
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-areas:
+  'input input'
+  'search cancel';
+  // opacity: 1;
+
+  #search-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 20px;
+    margin: 3px;
+    outline: none;
+    position: relative;
+    z-index: 4;
+    opacity: 1;
+    grid-area: input;
+    color: $bluegrey;
+
+    input {
+      outline: none;
+      border-radius: 10px;
+      box-shadow: -14px 14px 36px -8px $lightgrey;
+      width: 40em;
+      background: white;
+      padding: 25px 40px;
+      font-size: 18px;
+      border: none;
+    }
+
+  }
+
+  #submit-search {
+    grid-area: search;
+  }
+}
+
+.overlayBtn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: -18px 23px 76px -26px $lightgrey;
+  background-color: $offwhite;
+  border-radius: 15px;
+  margin: 5px;
+  cursor: pointer;
+  outline: none;
+  overflow: hidden;
+  position: relative;
+  z-index: 20;
+
+  color: $lightblue;
+  transition: $dwellTime;
+
+  &:before {
+    content: '';
+    background: lighten($green, 5%);
+    width: 40em;
+    z-index: 25;
+    height: 40em;
+    display: inline-block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: {
+      left: (40em / -2);
+      top: (40em / -2);
+    }
+    border-radius: 50%;
+    opacity: 0;
+    transform: scale(1);
+    transition:
+      opacity $dwellTime cubic-bezier(0,0,.2,1),
+      transform $dwellTime cubic-bezier(0,0,.2,1);
+  }
+
+  &:hover {
+    color: $green;
+
+    &:before {
+      opacity: 0.6;
+      transform: scale(0);
+    }
+  }
+
+  &-title {
+    margin-left: 1.5em;
+    font-size: 1.8em;
+  }
+}
+
+div .cancelBtn {
+  grid-area: cancel;
+  background-color: $lightred;
+  color: $red;
+  transition: $dwellTime;
+
+  &:before {
+    content: '';
+    background: $red;
+    width: 40em;
+    height: 40em;
+    display: inline-block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: {
+      left: (40em / -2);
+      top: (40em / -2);
+    }
+    border-radius: 50%;
+    opacity: 0;
+    transform: scale(1);
+    transition:
+      opacity $dwellTime cubic-bezier(0,0,.2,1),
+      transform $dwellTime cubic-bezier(0,0,.2,1);
+  }
+
+  &:hover {
+    color: $darkred;
+    &:before {
+      opacity: 0.6;
+      transform: scale(0);
+    }
+  }
+}
+
+.scrollBtn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100px;
+  height: 100px;
+  padding: 20px;
+  // padding-top: 20px;
+  // padding-left: 20px;
+  outline: none;
+  overflow: hidden;
+  position: relative;
+  background-color: transparent;
+  z-index: 3;
+  border-radius: 50%;
+  right: 30px;
+  opacity: 0.5;
+  color: $blue-2;
+  transition: $dwellTime/2;
+
+  &:hover {
+    color: $blue-2;
+    background-color: $blue-light;
+  }
+}
+
+#scroll-up {
+  position: fixed;
+  top: 150px;
+}
+
+#scroll-down {
+  position: fixed;
+  bottom: 70px;
+}
