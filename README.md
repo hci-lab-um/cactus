@@ -22,6 +22,11 @@ To build the executable file for your chosen platform, run the following command
 
 Just run the executable found under the 'dist' folder.
 
+## People
+
+[Daniel Vella](https://www.linkedin.com/in/velladaniel/)
+[Chris Porter](https://www.um.edu.mt/profile/chrisporter)
+
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
