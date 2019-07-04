@@ -13,12 +13,16 @@ This project was developed at the University of Malta (HCI Lab) by Daniel Vella,
 4 Run `npm install -g gulp`
 5 Run `npm rebuild node-sass`
 6 Run `npm rebuild electron`
-7 Build executable with `npm run dist`
 ```
+
+You may create a binary for your platform by calling 
+
+`npm run dist`
 
 ## Usage
 
-Just run the executable found under the 'dist' folder.
+1 If you have the executable: look under the 'dist' folder
+2 Alternatively use ```npm run start``` from your commmand line
 
 ## People
 
