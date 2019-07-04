@@ -7,16 +7,14 @@ This project was developed at the University of Malta (HCI Lab) by Daniel Vella,
 ## Installation
 
 ```
-1. Download and install node
-2. `cd` into repository
-3. Run `npm install`
-4. Run `npm install -g gulp`
-5. Run `npm rebuild node-sass`
-6. Run `npm rebuild electron`
+1 Download and install node
+2 `cd` into repository
+3 Run `npm install`
+4 Run `npm install -g gulp`
+5 Run `npm rebuild node-sass`
+6 Run `npm rebuild electron`
+7 Build executable with `npm run dist`
 ```
-
-To build the executable file for your chosen platform, run the following command:
-`npm run dist`
 
 ## Usage
 
