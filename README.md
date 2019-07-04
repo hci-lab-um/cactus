@@ -1,6 +1,6 @@
-# Final Year Project 2019
-## B.Sc. IT (Hons.) in Computing & Business
-### Daniel Vella
+# Cactus - an accessible browser
+## HCI-Lab - University of Malta
+### Daniel Vella and Chris Porter
 
 1. Download and install node
 2. `cd` into repository
