@@ -251,7 +251,12 @@ dwell(searchOmniBtn, () => {
 dwell(submitSearchBtn, () => {
   hideAllOverlays()
   overlaySearchBox.style.display="none"
-  webview.src = "https://www.google.com/search?q=" + inputSearchBox.value;
+  webview.loadURL("https://www.bing.com/search?q=" + inputSearchBox.value).then(() => {
+    console.debug('ok');
+  }).catch((ex) => 
+    {
+      console.debug(ex);
+    });
 })
 
 dwell(cancelSearchBtn, () => {

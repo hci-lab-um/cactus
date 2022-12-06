@@ -6,12 +6,17 @@ let mainWindow
 
 function createWindow () {
   mainWindow = new BrowserWindow({ 
-    nodeIntegration: false, 
-    nodeIntegrationInWorker: false,
-    contextIsolation: true,
-    webviewTag: true,
-    preload: path.join(__dirname, 'preload.js'),
+    //https://www.electronjs.org/docs/latest/tutorial/security
+    webPreferences: {
+      nodeIntegration: true, 
+      nodeIntegrationInWorker: false,
+      contextIsolation: false,
+      webviewTag: true,
+      preload: path.join(__dirname, 'preload.js'),
+      icon: __dirname + '/AppIcon.icns'
+    },
     icon: __dirname + '/AppIcon.icns'
+    
   })
 
   mainWindow.maximize();
