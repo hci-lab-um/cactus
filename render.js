@@ -342,7 +342,8 @@ dwell(viewBookmarksOmniBtn, () => {
   })
 
   ipcRenderer.on('loadBookmark', (event, message) => {
-    webview.src = message
+    webview.loadURL(message)
+    // webview.src = message
     webview.style.display = 'flex'
     bookmarksWebview.style.display = 'none'
     document.getElementById("bookmarkview").remove();
@@ -447,7 +448,7 @@ ipcRenderer.on('getLinks', (event, message) => {
       sidebarItems[i].classList.add('fadeOutDown')
       let iter = i
       sidebarItems[i].addEventListener('webkitAnimationEnd', () => {
-        sidebarItems[iter].parentNode.removeChild(sidebarItems[iter])
+        sidebarItems[iter].remove()
         drop(linksInSidebar, numberOfLinksToDelete)
         displayHyperlinks()
       })
@@ -472,7 +473,7 @@ ipcRenderer.on('getLinks', (event, message) => {
         </div>
         `).join('')}`
   
-      sidebar.insertAdjacentHTML('beforeend', markup);
+      sidebar.insertAdjacentHTML('afterbegin', markup);
       linksToShow = []
 
       sidebarItems = document.querySelectorAll('.sidebar_item')
@@ -507,6 +508,7 @@ ipcRenderer.on('getLinks', (event, message) => {
 let allNavItemsReceived = []
 
 ipcRenderer.on('getNavLinks', (event, message) => {
+  message = JSON.parse(message)
   allNavItemsReceived.push(...message)
   webview.classList.add('darken')
   let navArray = message

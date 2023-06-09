@@ -117,7 +117,7 @@ function passNavElementOnDwell() {
     let parentUlTag = this.getElementsByTagName('ul')[0] || this.getElementsByTagName('ol')[0]
     buildNavArray(parentUlTag)
     // console.log(navItems)
-    ipcRenderer.send('getNavLinks', navItems)
+    ipcRenderer.send('getNavLinks', JSON.stringify(navItems))
   })
 }
 

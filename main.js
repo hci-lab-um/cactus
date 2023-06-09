@@ -9,7 +9,7 @@ function createWindow () {
     //https://www.electronjs.org/docs/latest/tutorial/security
     webPreferences: {
       nodeIntegration: true, 
-      nodeIntegrationInWorker: false,
+      nodeIntegrationInWorker: true,
       contextIsolation: false,
       webviewTag: true,
       preload: path.join(__dirname, 'preload.js'),
