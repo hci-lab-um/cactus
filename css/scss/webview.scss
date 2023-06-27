@@ -27,14 +27,14 @@ a, input, button, div  {
     width: 0%;
     height: 3px;
     display: block;
-    background: $green !important;
+    background: $dark-green !important;
     transition: $dwellTime ease-in-out;
   }
 }
 
 .linkDwell {
-  color: $green !important;
-  background-color: lighten($green, 80%) !important;
+  color: $dark-green !important;
+  background-color: lighten($dark-green, 50%) !important;
   border-radius: 5px;
 
   &:after {
@@ -49,8 +49,8 @@ a, input, button, div  {
 }
 
 .linkVisualise {
-  color: $green !important;
-  background-color: lighten($green, 50%) !important;
+  color: $blue-2 !important;
+  background-color: $blue-light !important;
   border-radius: 5px;
 }
 
@@ -65,14 +65,14 @@ a, input, button, div  {
     width: 0%;
     height: 3px;
     display: block;
-    background: $green !important;
+    background: $dark-green !important;
     transition: $dwellTime ease-in-out;
   }
 }
 
 .navMarker:hover {
   color: $black;
-  background-color: lighten($green, 20%) !important;
+  background-color: lighten($dark-green, 50%) !important;
 
   &:after {
     width: 100%;
