@@ -11,3 +11,8 @@
 
 ## Notes
 1. It might be better if Cactus works with any ET that is supported by Windows Eye Control or Tobii Gaze Point, as opposed to integrating directly with specific ETs. 
+2. To create Logos and icon packs (current logo is from icons8)
+3. Add About section, and add reference to any attribution-specific resources 
+(<a target="_blank" href="https://icons8.com/icon/avhBdzCooISo/succulent">Succulent</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>)
+4. Create installer with splash screen.
+

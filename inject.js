@@ -171,6 +171,8 @@ function populateQuadTree() {
     )
     qTree.insert(link)
   }
+
+  ipcRenderer.send('log', JSON.stringify(qTree))
 }
 
 // Get Links which fall within the cursor's range from Quad Tree

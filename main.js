@@ -69,6 +69,10 @@ ipcMain.on('hideScrollUp', () => {
   mainWindow.webContents.send('hideScrollUp')
 })
 
+ipcMain.on('log', (event,log) => {
+  console.log(log)
+});
+
 ipcMain.on('showScrollUp', () => {
   mainWindow.webContents.send('showScrollUp')
 })

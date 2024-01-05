@@ -7,7 +7,7 @@
     "start": "gulp mainCss && gulp webviewCss && gulp bookmarksCss && electron .",
     "dist": "build"
   },
-  "author": "Daniel Vella",
+  "author": "HCI Lab - Faculty of ICT, University of Malta",
   "license": "ISC",
   "build": {
     "appId": "cactus",
