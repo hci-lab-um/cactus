@@ -1,6 +1,6 @@
 const { ipcRenderer, webFrame }               = require('electron')
 const { createCursor, followCursor }          = require('./js/cursor.js')
-const { Link, Rectangle, QuadTree }           = require('./js/quadtree')
+const { Link, Rectangle, QuadTree }           = require('../cactus-quadtree-builder/src/models')
 const { throttle, isEqual }                   = require('lodash')
 const { genId, isElementANavElement }         = require('./js/utils')
 const { markNavbars, passNavElementOnDwell }  = require('./js/navbar-pattern')
@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
     c.style.visibility = 'visible'
   })
   
-  if (!window.scrollUp) {
+  if (!window.scroll) {
     ipcRenderer.send('hideScrollUp')
   }
 

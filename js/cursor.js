@@ -3,14 +3,14 @@ var mouse = { x: 0, y: 0 }
 window.onload = init;
 function init() {
 	if (window.Event) {
-	document.captureEvents(Event.MOUSEMOVE);
+	document.addEventListener(Event.MOUSEMOVE);
 	}
 	document.onmousemove = getMouseXY;
 }
 
 function getMouseXY(e) {
-	mouse.x = (window.Event) ? e.pageX : event.clientX + (document.documentElement.scrollLeft ? document.documentElement.scrollLeft : document.body.scrollLeft);
-	mouse.y = (window.Event) ? e.pageY : event.clientY + (document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop);
+	mouse.x = (window.Event) ? e.pageX : window.Event.clientX + (document.documentElement.scrollLeft ? document.documentElement.scrollLeft : document.body.scrollLeft);
+	mouse.y = (window.Event) ? e.pageY : window.Event.clientY + (document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop);
 }
 
 exports.createCursor = (id) => {
@@ -22,7 +22,7 @@ exports.createCursor = (id) => {
   cursor.style.height = '5%'
   cursor.style.color = "#a091eb"
   cursor.style.opacity = '0.4'
-  cursor.style.zIndex = '999000'
+  cursor.style.zIndex = '999999'
   cursor.style.position = 'absolute'
   cursor.style.margin = '-20px 0 0 -20px'
   cursor.style['pointer-events'] = 'none'

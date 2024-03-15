@@ -48,12 +48,14 @@
     "node-sass": "^8.0.0"
   },
   "dependencies": {
-    "electron": "^18.3.14",
-    "gulp": "^4.0.2",
-    "gulp-sass": "^5.1.0",
     "lodash": "^4.17.11",
-    "node-sass": "^8.0.0",
     "original-fs": "^1.0.0",
     "path": "^0.12.7"
+  },
+  "devDependencies": {
+    "electron": "^29.1.2",
+    "gulp": "^4.0.2",
+    "gulp-sass": "^5.1.0",
+    "node-sass": "^9.0.0"
   }
 }
