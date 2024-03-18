@@ -12,6 +12,26 @@
         },
         "args" : ["."],
         "outputCapture": "std"
+      },
+      {
+        "name": "Debug Renderer Process",
+        "port": 9222,
+        "request": "attach",
+        "type": "chrome",
+        "webRoot": "${workspaceFolder}",
+        "timeout": 60000,
+        "presentation": {
+          "hidden": true
+        }
+      }
+    ],
+    "compounds": [
+      {
+        "name": "Debug All",
+        "configurations": ["Debug Main Process", "Debug Renderer Process"],
+        "presentation": {
+          "order": 1
+        }
       }
     ]
   }
