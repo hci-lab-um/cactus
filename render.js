@@ -1,7 +1,6 @@
 const fs = require('original-fs');
 const path = require('path');
 const { ipcRenderer, BrowserView } = require('electron');
-const { remote } = require('electron');
 const { byId, readFile, dwell } = require('./js/utils');
 const { drop, isEqual } = require('lodash');
 const Config = require('./js/config');
@@ -120,6 +119,7 @@ function displayUrl() {
 var scrollUpBtn, scrollDownBtn;
 scrollUpBtn = byId('scroll-up');
 scrollDownBtn = byId('scroll-down');
+//browserView.webContents.addEventListener('dom-ready', scroller())
 
 ipcRenderer.on('hideScrollUp', () => {
   scrollUpBtn.style.display = 'none';
@@ -236,8 +236,6 @@ const omnibox = byId('omnibox');
 const overlayOmnibox = byId('overlay-omnibox');
 const overlaySearchBox = byId('overlay-search');
 const inputSearchBox = byId('searchText');
-const submitSearchBtn = byId('submitSearchBtn');
-const cancelSearchBtn = byId('cancelSearchBtn');
 
 dwell(omnibox, () => {
   hideAllOverlays();
@@ -255,16 +253,6 @@ dwell(searchOmniBtn, () => {
   overlaySearchBox.style.display = 'grid';
   inputSearchBox.focus();
 });
-
-// dwell(submitSearchBtn, () => {
-//   hideAllOverlays();
-//   overlaySearchBox.style.display = 'none';
-//   inputSearchBox.focus();
-// });
-
-// dwell(cancelSearchBtn, () => {
-//   overlaySearchBox.style.display = 'none';
-// });
 
 // BOOKMARKS
 dwell(bookmarkOmniBtn, () => {
@@ -619,18 +607,14 @@ ipcRenderer.on('getNavLinks', (event, message) => {
 // ========================
 
 document.addEventListener('DOMContentLoaded', (event) => {
-  var sidebarItems = document.querySelectorAll('.sidebar_item');
+  var sidebarItems = document.querySelectorAll('#sidebar_items .sidebar_item');
   if (sidebarItems.length) {
     for (var i = 0; i < sidebarItems.length; i++) {
       (function (i) {
-        dwell(sidebarItems[i], () => {
+        sidebarItems[i].addEventListener('click', () => {
           let id = parseInt(sidebarItems[i].getAttribute('data-id'));
-          let title = sidebarItems[i].querySelector(
-            '.sidebar_item_title',
-          ).innerHTML;
-          let url = sidebarItems[i]
-            .querySelector('.sidebar_item_link')
-            .getAttribute('data-link');
+          let title = sidebarItems[i].querySelector('.sidebar_item_title').innerHTML;
+          let url = sidebarItems[i].querySelector('.sidebar_item_link').getAttribute('data-link');
           let payload = {
             id,
             title,

@@ -45,9 +45,7 @@ module.exports = {
 
   dwell: (elem, callback) => {
     let throttledFunction = throttle(callback, dwellTime, { leading: false, trailing: true })
-    console.log(elem);
-    console.log(callback);
-
+    
     elem.addEventListener('mouseover', throttledFunction)
     elem.addEventListener('mouseleave', () => {
       throttledFunction.cancel()
