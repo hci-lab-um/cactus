@@ -1,78 +1,87 @@
-const { app, BrowserWindow, ipcMain } = require('electron')
-const path = require('path')
+const { app, BrowserWindow, ipcMain, BrowserView } = require('electron');
+const path = require('path');
 
-let mainWindow
-// const iconPath = path.join(__dirname, 'logo.png')
+let mainWindow;
+let browserView;
 
-function createWindow () {
-  mainWindow = new BrowserWindow({ 
-    //https://www.electronjs.org/docs/latest/tutorial/security
+app.on('ready', () => {
+  mainWindow = new BrowserWindow({
+    width: 1200,
+    height: 800,
     webPreferences: {
-      nodeIntegration: true, 
-      nodeIntegrationInWorker: true,
+      nodeIntegration: true,
       contextIsolation: false,
-      webviewTag: true,
       preload: path.join(__dirname, 'preload.js'),
-      icon: __dirname + '/AppIcon.icns'
     },
-    icon: __dirname + '/AppIcon.icns'
-    
-  })
+  });
 
   mainWindow.maximize();
-  mainWindow.loadURL('file://' + __dirname + '/index.html')
+  mainWindow.loadURL('file://' + __dirname + '/index.html');
 
-  mainWindow.webContents.openDevTools()
-  
+  mainWindow.webContents.openDevTools();
+
+  // Create the BrowserView instance after the app is ready
+  browserView = new BrowserView();
+  mainWindow.setBrowserView(browserView);
+
+  // browserView.setBounds({ x: 0, y: 0, width: 1200, height: 800 });
+
+  // browserView.setAutoResize({ width: true, height: true });
+
+  //
+  browserView.webContents.loadURL('https://www.google.com');
+
   mainWindow.on('closed', () => {
-    mainWindow = null
-  })
-}
+    mainWindow = null;
+  });
+});
 
-app.on('ready', createWindow)
+ipcMain.on('getBrowserViewInstance', (event) => {
+  event.sender.send('browserViewInstance', browserView);
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
-    app.quit()
+    app.quit();
   }
-})
+});
 
 app.on('web-contents-created', (event, contents) => {
   contents.on('will-attach-webview', (event, webPreferences, params) => {
-    webPreferences.nodeIntegration = false
-  })
-})
+    webPreferences.nodeIntegration = false;
+  });
+});
 
 app.on('activate', () => {
   if (mainWindow === null) {
-    createWindow()
+    createWindow();
   }
-})
+});
 
 ipcMain.on('getLinks', (event, message) => {
-  mainWindow.webContents.send('getLinks', message)
-})
+  mainWindow.webContents.send('getLinks', message);
+});
 
 ipcMain.on('getNavLinks', (event, message) => {
-  mainWindow.webContents.send('getNavLinks', message)
-})
+  mainWindow.webContents.send('getNavLinks', message);
+});
 
 ipcMain.on('loadBookmark', (event, message) => {
-  mainWindow.webContents.send('loadBookmark', message)
-})
+  mainWindow.webContents.send('loadBookmark', message);
+});
 
 ipcMain.on('closeBookmarks', (event, message) => {
-  mainWindow.webContents.send('closeBookmarks', message)
-})
+  mainWindow.webContents.send('closeBookmarks', message);
+});
 
 ipcMain.on('hideScrollUp', () => {
-  mainWindow.webContents.send('hideScrollUp')
-})
+  mainWindow.webContents.send('hideScrollUp');
+});
 
-ipcMain.on('log', (event,log) => {
-  console.log(log)
+ipcMain.on('log', (event, log) => {
+  console.log(log);
 });
 
 ipcMain.on('showScrollUp', () => {
-  mainWindow.webContents.send('showScrollUp')
-})
+  mainWindow.webContents.send('showScrollUp');
+});

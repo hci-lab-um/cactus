@@ -1,12 +1,12 @@
 var mouse = { x: 0, y: 0 }
 
-window.onload = init;
-function init() {
-	if (window.Event) {
-	document.addEventListener(Event.MOUSEMOVE);
-	}
-	document.onmousemove = getMouseXY;
-}
+// window.onload = init;
+// function init() {
+// 	if (window.Event) {
+// 	document.addEventListener(Event.MOUSEMOVE);
+// 	}
+// 	document.onmousemove = getMouseXY;
+// }
 
 function getMouseXY(e) {
 	mouse.x = (window.Event) ? e.pageX : window.Event.clientX + (document.documentElement.scrollLeft ? document.documentElement.scrollLeft : document.body.scrollLeft);

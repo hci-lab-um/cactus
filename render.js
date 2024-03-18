@@ -1,80 +1,87 @@
-const fs                        = require('original-fs')
-const path                      = require('path')
-const { ipcRenderer }           = require('electron')
-const { byId, readFile, dwell } = require('./js/utils')
-const { drop, isEqual }         = require('lodash')
-const Config                    = require('./js/config')
-const { createCursor, followCursor } = require('./js/cursor')
+const fs = require('original-fs');
+const path = require('path');
+const { ipcRenderer, BrowserView } = require('electron');
+const { remote } = require('electron');
+const { byId, readFile, dwell } = require('./js/utils');
+const { drop, isEqual } = require('lodash');
+const Config = require('./js/config');
+const { createCursor, followCursor } = require('./js/cursor');
 
-var backOrForward, omni, webview
-var cancelNavBtn, backNavBtn, forwardNavBtn, overlayNav
-var dialog, dialogMessage, dialogErrorIcon, dialogSuccessIcon
-var timeoutScroll
-var webviewContainer
+ipcRenderer.send('getBrowserViewInstance');
 
-omni = byId('url')
-webview = byId('webview')
+var backOrForward, omni, browserView;
+var cancelNavBtn, backNavBtn, forwardNavBtn, overlayNav;
+var dialog, dialogMessage, dialogErrorIcon, dialogSuccessIcon;
+var timeoutScroll;
 
-let cursor 
+omni = byId('url');
+console.log(process.type);
+let cursor;
 
-webview.addEventListener('dom-ready', () => {
-  // webview.openDevTools()
-  createCursor('cursor')
-  cursor = document.getElementById('cursor')
-  followCursor('cursor')
+ipcRenderer.on('browserViewInstance', (event, browserView) => {
+  const webviewContainer = document.getElementById('webview-container');
+  webviewContainer.appendChild(browserView);
+  browserView.setAutoResize({
+    width: true,
+    height: true,
+    horizontal: true,
+    vertical: true,
+  });
+  browserView.webContents.on('did-start-loading', loadingOmnibox);
+  browserView.webContents.on('dom-ready', () => {
+    createCursor('cursor');
+    cursor = document.getElementById('cursor');
+    followCursor('cursor');
 
-  webview.addEventListener('mouseover', () => {
-    cursor.style.visibility = 'hidden'
-  })
+    browserView.addEventListener('mouseover', () => {
+      cursor.style.visibility = 'hidden';
+    });
 
-  webview.addEventListener('mouseout', () => {
-    cursor.style.visibility = 'visible'
-  })
+    browserView.addEventListener('mouseout', () => {
+      cursor.style.visibility = 'visible';
+    });
+  });
 
-})
+  dialog = byId('dialog');
+  dialogMessage = byId('dialogMessage');
+  dialogErrorIcon = byId('dialogError');
+  dialogSuccessIcon = byId('dialogSuccess');
 
-dialog = byId('dialog')
-dialogMessage = byId('dialogMessage')
-dialogErrorIcon = byId('dialogError')
-dialogSuccessIcon = byId('dialogSuccess')
+  omni.onkeydown = sanitiseUrl;
+  omni.onclick = displayUrl;
+  browserView.webContents.on('did-start-loading', loadingOmnibox);
 
-omni.onkeydown = sanitiseUrl
-omni.onclick = displayUrl
-webview.addEventListener('did-start-loading', loadingOmnibox)
-
-// Sanitises URL
-function sanitiseUrl (event) {
-  if (event.keyCode === 13) {
+  // Sanitises URL
+  function sanitiseUrl(event) {
+    if (event.keyCode === 13) {
       omni.blur();
       let val = omni.value;
       let https = val.slice(0, 8).toLowerCase();
       let http = val.slice(0, 7).toLowerCase();
       if (https === 'https://') {
-        webview.loadURL(val);
+        browserView.webContents.loadURL(val);
       } else if (http === 'http://') {
-        webview.loadURL('https://' + val);
+        browserView.webContents.loadURL('https://' + val);
       } else {
-        webview.loadURL('https://'+ val);
+        browserView.webContents.loadURL('https://' + val);
       }
+    }
   }
-}
+});
 
 // =================================
 // ==== Browser Functionality ======
 // =================================
 function reload() {
-  hideAllOverlays()
-  webview.reload();
+  browserView.webContents.reload();
 }
 
 function goBack() {
-  hideAllOverlays()
-  webview.goBack();
+  browserView.webContents.goBack();
 }
 
 function goForward() {
-  hideAllOverlays()
-  webview.goForward();
+  browserView.webContents.goForward();
 }
 
 function loadingOmnibox() {
@@ -82,27 +89,27 @@ function loadingOmnibox() {
   let favicon = byId('favicon');
 
   const loadStart = () => {
-    favicon.style.display="none";
-    loader.style.display = "block";
+    favicon.style.display = 'none';
+    loader.style.display = 'block';
     omni.value = 'Loading..';
-  }
+  };
 
   const loadStop = () => {
-    favicon.style.display="block"
-    loader.style.display = "none"
-    omni.value = webview.getTitle()
-  }
+    favicon.style.display = 'block';
+    loader.style.display = 'none';
+    omni.value = browserView.webContents.getTitle();
+  };
 
-  webview.addEventListener('did-start-loading', loadStart)
-  webview.addEventListener('did-stop-loading', loadStop)
+  browserView.webContents.addEventListener('did-start-loading', loadStart);
+  browserView.webContents.addEventListener('did-stop-loading', loadStop);
 }
 
 function displayUrl() {
-  omni.classList.add('fadeOutDown')
+  omni.classList.add('fadeOutDown');
   setTimeout(() => {
-    omni.classList.remove('fadeOutDown')
-    omni.value = webview.src;
-    omni.classList.add('fadeInUp')
+    omni.classList.remove('fadeOutDown');
+    omni.value = browserView.webContents.getURL();
+    omni.classList.add('fadeInUp');
   }, 200);
 }
 
@@ -110,306 +117,297 @@ function displayUrl() {
 // ==== Scrolling Functionality ====
 // =================================
 
-var scrollUpBtn, scrollDownBtn
-scrollUpBtn = byId('scroll-up')
-scrollDownBtn = byId('scroll-down')
-webview.addEventListener('dom-ready', scroller())
+var scrollUpBtn, scrollDownBtn;
+scrollUpBtn = byId('scroll-up');
+scrollDownBtn = byId('scroll-down');
 
 ipcRenderer.on('hideScrollUp', () => {
-  scrollUpBtn.style.display = 'none'
-})
+  scrollUpBtn.style.display = 'none';
+});
 
 ipcRenderer.on('showScrollUp', () => {
-  scrollUpBtn.style.display = 'flex'
-})
-
-// ipcRenderer.on('hideScrollDown', () => {
-//   scrollDownBtn.style.display = 'none'
-// })
-
-// ipcRenderer.on('showScrollDown', () => {
-//   scrollDownBtn.style.display = 'flex'
-// })
+  scrollUpBtn.style.display = 'flex';
+});
 
 function scroller() {
   scrollUpBtn.onmouseover = () => {
     timeoutScroll = setInterval(() => {
-      webview.executeJavaScript('document.documentElement.scrollBy(0, -10)');
-    }, 20)
-  }
+      browserView.webContents.executeJavaScript(
+        'document.documentElement.scrollBy(0, -10)',
+      );
+    }, 20);
+  };
 
   scrollUpBtn.onmouseout = () => {
     if (timeoutScroll) {
-      clearInterval(timeoutScroll)
+      clearInterval(timeoutScroll);
     }
-  }
+  };
 
   scrollDownBtn.onmouseover = () => {
     timeoutScroll = setInterval(() => {
-      webview.executeJavaScript('document.documentElement.scrollBy(0, 10)');
-    }, 20)
-  }
+      browserView.webContents.executeJavaScript(
+        'document.documentElement.scrollBy(0, 10)',
+      );
+    }, 20);
+  };
 
   scrollDownBtn.onmouseout = () => {
     if (timeoutScroll) {
-      clearInterval(timeoutScroll)
+      clearInterval(timeoutScroll);
     }
-  }
+  };
 }
 
 // ======== HIDE ALL OVERLAYS ========
 function hideAllOverlays() {
-  if (overlayNav) overlayNav.style.display = 'none'
-  if (overlayOmnibox) overlayOmnibox.style.display = 'none'
-  if (overlayOptions) overlayOptions.style.display = 'none'
+  // Hide navigation overlay
+  overlayNav.style.display = 'none';
+  // Hide omnibox overlay
+  overlayOmnibox.style.display = 'none';
+  // Hide options overlay
+  overlayOptions.style.display = 'none';
+  // Hide search overlay
+  overlaySearchBox.style.display = 'none';
 }
 
 // =================================
 // ====== NAVIGATION OVERLAY =======
 // =================================
 
-backOrForward = byId('backOrForwardBtn')
-cancelNavBtn = byId('cancel-nav')
-backNavBtn = byId('goBackBtn')
-forwardNavBtn = byId('goForwardBtn')
-overlayNav = byId('overlay-nav')
+var backOrForward, cancelNavBtn, backNavBtn, forwardNavBtn, overlayNav;
+
+backOrForward = byId('backOrForwardBtn');
+cancelNavBtn = byId('cancel-nav');
+backNavBtn = byId('goBackBtn');
+forwardNavBtn = byId('goForwardBtn');
+overlayNav = byId('overlay-nav');
 
 dwell(backOrForward, () => {
-  hideAllOverlays()
-  if(!webview.canGoBack() && webview.canGoForward()) {
-    overlayNav.id = 'overlay-nav-forward-only'
-    backNavBtn.style.display = 'none'
-    forwardNavBtn.style.display = 'flex'
-    overlayNav = byId('overlay-nav-forward-only')
-    overlayNav.style.display = 'grid'
-  } else if (!webview.canGoForward() && webview.canGoBack()) {
-    overlayNav.id = 'overlay-nav-back-only'
-    backNavBtn.style.display = 'flex'
-    forwardNavBtn.style.display = 'none'
-    overlayNav = byId('overlay-nav-back-only')
-    overlayNav.style.display = 'grid'
-  } else if (webview.canGoBack() && webview.canGoForward()) {
-    overlayNav.id = 'overlay-nav'
-    backNavBtn.style.display = 'flex'
-    forwardNavBtn.style.display = 'flex'
-    overlayNav = byId('overlay-nav')
-    overlayNav.style.display = 'grid'
+  hideAllOverlays();
+  const canGoBack = browserView.webContents.canGoBack();
+  const canGoForward = browserView.webContents.canGoForward();
+
+  if (!canGoBack && canGoForward) {
+    overlayNav.id = 'overlay-nav-forward-only';
+    backNavBtn.style.display = 'none';
+    forwardNavBtn.style.display = 'flex';
+    overlayNav = byId('overlay-nav-forward-only');
+    overlayNav.style.display = 'grid';
+  } else if (canGoBack && !canGoForward) {
+    overlayNav.id = 'overlay-nav-back-only';
+    backNavBtn.style.display = 'flex';
+    forwardNavBtn.style.display = 'none';
+    overlayNav = byId('overlay-nav-back-only');
+    overlayNav.style.display = 'grid';
+  } else if (canGoBack && canGoForward) {
+    overlayNav.id = 'overlay-nav';
+    backNavBtn.style.display = 'flex';
+    forwardNavBtn.style.display = 'flex';
+    overlayNav = byId('overlay-nav');
+    overlayNav.style.display = 'grid';
   } else {
-    backOrForward.classList.add('shake')
-
+    backOrForward.classList.add('shake');
     backOrForward.addEventListener('webkitAnimationEnd', () => {
-      backOrForward.classList.remove('shake')
-    })
-
-    overlayNav.style.display = 'none'
+      backOrForward.classList.remove('shake');
+    });
+    overlayNav.style.display = 'none';
   }
-})
+});
 
 dwell(cancelNavBtn, () => {
-  overlayNav.style.display = 'none'
-})
+  overlayNav.style.display = 'none';
+});
 
-dwell(backNavBtn, goBack)
+dwell(backNavBtn, goBack);
 
-dwell(forwardNavBtn, goForward)
+dwell(forwardNavBtn, goForward);
 
 // =================================
 // ======== OMNIBOX OVERLAY ========
 // =================================
 
-var bookmarksWebview
-
-const overlayOmnibox = byId('overlay-omnibox')
-const refreshOmniBtn = byId('refreshPageBtn')
-const searchOmniBtn = byId('searchBtn')
-const bookmarkOmniBtn = byId('bookmarkPageBtn')
-const viewBookmarksOmniBtn = byId('showBookmarksBtn')
-const cancelOmniBtn = byId('cancel-omni')
-const omnibox = byId('omnibox')
-const cancelSearchBtn = byId('cancel-search')
-const submitSearchBtn = byId('submit-search')
-const overlaySearchBox = byId('overlay-search')
-const inputSearchBox = byId('searchText')
+const refreshOmniBtn = byId('refreshPageBtn');
+const searchOmniBtn = byId('searchBtn');
+const bookmarkOmniBtn = byId('bookmarkPageBtn');
+const viewBookmarksOmniBtn = byId('showBookmarksBtn');
+const cancelOmniBtn = byId('cancel-omni');
+const omnibox = byId('omnibox');
+const overlayOmnibox = byId('overlay-omnibox');
+const overlaySearchBox = byId('overlay-search');
+const inputSearchBox = byId('searchText');
+const submitSearchBtn = byId('submitSearchBtn');
+const cancelSearchBtn = byId('cancelSearchBtn');
 
 dwell(omnibox, () => {
-  hideAllOverlays()
-  overlayOmnibox.style.display = 'grid'
-})
+  hideAllOverlays();
+  overlayOmnibox.style.display = 'grid';
+});
 
 dwell(cancelOmniBtn, () => {
-  overlayOmnibox.style.display = 'none'
-})
+  overlayOmnibox.style.display = 'none';
+});
 
-dwell(refreshOmniBtn, reload)
+dwell(refreshOmniBtn, reload);
 
 dwell(searchOmniBtn, () => {
-  hideAllOverlays()
-  overlaySearchBox.style.display="grid"
+  hideAllOverlays();
+  overlaySearchBox.style.display = 'grid';
   inputSearchBox.focus();
-})
+});
 
-dwell(submitSearchBtn, () => {
-  hideAllOverlays()
-  overlaySearchBox.style.display="none"
-  webview.loadURL("https://www.bing.com/search?q=" + inputSearchBox.value).then(() => {
-    console.debug('ok');
-  }).catch((ex) => 
-    {
-      console.debug(ex);
-    });
-})
+// dwell(submitSearchBtn, () => {
+//   hideAllOverlays();
+//   overlaySearchBox.style.display = 'none';
+//   inputSearchBox.focus();
+// });
 
-dwell(cancelSearchBtn, () => {
-  overlaySearchBox.style.display = 'none'
-})
+// dwell(cancelSearchBtn, () => {
+//   overlaySearchBox.style.display = 'none';
+// });
 
-// BOOKMARKS 
+// BOOKMARKS
 dwell(bookmarkOmniBtn, () => {
-  let bookmarksPath = path.join(__dirname, 'bookmarks.json')
+  let bookmarksPath = path.join(__dirname, 'bookmarks.json');
   fs.readFile(bookmarksPath, 'utf8', (err, data) => {
-    let bMarkName = webview.src.replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0];
-    var bookmark = { url: webview.src, name: bMarkName}
+    let bMarkName = browserView.webContents
+      .getURL()
+      .replace(/^(?:https?:\/\/)?(?:www\.)?/i, '')
+      .split('/')[0];
+    var bookmark = { url: browserView.webContents.getURL(), name: bMarkName };
 
     if (err) {
-      return err
+      return err;
     } else {
-      var bookmarks = JSON.parse(data)
+      var bookmarks = JSON.parse(data);
       var exists = false;
 
-      for(var i=0; bookmarks.bookmarks.length > i; i++) {
+      for (var i = 0; bookmarks.bookmarks.length > i; i++) {
         if (bookmarks.bookmarks[i].url === bookmark.url) {
           exists = true;
         }
       }
 
       if (!exists) {
-        bookmarks.bookmarks.push(bookmark)
-        let bookmarksJson = JSON.stringify(bookmarks)
+        bookmarks.bookmarks.push(bookmark);
+        let bookmarksJson = JSON.stringify(bookmarks);
         fs.writeFile(bookmarksPath, bookmarksJson, 'utf8', (err) => {
-          if (err) throw err
-        })
-        dialogMessage.innerHTML = 'Bookmark added succesfully!'
-        dialogErrorIcon.style.display = 'none'
-        dialogSuccessIcon.style.display = 'block'
+          if (err) throw err;
+        });
+        dialogMessage.innerHTML = 'Bookmark added succesfully!';
+        dialogErrorIcon.style.display = 'none';
+        dialogSuccessIcon.style.display = 'block';
       } else {
-        dialogSuccessIcon.style.display = 'none'
-        dialogMessage.innerHTML = 'Bookmark already exists!'
-        dialogErrorIcon.style.display = 'block'
+        dialogSuccessIcon.style.display = 'none';
+        dialogMessage.innerHTML = 'Bookmark already exists!';
+        dialogErrorIcon.style.display = 'block';
       }
     }
-  })
+  });
 
-  hideAllOverlays()
-  dialog.style.display = 'flex'
+  hideAllOverlays();
+  dialog.style.display = 'flex';
   setTimeout(() => {
-    dialog.classList.add('fadeOutDown')
+    dialog.classList.add('fadeOutDown');
   }, 3000);
 
   setTimeout(() => {
-    dialog.style.display = 'none'
-    dialog.classList.remove('fadeOutDown')
+    dialog.style.display = 'none';
+    dialog.classList.remove('fadeOutDown');
   }, 3600);
-})
+});
 
 dwell(viewBookmarksOmniBtn, () => {
-  webviewContainer = byId('webview-container')
-  webviewContainer.insertAdjacentHTML('beforeend', `
-    <webview id="bookmarkview" class="webpage" src="./bookmarks.html" preload="./injectBookmark.js" autosize="on"></webview>
-  `)
-  hideAllOverlays()
-  bookmarksWebview = byId('bookmarkview')
+  const webContents = browserView.webContents;
 
-  bookmarksWebview.addEventListener('mouseover', () => {
-    cursor.style.visibility = 'hidden'
-  })
+  // Load the bookmarks HTML page into the existing BrowserView
+  webContents.loadURL(`file://${__dirname}/bookmarks.html`);
 
-  bookmarksWebview.addEventListener('mouseout', () => {
-    cursor.style.visibility = 'visible'
-  })
+  hideAllOverlays();
 
-  bookmarksWebview.addEventListener('dom-ready', () => {
-    // bookmarksWebview.openDevTools()
-  })
+  // Handle cursor visibility
+  webContents.on('dom-ready', () => {
+    webContents.insertCSS('body { cursor: none; }');
+  });
 
-  webview.style.display = 'none';
-  bookmarksWebview.style.display = 'flex'
+  // Show the bookmarks view and hide the main view
+  webContents.on('dom-ready', () => {
+    browserWindow.webContents.executeJavaScript(`
+          document.getElementById('webview-container').style.display = 'none';
+      `);
+  });
 
-  let bookmarksPath = path.join(__dirname, 'bookmarks.json')
-  let bookmarksJson = fs.readFileSync(bookmarksPath, 'utf8')
-
-  bookmarksWebview.addEventListener('dom-ready', () => {
-    bookmarksWebview.send('getBookmarks', bookmarksJson)
-  })
-
+  // Handle bookmark loading
   ipcRenderer.on('loadBookmark', (event, message) => {
-    webview.loadURL(message)
-    // webview.src = message
-    webview.style.display = 'flex'
-    bookmarksWebview.style.display = 'none'
-    document.getElementById("bookmarkview").remove();
-  })
-})
+    webContents.loadURL(message);
+    browserWindow.webContents.executeJavaScript(`
+          document.getElementById('webview-container').style.display = 'flex';
+      `);
+  });
+});
 
 ipcRenderer.on('closeBookmarks', () => {
-  webview.style.display = 'flex'
-  bookmarksWebview.style.display = 'none'
-  document.getElementById("bookmarkview").remove();
-})
+  browserView.webContents.executeJavaScript(`
+    document.getElementById('webview-container').style.display = 'flex';
+    document.getElementById('bookmarkview').style.display = 'none';
+    document.getElementById('bookmarkview').remove();
+  `);
+});
 
 // =================================
 // ======== OPTIONS OVERLAY ========
 // =================================
 
 // ZOOMING
-const overlayOptions = byId('overlay-options')
-const zoomInBtn = byId('zoomInBtn')
-const zoomOutBtn = byId('zoomOutBtn')
-const resetZoomBtn = byId('resetZoomBtn')
-const cancelOptionsBtn = byId('cancel-options')
-const options = byId('menuBtn')
+const overlayOptions = byId('overlay-options');
+const zoomInBtn = byId('zoomInBtn');
+const zoomOutBtn = byId('zoomOutBtn');
+const resetZoomBtn = byId('resetZoomBtn');
+const cancelOptionsBtn = byId('cancel-options');
+const options = byId('menuBtn');
 
 dwell(options, () => {
-  hideAllOverlays()
-  overlayOptions.style.display = 'grid'
-})
+  hideAllOverlays();
+  overlayOptions.style.display = 'grid';
+});
 
 dwell(zoomInBtn, () => {
-  webview.send("zoomIn")
-  overlayOptions.style.display = 'none'
-})
+  webview.send('zoomIn');
+  overlayOptions.style.display = 'none';
+});
 
 dwell(zoomOutBtn, () => {
-  webview.send("zoomOut")
-  overlayOptions.style.display = 'none'
-})
+  webview.send('zoomOut');
+  overlayOptions.style.display = 'none';
+});
 
 dwell(resetZoomBtn, () => {
-  webview.send("zoomReset")
-  overlayOptions.style.display = 'none'
-})
+  webview.send('zoomReset');
+  overlayOptions.style.display = 'none';
+});
 
 dwell(cancelOptionsBtn, () => {
-  overlayOptions.style.display = 'none'
-})
+  overlayOptions.style.display = 'none';
+});
 
-webview.addEventListener('dom-ready', () => {
-  // Insert CSS to Webview
-  var head = document.getElementsByTagName('head')[0]
-  var linkToWebviewCss = head.children[4].href
-  readFile(linkToWebviewCss, (css, err) => {
-    if (err) throw err
-    var cssContent = String(css)
-    webview.insertCSS(cssContent)
-  })
-})
+// browserView.webContents.on('dom-ready', () => {
+//   // Insert CSS to Webview
+//   var head = document.getElementsByTagName('head')[0];
+//   var linkToWebviewCss = head.children[4].href;
+//   readFile(linkToWebviewCss, (css, err) => {
+//     if (err) throw err;
+//     var cssContent = String(css);
+//     browserView.webContents.insertCSS(cssContent);
+//   });
+// });
 
 // ======== SIDEBAR ========
-let allLinksReceived = []
+let allLinksReceived = [];
 
 // const sidebarMaxLinks = Config.sidebarMaxLinks
-const lengthTitle = Config.sidebarLengthTitle
-const lengthUrl = Config.sidebarLengthUrl
-let sidebar = byId('sidebar_items')
+const lengthTitle = Config.sidebarLengthTitle;
+const lengthUrl = Config.sidebarLengthUrl;
+let sidebar = byId('sidebar_items');
 
 // ========================
 // HYPERLINK NAVIGATION
@@ -417,73 +415,98 @@ let sidebar = byId('sidebar_items')
 
 ipcRenderer.on('getLinks', (event, message) => {
   // byId('sidebar_header_title').innerHTML = 'Links'
-  allLinksReceived.push(...message)
-  let linksInSidebar = []
-  let linksToShow = []
-  let numberOfLinksToDelete = 0
+  allLinksReceived.push(...message);
+  let linksInSidebar = [];
+  let linksToShow = [];
+  let numberOfLinksToDelete = 0;
 
-  var sidebarItems = Array.from(document.getElementsByClassName('sidebar_item'))
+  var sidebarItems = Array.from(
+    document.getElementsByClassName('sidebar_item'),
+  );
   if (sidebarItems.length) {
-    let sidebarUrls = sidebarItems.map(item => `${item.firstElementChild.lastElementChild.getAttribute('data-link')}`)
-    for (var i=0; i < sidebarUrls.length; i++) {
-      var sidebarLink = allLinksReceived.find(link => link.url === sidebarUrls[i])
+    let sidebarUrls = sidebarItems.map(
+      (item) =>
+        `${item.firstElementChild.lastElementChild.getAttribute('data-link')}`,
+    );
+    for (var i = 0; i < sidebarUrls.length; i++) {
+      var sidebarLink = allLinksReceived.find(
+        (link) => link.url === sidebarUrls[i],
+      );
       if (sidebarLink) {
-        linksInSidebar.push(sidebarLink)
+        linksInSidebar.push(sidebarLink);
       }
     }
   }
 
   // Replace links
   if (!linksInSidebar.length) {
-    linksToShow = message.filter(link => link.title && link.url)
+    linksToShow = message.filter((link) => link.title && link.url);
   } else if (isEqual(linksInSidebar, message)) {
-    linksToShow = []
+    linksToShow = [];
   } else {
-    numberOfLinksToDelete = linksInSidebar.length
-    linksToShow = message.filter(link => link.title && link.url)
+    numberOfLinksToDelete = linksInSidebar.length;
+    linksToShow = message.filter((link) => link.title && link.url);
   }
 
   if (numberOfLinksToDelete && sidebarItems.length) {
-    for (i=0; i < numberOfLinksToDelete; i++) {
-      sidebarItems[i].classList.add('fadeOutDown')
-      let iter = i
+    for (i = 0; i < numberOfLinksToDelete; i++) {
+      sidebarItems[i].classList.add('fadeOutDown');
+      let iter = i;
       sidebarItems[i].addEventListener('webkitAnimationEnd', () => {
-        sidebarItems[iter].remove()
-        drop(linksInSidebar, numberOfLinksToDelete)
-        displayHyperlinks()
-      })
+        sidebarItems[iter].remove();
+        drop(linksInSidebar, numberOfLinksToDelete);
+        displayHyperlinks();
+      });
     }
   }
 
   function displayHyperlinks() {
     if (linksToShow.length) {
-      const markup = `${linksToShow.map(link =>
-        `<div class='sidebar_item fadeInDown' id='${link.id}'>
+      const markup = `${linksToShow
+        .map(
+          (link) =>
+            `<div class='sidebar_item fadeInDown' id='${link.id}'>
           <div>
             <div class='sidebar_item_title'>
-              ${link.title.length <= lengthTitle ? link.title : link.title.substring(0, lengthTitle)+'...'}
+              ${
+                link.title.length <= lengthTitle
+                  ? link.title
+                  : link.title.substring(0, lengthTitle) + '...'
+              }
             </div>
             <div class='sidebar_item_link' data-link='${link.url}'>
-              ${link.url.length <= lengthUrl ? link.url.replace(/^https?:\/\//i, "") : link.url.replace(/^https?:\/\//i, "").substring(0, lengthUrl)+'...'}
+              ${
+                link.url.length <= lengthUrl
+                  ? link.url.replace(/^https?:\/\//i, '')
+                  : link.url
+                      .replace(/^https?:\/\//i, '')
+                      .substring(0, lengthUrl) + '...'
+              }
             </div>
           </div>
           <div class='sidebar_item_icon'>
             <i class="fas fa-angle-right"></i>
           </div>
         </div>
-        `).join('')}`
-  
-      sidebar.insertAdjacentHTML('afterbegin', markup);
-      linksToShow = []
+        `,
+        )
+        .join('')}`;
 
-      sidebarItems = document.querySelectorAll('.sidebar_item')
+      sidebar.insertAdjacentHTML('afterbegin', markup);
+      linksToShow = [];
+
+      sidebarItems = document.querySelectorAll('.sidebar_item');
       if (sidebarItems.length) {
-        for (i=0; i < sidebarItems.length; i++) {
-          (function(i) {
+        for (i = 0; i < sidebarItems.length; i++) {
+          (function (i) {
             dwell(sidebarItems[i], () => {
-              webview.src = sidebarItems[i].firstElementChild.lastElementChild.getAttribute('data-link')
-            })
-          })(i)
+              browserView.webContents.loadURL(
+                sidebarItems[i].firstElementChild.lastElementChild.getAttribute(
+                  'data-link',
+                ),
+              );
+            });
+          })(i);
           // sidebarItems[i].addEventListener('mouseover', getLink)
         }
       }
@@ -491,7 +514,7 @@ ipcRenderer.on('getLinks', (event, message) => {
   }
 
   if (!numberOfLinksToDelete) {
-    displayHyperlinks()
+    displayHyperlinks();
   }
 
   // function getLink() {
@@ -499,90 +522,163 @@ ipcRenderer.on('getLinks', (event, message) => {
   //     webview.src = this.firstElementChild.lastElementChild.getAttribute('data-link')
   //   })
   // }
-})
+});
 
 // ========================
 // NAVBAR NAVIGATION
 // ========================
 
-let allNavItemsReceived = []
+let allNavItemsReceived = [];
 
 ipcRenderer.on('getNavLinks', (event, message) => {
-  message = JSON.parse(message)
-  allNavItemsReceived.push(...message)
-  webview.classList.add('darken')
-  let navArray = message
-  let linksToShow = []
-  linksToShow = navArray.filter(link => link.parent === 1)
+  message = JSON.parse(message);
+  allNavItemsReceived.push(...message);
+  webview.classList.add('darken');
+  let navArray = message;
+  let linksToShow = [];
+  linksToShow = navArray.filter((link) => link.parent === 1);
 
-  renderLinks(linksToShow)
+  renderLinks(linksToShow);
 
   function renderLinks(links) {
-    emptySidebar()
+    emptySidebar();
 
-    links = markLinksWithChildren(links)
+    links = markLinksWithChildren(links);
 
-    const markup = `${links.map(link =>
-      `<div class='sidebar_item fadeInDown' data-id='${link.id}'>
+    const markup = `${links
+      .map(
+        (link) =>
+          `<div class='sidebar_item fadeInDown' data-id='${link.id}'>
         <div>
           <div class='sidebar_item_title'>
-            ${link.title.length <= lengthTitle ? link.title : link.title.substring(0, lengthTitle)+'...'}
+            ${
+              link.title.length <= lengthTitle
+                ? link.title
+                : link.title.substring(0, lengthTitle) + '...'
+            }
           </div>
-          <div class='sidebar_item_link' data-link='${link.href ? link.href : " No Link "}'>
-            ${link.href ? link.href.substring(0, lengthUrl) : " No Link "}
+          <div class='sidebar_item_link' data-link='${
+            link.href ? link.href : ' No Link '
+          }'>
+            ${link.href ? link.href.substring(0, lengthUrl) : ' No Link '}
           </div>
         </div>
         <div class='sidebar_item_icon'>
-          <i class="${link.children ? 'fas fa-bars' : 'fas fa-angle-right'}"></i>
+          <i class="${
+            link.children ? 'fas fa-bars' : 'fas fa-angle-right'
+          }"></i>
         </div>
       </div>
-      `).join('')}`
+      `,
+      )
+      .join('')}`;
 
     sidebar.insertAdjacentHTML('beforeend', markup);
 
-    let sidebarItems = document.querySelectorAll('.sidebar_item')
+    let sidebarItems = document.querySelectorAll('.sidebar_item');
     if (sidebarItems.length) {
-      for (var i=0; i < sidebarItems.length; i++) {
-        (function(i) {
+      for (var i = 0; i < sidebarItems.length; i++) {
+        (function (i) {
           dwell(sidebarItems[i], () => {
-            let linkId = parseInt(sidebarItems[i].getAttribute('data-id'))
-            linksToShow = navArray.filter(link => link.parent === linkId)
-            renderLinks(linksToShow)
+            let linkId = parseInt(sidebarItems[i].getAttribute('data-id'));
+            linksToShow = navArray.filter((link) => link.parent === linkId);
+            renderLinks(linksToShow);
             if (!linksToShow.length) {
-              webview.src = sidebarItems[i].firstElementChild.lastElementChild.getAttribute('data-link')
-              webview.classList.remove('darken')
+              browserView.webContents.loadURL(
+                sidebarItems[i].firstElementChild.lastElementChild.getAttribute(
+                  'data-link',
+                ),
+              );
             }
-          })
-        })(i)
-        // sidebarItems[i].addEventListener('mouseover', loadLink)
+          });
+        })(i);
       }
     }
   }
 
   function emptySidebar() {
-    let sidebarItems = Array.from(sidebar.getElementsByClassName('sidebar_item'))
-    if (sidebarItems.length) {
-      for (var i=0; i < sidebarItems.length; i++) {
-        sidebarItems[i].classList.add('fadeOutDown')
-        sidebarItems[i].parentNode.removeChild(sidebarItems[i])
-      }
-    }
+    sidebar.innerHTML = '';
   }
 
   function markLinksWithChildren(links) {
-    let linksToShow = links
-    if (linksToShow.length) {
-      for (var i=0; i < navArray.length; i++) {
-        for (var j=0; j < linksToShow.length; j++) {
-          if (linksToShow[j] === navArray[i]) {
-            let linksWithParent = navArray.filter(link => link.parent === linksToShow[j].id)
-            if (linksWithParent.length) {
-              linksToShow[j].children = 1
-            }
-          }
-        }
+    return links.map((link) => {
+      if (hasChildren(link.id)) {
+        return { ...link, children: true };
+      } else {
+        return { ...link, children: false };
       }
-    }
-    return linksToShow
+    });
   }
-})
+  function hasChildren(id) {
+    return allNavItemsReceived.some((link) => link.parent === id);
+  }
+});
+
+// ========================
+// SIDEBAR EVENTS
+// ========================
+
+document.addEventListener('DOMContentLoaded', (event) => {
+  var sidebarItems = document.querySelectorAll('.sidebar_item');
+  if (sidebarItems.length) {
+    for (var i = 0; i < sidebarItems.length; i++) {
+      (function (i) {
+        dwell(sidebarItems[i], () => {
+          let id = parseInt(sidebarItems[i].getAttribute('data-id'));
+          let title = sidebarItems[i].querySelector(
+            '.sidebar_item_title',
+          ).innerHTML;
+          let url = sidebarItems[i]
+            .querySelector('.sidebar_item_link')
+            .getAttribute('data-link');
+          let payload = {
+            id,
+            title,
+            url,
+          };
+          ipcRenderer.send('sidebarClicked', JSON.stringify(payload));
+        });
+      })(i);
+    }
+  }
+});
+
+// ========================
+// CURSOR EVENTS
+// ========================
+
+const cursorEvents = {
+  clickable: 'pointer',
+  input: 'text',
+  textarea: 'text',
+};
+
+function changeCursor(type) {
+  cursor.style.cursor = cursorEvents[type] || 'default';
+}
+
+// ========================
+// WINDOW EVENT LISTENERS
+// ========================
+
+function emptySidebar() {
+  let sidebarItems = Array.from(sidebar.getElementsByClassName('sidebar_item'));
+  if (sidebarItems.length) {
+    for (var i = 0; i < sidebarItems.length; i++) {
+      sidebarItems[i].classList.add('fadeOutDown');
+      sidebarItems[i].parentNode.removeChild(sidebarItems[i]);
+    }
+  }
+}
+
+// Click event to close sidebar when clicked outside of sidebar
+window.addEventListener('click', function (event) {
+  if (!sidebar.contains(event.target)) {
+    emptySidebar();
+  }
+});
+
+// Resize event listener
+window.addEventListener('resize', function () {
+  emptySidebar();
+});
