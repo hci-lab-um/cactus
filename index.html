@@ -33,124 +33,7 @@
     </nav>
 
     <div id="views">
-
-      <div id="overlay-nav" class="overlay">
-        <div id="goBackBtn" class="overlayBtn fadeInUp">
-          <i class="fa fa-arrow-left fa-6x"></i>
-        </div>
-        <div id="goForwardBtn" class="overlayBtn fadeInUp">
-          <i class="fa fa-arrow-right fa-6x"></i>
-        </div>
-        <div id="cancel-nav" class="cancelBtn overlayBtn fadeInUp">
-          <i class="fas fa-times fa-6x"></i>
-        </div>
-      </div>
-
-      <div id="overlay-omnibox" class="overlay">
-        <div id="refreshPageBtn" class="overlayBtn fadeInUp">
-          <span class="fa-stack fa-2x">
-            <i class="fas fa-circle fa-stack-2x"></i>
-            <i class="fas fa-redo fa-stack-1x fa-inverse"></i>
-          </span>
-          <span class="overlayBtn-title">Refresh</span>
-        </div>
-        <div id="searchBtn" class="overlayBtn fadeInUp">
-          <span class="fa-stack fa-2x">
-            <i class="fas fa-circle fa-stack-2x"></i>
-            <i class="fab fa-google fa-stack-1x fa-inverse"></i>
-          </span>
-          <span class="overlayBtn-title">Search on Google</span>
-        </div>
-        <div id="bookmarkPageBtn" class="overlayBtn fadeInUp">
-          <span class="fa-stack fa-2x">
-            <i class="fas fa-circle fa-stack-2x"></i>
-            <i class="fas fa-star fa-stack-1x fa-inverse"></i>
-          </span>
-          <span class="overlayBtn-title">Add Bookmark</span>
-        </div>
-        <div id="showBookmarksBtn" class="overlayBtn fadeInUp">
-          <span class="fa-stack fa-2x">
-            <i class="fas fa-circle fa-stack-2x"></i>
-            <i class="fas fa-bookmark fa-stack-1x fa-inverse"></i>
-          </span>
-          <span class="overlayBtn-title">View Bookmarks</span>
-        </div>
-        <div id="cancel-omni" class="cancelBtn overlayBtn fadeInUp">
-          <i class="fas fa-times fa-6x"></i>
-        </div>
-      </div>
-
-      <div id="overlay-options" class="overlay">
-        <div id="zoomInBtn" class="overlayBtn fadeInUp">
-          <span class="fa-stack fa-2x">
-            <i class="fas fa-circle fa-stack-2x"></i>
-            <i class="fas fa-search-plus fa-stack-1x fa-inverse"></i>
-          </span>
-          <span class="overlayBtn-title">Zoom In</span>
-        </div>
-        <div id="zoomOutBtn" class="overlayBtn fadeInUp">
-          <span class="fa-stack fa-2x">
-            <i class="fas fa-circle fa-stack-2x"></i>
-            <i class="fas fa-search-minus fa-stack-1x fa-inverse"></i>
-          </span>
-          <span class="overlayBtn-title">Zoom Out</span>
-        </div>
-        <div id="resetZoomBtn" class="overlayBtn fadeInUp">
-          <span class="fa-stack fa-2x">
-            <i class="fas fa-circle fa-stack-2x"></i>
-            <i class="fas fa-search fa-stack-1x fa-inverse"></i>
-          </span>
-          <span class="overlayBtn-title">Actual Size</span>
-        </div>
-        <div id="aboutBtn" class="overlayBtn fadeInUp">
-          <span class="fa-stack fa-2x">
-            <i class="fas fa-circle fa-stack-2x"></i>
-            <i class="fas fa-info fa-stack-1x fa-inverse"></i>
-          </span>
-          <span class="overlayBtn-title">Info & Help</span>
-        </div>
-        <div id='cancel-options' class="cancelBtn overlayBtn fadeInUp">
-          <i class="fas fa-times fa-6x"></i>
-        </div>
-      </div>
-
-      <div id="overlay-scroll">
-        <div id="scroll-up" class="scrollBtn">
-          <i class="fas fa-chevron-up fa-5x"></i>
-        </div>
-        <div id="scroll-down" class="scrollBtn">
-          <i class="fas fa-chevron-down fa-5x"></i>
-        </div>
-      </div>
-
-      <div id="overlay-search" class="overlay">
-        <div id="search-box" class="fadeInUp">
-          <input type="text" id="searchText" name="q" placeholder="Search Google">
-        </div>
-        <div id="submit-search" class="overlayBtn fadeInUp">
-          <i class="fas fa-search fa-6x"></i>
-        </div>
-        <div id="cancel-search" class="cancelBtn overlayBtn fadeInUp">
-          <i class="fas fa-times fa-6x"></i>
-        </div>
-      </div>
-
-      <div id="dialog" class="fadeInUp">
-        <div id="dialogBox">
-          <div class="dialogIcon fa-stack" id="dialogSuccess">
-            <i class="far fa-circle fa-stack-2x"></i>
-            <i class="fas fa-check fa-stack-1x"></i>
-          </div>
-
-          <div class="dialogIcon fa-stack" id="dialogError">
-            <i class="far fa-circle fa-stack-2x"></i>
-            <i class="fas fa-exclamation fa-stack-1x"></i>
-          </div>
-          <div id="dialogMessage"></div>
-        </div>
-      </div>
-
-      <div id='webview-container'>
+      <div id='browsing-container'>
         <div id='sidebar'>
           <div id='sidebar_header'>
             <div id='sidebar_header_icon'>
@@ -165,13 +48,17 @@
             <!-- Links Rendered Here -->
           </div>
         </div>
-        <div id="browserViewContainer" class="webpage"></div>
+        <div id="webpage" class="webpage"></div>
+        <div id="scrollbar">
+          <div id="scroll-up" class="scrollBtn">
+            <i class="fas fa-chevron-up fa-5x"></i>
+          </div>
+          <div id="scroll-down" class="scrollBtn">
+            <i class="fas fa-chevron-down fa-5x"></i>
+          </div>
+        </div>
       </div>
-
     </div>
 
   <script defer src="https://use.fontawesome.com/releases/v5.7.2/js/all.js" integrity="sha384-0pzryjIRos8mFBWMzSSZApWtPl/5++eIfzYmTgBBmXYdhvxPc+XcFEk+zJwDgWbP" crossorigin="anonymous"></script>
-  <!-- <script>
-    require('./render.js')
-  </script> -->
 </html>

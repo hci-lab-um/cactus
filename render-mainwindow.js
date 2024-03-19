@@ -13,7 +13,7 @@ let dialog, dialogMessage, dialogErrorIcon, dialogSuccessIcon
 let webviewContainer
 
 let omni = byId('url')
-let navbar, sidebar
+let navbar, sidebar, scrollbar
 let cursor 
 let scrollUpBtn, scrollDownBtn;
 let timeoutScroll
@@ -39,6 +39,7 @@ ipcRenderer.on('mainWindowLoaded', () => {
     //Get reference to browserViewContainer
     navbar = byId('navbar')
     sidebar = byId('sidebar')
+    scrollbar = byId('scrollbar')
     
     navbar.addEventListener('mouseout', () => {
       cursor.style.visibility = 'hidden'
@@ -53,6 +54,14 @@ ipcRenderer.on('mainWindowLoaded', () => {
     })
 
     sidebar.addEventListener('mouseover', () => {
+      cursor.style.visibility = 'visible'
+    })
+
+    scrollbar.addEventListener('mouseout', () => {
+      cursor.style.visibility = 'hidden'
+    })
+
+    scrollbar.addEventListener('mouseover', () => {
       cursor.style.visibility = 'visible'
     })
   }
