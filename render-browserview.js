@@ -20,3 +20,11 @@ ipcRenderer.on('browserViewLoaded', () => {
         cursor.style.visibility = 'visible'
     })
   });
+
+  ipcRenderer.on('browserViewScrollDown', () => {
+    document.documentElement.scrollBy(0, 20);
+  })
+
+  ipcRenderer.on('browserViewScrollUp', () => {
+    document.documentElement.scrollBy(0, -20);
+  })

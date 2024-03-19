@@ -93,7 +93,7 @@ function setupScrollers(){
 
   scrollUpBtn.onmouseover = () => {
     timeoutScroll = setInterval(() => {
-      document.documentElement.scrollBy(0, -10);
+      ipcRenderer.send('browserViewScrollUp');
     }, 20)
   }
 
@@ -105,7 +105,7 @@ function setupScrollers(){
 
   scrollDownBtn.onmouseover = () => {
     timeoutScroll = setInterval(() => {
-      document.documentElement.scrollBy(0, 10);
+      ipcRenderer.send('browserViewScrollDown');
     }, 20)
   }
 

@@ -75,6 +75,7 @@ function createWindow () {
       .then(properties => {
         //Attach the browser view to the parent window
         mainWindow.addBrowserView(browserView);
+        
         //Set its location/dimensions as per the returned properties
         browserView.setBounds({ 
           x: Math.floor(properties.x), 
@@ -187,6 +188,14 @@ app.on('activate', () => {
     createWindow()
   }
 })
+
+ipcMain.on('browserViewScrollDown', () => {
+  browserView.webContents.send('browserViewScrollDown');
+});
+
+ipcMain.on('browserViewScrollUp', () => {
+  browserView.webContents.send('browserViewScrollUp');
+});
 
 ipcMain.on('getLinks', (event, message) => {
   mainWindow.webContents.send('getLinks', message)
