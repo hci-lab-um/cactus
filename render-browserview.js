@@ -52,12 +52,12 @@ function generateQuadTree(){
     const queryAllElementsInView = new Range(0, 0, pageDocument.documentWidth, pageDocument.documentHeight);
     const elementsInQueryRange = qt.queryRange(queryAllElementsInView);
     elementsInQueryRange.forEach(ve => {
-      drawPoint(ve.insertionPointX, ve.insertionPointY);
+      highlightArea(ve.x, ve.y, ve.width, ve.height);
     });
   });
 }
 
-function drawPoint(x, y) {
+function highlightArea(x, y, width, height) {
   // Create a new div element for the point
   const point = document.createElement('div');
 
@@ -67,11 +67,10 @@ function drawPoint(x, y) {
 
   // Set styles for the point
   point.classList.add('qtpoint');
-  point.style.width = '10px';
-  point.style.height = '10px';
-  point.style.backgroundColor = 'green';
+  point.style.width = width+'px';
+  point.style.height = height+'px';
+  point.style.backgroundColor = 'rgba(0, 255, 0, 0.5)';
   point.style.position = 'absolute';
-  point.style.borderRadius = '50%';
 
   // Set the position of the point relative to the viewport
   point.style.left = (x + viewportX) + 'px';
