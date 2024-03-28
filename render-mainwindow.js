@@ -1,21 +1,22 @@
 // const fs                        = require('original-fs')
 // const path                      = require('path')
 const { ipcRenderer }           = require('electron')
-const { byId, readFile, dwell } = require('./js/utils')
-const { drop, isEqual }         = require('lodash')
-const Config                    = require('./js/config')
+const { byId } = require('./js/utils')
+//const { byId, readFile, dwell } = require('./js/utils')
+// const { drop, isEqual }         = require('lodash')
+// const Config                    = require('./js/config')
 const { createCursor, followCursor } = require('./js/cursor')
 
-let backOrForward, browserviewContainer
-let cancelNavBtn, backNavBtn, forwardNavBtn, overlayNav
-let dialog, dialogMessage, dialogErrorIcon, dialogSuccessIcon
+// let backOrForward, browserviewContainer
+// let cancelNavBtn, backNavBtn, forwardNavBtn, overlayNav
+// let dialog, dialogMessage, dialogErrorIcon, dialogSuccessIcon
 
-let webviewContainer
+// let webviewContainer
 
 let omni = byId('url')
 let navbar, sidebar, scrollbar
 let cursor 
-let scrollUpBtn, scrollDownBtn;
+let scrollUpBtn, scrollDownBtn, scrollingHandlerRunning;
 let timeoutScroll
 
 ipcRenderer.on('mainWindowLoaded', () => {
@@ -92,28 +93,37 @@ function setupScrollers(){
   })
 
   scrollUpBtn.onmouseover = () => {
-    timeoutScroll = setInterval(() => {
+    // Clear any existing interval to avoid multiple intervals running simultaneously
+    clearInterval(timeoutScroll);
+
+    // Start a new interval to execute the code every one second
+    timeoutScroll = setInterval(function() {
       ipcRenderer.send('browserViewScrollUp');
-    }, 20)
+    }, 1000); // 1000 milliseconds = 1 second
+    
   }
 
   scrollUpBtn.onmouseout = () => {
-    if (timeoutScroll) {
-      clearInterval(timeoutScroll)
-    }
+    // Clear the interval when the mouse leaves the element
+    clearInterval(timeoutScroll);
   }
 
   scrollDownBtn.onmouseover = () => {
-    timeoutScroll = setInterval(() => {
+    // Clear any existing interval to avoid multiple intervals running simultaneously
+    clearInterval(timeoutScroll);
+
+    // Start a new interval to execute the code every one second
+    timeoutScroll = setInterval(function() {
       ipcRenderer.send('browserViewScrollDown');
-    }, 20)
+    }, 1000); // 1000 milliseconds = 1 second
+    
   }
 
   scrollDownBtn.onmouseout = () => {
-    if (timeoutScroll) {
-      clearInterval(timeoutScroll)
-    }
+    // Clear the interval when the mouse leaves the element
+    clearInterval(timeoutScroll);
   }
+
 }
 
 
@@ -138,26 +148,29 @@ function setupScrollers(){
 // dialogErrorIcon = byId('dialogError')
 // dialogSuccessIcon = byId('dialogSuccess')
 
-// omni.onkeydown = sanitiseUrl
-// omni.onclick = displayUrl
-// // webview.addEventListener('did-start-loading', loadingOmnibox)
+omni.onkeydown = sanitiseUrl
+//omni.onclick = displayUrl
+// webview.addEventListener('did-start-loading', loadingOmnibox)
 
-// // Sanitises URL
-// function sanitiseUrl (event) {
-//   if (event.keyCode === 13) {
-//       omni.blur();
-//       let val = omni.value;
-//       let https = val.slice(0, 8).toLowerCase();
-//       let http = val.slice(0, 7).toLowerCase();
-//       if (https === 'https://') {
-//         webview.loadURL(val);
-//       } else if (http === 'http://') {
-//         webview.loadURL('https://' + val);
-//       } else {
-//         webview.loadURL('https://'+ val);
-//       }
-//   }
-// }
+// Sanitises URL
+function sanitiseUrl (event) {
+  if (event.keyCode === 13) {
+      omni.blur();
+      let val = omni.value;
+      let https = val.slice(0, 8).toLowerCase();
+      let http = val.slice(0, 7).toLowerCase();
+      if (https === 'https://') {
+        ipcRenderer.send('browserToUrl', val);
+        //webview.loadURL(val);
+      } else if (http === 'http://') {
+        //webview.loadURL('https://' + val);
+        ipcRenderer.send('browserToUrl', 'https://'+ val);
+      } else {
+        //webview.loadURL('https://'+ val);
+        ipcRenderer.send('browserToUrl', 'https://'+ val);
+      }
+  }
+}
 
 // =================================
 // ==== Browser Functionality ======
@@ -196,6 +209,7 @@ function setupScrollers(){
 //   // webview.addEventListener('did-start-loading', loadStart)
 //   // webview.addEventListener('did-stop-loading', loadStop)
 // }
+
 
 // function displayUrl() {
 //   omni.classList.add('fadeOutDown')

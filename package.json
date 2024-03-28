@@ -46,9 +46,11 @@
     "eslint": "^5.15.3",
     "gulp": "^4.0.2",
     "gulp-sass": "^5.1.0",
-    "node-sass": "^9.0.0"
+    "node-sass": "^9.0.0",
+    "cactus-quadtree-builder": "git+ssh://git@github.com:hci-lab-um/cactus-quadtree-builder.git"
   },
   "dependencies": {
+    "config": "^3.3.11",
     "electron-log": "^5.1.2",
     "lodash": "^4.17.11",
     "original-fs": "^1.0.0",

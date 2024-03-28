@@ -1,0 +1,16 @@
+{
+  "quadtree": {
+    "maxElementSize": {
+      "width": 100,
+      "height": 50
+    },
+    "nodeCapacity": 1
+  },
+  "viewport": {
+      "width": 800,
+      "height": 600
+    },
+  "puppeteer": {
+      "mode": "new"
+  }
+}

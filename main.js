@@ -90,7 +90,7 @@ function createWindow () {
           vertical: false
         });
         //Load the default home page
-        browserView.webContents.loadURL('https://www.accessibility.com.mt');
+        browserView.webContents.loadURL('https://www.um.edu.mt');
 
         //Once the DOM is ready, send a message to initiate some further logic
         browserView.webContents.on('dom-ready', () => {
@@ -120,7 +120,7 @@ function createWindow () {
               background: #638eec; 
             }
           `);
-          //browserView.webContents.openDevTools();
+          browserView.webContents.openDevTools();
         });
 
         //Attach overlays browserview
@@ -196,6 +196,10 @@ ipcMain.on('browserViewScrollDown', () => {
 ipcMain.on('browserViewScrollUp', () => {
   browserView.webContents.send('browserViewScrollUp');
 });
+
+ipcMain.on('scrollingCompleted', () => {
+  browserView.webContents.send('create-quadtree');
+})
 
 ipcMain.on('getLinks', (event, message) => {
   mainWindow.webContents.send('getLinks', message)
