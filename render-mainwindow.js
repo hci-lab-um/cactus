@@ -16,7 +16,7 @@ const { createCursor, followCursor } = require('./js/cursor')
 let omni = byId('url')
 let navbar, sidebar, scrollbar
 let cursor 
-let scrollUpBtn, scrollDownBtn, scrollingHandlerRunning;
+let scrollUpBtn, scrollDownBtn
 let timeoutScroll
 
 ipcRenderer.on('mainWindowLoaded', () => {
@@ -127,6 +127,45 @@ function setupScrollers(){
 }
 
 
+ // =================================
+  // ==== Sidebar element management ====
+  // =================================
+ipcRenderer.on('renderElementsInSideBar', (event, elements) => {
+  let sidebar = byId('sidebar_items');
+  if (elements.length > 0)
+  {
+    const markup = `${elements.map(e =>
+        `<div class='sidebar_item fadeInDown' id='${e.id}'>
+          <div>
+            <div class='sidebar_item_title'>
+              ${e.accessibleName}
+            </div>
+          </div>
+          <div class='sidebar_item_icon'>
+            <i class="fas fa-angle-right"></i>
+          </div>
+        </div>
+        `).join('')}`
+        
+    sidebar.innerHTML = markup;
+  }
+  else
+  {
+    sidebar.innerHTML = "";
+  }
+  //const sidebarItems = document.querySelectorAll('.sidebar_item')
+  // if (sidebarItems.length) {
+  //   for (let i=0; i < sidebarItems.length; i++) {
+  //     (function(i) {
+  //        dwell(sidebarItems[i], () => {
+  //        webview.src = sidebarItems[i].firstElementChild.lastElementChild.getAttribute('data-link')
+  //     })
+  //     })(i)
+  //     // sidebarItems[i].addEventListener('mouseover', getLink)
+  //   }
+  // }
+
+});
 // webview.addEventListener('dom-ready', () => {
 //   // webview.openDevTools()
 //   createCursor('cursor')
@@ -148,7 +187,7 @@ function setupScrollers(){
 // dialogErrorIcon = byId('dialogError')
 // dialogSuccessIcon = byId('dialogSuccess')
 
-omni.onkeydown = sanitiseUrl
+//omni.onkeydown = sanitiseUrl
 //omni.onclick = displayUrl
 // webview.addEventListener('did-start-loading', loadingOmnibox)
 

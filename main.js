@@ -90,7 +90,7 @@ function createWindow () {
           vertical: false
         });
         //Load the default home page
-        browserView.webContents.loadURL('https://www.um.edu.mt');
+        browserView.webContents.loadURL('https://www.accessibility.com.mt/');
 
         //Once the DOM is ready, send a message to initiate some further logic
         browserView.webContents.on('dom-ready', () => {
@@ -199,6 +199,10 @@ ipcMain.on('browserViewScrollUp', () => {
 
 ipcMain.on('scrollingCompleted', () => {
   browserView.webContents.send('create-quadtree');
+})
+
+ipcMain.on('foundElementsInMouseRange', (event, elements) => {
+  mainWindow.webContents.send('renderElementsInSideBar', elements)
 })
 
 ipcMain.on('getLinks', (event, message) => {

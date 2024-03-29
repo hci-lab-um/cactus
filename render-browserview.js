@@ -7,6 +7,8 @@ let cursor;
 let browserView;
 let qtBuilder;
 let qtOptions;
+let currentQt;
+let timeoutCursorHovering;
 
 //This function filters out elements that are not visible (in viewport) or have no dimensions
 function filterVisibleElements(elements) {
@@ -47,8 +49,9 @@ function generateQuadTree(){
 
   let pageDocument = new PageDocument(document.title, document.URL, visibleElements, window.innerWidth, window.innerHeight, null);
   qtBuilder.buildAsync(pageDocument).then((qt) => {
+    currentQt = qt;
     removePreviousPoints();
-    //The drawPoint function below should take the search result
+    //Highlight all elements in view (use the Range approach)
     const queryAllElementsInView = new Range(0, 0, pageDocument.documentWidth, pageDocument.documentHeight);
     const elementsInQueryRange = qt.queryRange(queryAllElementsInView);
     elementsInQueryRange.forEach(ve => {
@@ -81,39 +84,80 @@ function highlightArea(x, y, width, height) {
 }
 
 ipcRenderer.on('browserViewLoaded', () => {
-    generateQuadTree();
-    
-    createCursor('cursor');
-    cursor = document.getElementById('cursor');
-    followCursor('cursor');
-
-    browserView = document.getRootNode();
+  //Create tree on visible elements
+  generateQuadTree();
   
-    browserView.addEventListener('mouseout', () => {
-        cursor.style.visibility = 'hidden'
-    })
+  //Create cursor
+  createCursor('cursor');
+  cursor = document.getElementById('cursor');
+  followCursor('cursor');
 
-    browserView.addEventListener('mouseover', () => {
-        cursor.style.visibility = 'visible'
-    })
-  });
+  //Handle mouse behaviour on browserview
+  browserView = document.getRootNode();
+  
+  browserView.addEventListener('mouseover', (event) => {
+    //Show cursor
+    cursor.style.visibility = 'visible'
 
-  ipcRenderer.on('browserViewScrollDown', () => {
-    document.documentElement.scrollBy(0, 100);
-    setTimeout(function() {
-      ipcRenderer.send('scrollingCompleted');
-    }, 500);
-    
+    if (currentQt) {
+      // Clear any existing interval to avoid multiple intervals running simultaneously for mouse cursor hovering activity
+      clearInterval(timeoutCursorHovering);
+
+      // Start a new interval to execute the code every one second
+      timeoutCursorHovering = setInterval(function() {
+        //Find the elements in the quadtree
+        var x = event.clientX; // X location relative to the viewport
+        var y = event.clientY; // Y location relative to the viewport
+        const queryAllElementsInView = new Range(x-150, y-75, 300, 150);
+        const elementsInQueryRange = currentQt.queryRange(queryAllElementsInView);
+
+        //Remove duplicate elements by ID (larger elements are split into multiple smaller elements, replicating the ID)
+        var uniqueInteractiveElementsInQueryRange = [];
+        var seenElements = new Set();
+        elementsInQueryRange.forEach(function(el) {
+            if (!seenElements.has(el.id)) {
+                seenElements.add(el.id);
+                uniqueInteractiveElementsInQueryRange.push(el);
+            }
+        });
+        
+        ipcRenderer.send('foundElementsInMouseRange', uniqueInteractiveElementsInQueryRange);
+        // elementsInQueryRange.forEach(ve => {
+        //   highlightArea(ve.x, ve.y, ve.width, ve.height);
+        // });
+      }, 2000); // 1000 milliseconds = 1 second
+    }
   })
 
-  ipcRenderer.on('browserViewScrollUp', () => {
-    document.documentElement.scrollBy(0, -100);
-    setTimeout(function() {
-      ipcRenderer.send('scrollingCompleted');
-    }, 500);
+  browserView.addEventListener('mouseout', () => {
+      
+    //Hide cursor
+      cursor.style.visibility = 'hidden'
+      
+      // Clear the interval when the mouse leaves the element
+      clearInterval(timeoutCursorHovering);
   })
 
-  ipcRenderer.on('create-quadtree', () => {
-    //ISSUES: Node-Config is required by Cactus, and the config/default.json file would need to be recreated on cactus itself, rather than just the builder code. Which might not be a bad idea. Think about it.
-    generateQuadTree();    
-  })
+  
+});
+
+
+ipcRenderer.on('browserViewScrollDown', () => {
+  document.documentElement.scrollBy(0, 100);
+  setTimeout(function() {
+    ipcRenderer.send('scrollingCompleted');
+  }, 500);
+  
+})
+
+ipcRenderer.on('browserViewScrollUp', () => {
+  document.documentElement.scrollBy(0, -100);
+  setTimeout(function() {
+    ipcRenderer.send('scrollingCompleted');
+  }, 500);
+})
+
+ipcRenderer.on('create-quadtree', () => {
+  //ISSUES: Node-Config is required by Cactus, and the config/default.json file would need to be recreated on cactus itself, rather than just the builder code. Which might not be a bad idea. Think about it.
+  generateQuadTree();    
+})
