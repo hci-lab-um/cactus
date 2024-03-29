@@ -108,7 +108,7 @@ ipcRenderer.on('browserViewLoaded', () => {
         //Find the elements in the quadtree
         var x = event.clientX; // X location relative to the viewport
         var y = event.clientY; // Y location relative to the viewport
-        const queryAllElementsInView = new Range(x-150, y-75, 300, 150);
+        const queryAllElementsInView = new Range(x-50, y-25, 100, 50);
         const elementsInQueryRange = currentQt.queryRange(queryAllElementsInView);
 
         //Remove duplicate elements by ID (larger elements are split into multiple smaller elements, replicating the ID)
@@ -122,10 +122,7 @@ ipcRenderer.on('browserViewLoaded', () => {
         });
         
         ipcRenderer.send('foundElementsInMouseRange', uniqueInteractiveElementsInQueryRange);
-        // elementsInQueryRange.forEach(ve => {
-        //   highlightArea(ve.x, ve.y, ve.width, ve.height);
-        // });
-      }, 2000); // 1000 milliseconds = 1 second
+      }, 500);
     }
   })
 
@@ -156,6 +153,20 @@ ipcRenderer.on('browserViewScrollUp', () => {
     ipcRenderer.send('scrollingCompleted');
   }, 500);
 })
+
+ipcRenderer.on('clickElement', (event, elementToClick) => {
+  // Find the element at the specified x,y coordinates
+  const element = document.elementFromPoint(elementToClick.insertionPointX, elementToClick.insertionPointY);
+  // Create a new MouseEvent object for the click event
+  const clickEvent = new MouseEvent('click', {
+      clientX: elementToClick.insertionPointX,
+      clientY: elementToClick.insertionPointY,
+      bubbles: true,
+      cancelable: true
+  });
+  // Dispatch the click event on the element
+  element.dispatchEvent(clickEvent);
+});
 
 ipcRenderer.on('create-quadtree', () => {
   //ISSUES: Node-Config is required by Cactus, and the config/default.json file would need to be recreated on cactus itself, rather than just the builder code. Which might not be a bad idea. Think about it.

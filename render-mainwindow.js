@@ -1,8 +1,8 @@
 // const fs                        = require('original-fs')
 // const path                      = require('path')
 const { ipcRenderer }           = require('electron')
-const { byId } = require('./js/utils')
-//const { byId, readFile, dwell } = require('./js/utils')
+const { byId, dwell } = require('./js/utils')
+// const { byId, readFile, dwell } = require('./js/utils')
 // const { drop, isEqual }         = require('lodash')
 // const Config                    = require('./js/config')
 const { createCursor, followCursor } = require('./js/cursor')
@@ -127,13 +127,39 @@ function setupScrollers(){
 }
 
 
- // =================================
-  // ==== Sidebar element management ====
-  // =================================
+// =================================
+// ==== Sidebar element management ====
+// =================================
 ipcRenderer.on('renderElementsInSideBar', (event, elements) => {
   let sidebar = byId('sidebar_items');
   if (elements.length > 0)
   {
+    let sidebarItems = document.querySelectorAll('.sidebar_item');
+    const elementIdsToAdd = elements.map((e) => e.id);
+    
+    //Check if element to add already exists and remove it from list, not to add twice
+    const existingInteractiveElementsOnSidebar = [];
+    sidebarItems.forEach(element => {
+      const dataIdValue = parseInt(element.getAttribute('id'));
+      existingInteractiveElementsOnSidebar.push(dataIdValue);
+    });
+
+    //Remove elements from the list of elements to add - in reverse order, not to affect the iteration
+    for (let i = elements.length - 1; i >= 0; i--) {
+      if (existingInteractiveElementsOnSidebar.includes(elements[i].id)) {
+        elements.splice(i, 1); // Remove element at index i
+      }
+    }
+
+    //Remove out of scope elements from sidebar first
+    sidebarItems.forEach(element => {
+      const dataIdValue = parseInt(element.getAttribute('id'));
+      if (!elementIdsToAdd.includes(dataIdValue)) {
+        element.remove();
+      }
+    });    
+
+    //Add elements to sidebar
     const markup = `${elements.map(e =>
         `<div class='sidebar_item fadeInDown' id='${e.id}'>
           <div>
@@ -147,7 +173,22 @@ ipcRenderer.on('renderElementsInSideBar', (event, elements) => {
         </div>
         `).join('')}`
         
-    sidebar.innerHTML = markup;
+    sidebar.insertAdjacentHTML('afterbegin', markup);
+
+    //Attach dwell
+    sidebarItems = document.querySelectorAll('.sidebar_item')
+    if (sidebarItems.length) {
+      for (let i=0; i < sidebarItems.length; i++) {
+        (function(i) {
+          dwell(sidebarItems[i], () => {
+            const dataIdValue = parseInt(sidebarItems[i].getAttribute('id'));
+            const elementToClick = elements.filter(e => e.id == dataIdValue);
+            if (elementToClick)
+              ipcRenderer.send('initiateInteractiveElementClickEvent', elementToClick[0]);
+          })
+        })(i)
+      }
+    }
   }
   else
   {

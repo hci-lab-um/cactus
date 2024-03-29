@@ -120,7 +120,7 @@ function createWindow () {
               background: #638eec; 
             }
           `);
-          browserView.webContents.openDevTools();
+          //browserView.webContents.openDevTools();
         });
 
         //Attach overlays browserview
@@ -199,6 +199,10 @@ ipcMain.on('browserViewScrollUp', () => {
 
 ipcMain.on('scrollingCompleted', () => {
   browserView.webContents.send('create-quadtree');
+})
+
+ipcMain.on('initiateInteractiveElementClickEvent', (event, elementToClick) => {
+  browserView.webContents.send('clickElement', elementToClick);
 })
 
 ipcMain.on('foundElementsInMouseRange', (event, elements) => {
