@@ -1,5 +1,6 @@
 const { ipcRenderer }           = require('electron')
 const { createCursor, followCursor } = require('./js/cursor')
+const { scrollBy } = require('./js/utils')
 //const { byId, readFile, dwell } = require('./js/utils')
 const { QuadtreeBuilder, InteractiveElement, PageDocument, Options, Range } = require('cactus-quadtree-builder')
 
@@ -50,13 +51,15 @@ function generateQuadTree(){
   let pageDocument = new PageDocument(document.title, document.URL, visibleElements, window.innerWidth, window.innerHeight, null);
   qtBuilder.buildAsync(pageDocument).then((qt) => {
     currentQt = qt;
-    removePreviousPoints();
-    //Highlight all elements in view (use the Range approach)
-    const queryAllElementsInView = new Range(0, 0, pageDocument.documentWidth, pageDocument.documentHeight);
-    const elementsInQueryRange = qt.queryRange(queryAllElementsInView);
-    elementsInQueryRange.forEach(ve => {
-      highlightArea(ve.x, ve.y, ve.width, ve.height);
-    });
+
+    //Only in debug mode - show which points are available
+    // removePreviousPoints();
+    // //Highlight all elements in view (use the Range approach)
+    // const queryAllElementsInView = new Range(0, 0, pageDocument.documentWidth, pageDocument.documentHeight);
+    // const elementsInQueryRange = qt.queryRange(queryAllElementsInView);
+    // elementsInQueryRange.forEach(ve => {
+    //   highlightArea(ve.x, ve.y, ve.width, ve.height);
+    // });
   });
 }
 
@@ -72,7 +75,10 @@ function highlightArea(x, y, width, height) {
   point.classList.add('qtpoint');
   point.style.width = width+'px';
   point.style.height = height+'px';
-  point.style.backgroundColor = 'rgba(0, 255, 0, 0.5)';
+  point.style.backgroundColor = 'transparent';
+  point.style.border = '2px solid blue';
+  point.style.outline = '2px dashed red';
+  // point.style.backgroundColor = 'rgba(0, 255, 0, 0.5)';
   point.style.position = 'absolute';
 
   // Set the position of the point relative to the viewport
@@ -127,30 +133,24 @@ ipcRenderer.on('browserViewLoaded', () => {
   })
 
   browserView.addEventListener('mouseout', () => {
-      
-    //Hide cursor
+      //Hide cursor
       cursor.style.visibility = 'hidden'
-      
-      // Clear the interval when the mouse leaves the element
+        // Clear the interval when the mouse leaves the element
       clearInterval(timeoutCursorHovering);
   })
-
-  
 });
 
-
 ipcRenderer.on('browserViewScrollDown', () => {
-  document.documentElement.scrollBy(0, 100);
+  scrollBy(0, 100);
   setTimeout(function() {
-    ipcRenderer.send('scrollingCompleted');
+    generateQuadTree();  
   }, 500);
-  
 })
 
 ipcRenderer.on('browserViewScrollUp', () => {
-  document.documentElement.scrollBy(0, -100);
+  scrollBy(0, -100);
   setTimeout(function() {
-    ipcRenderer.send('scrollingCompleted');
+    generateQuadTree();  
   }, 500);
 })
 

@@ -61,5 +61,21 @@ module.exports = {
     var parentRoleNav = element.closest('div[role="navigation"]')
 
     return (parentNav || parentRoleNav) ? true : false
+  },
+
+  scrollBy: (amountX, amountY) => {
+
+    //This is an ugly solution to a problem whereby on certain pages, document.body.scrollBy works (e.g. wikipedia) and in others document.documentElement.scrollby does (e.g. times)
+    document.body.scrollBy({
+      top: amountY,
+      left: amountX,
+      behavior : "smooth"
+    });
+    
+    document.documentElement.scrollBy({
+        top: amountY,
+        left: amountX,
+        behavior : "smooth"
+      });
   }
 }

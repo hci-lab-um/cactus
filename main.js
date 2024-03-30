@@ -90,7 +90,7 @@ function createWindow () {
           vertical: false
         });
         //Load the default home page
-        browserView.webContents.loadURL('https://www.accessibility.com.mt/');
+        browserView.webContents.loadURL('https://www.um.edu.mt');
 
         //Once the DOM is ready, send a message to initiate some further logic
         browserView.webContents.on('dom-ready', () => {
@@ -120,7 +120,15 @@ function createWindow () {
               background: #638eec; 
             }
           `);
-          //browserView.webContents.openDevTools();
+          browserView.webContents.openDevTools();
+        });
+
+        //React to in-page navigation (e.g. anchor links)
+        browserView.webContents.on('did-navigate-in-page', (event, url) => {
+          const anchorTag = url.split('#')[1];
+          if (anchorTag) {
+            browserView.webContents.send('create-quadtree');
+          }
         });
 
         //Attach overlays browserview
@@ -197,9 +205,9 @@ ipcMain.on('browserViewScrollUp', () => {
   browserView.webContents.send('browserViewScrollUp');
 });
 
-ipcMain.on('scrollingCompleted', () => {
-  browserView.webContents.send('create-quadtree');
-})
+// ipcMain.on('scrollingCompleted', () => {
+//   browserView.webContents.send('create-quadtree');
+// })
 
 ipcMain.on('initiateInteractiveElementClickEvent', (event, elementToClick) => {
   browserView.webContents.send('clickElement', elementToClick);
