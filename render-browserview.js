@@ -103,7 +103,7 @@ ipcRenderer.on('browserViewLoaded', () => {
   //Set mutation observer - and re-generate quadtree on mutations
   const observer = new MutationObserver((mutationsList, observer) => {
     for(const mutation of mutationsList) {
-      if (mutation.type === 'subtree' || mutation.type === 'childList') {
+      if (mutation.type === 'subtree') { //childlist was firing up too many events... this might not work as expected.
         generateQuadTree();
       }
     }
