@@ -98,6 +98,20 @@ ipcRenderer.on('browserViewLoaded', () => {
   cursor = document.getElementById('cursor');
   followCursor('cursor');
 
+
+  //EXPERIMENTAL - JS EVENTS (E.g. click on tab element, does not fire up (although it's firing up changes in quick succession when banners change etc...) - to test properly)
+  //Set mutation observer - and re-generate quadtree on mutations
+  const observer = new MutationObserver((mutationsList, observer) => {
+    for(const mutation of mutationsList) {
+      if (mutation.type === 'subtree' || mutation.type === 'childList') {
+        generateQuadTree();
+      }
+    }
+  });
+  
+  const config = { attributes: true, childList: true, subtree: true };
+  observer.observe(document.body, config);
+
   //Handle mouse behaviour on browserview
   browserView = document.getRootNode();
   
@@ -155,17 +169,22 @@ ipcRenderer.on('browserViewScrollUp', () => {
 })
 
 ipcRenderer.on('clickElement', (event, elementToClick) => {
-  // Find the element at the specified x,y coordinates
-  const element = document.elementFromPoint(elementToClick.insertionPointX, elementToClick.insertionPointY);
-  // Create a new MouseEvent object for the click event
-  const clickEvent = new MouseEvent('click', {
-      clientX: elementToClick.insertionPointX,
-      clientY: elementToClick.insertionPointY,
-      bubbles: true,
-      cancelable: true
-  });
-  // Dispatch the click event on the element
-  element.dispatchEvent(clickEvent);
+  try {
+    // Find the element at the specified x,y coordinates
+    const element = document.elementFromPoint(elementToClick.insertionPointX, elementToClick.insertionPointY);
+    // Create a new MouseEvent object for the click event
+    const clickEvent = new MouseEvent('click', {
+        clientX: elementToClick.insertionPointX,
+        clientY: elementToClick.insertionPointY,
+        bubbles: true,
+        cancelable: true
+    });
+    // Dispatch the click event on the element
+    element.dispatchEvent(clickEvent);
+  }
+  catch(err) {
+    
+  }
 });
 
 ipcRenderer.on('create-quadtree', () => {
