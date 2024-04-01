@@ -53,8 +53,8 @@ function generateQuadTree(){
     currentQt = qt;
 
     //Only in debug mode - show which points are available
-    // removePreviousPoints();
-    // //Highlight all elements in view (use the Range approach)
+    removePreviousPoints();
+    //Highlight all elements in view (use the Range approach)
     // const queryAllElementsInView = new Range(0, 0, pageDocument.documentWidth, pageDocument.documentHeight);
     // const elementsInQueryRange = qt.queryRange(queryAllElementsInView);
     // elementsInQueryRange.forEach(ve => {

@@ -1,10 +1,11 @@
-const { app, BrowserWindow, BrowserView, ipcMain } = require('electron')
+const { app, BrowserWindow, BrowserView, ipcMain, ipcRenderer } = require('electron')
 const path = require('path')
 const { log } = require('electron-log');
 
 let mainWindow
 let overlaysWindow;
 let browserView;
+let defaultUrl = 'https://www.um.edu.mt';
 
 // const iconPath = path.join(__dirname, 'logo.png')
 
@@ -89,9 +90,10 @@ function createWindow () {
           horizontal: true,
           vertical: false
         });
+        
         //Load the default home page
-        browserView.webContents.loadURL('https://www.um.edu.mt');
-
+        browserView.webContents.loadURL(defaultUrl);
+        
         //Once the DOM is ready, send a message to initiate some further logic
         browserView.webContents.on('dom-ready', () => {
           // This event fires when the BrowserView is attached
@@ -121,6 +123,17 @@ function createWindow () {
             }
           `);
           browserView.webContents.openDevTools();
+        });
+
+        //Loading event - update omnibox
+        browserView.webContents.on('did-start-loading', () => {
+          mainWindow.webContents.send('browserview-loading-start');
+        });
+
+        browserView.webContents.on('did-stop-loading', () => {
+          const url = browserView.webContents.getURL();
+          const title = browserView.webContents.getTitle();
+          mainWindow.webContents.send('browserview-loading-stop', { url: url, title: title });
         });
 
         //React to in-page navigation (e.g. anchor links)
@@ -196,6 +209,10 @@ app.on('activate', () => {
     createWindow()
   }
 })
+
+ipcMain.on('browse-to-url', (event, url) => {
+  browserView.webContents.loadURL(url);
+});
 
 ipcMain.on('browserViewScrollDown', () => {
   browserView.webContents.send('browserViewScrollDown');

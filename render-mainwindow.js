@@ -13,7 +13,9 @@ const { createCursor, followCursor } = require('./js/cursor')
 
 // let webviewContainer
 
-let omni = byId('url')
+//Omnibox - combined location and search field 
+// let omni = byId('url')
+
 let navbar, sidebar, scrollbar
 let cursor 
 let scrollUpBtn, scrollDownBtn
@@ -228,26 +230,28 @@ ipcRenderer.on('renderElementsInSideBar', (event, elements) => {
 // dialogErrorIcon = byId('dialogError')
 // dialogSuccessIcon = byId('dialogSuccess')
 
-//omni.onkeydown = sanitiseUrl
-//omni.onclick = displayUrl
-// webview.addEventListener('did-start-loading', loadingOmnibox)
+ipcRenderer.on('browserview-loading-start', () => {
+  omniboxLoadStart();
+});
+
+ipcRenderer.on('browserview-loading-stop', (event, pageDetails) => {
+  omniboxLoadStop(pageDetails);
+});
 
 // Sanitises URL
 function sanitiseUrl (event) {
+  let omni = byId('url')
   if (event.keyCode === 13) {
       omni.blur();
       let val = omni.value;
       let https = val.slice(0, 8).toLowerCase();
       let http = val.slice(0, 7).toLowerCase();
       if (https === 'https://') {
-        ipcRenderer.send('browserToUrl', val);
-        //webview.loadURL(val);
+        ipcRenderer.send('browse-to-url', val);
       } else if (http === 'http://') {
-        //webview.loadURL('https://' + val);
-        ipcRenderer.send('browserToUrl', 'https://'+ val);
+        ipcRenderer.send('browse-to-url', 'https://'+ val);
       } else {
-        //webview.loadURL('https://'+ val);
-        ipcRenderer.send('browserToUrl', 'https://'+ val);
+        ipcRenderer.send('browse-to-url', 'https://'+ val);
       }
   }
 }
@@ -255,6 +259,8 @@ function sanitiseUrl (event) {
 // =================================
 // ==== Browser Functionality ======
 // =================================
+
+
 // function reload() {
 //   hideAllOverlays()
 //   webview.reload();
@@ -270,35 +276,38 @@ function sanitiseUrl (event) {
 //   webview.goForward();
 // }
 
-// function loadingOmnibox() {
-//   let loader = byId('loader');
-//   let favicon = byId('favicon');
+const omniboxLoadStart = () => {
+  let loader = byId('loader');
+  let favicon = byId('favicon');
+  let omni = byId('url')
 
-//   const loadStart = () => {
-//     favicon.style.display="none";
-//     loader.style.display = "block";
-//     omni.value = 'Loading..';
-//   }
+  favicon.style.display="none";
+  loader.style.display = "block";
+  omni.value = 'Loading..';
+}
 
-//   const loadStop = () => {
-//     favicon.style.display="block"
-//     loader.style.display = "none"
-//     omni.value = webview.getTitle()
-//   }
+const omniboxLoadStop = (pageDetails) => {
+  let loader = byId('loader');
+  let favicon = byId('favicon');
+  let omni = byId('url')
 
-//   // webview.addEventListener('did-start-loading', loadStart)
-//   // webview.addEventListener('did-stop-loading', loadStop)
-// }
+  favicon.style.display="block"
+  loader.style.display = "none"
+  omni.value = pageDetails.title;
+  omni.addEventListener('click', () => displayOmni(pageDetails.url));
+  omni.addEventListener('blur', () => displayOmni(pageDetails.title));
+  omni.addEventListener('keydown', (event) => sanitiseUrl(event));
+}
 
-
-// function displayUrl() {
-//   omni.classList.add('fadeOutDown')
-//   setTimeout(() => {
-//     omni.classList.remove('fadeOutDown')
-//     omni.value = webview.src;
-//     omni.classList.add('fadeInUp')
-//   }, 200);
-// }
+function displayOmni(value) {
+  let omni = byId('url')
+  omni.classList.add('fadeOutDown')
+  setTimeout(() => {
+    omni.classList.remove('fadeOutDown')
+    omni.value = value;
+    omni.classList.add('fadeInUp')
+  }, 200);
+}
 
 
 
