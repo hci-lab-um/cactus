@@ -234,24 +234,28 @@ ipcMain.on('foundElementsInMouseRange', (event, elements) => {
   mainWindow.webContents.send('renderElementsInSideBar', elements)
 })
 
-ipcMain.on('getLinks', (event, message) => {
-  mainWindow.webContents.send('getLinks', message)
-})
+// ipcMain.on('getLinks', (event, message) => {
+//   mainWindow.webContents.send('getLinks', message)
+// })
 
-ipcMain.on('getNavLinks', (event, message) => {
-  mainWindow.webContents.send('getNavLinks', message)
-})
+// ipcMain.on('getNavLinks', (event, message) => {
+//   mainWindow.webContents.send('getNavLinks', message)
+// })
 
-ipcMain.on('loadBookmark', (event, message) => {
-  mainWindow.webContents.send('loadBookmark', message)
-})
+// ipcMain.on('loadBookmark', (event, message) => {
+//   mainWindow.webContents.send('loadBookmark', message)
+// })
 
-ipcMain.on('closeBookmarks', (event, message) => {
-  mainWindow.webContents.send('closeBookmarks', message)
-})
+// ipcMain.on('closeBookmarks', (event, message) => {
+//   mainWindow.webContents.send('closeBookmarks', message)
+// })
 
 ipcMain.on('hideScrollUp', () => {
   mainWindow.webContents.send('hideScrollUp')
+})
+
+ipcMain.on('showScrollUp', () => {
+  mainWindow.webContents.send('showScrollUp')
 })
 
 ipcMain.on('log', (event,loggedItem) => {
@@ -259,6 +263,3 @@ ipcMain.on('log', (event,loggedItem) => {
   log.info(loggedItem);
 });
 
-ipcMain.on('showScrollUp', () => {
-  mainWindow.webContents.send('showScrollUp')
-})

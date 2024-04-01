@@ -168,6 +168,16 @@ ipcRenderer.on('browserViewScrollUp', () => {
   }, 500);
 })
 
+function checkScrollers()
+{
+   //Hide scrollbar when at the very top
+   if (!window.scrollY) {
+    ipcRenderer.send('hideScrollUp')
+  } else {
+    ipcRenderer.send('showScrollUp')
+  }
+}
+
 ipcRenderer.on('clickElement', (event, elementToClick) => {
   try {
     // Find the element at the specified x,y coordinates
