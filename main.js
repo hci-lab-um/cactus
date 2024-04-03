@@ -6,6 +6,7 @@ let mainWindow
 let overlaysWindow;
 let browserView;
 let defaultUrl = 'https://www.um.edu.mt';
+let tabList = [];
 
 // const iconPath = path.join(__dirname, 'logo.png')
 
@@ -23,16 +24,6 @@ function createWindow () {
       icon: __dirname + '/AppIcon.icns'
     })
     
-    //Create browser view
-    browserView = new BrowserView({ 
-      //https://www.electronjs.org/docs/latest/tutorial/security
-      webPreferences: {
-        nodeIntegrationInWorker: true,
-        contextIsolation: false,
-        preload: path.join(__dirname, '/render-browserview.js')
-      }
-    });
-
     //Overlays modal browser window
     overlaysWindow = new BrowserWindow({ 
       parent: mainWindow,
@@ -74,75 +65,7 @@ function createWindow () {
         })()
       `)
       .then(properties => {
-        //Attach the browser view to the parent window
-        mainWindow.addBrowserView(browserView);
-        
-        //Set its location/dimensions as per the returned properties
-        browserView.setBounds({ 
-          x: Math.floor(properties.x), 
-          y: Math.floor(properties.y), 
-          width: Math.floor(properties.width), 
-          height: Math.floor(properties.height) });
-        //Set auto resize
-        browserView.setAutoResize({
-          width: true,
-          height: true, 
-          horizontal: true,
-          vertical: false
-        });
-        
-        //Load the default home page
-        browserView.webContents.loadURL(defaultUrl);
-        
-        //Once the DOM is ready, send a message to initiate some further logic
-        browserView.webContents.on('dom-ready', () => {
-          // This event fires when the BrowserView is attached
-          browserView.webContents.send('browserViewLoaded');
-          browserView.webContents.insertCSS(`
-            html, body { overflow-x: hidden; } 
-            a, input, button, div { cursor: none; }
-            /* width */
-            ::-webkit-scrollbar {
-              width: 5px;
-            }
-            /* Track */
-            ::-webkit-scrollbar-track {
-              box-shadow: inset 0 0 5px grey; 
-              border-radius: 2px;
-            }
-            
-            /* Handle */
-            ::-webkit-scrollbar-thumb {
-              background: #10468b; 
-              border-radius: 2px;
-            }
-
-            /* Handle on hover */
-            ::-webkit-scrollbar-thumb:hover {
-              background: #638eec; 
-            }
-          `);
-          browserView.webContents.openDevTools();
-        });
-
-        //Loading event - update omnibox
-        browserView.webContents.on('did-start-loading', () => {
-          mainWindow.webContents.send('browserview-loading-start');
-        });
-
-        browserView.webContents.on('did-stop-loading', () => {
-          const url = browserView.webContents.getURL();
-          const title = browserView.webContents.getTitle();
-          mainWindow.webContents.send('browserview-loading-stop', { url: url, title: title });
-        });
-
-        //React to in-page navigation (e.g. anchor links)
-        browserView.webContents.on('did-navigate-in-page', (event, url) => {
-          const anchorTag = url.split('#')[1];
-          if (anchorTag) {
-            browserView.webContents.send('create-quadtree');
-          }
-        });
+        createBrowserviewInTab(defaultUrl, properties);
 
         //Attach overlays browserview
         //mainWindow.addBrowserView(overlaysWindow);
@@ -188,6 +111,95 @@ function createWindow () {
   catch(err) {
     log.error(err);
   }
+}
+
+function createBrowserviewInTab(url, properties){
+  //Create browser view
+  browserView = new BrowserView({ 
+    //https://www.electronjs.org/docs/latest/tutorial/security
+    webPreferences: {
+      nodeIntegrationInWorker: true,
+      contextIsolation: false,
+      preload: path.join(__dirname, '/render-browserview.js')
+    }
+  });
+
+  tabList.push({tabId: tabList.length+1, browserView: browserView});
+  
+  //Attach the browser view to the parent window
+  mainWindow.addBrowserView(browserView);
+  
+  //Set its location/dimensions as per the returned properties
+  browserView.setBounds({ 
+    x: Math.floor(properties.x), 
+    y: Math.floor(properties.y), 
+    width: Math.floor(properties.width), 
+    height: Math.floor(properties.height) });
+  //Set auto resize
+  browserView.setAutoResize({
+    width: true,
+    height: true, 
+    horizontal: true,
+    vertical: false
+  });
+  
+  //Load the default home page
+  browserView.webContents.loadURL(url);
+  mainWindow.setTopBrowserView(browserView)
+  
+  //Once the DOM is ready, send a message to initiate some further logic
+  browserView.webContents.on('dom-ready', () => {
+    // This event fires when the BrowserView is attached
+    browserView.webContents.send('browserViewLoaded');
+    browserView.webContents.insertCSS(`
+      html, body { overflow-x: hidden; } 
+      a, input, button, div { cursor: none; }
+      /* width */
+      ::-webkit-scrollbar {
+        width: 5px;
+      }
+      /* Track */
+      ::-webkit-scrollbar-track {
+        box-shadow: inset 0 0 5px grey; 
+        border-radius: 2px;
+      }
+      
+      /* Handle */
+      ::-webkit-scrollbar-thumb {
+        background: #10468b; 
+        border-radius: 2px;
+      }
+
+      /* Handle on hover */
+      ::-webkit-scrollbar-thumb:hover {
+        background: #638eec; 
+      }
+    `);
+    //browserView.webContents.openDevTools();
+  });
+
+  //Loading event - update omnibox
+  browserView.webContents.on('did-start-loading', () => {
+    mainWindow.webContents.send('browserview-loading-start');
+  });
+
+  browserView.webContents.on('did-stop-loading', () => {
+    const url = browserView.webContents.getURL();
+    const title = browserView.webContents.getTitle();
+    mainWindow.webContents.send('browserview-loading-stop', { url: url, title: title });
+  });
+
+  //React to in-page navigation (e.g. anchor links)
+  browserView.webContents.on('did-navigate-in-page', (event, url) => {
+    const anchorTag = url.split('#')[1];
+    if (anchorTag) {
+      browserView.webContents.send('create-quadtree');
+    }
+  });
+
+  browserView.webContents.setWindowOpenHandler(({ url }) => {
+    createBrowserviewInTab(url, properties);
+  });
 }
 
 app.on('ready', createWindow)
