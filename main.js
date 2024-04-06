@@ -1,11 +1,11 @@
-const { app, BrowserWindow, BrowserView, ipcMain, ipcRenderer } = require('electron')
+const { app, BrowserWindow, BrowserView, ipcMain } = require('electron')
 const path = require('path')
 const { log } = require('electron-log');
 
 let mainWindow
 let overlaysWindow;
 let browserView;
-let defaultUrl = 'https://www.um.edu.mt';
+let defaultUrl = 'https://www.youtube.com/results?search_query=test';
 let tabList = [];
 
 // const iconPath = path.join(__dirname, 'logo.png')
@@ -175,7 +175,7 @@ function createBrowserviewInTab(url, properties){
         background: #638eec; 
       }
     `);
-    //browserView.webContents.openDevTools();
+    browserView.webContents.openDevTools();
   });
 
   //Loading event - update omnibox
