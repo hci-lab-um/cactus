@@ -1,11 +1,13 @@
 const { app, BrowserWindow, BrowserView, ipcMain } = require('electron')
 const path = require('path')
 const { log } = require('electron-log');
+const { over, remove } = require('lodash');
 
+let debugMode = false;
 let mainWindow
-let overlaysWindow;
+let menusOverlay;
 let browserView;
-let defaultUrl = 'https://www.youtube.com/results?search_query=test';
+let defaultUrl = 'https://cmt3.research.microsoft.com/About';
 let tabList = [];
 
 // const iconPath = path.join(__dirname, 'logo.png')
@@ -24,28 +26,10 @@ function createWindow () {
       icon: __dirname + '/AppIcon.icns'
     })
     
-    //Overlays modal browser window
-    overlaysWindow = new BrowserWindow({ 
-      parent: mainWindow,
-      titleBarStyle: 'hidden',
-      titleBarOverlay: true,
-      modal: true,
-      show: false,
-      transparent: false, // Make the view transparent
-      backgroundColor: '#00000000', // Set the background color to transparent
-      //https://www.electronjs.org/docs/latest/tutorial/security
-      webPreferences: {
-        nodeIntegrationInWorker: true,
-        contextIsolation: false,
-        preload: path.join(__dirname, '/render-browserview-overlays.js')
-      }
-    });
-    
-    
     mainWindow.maximize();
     mainWindow.loadURL(path.join(__dirname, '/index.html')).then(() => {
       mainWindow.webContents.send('mainWindowLoaded');
-      //mainWindow.webContents.openDevTools();
+      if (debugMode) mainWindow.webContents.openDevTools();
 
       //Once the main page is loaded, create inner browserview and place it in the right position by getting the x,y,width,height of a positioned element in index.html
       mainWindow.webContents.executeJavaScript(`
@@ -66,35 +50,6 @@ function createWindow () {
       `)
       .then(properties => {
         createBrowserviewInTab(defaultUrl, properties);
-
-        //Attach overlays browserview
-        //mainWindow.addBrowserView(overlaysWindow);
-        overlaysWindow.loadURL(path.join(__dirname, '/overlays.html'))
-        overlaysWindow.setBounds({ 
-          x: Math.floor(properties.x), 
-          y: Math.floor(properties.y), 
-          width: Math.floor(properties.width), 
-          height: Math.floor(properties.height) });
-        // //Set auto resize
-        // overlaysWindow.setAutoResize({
-        //   width: true,
-        //   height: true, 
-        //   horizontal: true,
-        //   vertical: false
-        // });
-        overlaysWindow.once('ready-to-show', () => {
-          //overlaysWindow.show()
-          overlaysWindow.webContents.send('browserViewLoaded');
-          overlaysWindow.webContents.insertCSS('html, body, a, input, button, div { cursor: none; }')
-          //overlaysWindow.webContents.openDevTools();
-        })
-        // //Once the DOM is ready, send a message to initiate some further logic
-        // overlaysBrowserView.webContents.on('dom-ready', () => {
-        //   // This event fires when the BrowserView is attached
-        //   overlaysBrowserView.webContents.send('browserViewLoaded');
-        //   overlaysBrowserView.webContents.insertCSS('html, body, a, input, button, div { cursor: none; }')
-        //   overlaysBrowserView.webContents.openDevTools();
-        // });
       })
       .catch(err =>
       {
@@ -102,7 +57,7 @@ function createWindow () {
       }); 
     })
 
-    //mainWindow.webContents.openDevTools()
+    if (debugMode) mainWindow.webContents.openDevTools()
     
     mainWindow.on('closed', () => {
       mainWindow = null
@@ -123,8 +78,13 @@ function createBrowserviewInTab(url, properties){
       preload: path.join(__dirname, '/render-browserview.js')
     }
   });
-
-  tabList.push({tabId: tabList.length+1, browserView: browserView});
+  
+  //Set new tab as active (if any)
+  tabList.forEach(tab => {
+    tab.isActive = false
+  });
+  tabList.push({tabId: tabList.length+1, browserView: browserView, isActive: true});
+  
   
   //Attach the browser view to the parent window
   mainWindow.addBrowserView(browserView);
@@ -175,7 +135,7 @@ function createBrowserviewInTab(url, properties){
         background: #638eec; 
       }
     `);
-    browserView.webContents.openDevTools();
+    if (debugMode) browserView.webContents.openDevTools();
   });
 
   //Loading event - update omnibox
@@ -246,6 +206,77 @@ ipcMain.on('foundElementsInMouseRange', (event, elements) => {
   mainWindow.webContents.send('renderElementsInSideBar', elements)
 })
 
+ipcMain.on('show-overlay', (event, overlayAreaToShow) => {
+  createMenuOverlay(overlayAreaToShow);
+})
+
+function removeMenusOverlay() {
+  if (menusOverlay) {
+    mainWindow.removeBrowserView(menusOverlay);
+    menusOverlay.webContents.destroy();
+    menusOverlay = null;
+  }
+}
+ipcMain.on('remove-overlay', () =>{
+  removeMenusOverlay();
+})
+
+
+function createMenuOverlay(overlayAreaToShow)
+{
+  removeMenusOverlay();
+
+  mainWindow.webContents.executeJavaScript(`
+        (() => {
+          const element = document.querySelector('#webpage');
+          if (element) {
+            const rect = element.getBoundingClientRect();
+            return {
+              x: rect.left,
+              y: rect.top,
+              width: rect.width,
+              height: rect.height
+            };
+          } else {
+            return null;
+          }
+        })()
+      `)
+      .then(properties => {
+        //Overlays modal browser window
+        menusOverlay = new BrowserView({ 
+          //https://www.electronjs.org/docs/latest/tutorial/security
+          webPreferences: {
+            nodeIntegrationInWorker: true,
+            contextIsolation: false,
+            preload: path.join(__dirname, '/render-overlay-menus.js')
+          }
+        });
+
+        //Attach the browser view to the parent window
+        mainWindow.addBrowserView(menusOverlay);
+          
+        //Set its location/dimensions as per the returned properties
+        menusOverlay.setBounds({ 
+          x: Math.floor(properties.x), 
+          y: Math.floor(properties.y), 
+          width: Math.floor(properties.width), 
+          height: Math.floor(properties.height) });
+        //Set auto resize
+        menusOverlay.setAutoResize({
+          width: true,
+          height: true, 
+          horizontal: true,
+          vertical: false
+        });
+
+        //Load the default home page
+        menusOverlay.webContents.loadURL(path.join(__dirname, '/overlays.html'));
+        mainWindow.setTopBrowserView(menusOverlay)
+        menusOverlay.webContents.send('overlayMenusLoaded', overlayAreaToShow)
+        if (debugMode) menusOverlay.webContents.openDevTools();
+    })
+}
 // ipcMain.on('getLinks', (event, message) => {
 //   mainWindow.webContents.send('getLinks', message)
 // })

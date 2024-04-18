@@ -16,7 +16,7 @@ const { createCursor, followCursor } = require('./js/cursor')
 //Omnibox - combined location and search field 
 // let omni = byId('url')
 
-let navbar, sidebar, scrollbar
+let omni, navbar, sidebar, scrollbar
 let cursor 
 let scrollUpBtn, scrollDownBtn
 let timeoutScroll
@@ -27,6 +27,8 @@ ipcRenderer.on('mainWindowLoaded', () => {
   setupCursor();
   //Setup scrollers
   setupScrollers();
+  //Setup browser functionality events 
+  setupFunctionality();
 })
 
   // =================================
@@ -260,6 +262,19 @@ function sanitiseUrl (event) {
 // ==== Browser Functionality ======
 // =================================
 
+function setupFunctionality()
+{
+  omni = byId('url')
+  dwell(omni, () => {
+    // hideAllOverlays()
+    showOmniOverlay('omni');
+  });
+
+  let backOrForward = byId('backOrForwardBtn')
+  dwell(backOrForward, () => {
+    showOmniOverlay('navigation')
+  })
+}
 
 // function reload() {
 //   hideAllOverlays()
@@ -311,12 +326,43 @@ function displayOmni(value) {
 
 
 
-// // ======== HIDE ALL OVERLAYS ========
-// function hideAllOverlays() {
-//   if (overlayNav) overlayNav.style.display = 'none'
-//   if (overlayOmnibox) overlayOmnibox.style.display = 'none'
-//   if (overlayOptions) overlayOptions.style.display = 'none'
-// }
+// ======== HIDE ALL OVERLAYS ========
+function hideAllOverlays() {
+  const overlayNav = byId('overlay-nav');
+  const overlayOmnibox = byId('overlay-omnibox');
+  const overlayOptions = byId('overlay-options');
+  if (overlayNav) overlayNav.style.display = 'none'
+  if (overlayOmnibox) overlayOmnibox.style.display = 'none'
+  if (overlayOptions) overlayOptions.style.display = 'none'
+}
+
+// ======== SHOW ALL OVERLAYS ========
+function showOmniOverlay(overlayAreaToShow) {
+  ipcRenderer.send('show-overlay', overlayAreaToShow);
+  // const overlayOmnibox = byId('overlay-omnibox');
+  // overlayOmnibox.style.display = 'grid'
+
+
+  // =================================
+  // ======== OMNIBOX OVERLAY ========
+  // =================================
+  // const refreshOmniBtn = byId('refreshPageBtn')
+  // const searchOmniBtn = byId('searchBtn')
+  // const bookmarkOmniBtn = byId('bookmarkPageBtn')
+  // const viewBookmarksOmniBtn = byId('showBookmarksBtn')
+  //const cancelOmniBtn = byId('cancel-omni')
+  // const omnibox = byId('omnibox')
+  // const cancelSearchBtn = byId('cancel-search')
+  // const submitSearchBtn = byId('submit-search')
+  // const overlaySearchBox = byId('overlay-search')
+  // const inputSearchBox = byId('searchText')
+
+  // dwell(cancelOmniBtn, () => {
+  //   overlayOmnibox.style.display = 'none'
+  //   ipcRenderer.send('show-browserviews');
+  // })
+
+}
 
 // // =================================
 // // ====== NAVIGATION OVERLAY =======
