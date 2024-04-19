@@ -50,7 +50,6 @@
     "node-sass": "^9.0.0"
   },
   "dependencies": {
-    "@nut-tree/nut-js": "^3.1.2",
     "config": "^3.3.11",
     "electron-log": "^5.1.2",
     "lodash": "^4.17.11",

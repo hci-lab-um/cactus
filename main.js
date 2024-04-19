@@ -3,10 +3,10 @@ const path = require('path')
 const { log } = require('electron-log');
 const { over, remove } = require('lodash');
 
-let debugMode = false;
+let debugMode = true;
 let mainWindow
 let menusOverlay;
-let defaultUrl = 'https://cmt3.research.microsoft.com/About';
+let defaultUrl = 'https://google.com/search?q=dogs';
 let tabList = [];
 
 // const iconPath = path.join(__dirname, 'logo.png')
@@ -146,11 +146,6 @@ function createBrowserviewInTab(url, properties){
     const url = browserView.webContents.getURL();
     const title = browserView.webContents.getTitle();
     mainWindow.webContents.send('browserview-loading-stop', { url: url, title: title });
-  });
-
-  browserView.webContents.on('did-navigate', (event, url) => {
-    var tab = tabList.find(tab => tab.isActive === true);
-    tab.browserView.webContents.send('add-to-history', url);
   });
 
   //React to in-page navigation (e.g. anchor links)
@@ -336,15 +331,15 @@ ipcMain.on('showScrollUp', () => {
 ipcMain.on('go-back', () => {
   //Select active browserview
   var tab = tabList.find(tab => tab.isActive === true);
-  tab.browserView.webContents.goBack();
-  menusOverlay.webContents.send('can-go-back', tab.browserView.webContents.canGoBack());
+  tab.browserView.webContents.send('browserViewGoBack');
+  // menusOverlay.webContents.send('can-go-forward', tab.browserView.webContents.canGoForward());
 })
 
 ipcMain.on('go-forward', () => {
   //Select active browserview
   var tab = tabList.find(tab => tab.isActive === true);
-  tab.browserView.webContents.goForward();
-  menusOverlay.webContents.send('can-go-forward', tab.browserView.webContents.canGoForward());
+  tab.browserView.webContents.send('browserViewGoForward');
+  // menusOverlay.webContents.send('can-go-forward', tab.browserView.webContents.canGoForward());
 })
 
 ipcMain.on('log', (event,loggedItem) => {
