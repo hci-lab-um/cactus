@@ -17,6 +17,11 @@ ipcRenderer.on('overlayMenusLoaded', (event, overlayToShow) => {
         setEventHandlersForNavigationMenu();
         break;
       }
+      case 'accessibility': {
+        byId('overlay-options').style.display = 'grid'
+        setEventHandlersForAccessibilityMenu();
+        break;
+      }
     }
     
 });
@@ -41,16 +46,42 @@ function setEventHandlersForOmniMenu(){
   })
 }
 
+function setEventHandlersForAccessibilityMenu() {
+  // =================================
+  // ======== OPTIONS OVERLAY ========
+  // =================================
+
+  // ZOOMING
+  const zoomInBtn = byId('zoomInBtn')
+  const zoomOutBtn = byId('zoomOutBtn')
+  const resetZoomBtn = byId('resetZoomBtn')
+  const cancelOptionsBtn = byId('cancel-options')
+  
+  dwell(zoomInBtn, () => {
+    ipcRenderer.send('zoomIn');
+  })
+
+  dwell(zoomOutBtn, () => {
+    ipcRenderer.send('zoomOut');
+  })
+
+  dwell(resetZoomBtn, () => {
+    ipcRenderer.send('resetZoomLevel'); 
+  })
+
+  dwell(cancelOptionsBtn, () => {
+    ipcRenderer.send('remove-overlay');
+  })
+}
+
 function setEventHandlersForNavigationMenu(){
   // =================================
   // ====== NAVIGATION OVERLAY =======
   // =================================
 
-  let backOrForward = byId('backOrForwardBtn')
   let cancelNavBtn = byId('cancel-nav')
   let backNavBtn = byId('goBackBtn')
   let forwardNavBtn = byId('goForwardBtn')
-  let overlayNav = byId('overlay-nav')
 
   // dwell(backOrForward, () => {
   //   if(!webview.canGoBack() && webview.canGoForward()) {
@@ -104,26 +135,3 @@ function setEventHandlersForNavigationMenu(){
     forwardNavBtn.style.display = canGoForward ? 'flex' : 'none';
   })
 }
-
-var _browser_zoomLevel = 0
-var _browser_maxZoom = 9
-var _browser_minZoom = -8
-
-ipcRenderer.on('zoomIn', () => {
-  if (_browser_maxZoom > _browser_zoomLevel) {
-    _browser_zoomLevel += 0.75
-  }
-  //webFrame.setZoomLevel(_browser_zoomLevel)
-})
-
-ipcRenderer.on('zoomOut', () => {
-  if (_browser_minZoom < _browser_zoomLevel) {
-    _browser_zoomLevel -= 0.75
-  }
-  //webFrame.setZoomLevel(_browser_zoomLevel)
-})
-
-ipcRenderer.on('zoomReset', () => {
-  _browser_zoomLevel = 0
-  //webFrame.setZoomLevel(_browser_zoomLevel)
-})

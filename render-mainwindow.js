@@ -274,6 +274,11 @@ function setupFunctionality()
   dwell(backOrForward, () => {
     showOmniOverlay('navigation')
   })
+
+  let accessibility = byId('accessibilityBtn')
+  dwell(accessibility, () => {
+    showOmniOverlay('accessibility')
+  })
 }
 
 // function reload() {
@@ -566,7 +571,7 @@ function showOmniOverlay(overlayAreaToShow) {
 // const zoomOutBtn = byId('zoomOutBtn')
 // const resetZoomBtn = byId('resetZoomBtn')
 // const cancelOptionsBtn = byId('cancel-options')
-// const options = byId('menuBtn')
+// const options = byId('accessibilityBtn')
 
 // dwell(options, () => {
 //   hideAllOverlays()

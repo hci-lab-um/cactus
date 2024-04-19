@@ -1,4 +1,4 @@
-const { ipcRenderer }           = require('electron')
+const { ipcRenderer, webContents }           = require('electron')
 const { createCursor, followCursor } = require('./js/cursor')
 const { scrollBy } = require('./js/utils')
 //const { byId, readFile, dwell } = require('./js/utils')

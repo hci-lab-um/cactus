@@ -3,10 +3,10 @@ const path = require('path')
 const { log } = require('electron-log');
 const { over, remove } = require('lodash');
 
-let debugMode = true;
+let debugMode = false;
 let mainWindow
 let menusOverlay;
-let defaultUrl = 'https://google.com/search?q=dogs';
+let defaultUrl = 'https://google.com/search?q=cats';
 let tabList = [];
 
 // const iconPath = path.join(__dirname, 'logo.png')
@@ -341,6 +341,31 @@ ipcMain.on('go-forward', () => {
   tab.browserView.webContents.send('browserViewGoForward');
   // menusOverlay.webContents.send('can-go-forward', tab.browserView.webContents.canGoForward());
 })
+
+ipcMain.on('zoomIn', (event) => {
+  //Select active browserview
+  var tab = tabList.find(tab => tab.isActive === true);
+  var zoomLevel = tab.browserView.webContents.getZoomLevel();
+  tab.browserView.webContents.setZoomLevel(zoomLevel+1);
+  removeMenusOverlay();
+})
+
+ipcMain.on('zoomOut', (event) => {
+  //Select active browserview
+  var tab = tabList.find(tab => tab.isActive === true);
+  var zoomLevel = tab.browserView.webContents.getZoomLevel();
+  tab.browserView.webContents.setZoomLevel(zoomLevel-1);
+  removeMenusOverlay();
+})
+
+ipcMain.on('resetZoomLevel', (event) => {
+  //Select active browserview
+  var tab = tabList.find(tab => tab.isActive === true);
+  tab.browserView.webContents.setZoomLevel(0);
+  removeMenusOverlay();
+})
+
+
 
 ipcMain.on('log', (event,loggedItem) => {
   log.info(event);
