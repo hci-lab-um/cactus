@@ -1,4 +1,4 @@
-const { app, BrowserWindow, BrowserView, ipcMain } = require('electron')
+const { app, BrowserWindow, BrowserView, ipcMain, ipcRenderer } = require('electron')
 const path = require('path')
 const { log } = require('electron-log');
 const { over, remove } = require('lodash');
@@ -6,7 +6,6 @@ const { over, remove } = require('lodash');
 let debugMode = false;
 let mainWindow
 let menusOverlay;
-let browserView;
 let defaultUrl = 'https://cmt3.research.microsoft.com/About';
 let tabList = [];
 
@@ -70,7 +69,7 @@ function createWindow () {
 
 function createBrowserviewInTab(url, properties){
   //Create browser view
-  browserView = new BrowserView({ 
+  let browserView = new BrowserView({ 
     //https://www.electronjs.org/docs/latest/tutorial/security
     webPreferences: {
       nodeIntegrationInWorker: true,
@@ -149,6 +148,11 @@ function createBrowserviewInTab(url, properties){
     mainWindow.webContents.send('browserview-loading-stop', { url: url, title: title });
   });
 
+  browserView.webContents.on('did-navigate', (event, url) => {
+    var tab = tabList.find(tab => tab.isActive === true);
+    tab.browserView.webContents.send('add-to-history', url);
+  });
+
   //React to in-page navigation (e.g. anchor links)
   browserView.webContents.on('did-navigate-in-page', (event, url) => {
     const anchorTag = url.split('#')[1];
@@ -183,15 +187,18 @@ app.on('activate', () => {
 })
 
 ipcMain.on('browse-to-url', (event, url) => {
-  browserView.webContents.loadURL(url);
+  var tab = tabList.find(tab => tab.isActive === true);
+  tab.browserView.webContents.loadURL(url);
 });
 
 ipcMain.on('browserViewScrollDown', () => {
-  browserView.webContents.send('browserViewScrollDown');
+  var tab = tabList.find(tab => tab.isActive === true);
+  tab.browserView.webContents.send('browserViewScrollDown');
 });
 
 ipcMain.on('browserViewScrollUp', () => {
-  browserView.webContents.send('browserViewScrollUp');
+  var tab = tabList.find(tab => tab.isActive === true);
+  tab.browserView.webContents.send('browserViewScrollUp');
 });
 
 // ipcMain.on('scrollingCompleted', () => {
@@ -199,7 +206,32 @@ ipcMain.on('browserViewScrollUp', () => {
 // })
 
 ipcMain.on('initiateInteractiveElementClickEvent', (event, elementToClick) => {
-  browserView.webContents.send('clickElement', elementToClick);
+  var tab = tabList.find(tab => tab.isActive === true);
+  //Once the main page is loaded, create inner browserview and place it in the right position by getting the x,y,width,height of a positioned element in index.html
+  mainWindow.webContents.executeJavaScript(`
+    (() => {
+      const element = document.querySelector('#webpage');
+      if (element) {
+        const rect = element.getBoundingClientRect();
+        return {
+          x: rect.left,
+          y: rect.top,
+          width: rect.width,
+          height: rect.height
+        };
+      } else {
+        return null;
+      }
+    })()
+  `)
+  .then(properties => {
+    tab.browserView.webContents.send('clickElement', elementToClick, properties.x, properties.y);
+  })
+  .catch(err =>
+  {
+    log.error(err);
+  }); 
+
 })
 
 ipcMain.on('foundElementsInMouseRange', (event, elements) => {
@@ -299,6 +331,20 @@ ipcMain.on('hideScrollUp', () => {
 
 ipcMain.on('showScrollUp', () => {
   mainWindow.webContents.send('showScrollUp')
+})
+
+ipcMain.on('go-back', () => {
+  //Select active browserview
+  var tab = tabList.find(tab => tab.isActive === true);
+  tab.browserView.webContents.goBack();
+  menusOverlay.webContents.send('can-go-back', tab.browserView.webContents.canGoBack());
+})
+
+ipcMain.on('go-forward', () => {
+  //Select active browserview
+  var tab = tabList.find(tab => tab.isActive === true);
+  tab.browserView.webContents.goForward();
+  menusOverlay.webContents.send('can-go-forward', tab.browserView.webContents.canGoForward());
 })
 
 ipcMain.on('log', (event,loggedItem) => {

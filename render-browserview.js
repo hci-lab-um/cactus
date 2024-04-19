@@ -1,6 +1,7 @@
 const { ipcRenderer }           = require('electron')
 const { createCursor, followCursor } = require('./js/cursor')
 const { scrollBy } = require('./js/utils')
+const { mouse, Point, straightTo, Button } = require("@nut-tree/nut-js");
 //const { byId, readFile, dwell } = require('./js/utils')
 const { QuadtreeBuilder, InteractiveElement, PageDocument, Options, Range } = require('cactus-quadtree-builder')
 
@@ -178,24 +179,28 @@ function checkScrollers()
   }
 }
 
-ipcRenderer.on('clickElement', (event, elementToClick) => {
-  try {
-    // Find the element at the specified x,y coordinates
-    const element = document.elementFromPoint(elementToClick.insertionPointX, elementToClick.insertionPointY);
-    // Create a new MouseEvent object for the click event
-    const clickEvent = new MouseEvent('click', {
-        clientX: elementToClick.insertionPointX,
-        clientY: elementToClick.insertionPointY,
-        bubbles: true,
-        cancelable: true
-    });
-    // Dispatch the click event on the element
-    element.dispatchEvent(clickEvent);
-  }
-  catch(err) {
+ipcRenderer.on('clickElement', (event, elementToClick, offsetX, offsetY) => {
+    mouse.move(straightTo(new Point(offsetX + elementToClick.insertionPointX, offsetY+50 + elementToClick.insertionPointY)));
+    mouse.click(Button.LEFT);
     
-  }
+    // // Find the element at the specified x,y coordinates
+    // const element = document.elementFromPoint(elementToClick.insertionPointX, elementToClick.insertionPointY);
+    
+    // // Create a new MouseEvent object for the click event
+    // const clickEvent = new MouseEvent('click', {
+    //     clientX: elementToClick.insertionPointX,
+    //     clientY: elementToClick.insertionPointY,
+    //     bubbles: true,
+    //     cancelable: true
+    // });
+    // // Dispatch the click event on the element
+    // element.dispatchEvent(clickEvent);
 });
+
+ipcRenderer.on('add-to-history', (event, url) => {
+  // Add the new URL to the browser history
+  history.pushState({}, '', url);
+})
 
 ipcRenderer.on('create-quadtree', () => {
   //ISSUES: Node-Config is required by Cactus, and the config/default.json file would need to be recreated on cactus itself, rather than just the builder code. Which might not be a bad idea. Think about it.

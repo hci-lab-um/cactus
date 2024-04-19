@@ -86,9 +86,23 @@ function setEventHandlersForNavigationMenu(){
     ipcRenderer.send('remove-overlay');
   })
 
-  // dwell(backNavBtn, goBack)
+  dwell(backNavBtn, () => {
+    ipcRenderer.send('go-back');
+    ipcRenderer.send('remove-overlay');
+  });
 
-  // dwell(forwardNavBtn, goForward)
+  dwell(forwardNavBtn, () => {
+    ipcRenderer.send('go-forward');
+    ipcRenderer.send('remove-overlay');
+  });
+  
+  ipcRenderer.on('can-go-back', (event, canGoBack) => {
+    backNavBtn.style.display = canGoBack ? 'flex' : 'none';
+  })
+
+  ipcRenderer.on('can-go-forward', (event, canGoForward) => {
+    forwardNavBtn.style.display = canGoForward ? 'flex' : 'none';
+  })
 }
 
 var _browser_zoomLevel = 0
