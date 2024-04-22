@@ -3,7 +3,7 @@ const path = require('path')
 const { log } = require('electron-log');
 const { over, remove } = require('lodash');
 
-let debugMode = false;
+let debugMode = true;
 let mainWindow
 let menusOverlay;
 let defaultUrl = 'https://google.com/search?q=cats';
@@ -186,14 +186,14 @@ ipcMain.on('browse-to-url', (event, url) => {
   tab.browserView.webContents.loadURL(url);
 });
 
-ipcMain.on('browserViewScrollDown', () => {
+ipcMain.on('ipc-mainwindow-scrolldown', () => {
   var tab = tabList.find(tab => tab.isActive === true);
-  tab.browserView.webContents.send('browserViewScrollDown');
+  tab.browserView.webContents.send('ipc-browserview-scrolldown');
 });
 
-ipcMain.on('browserViewScrollUp', () => {
+ipcMain.on('ipc-mainwindow-scrollup', () => {
   var tab = tabList.find(tab => tab.isActive === true);
-  tab.browserView.webContents.send('browserViewScrollUp');
+  tab.browserView.webContents.send('ipc-browserview-scrollup');
 });
 
 // ipcMain.on('scrollingCompleted', () => {
@@ -229,8 +229,8 @@ ipcMain.on('initiateInteractiveElementClickEvent', (event, elementToClick) => {
 
 })
 
-ipcMain.on('foundElementsInMouseRange', (event, elements) => {
-  mainWindow.webContents.send('renderElementsInSideBar', elements)
+ipcMain.on('ipc-browserview-elements-in-mouserange', (event, elements) => {
+  mainWindow.webContents.send('ipc-mainwindow-sidebar-render-elements', elements)
 })
 
 ipcMain.on('show-overlay', (event, overlayAreaToShow) => {
@@ -328,18 +328,18 @@ ipcMain.on('showScrollUp', () => {
   mainWindow.webContents.send('showScrollUp')
 })
 
-ipcMain.on('go-back', () => {
+ipcMain.on('ipc-overlays-back', () => {
   //Select active browserview
   var tab = tabList.find(tab => tab.isActive === true);
-  tab.browserView.webContents.send('browserViewGoBack');
-  // menusOverlay.webContents.send('can-go-forward', tab.browserView.webContents.canGoForward());
+  tab.browserView.webContents.send('ipc-browserview-back');
+  // menusOverlay.webContents.send('ipc-overlays-back-check', tab.browserView.webContents.canGoForward());
 })
 
-ipcMain.on('go-forward', () => {
+ipcMain.on('ipc-overlays-forward', () => {
   //Select active browserview
   var tab = tabList.find(tab => tab.isActive === true);
-  tab.browserView.webContents.send('browserViewGoForward');
-  // menusOverlay.webContents.send('can-go-forward', tab.browserView.webContents.canGoForward());
+  tab.browserView.webContents.send('ipc-browserview-forward');
+  // menusOverlay.webContents.send('ipc-overlays-forward-check', tab.browserView.webContents.canGoForward());
 })
 
 ipcMain.on('zoomIn', (event) => {

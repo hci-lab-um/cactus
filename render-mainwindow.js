@@ -37,9 +37,9 @@ ipcRenderer.on('mainWindowLoaded', () => {
 
   function setupCursor(){
     //Setup cursor on main window view
-    createCursor('cursor');
-    cursor = document.getElementById('cursor');
-    followCursor('cursor');
+    createCursor('cactus_cursor');
+    cursor = document.getElementById('cactus_cursor');
+    followCursor('cactus_cursor');
 
     //Get reference to browserViewContainer
     navbar = byId('navbar')
@@ -102,7 +102,7 @@ function setupScrollers(){
 
     // Start a new interval to execute the code every one second
     timeoutScroll = setInterval(function() {
-      ipcRenderer.send('browserViewScrollUp');
+      ipcRenderer.send('ipc-mainwindow-scrollup');
     }, 1000); // 1000 milliseconds = 1 second
     
   }
@@ -118,7 +118,7 @@ function setupScrollers(){
 
     // Start a new interval to execute the code every one second
     timeoutScroll = setInterval(function() {
-      ipcRenderer.send('browserViewScrollDown');
+      ipcRenderer.send('ipc-mainwindow-scrolldown');
     }, 1000); // 1000 milliseconds = 1 second
     
   }
@@ -134,7 +134,7 @@ function setupScrollers(){
 // =================================
 // ==== Sidebar element management ====
 // =================================
-ipcRenderer.on('renderElementsInSideBar', (event, elements) => {
+ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
   let sidebar = byId('sidebar_items');
   if (elements.length > 0)
   {

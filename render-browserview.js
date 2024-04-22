@@ -94,23 +94,58 @@ ipcRenderer.on('browserViewLoaded', () => {
   generateQuadTree();
   
   //Create cursor
-  createCursor('cursor');
-  cursor = document.getElementById('cursor');
-  followCursor('cursor');
+  createCursor('cactus_cursor');
+  cursor = document.getElementById('cactus_cursor');
+  followCursor('cactus_cursor');
 
 
   //EXPERIMENTAL - JS EVENTS (E.g. click on tab element, does not fire up (although it's firing up changes in quick succession when banners change etc...) - to test properly)
   //Set mutation observer - and re-generate quadtree on mutations
-  const observer = new MutationObserver((mutationsList, observer) => {
-    for(const mutation of mutationsList) {
-      if (mutation.type === 'subtree') { //childlist was firing up too many events... this might not work as expected.
+
+  //Consdier this: https://kasp9023.medium.com/easily-observe-changes-in-dom-tree-with-mutationobserver-api-1c27cbc3ea7e
+  // const observer = new MutationObserver((mutationsList, observer) => {
+  //   for(const mutation of mutationsList) {
+  //     if (mutation.type === 'subtree') { //childlist was firing up too many events... this might not work as expected.
+  //       generateQuadTree();
+  //     }
+  //   }
+  // });
+  // const config = { attributes: true, childList: true, subtree: true };
+  // observer.observe(document.body, config);
+  
+  let mutationObserverCallbackExecuting = false;
+  // Create an observer instance linked to the callback function
+  const observer = new MutationObserver((mutationsList, observer) => { 
+    // If callback is already executing, ignore this invocation
+    if (mutationObserverCallbackExecuting) return;
+    
+    // Iterate through the list of mutations, and only generate quadTrees when not custom Cursor related (debounce every x ms to avoid too many quadtree gen calls)
+    for(let mutation of mutationsList) {
+      if (mutation.target.id != 'cactus_cursor')
+      {
+        //Indicate callback execution
+        mutationObserverCallbackExecuting = true;
+        
+        //Execute quadtree generation
         generateQuadTree();
+        
+        //Reset flag to allow next callback execution on x ms
+        setTimeout(() => {
+          mutationObserverCallbackExecuting = false;
+        }, 1000);
+        break;
       }
     }
   });
-  
-  const config = { attributes: true, childList: true, subtree: true };
-  observer.observe(document.body, config);
+
+  const observerOptions = {
+    attributes: true,
+    childList: true,
+    subtree: true,
+  };
+  // Start observing the target node for configured mutations
+  observer.observe(document.body, observerOptions);
+
 
   //Handle mouse behaviour on browserview
   browserView = document.getRootNode();
@@ -141,7 +176,7 @@ ipcRenderer.on('browserViewLoaded', () => {
             }
         });
         
-        ipcRenderer.send('foundElementsInMouseRange', uniqueInteractiveElementsInQueryRange);
+        ipcRenderer.send('ipc-browserview-elements-in-mouserange', uniqueInteractiveElementsInQueryRange);
       }, 500);
     }
   })
@@ -154,25 +189,25 @@ ipcRenderer.on('browserViewLoaded', () => {
   })
 });
 
-ipcRenderer.on('browserViewScrollDown', () => {
+ipcRenderer.on('ipc-browserview-scrolldown', () => {
   scrollBy(0, 100);
   setTimeout(function() {
     generateQuadTree();  
   }, 500);
 })
 
-ipcRenderer.on('browserViewScrollUp', () => {
+ipcRenderer.on('ipc-browserview-scrollup', () => {
   scrollBy(0, -100);
   setTimeout(function() {
     generateQuadTree();  
   }, 500);
 })
 
-ipcRenderer.on('browserViewGoBack', () => {
+ipcRenderer.on('ipc-browserview-back', () => {
   window.history.back();
 });
 
-ipcRenderer.on('browserViewGoForward', () => {
+ipcRenderer.on('ipc-browserview-forward', () => {
   window.history.forward();
 });
 

@@ -3,8 +3,8 @@ const { byId, dwell } = require('./js/utils')
 const { createCursor, followCursor } = require('./js/cursor')
 
 ipcRenderer.on('overlayMenusLoaded', (event, overlayToShow) => {
-    createCursor('cursor');
-    followCursor('cursor');
+    createCursor('cactus_cursor');
+    followCursor('cactus_cursor');
     
     switch(overlayToShow){
       case 'omni': {
@@ -118,20 +118,20 @@ function setEventHandlersForNavigationMenu(){
   })
 
   dwell(backNavBtn, () => {
-    ipcRenderer.send('go-back');
+    ipcRenderer.send('ipc-overlays-back');
     ipcRenderer.send('remove-overlay');
   });
 
   dwell(forwardNavBtn, () => {
-    ipcRenderer.send('go-forward');
+    ipcRenderer.send('ipc-overlays-forward');
     ipcRenderer.send('remove-overlay');
   });
   
-  ipcRenderer.on('can-go-back', (event, canGoBack) => {
+  ipcRenderer.on('ipc-overlays-back-check', (event, canGoBack) => {
     backNavBtn.style.display = canGoBack ? 'flex' : 'none';
   })
 
-  ipcRenderer.on('can-go-forward', (event, canGoForward) => {
+  ipcRenderer.on('ipc-overlays-forward-check', (event, canGoForward) => {
     forwardNavBtn.style.display = canGoForward ? 'flex' : 'none';
   })
 }
