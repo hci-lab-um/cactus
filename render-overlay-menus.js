@@ -2,7 +2,7 @@ const { ipcRenderer }           = require('electron')
 const { byId, dwell } = require('./js/utils')
 const { createCursor, followCursor } = require('./js/cursor')
 
-ipcRenderer.on('overlayMenusLoaded', (event, overlayToShow) => {
+ipcRenderer.on('ipc-main-overlays-loaded', (event, overlayToShow) => {
     createCursor('cactus_cursor');
     followCursor('cactus_cursor');
     
@@ -42,7 +42,7 @@ function setEventHandlersForOmniMenu(){
   const inputSearchBox = byId('searchText')
 
   dwell(cancelOmniBtn, () => {
-    ipcRenderer.send('remove-overlay');
+    ipcRenderer.send('ipc-overlays-remove');
   })
 }
 
@@ -58,19 +58,19 @@ function setEventHandlersForAccessibilityMenu() {
   const cancelOptionsBtn = byId('cancel-options')
   
   dwell(zoomInBtn, () => {
-    ipcRenderer.send('zoomIn');
+    ipcRenderer.send('ipc-overlays-zoom-in');
   })
 
   dwell(zoomOutBtn, () => {
-    ipcRenderer.send('zoomOut');
+    ipcRenderer.send('ipc-overlays-zoom-out');
   })
 
   dwell(resetZoomBtn, () => {
-    ipcRenderer.send('resetZoomLevel'); 
+    ipcRenderer.send('ipc-overlays-zoom-reset'); 
   })
 
   dwell(cancelOptionsBtn, () => {
-    ipcRenderer.send('remove-overlay');
+    ipcRenderer.send('ipc-overlays-remove');
   })
 }
 
@@ -114,17 +114,17 @@ function setEventHandlersForNavigationMenu(){
   // })
 
   dwell(cancelNavBtn, () => {
-    ipcRenderer.send('remove-overlay');
+    ipcRenderer.send('ipc-overlays-remove');
   })
 
   dwell(backNavBtn, () => {
     ipcRenderer.send('ipc-overlays-back');
-    ipcRenderer.send('remove-overlay');
+    ipcRenderer.send('ipc-overlays-remove');
   });
 
   dwell(forwardNavBtn, () => {
     ipcRenderer.send('ipc-overlays-forward');
-    ipcRenderer.send('remove-overlay');
+    ipcRenderer.send('ipc-overlays-remove');
   });
   
   ipcRenderer.on('ipc-overlays-back-check', (event, canGoBack) => {

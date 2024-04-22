@@ -89,7 +89,7 @@ function highlightArea(x, y, width, height) {
   document.body.appendChild(point);
 }
 
-ipcRenderer.on('browserViewLoaded', () => {
+ipcRenderer.on('ipc-main-browserview-loaded', () => {
   //Create tree on visible elements
   generateQuadTree();
   
@@ -215,19 +215,19 @@ function checkScrollers()
 {
    //Hide scrollbar when at the very top
    if (!window.scrollY) {
-    ipcRenderer.send('hideScrollUp')
+    ipcRenderer.send('ipc-browserview-scroll-up-hide')
   } else {
-    ipcRenderer.send('showScrollUp')
+    ipcRenderer.send('ipc-browserview-scroll-up-show')
   }
 }
 
-ipcRenderer.on('clickElement', async (event, elementToClick, offsetX, offsetY) => {
+ipcRenderer.on('ipc-browserview-click-element', async (event, elementToClick) => {
     // Find the element at the specified x,y coordinates
     const element = document.elementFromPoint(elementToClick.insertionPointX, elementToClick.insertionPointY);
     element.click();
 });
 
-ipcRenderer.on('create-quadtree', () => {
+ipcRenderer.on('ipc-browserview-create-quadtree', () => {
   //ISSUES: Node-Config is required by Cactus, and the config/default.json file would need to be recreated on cactus itself, rather than just the builder code. Which might not be a bad idea. Think about it.
   generateQuadTree();    
 })

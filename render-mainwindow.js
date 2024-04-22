@@ -80,19 +80,19 @@ function setupScrollers(){
   scrollUpBtn = byId('scroll-up')
   scrollDownBtn = byId('scroll-down')
 
-  ipcRenderer.on('hideScrollUp', () => {
+  ipcRenderer.on('ipc-mainwindow-scroll-up-hide', () => {
     scrollUpBtn.style.display = 'none'
   })
 
-  ipcRenderer.on('showScrollUp', () => {
+  ipcRenderer.on('ipc-mainwindow-scroll-up-show', () => {
     scrollUpBtn.style.display = 'flex'
   })
 
-  ipcRenderer.on('hideScrollDown', () => {
+  ipcRenderer.on('ipc-mainwindow-scroll-down-hide', () => {
     scrollDownBtn.style.display = 'none'
   })
 
-  ipcRenderer.on('showScrollDown', () => {
+  ipcRenderer.on('ipc-mainwindow-scroll-down-show', () => {
     scrollDownBtn.style.display = 'flex'
   })
 
@@ -188,7 +188,7 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
             const dataIdValue = parseInt(sidebarItems[i].getAttribute('id'));
             const elementToClick = elements.filter(e => e.id == dataIdValue);
             if (elementToClick)
-              ipcRenderer.send('initiateInteractiveElementClickEvent', elementToClick[0]);
+              ipcRenderer.send('ipc-mainwindow-click-sidebar-element', elementToClick[0]);
           })
         })(i)
       }
@@ -343,7 +343,7 @@ function hideAllOverlays() {
 
 // ======== SHOW ALL OVERLAYS ========
 function showOmniOverlay(overlayAreaToShow) {
-  ipcRenderer.send('show-overlay', overlayAreaToShow);
+  ipcRenderer.send('ipc-mainwindow-show-overlay', overlayAreaToShow);
   // const overlayOmnibox = byId('overlay-omnibox');
   // overlayOmnibox.style.display = 'grid'
 

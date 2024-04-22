@@ -109,7 +109,7 @@ function createBrowserviewInTab(url, properties){
   //Once the DOM is ready, send a message to initiate some further logic
   browserView.webContents.on('dom-ready', () => {
     // This event fires when the BrowserView is attached
-    browserView.webContents.send('browserViewLoaded');
+    browserView.webContents.send('ipc-main-browserview-loaded');
     browserView.webContents.insertCSS(`
       html, body { overflow-x: hidden; } 
       a, input, button, div { cursor: none; }
@@ -152,7 +152,7 @@ function createBrowserviewInTab(url, properties){
   browserView.webContents.on('did-navigate-in-page', (event, url) => {
     const anchorTag = url.split('#')[1];
     if (anchorTag) {
-      browserView.webContents.send('create-quadtree');
+      browserView.webContents.send('ipc-browserview-create-quadtree');
     }
   });
 
@@ -196,36 +196,14 @@ ipcMain.on('ipc-mainwindow-scrollup', () => {
   tab.browserView.webContents.send('ipc-browserview-scrollup');
 });
 
-// ipcMain.on('scrollingCompleted', () => {
-//   browserView.webContents.send('create-quadtree');
+// ipcMain.on('ipc-mainwindow-scrolling-complete', () => {
+//   browserView.webContents.send('ipc-browserview-create-quadtree');
 // })
 
-ipcMain.on('initiateInteractiveElementClickEvent', (event, elementToClick) => {
+ipcMain.on('ipc-mainwindow-click-sidebar-element', (event, elementToClick) => {
   var tab = tabList.find(tab => tab.isActive === true);
   //Once the main page is loaded, create inner browserview and place it in the right position by getting the x,y,width,height of a positioned element in index.html
-  mainWindow.webContents.executeJavaScript(`
-    (() => {
-      const element = document.querySelector('#webpage');
-      if (element) {
-        const rect = element.getBoundingClientRect();
-        return {
-          x: rect.left,
-          y: rect.top,
-          width: rect.width,
-          height: rect.height
-        };
-      } else {
-        return null;
-      }
-    })()
-  `)
-  .then(properties => {
-    tab.browserView.webContents.send('clickElement', elementToClick, properties.x, properties.y);
-  })
-  .catch(err =>
-  {
-    log.error(err);
-  }); 
+  tab.browserView.webContents.send('ipc-browserview-click-element', elementToClick);
 
 })
 
@@ -233,7 +211,7 @@ ipcMain.on('ipc-browserview-elements-in-mouserange', (event, elements) => {
   mainWindow.webContents.send('ipc-mainwindow-sidebar-render-elements', elements)
 })
 
-ipcMain.on('show-overlay', (event, overlayAreaToShow) => {
+ipcMain.on('ipc-mainwindow-show-overlay', (event, overlayAreaToShow) => {
   createMenuOverlay(overlayAreaToShow);
 })
 
@@ -244,7 +222,7 @@ function removeMenusOverlay() {
     menusOverlay = null;
   }
 }
-ipcMain.on('remove-overlay', () =>{
+ipcMain.on('ipc-overlays-remove', () =>{
   removeMenusOverlay();
 })
 
@@ -300,7 +278,7 @@ function createMenuOverlay(overlayAreaToShow)
         //Load the default home page
         menusOverlay.webContents.loadURL(path.join(__dirname, '/overlays.html'));
         mainWindow.setTopBrowserView(menusOverlay)
-        menusOverlay.webContents.send('overlayMenusLoaded', overlayAreaToShow)
+        menusOverlay.webContents.send('ipc-main-overlays-loaded', overlayAreaToShow)
         if (debugMode) menusOverlay.webContents.openDevTools();
     })
 }
@@ -320,12 +298,12 @@ function createMenuOverlay(overlayAreaToShow)
 //   mainWindow.webContents.send('closeBookmarks', message)
 // })
 
-ipcMain.on('hideScrollUp', () => {
-  mainWindow.webContents.send('hideScrollUp')
+ipcMain.on('ipc-browserview-scroll-up-hide', () => {
+  mainWindow.webContents.send('ipc-mainwindow-scroll-up-hide')
 })
 
-ipcMain.on('showScrollUp', () => {
-  mainWindow.webContents.send('showScrollUp')
+ipcMain.on('ipc-browserview-scroll-up-show', () => {
+  mainWindow.webContents.send('ipc-mainwindow-scroll-up-show')
 })
 
 ipcMain.on('ipc-overlays-back', () => {
@@ -342,7 +320,7 @@ ipcMain.on('ipc-overlays-forward', () => {
   // menusOverlay.webContents.send('ipc-overlays-forward-check', tab.browserView.webContents.canGoForward());
 })
 
-ipcMain.on('zoomIn', (event) => {
+ipcMain.on('ipc-overlays-zoom-in', (event) => {
   //Select active browserview
   var tab = tabList.find(tab => tab.isActive === true);
   var zoomLevel = tab.browserView.webContents.getZoomLevel();
@@ -350,7 +328,7 @@ ipcMain.on('zoomIn', (event) => {
   removeMenusOverlay();
 })
 
-ipcMain.on('zoomOut', (event) => {
+ipcMain.on('ipc-overlays-zoom-out', (event) => {
   //Select active browserview
   var tab = tabList.find(tab => tab.isActive === true);
   var zoomLevel = tab.browserView.webContents.getZoomLevel();
@@ -358,7 +336,7 @@ ipcMain.on('zoomOut', (event) => {
   removeMenusOverlay();
 })
 
-ipcMain.on('resetZoomLevel', (event) => {
+ipcMain.on('ipc-overlays-zoom-reset', (event) => {
   //Select active browserview
   var tab = tabList.find(tab => tab.isActive === true);
   tab.browserView.webContents.setZoomLevel(0);
