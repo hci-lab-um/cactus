@@ -1,6 +1,6 @@
 // const fs                        = require('original-fs')
 // const path                      = require('path')
-const { ipcRenderer }           = require('electron')
+const { ipcRenderer } = require('electron')
 const { byId, dwell } = require('../../tools/utils')
 // const { byId, readFile, dwell } = require('./js/utils')
 // const { drop, isEqual }         = require('lodash')
@@ -17,116 +17,116 @@ const { createCursor, followCursor } = require('../../tools/cursor')
 // let omni = byId('url')
 
 let omni, navbar, sidebar, scrollbar
-let cursor 
+let cursor
 let scrollUpBtn, scrollDownBtn
 let timeoutScroll
 
 ipcRenderer.on('mainWindowLoaded', () => {
 
-  //Setup cursors
-  setupCursor();
-  //Setup scrollers
-  setupScrollers();
-  //Setup browser functionality events 
-  setupFunctionality();
+	//Setup cursors
+	setupCursor();
+	//Setup scrollers
+	setupScrollers();
+	//Setup browser functionality events 
+	setupFunctionality();
 })
 
-  // =================================
-  // ==== Cursor management ====
-  // =================================
+// =================================
+// ==== Cursor management ====
+// =================================
 
-  function setupCursor(){
-    //Setup cursor on main window view
-    createCursor('cactus_cursor');
-    cursor = document.getElementById('cactus_cursor');
-    followCursor('cactus_cursor');
+function setupCursor() {
+	//Setup cursor on main window view
+	createCursor('cactus_cursor');
+	cursor = document.getElementById('cactus_cursor');
+	followCursor('cactus_cursor');
 
-    //Get reference to browserViewContainer
-    navbar = byId('navbar')
-    sidebar = byId('sidebar')
-    scrollbar = byId('scrollbar')
-    
-    navbar.addEventListener('mouseout', () => {
-      cursor.style.visibility = 'hidden'
-    })
+	//Get reference to browserViewContainer
+	navbar = byId('navbar')
+	sidebar = byId('sidebar')
+	scrollbar = byId('scrollbar')
 
-    navbar.addEventListener('mouseover', () => {
-      cursor.style.visibility = 'visible'
-    })
+	navbar.addEventListener('mouseout', () => {
+		cursor.style.visibility = 'hidden'
+	})
 
-    sidebar.addEventListener('mouseout', () => {
-      cursor.style.visibility = 'hidden'
-    })
+	navbar.addEventListener('mouseover', () => {
+		cursor.style.visibility = 'visible'
+	})
 
-    sidebar.addEventListener('mouseover', () => {
-      cursor.style.visibility = 'visible'
-    })
+	sidebar.addEventListener('mouseout', () => {
+		cursor.style.visibility = 'hidden'
+	})
 
-    scrollbar.addEventListener('mouseout', () => {
-      cursor.style.visibility = 'hidden'
-    })
+	sidebar.addEventListener('mouseover', () => {
+		cursor.style.visibility = 'visible'
+	})
 
-    scrollbar.addEventListener('mouseover', () => {
-      cursor.style.visibility = 'visible'
-    })
-  }
-  
+	scrollbar.addEventListener('mouseout', () => {
+		cursor.style.visibility = 'hidden'
+	})
 
-  // =================================
-  // ==== Scrolling Functionality ====
-  // =================================
+	scrollbar.addEventListener('mouseover', () => {
+		cursor.style.visibility = 'visible'
+	})
+}
 
-function setupScrollers(){
-  scrollUpBtn = byId('scroll-up')
-  scrollDownBtn = byId('scroll-down')
 
-  ipcRenderer.on('ipc-mainwindow-scroll-up-hide', () => {
-    scrollUpBtn.style.display = 'none'
-  })
+// =================================
+// ==== Scrolling Functionality ====
+// =================================
 
-  ipcRenderer.on('ipc-mainwindow-scroll-up-show', () => {
-    scrollUpBtn.style.display = 'flex'
-  })
+function setupScrollers() {
+	scrollUpBtn = byId('scroll-up')
+	scrollDownBtn = byId('scroll-down')
 
-  ipcRenderer.on('ipc-mainwindow-scroll-down-hide', () => {
-    scrollDownBtn.style.display = 'none'
-  })
+	ipcRenderer.on('ipc-mainwindow-scroll-up-hide', () => {
+		scrollUpBtn.style.display = 'none'
+	})
 
-  ipcRenderer.on('ipc-mainwindow-scroll-down-show', () => {
-    scrollDownBtn.style.display = 'flex'
-  })
+	ipcRenderer.on('ipc-mainwindow-scroll-up-show', () => {
+		scrollUpBtn.style.display = 'flex'
+	})
 
-  scrollUpBtn.onmouseover = () => {
-    // Clear any existing interval to avoid multiple intervals running simultaneously
-    clearInterval(timeoutScroll);
+	ipcRenderer.on('ipc-mainwindow-scroll-down-hide', () => {
+		scrollDownBtn.style.display = 'none'
+	})
 
-    // Start a new interval to execute the code every one second
-    timeoutScroll = setInterval(function() {
-      ipcRenderer.send('ipc-mainwindow-scrollup');
-    }, 1000); // 1000 milliseconds = 1 second
-    
-  }
+	ipcRenderer.on('ipc-mainwindow-scroll-down-show', () => {
+		scrollDownBtn.style.display = 'flex'
+	})
 
-  scrollUpBtn.onmouseout = () => {
-    // Clear the interval when the mouse leaves the element
-    clearInterval(timeoutScroll);
-  }
+	scrollUpBtn.onmouseover = () => {
+		// Clear any existing interval to avoid multiple intervals running simultaneously
+		clearInterval(timeoutScroll);
 
-  scrollDownBtn.onmouseover = () => {
-    // Clear any existing interval to avoid multiple intervals running simultaneously
-    clearInterval(timeoutScroll);
+		// Start a new interval to execute the code every one second
+		timeoutScroll = setInterval(function () {
+			ipcRenderer.send('ipc-mainwindow-scrollup');
+		}, 1000); // 1000 milliseconds = 1 second
 
-    // Start a new interval to execute the code every one second
-    timeoutScroll = setInterval(function() {
-      ipcRenderer.send('ipc-mainwindow-scrolldown');
-    }, 1000); // 1000 milliseconds = 1 second
-    
-  }
+	}
 
-  scrollDownBtn.onmouseout = () => {
-    // Clear the interval when the mouse leaves the element
-    clearInterval(timeoutScroll);
-  }
+	scrollUpBtn.onmouseout = () => {
+		// Clear the interval when the mouse leaves the element
+		clearInterval(timeoutScroll);
+	}
+
+	scrollDownBtn.onmouseover = () => {
+		// Clear any existing interval to avoid multiple intervals running simultaneously
+		clearInterval(timeoutScroll);
+
+		// Start a new interval to execute the code every one second
+		timeoutScroll = setInterval(function () {
+			ipcRenderer.send('ipc-mainwindow-scrolldown');
+		}, 1000); // 1000 milliseconds = 1 second
+
+	}
+
+	scrollDownBtn.onmouseout = () => {
+		// Clear the interval when the mouse leaves the element
+		clearInterval(timeoutScroll);
+	}
 
 }
 
@@ -135,80 +135,78 @@ function setupScrollers(){
 // ==== Sidebar element management ====
 // =================================
 ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
-  let sidebar = byId('sidebar_items');
-  if (elements.length > 0)
-  {
-    let sidebarItems = document.querySelectorAll('.sidebar_item');
-    const elementIdsToAdd = elements.map((e) => e.id);
-    
-    //Check if element to add already exists and remove it from list, not to add twice
-    const existingInteractiveElementsOnSidebar = [];
-    sidebarItems.forEach(element => {
-      const dataIdValue = parseInt(element.getAttribute('id'));
-      existingInteractiveElementsOnSidebar.push(dataIdValue);
-    });
+	let sidebar = byId('sidebar_items');
+	if (elements.length > 0) {
+		let sidebarItems = document.querySelectorAll('.sidebar_item');
+		const elementIdsToAdd = elements.map((e) => e.id);
 
-    //Remove elements from the list of elements to add - in reverse order, not to affect the iteration
-    for (let i = elements.length - 1; i >= 0; i--) {
-      if (existingInteractiveElementsOnSidebar.includes(elements[i].id)) {
-        elements.splice(i, 1); // Remove element at index i
-      }
-    }
+		//Check if element to add already exists and remove it from list, not to add twice
+		const existingInteractiveElementsOnSidebar = [];
+		sidebarItems.forEach(element => {
+			const dataIdValue = parseInt(element.getAttribute('id'));
+			existingInteractiveElementsOnSidebar.push(dataIdValue);
+		});
 
-    //Remove out of scope elements from sidebar first
-    sidebarItems.forEach(element => {
-      const dataIdValue = parseInt(element.getAttribute('id'));
-      if (!elementIdsToAdd.includes(dataIdValue)) {
-        element.remove();
-      }
-    });    
+		//Remove elements from the list of elements to add - in reverse order, not to affect the iteration
+		for (let i = elements.length - 1; i >= 0; i--) {
+			if (existingInteractiveElementsOnSidebar.includes(elements[i].id)) {
+				elements.splice(i, 1); // Remove element at index i
+			}
+		}
 
-    //Add elements to sidebar
-    const markup = `${elements.map(e =>
-        `<div class='sidebar_item fadeInDown' id='${e.id}'>
-          <div>
-            <div class='sidebar_item_title'>
-              ${e.accessibleName}
-            </div>
-          </div>
-          <div class='sidebar_item_icon'>
-            <i class="fas fa-angle-right"></i>
-          </div>
-        </div>
-        `).join('')}`
-        
-    sidebar.insertAdjacentHTML('afterbegin', markup);
+		//Remove out of scope elements from sidebar first
+		sidebarItems.forEach(element => {
+			const dataIdValue = parseInt(element.getAttribute('id'));
+			if (!elementIdsToAdd.includes(dataIdValue)) {
+				element.remove();
+			}
+		});
 
-    //Attach dwell
-    sidebarItems = document.querySelectorAll('.sidebar_item')
-    if (sidebarItems.length) {
-      for (let i=0; i < sidebarItems.length; i++) {
-        (function(i) {
-          dwell(sidebarItems[i], () => {
-            const dataIdValue = parseInt(sidebarItems[i].getAttribute('id'));
-            const elementToClick = elements.filter(e => e.id == dataIdValue);
-            if (elementToClick)
-              ipcRenderer.send('ipc-mainwindow-click-sidebar-element', elementToClick[0]);
-          })
-        })(i)
-      }
-    }
-  }
-  else
-  {
-    sidebar.innerHTML = "";
-  }
-  //const sidebarItems = document.querySelectorAll('.sidebar_item')
-  // if (sidebarItems.length) {
-  //   for (let i=0; i < sidebarItems.length; i++) {
-  //     (function(i) {
-  //        dwell(sidebarItems[i], () => {
-  //        webview.src = sidebarItems[i].firstElementChild.lastElementChild.getAttribute('data-link')
-  //     })
-  //     })(i)
-  //     // sidebarItems[i].addEventListener('mouseover', getLink)
-  //   }
-  // }
+		//Add elements to sidebar
+		const markup = `${elements.map(e =>
+			`<div class='sidebar_item fadeInDown' id='${e.id}'>
+			<div>
+			<div class='sidebar_item_title'>
+			${e.accessibleName}
+			</div>
+			</div>
+			<div class='sidebar_item_icon'>
+			<i class="fas fa-angle-right"></i>
+			</div>
+			</div>
+			`).join('')}`
+
+		sidebar.insertAdjacentHTML('afterbegin', markup);
+
+		//Attach dwell
+		sidebarItems = document.querySelectorAll('.sidebar_item')
+		if (sidebarItems.length) {
+			for (let i = 0; i < sidebarItems.length; i++) {
+				(function (i) {
+					dwell(sidebarItems[i], () => {
+						const dataIdValue = parseInt(sidebarItems[i].getAttribute('id'));
+						const elementToClick = elements.filter(e => e.id == dataIdValue);
+						if (elementToClick)
+							ipcRenderer.send('ipc-mainwindow-click-sidebar-element', elementToClick[0]);
+					})
+				})(i)
+			}
+		}
+	}
+	else {
+		sidebar.innerHTML = "";
+	}
+	//const sidebarItems = document.querySelectorAll('.sidebar_item')
+	// if (sidebarItems.length) {
+	//   for (let i=0; i < sidebarItems.length; i++) {
+	//     (function(i) {
+	//        dwell(sidebarItems[i], () => {
+	//        webview.src = sidebarItems[i].firstElementChild.lastElementChild.getAttribute('data-link')
+	//     })
+	//     })(i)
+	//     // sidebarItems[i].addEventListener('mouseover', getLink)
+	//   }
+	// }
 
 });
 // webview.addEventListener('dom-ready', () => {
@@ -233,52 +231,51 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
 // dialogSuccessIcon = byId('dialogSuccess')
 
 ipcRenderer.on('browserview-loading-start', () => {
-  omniboxLoadStart();
+	omniboxLoadStart();
 });
 
 ipcRenderer.on('browserview-loading-stop', (event, pageDetails) => {
-  omniboxLoadStop(pageDetails);
+	omniboxLoadStop(pageDetails);
 });
 
 // Sanitises URL
-function sanitiseUrl (event) {
-  let omni = byId('url')
-  if (event.keyCode === 13) {
-      omni.blur();
-      let val = omni.value;
-      let https = val.slice(0, 8).toLowerCase();
-      let http = val.slice(0, 7).toLowerCase();
-      if (https === 'https://') {
-        ipcRenderer.send('browse-to-url', val);
-      } else if (http === 'http://') {
-        ipcRenderer.send('browse-to-url', 'https://'+ val);
-      } else {
-        ipcRenderer.send('browse-to-url', 'https://'+ val);
-      }
-  }
+function sanitiseUrl(event) {
+	let omni = byId('url')
+	if (event.keyCode === 13) {
+		omni.blur();
+		let val = omni.value;
+		let https = val.slice(0, 8).toLowerCase();
+		let http = val.slice(0, 7).toLowerCase();
+		if (https === 'https://') {
+			ipcRenderer.send('browse-to-url', val);
+		} else if (http === 'http://') {
+			ipcRenderer.send('browse-to-url', 'https://' + val);
+		} else {
+			ipcRenderer.send('browse-to-url', 'https://' + val);
+		}
+	}
 }
 
 // =================================
 // ==== Browser Functionality ======
 // =================================
 
-function setupFunctionality()
-{
-  omni = byId('url')
-  dwell(omni, () => {
-    // hideAllOverlays()
-    showOmniOverlay('omni');
-  });
+function setupFunctionality() {
+	omni = byId('url')
+	dwell(omni, () => {
+		// hideAllOverlays()
+		showOmniOverlay('omni');
+	});
 
-  let backOrForward = byId('backOrForwardBtn')
-  dwell(backOrForward, () => {
-    showOmniOverlay('navigation')
-  })
+	let backOrForward = byId('backOrForwardBtn')
+	dwell(backOrForward, () => {
+		showOmniOverlay('navigation')
+	})
 
-  let accessibility = byId('accessibilityBtn')
-  dwell(accessibility, () => {
-    showOmniOverlay('accessibility')
-  })
+	let accessibility = byId('accessibilityBtn')
+	dwell(accessibility, () => {
+		showOmniOverlay('accessibility')
+	})
 }
 
 // function reload() {
@@ -297,75 +294,75 @@ function setupFunctionality()
 // }
 
 const omniboxLoadStart = () => {
-  let loader = byId('loader');
-  let favicon = byId('favicon');
-  let omni = byId('url')
+	let loader = byId('loader');
+	let favicon = byId('favicon');
+	let omni = byId('url')
 
-  favicon.style.display="none";
-  loader.style.display = "block";
-  omni.value = 'Loading..';
+	favicon.style.display = "none";
+	loader.style.display = "block";
+	omni.value = 'Loading..';
 }
 
 const omniboxLoadStop = (pageDetails) => {
-  let loader = byId('loader');
-  let favicon = byId('favicon');
-  let omni = byId('url')
+	let loader = byId('loader');
+	let favicon = byId('favicon');
+	let omni = byId('url')
 
-  favicon.style.display="block"
-  loader.style.display = "none"
-  omni.value = pageDetails.title;
-  omni.addEventListener('click', () => displayOmni(pageDetails.url));
-  omni.addEventListener('blur', () => displayOmni(pageDetails.title));
-  omni.addEventListener('keydown', (event) => sanitiseUrl(event));
+	favicon.style.display = "block"
+	loader.style.display = "none"
+	omni.value = pageDetails.title;
+	omni.addEventListener('click', () => displayOmni(pageDetails.url));
+	omni.addEventListener('blur', () => displayOmni(pageDetails.title));
+	omni.addEventListener('keydown', (event) => sanitiseUrl(event));
 }
 
 function displayOmni(value) {
-  let omni = byId('url')
-  omni.classList.add('fadeOutDown')
-  setTimeout(() => {
-    omni.classList.remove('fadeOutDown')
-    omni.value = value;
-    omni.classList.add('fadeInUp')
-  }, 200);
+	let omni = byId('url')
+	omni.classList.add('fadeOutDown')
+	setTimeout(() => {
+		omni.classList.remove('fadeOutDown')
+		omni.value = value;
+		omni.classList.add('fadeInUp')
+	}, 200);
 }
 
 
 
 // ======== HIDE ALL OVERLAYS ========
 function hideAllOverlays() {
-  const overlayNav = byId('overlay-nav');
-  const overlayOmnibox = byId('overlay-omnibox');
-  const overlayOptions = byId('overlay-options');
-  if (overlayNav) overlayNav.style.display = 'none'
-  if (overlayOmnibox) overlayOmnibox.style.display = 'none'
-  if (overlayOptions) overlayOptions.style.display = 'none'
+	const overlayNav = byId('overlay-nav');
+	const overlayOmnibox = byId('overlay-omnibox');
+	const overlayOptions = byId('overlay-options');
+	if (overlayNav) overlayNav.style.display = 'none'
+	if (overlayOmnibox) overlayOmnibox.style.display = 'none'
+	if (overlayOptions) overlayOptions.style.display = 'none'
 }
 
 // ======== SHOW ALL OVERLAYS ========
 function showOmniOverlay(overlayAreaToShow) {
-  ipcRenderer.send('ipc-mainwindow-show-overlay', overlayAreaToShow);
-  // const overlayOmnibox = byId('overlay-omnibox');
-  // overlayOmnibox.style.display = 'grid'
+	ipcRenderer.send('ipc-mainwindow-show-overlay', overlayAreaToShow);
+	// const overlayOmnibox = byId('overlay-omnibox');
+	// overlayOmnibox.style.display = 'grid'
 
 
-  // =================================
-  // ======== OMNIBOX OVERLAY ========
-  // =================================
-  // const refreshOmniBtn = byId('refreshPageBtn')
-  // const searchOmniBtn = byId('searchBtn')
-  // const bookmarkOmniBtn = byId('bookmarkPageBtn')
-  // const viewBookmarksOmniBtn = byId('showBookmarksBtn')
-  //const cancelOmniBtn = byId('cancel-omni')
-  // const omnibox = byId('omnibox')
-  // const cancelSearchBtn = byId('cancel-search')
-  // const submitSearchBtn = byId('submit-search')
-  // const overlaySearchBox = byId('overlay-search')
-  // const inputSearchBox = byId('searchText')
+	// =================================
+	// ======== OMNIBOX OVERLAY ========
+	// =================================
+	// const refreshOmniBtn = byId('refreshPageBtn')
+	// const searchOmniBtn = byId('searchBtn')
+	// const bookmarkOmniBtn = byId('bookmarkPageBtn')
+	// const viewBookmarksOmniBtn = byId('showBookmarksBtn')
+	//const cancelOmniBtn = byId('cancel-omni')
+	// const omnibox = byId('omnibox')
+	// const cancelSearchBtn = byId('cancel-search')
+	// const submitSearchBtn = byId('submit-search')
+	// const overlaySearchBox = byId('overlay-search')
+	// const inputSearchBox = byId('searchText')
 
-  // dwell(cancelOmniBtn, () => {
-  //   overlayOmnibox.style.display = 'none'
-  //   ipcRenderer.send('show-browserviews');
-  // })
+	// dwell(cancelOmniBtn, () => {
+	//   overlayOmnibox.style.display = 'none'
+	//   ipcRenderer.send('show-browserviews');
+	// })
 
 }
 
@@ -458,7 +455,7 @@ function showOmniOverlay(overlayAreaToShow) {
 //   overlaySearchBox.style.display="none"
 //   webview.loadURL("https://www.bing.com/search?q=" + inputSearchBox.value).then(() => {
 //     console.debug('ok');
-//   }).catch((ex) => 
+//   }).catch((ex) =>
 //     {
 //       console.debug(ex);
 //     });
@@ -468,7 +465,7 @@ function showOmniOverlay(overlayAreaToShow) {
 //   overlaySearchBox.style.display = 'none'
 // })
 
-// // BOOKMARKS 
+// // BOOKMARKS
 // dwell(bookmarkOmniBtn, () => {
 //   let bookmarksPath = path.join(__dirname, 'bookmarks.json')
 //   fs.readFile(bookmarksPath, 'utf8', (err, data) => {
@@ -677,7 +674,7 @@ function showOmniOverlay(overlayAreaToShow) {
 //           </div>
 //         </div>
 //         `).join('')}`
-  
+
 //       sidebar.insertAdjacentHTML('afterbegin', markup);
 //       linksToShow = []
 

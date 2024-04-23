@@ -1,59 +1,59 @@
 {
-  "name": "cactus",
-  "version": "1.0.0",
-  "description": "Gaze Interaction Browser",
-  "main": "app/electron/main.js",
-  "scripts": {
-    "start": "gulp mainCss && gulp webviewCss && gulp bookmarksCss && electron .",
-    "build": "gulp mainCss && gulp webviewCss && gulp bookmarksCss",
-    "dist": "build"
-  },
-  "author": "HCI Lab - Faculty of ICT, University of Malta",
-  "license": "ISC",
-  "build": {
-    "appId": "cactus",
-    "asar": false,
-    "dmg": {
-      "contents": [
-        {
-          "x": 110,
-          "y": 150
-        },
-        {
-          "x": 240,
-          "y": 150,
-          "type": "link",
-          "path": "/Applications"
-        }
-      ]
-    },
-    "linux": {
-      "target": [
-        "AppImage",
-        "deb"
-      ]
-    },
-    "win": {
-      "target": "squirrel",
-      "icon": "build/icon.ico"
-    }
-  },
-  "devDependencies": {
-    "cactus-quadtree-builder": "git+ssh://git@github.com:hci-lab-um/cactus-quadtree-builder.git",
-    "devtron": "^1.4.0",
-    "electron": "^29.1.2",
-    "electron-builder": "^20.39.0",
-    "electron-builder-squirrel-windows": "^21.0.6",
-    "eslint": "^5.15.3",
-    "gulp": "^4.0.2",
-    "gulp-sass": "^5.1.0",
-    "node-sass": "^9.0.0"
-  },
-  "dependencies": {
-    "config": "^3.3.11",
-    "electron-log": "^5.1.2",
-    "lodash": "^4.17.11",
-    "original-fs": "^1.0.0",
-    "path": "^0.12.7"
-  }
+	"name": "cactus",
+	"version": "1.0.0",
+	"description": "Gaze Interaction Browser",
+	"main": "app/electron/main.js",
+	"scripts": {
+		"start": "gulp mainCss && gulp webviewCss && gulp bookmarksCss && electron .",
+		"build": "gulp mainCss && gulp webviewCss && gulp bookmarksCss",
+		"dist": "build"
+	},
+	"author": "HCI Lab - Faculty of ICT, University of Malta",
+	"license": "ISC",
+	"build": {
+		"appId": "cactus",
+		"asar": false,
+		"dmg": {
+			"contents": [
+				{
+					"x": 110,
+					"y": 150
+				},
+				{
+					"x": 240,
+					"y": 150,
+					"type": "link",
+					"path": "/Applications"
+				}
+			]
+		},
+		"linux": {
+			"target": [
+				"AppImage",
+				"deb"
+			]
+		},
+		"win": {
+			"target": "squirrel",
+			"icon": "build/icon.ico"
+		}
+	},
+	"devDependencies": {
+		"cactus-quadtree-builder": "git+ssh://git@github.com:hci-lab-um/cactus-quadtree-builder.git",
+		"devtron": "^1.4.0",
+		"electron": "^29.1.2",
+		"electron-builder": "^20.39.0",
+		"electron-builder-squirrel-windows": "^21.0.6",
+		"eslint": "^5.15.3",
+		"gulp": "^4.0.2",
+		"gulp-sass": "^5.1.0",
+		"node-sass": "^9.0.0"
+	},
+	"dependencies": {
+		"config": "^3.3.11",
+		"electron-log": "^5.1.2",
+		"lodash": "^4.17.11",
+		"original-fs": "^1.0.0",
+		"path": "^0.12.7"
+	}
 }
