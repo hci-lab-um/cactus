@@ -1,8 +1,10 @@
-const { ipcRenderer, webContents }           = require('electron')
+const { ipcRenderer }           = require('electron')
 const { createCursor, followCursor } = require('../../tools/cursor')
 const { scrollBy } = require('../../tools/utils')
 //const { byId, readFile, dwell } = require('./js/utils')
 const { QuadtreeBuilder, InteractiveElement, PageDocument, Options, Range } = require('cactus-quadtree-builder')
+
+const isDevelopment = process.env.NODE_ENV === "development";
 
 let cursor; 
 let browserView;
@@ -55,11 +57,11 @@ function generateQuadTree(){
     //Only in debug mode - show which points are available
     removePreviousPoints();
     //Highlight all elements in view (use the Range approach)
-    // const queryAllElementsInView = new Range(0, 0, pageDocument.documentWidth, pageDocument.documentHeight);
-    // const elementsInQueryRange = qt.queryRange(queryAllElementsInView);
-    // elementsInQueryRange.forEach(ve => {
-    //   highlightArea(ve.x, ve.y, ve.width, ve.height);
-    // });
+    const queryAllElementsInView = new Range(0, 0, pageDocument.documentWidth, pageDocument.documentHeight);
+    const elementsInQueryRange = qt.queryRange(queryAllElementsInView);
+    elementsInQueryRange.forEach(ve => {
+      if (isDevelopment) highlightArea(ve.x, ve.y, ve.width, ve.height);
+    });
   });
 }
 
@@ -211,15 +213,15 @@ ipcRenderer.on('ipc-browserview-forward', () => {
   window.history.forward();
 });
 
-function checkScrollers()
-{
-   //Hide scrollbar when at the very top
-   if (!window.scrollY) {
-    ipcRenderer.send('ipc-browserview-scroll-up-hide')
-  } else {
-    ipcRenderer.send('ipc-browserview-scroll-up-show')
-  }
-}
+// function checkScrollers()
+// {
+//    //Hide scrollbar when at the very top
+//    if (!window.scrollY) {
+//     ipcRenderer.send('ipc-browserview-scroll-up-hide')
+//   } else {
+//     ipcRenderer.send('ipc-browserview-scroll-up-show')
+//   }
+// }
 
 ipcRenderer.on('ipc-browserview-click-element', async (event, elementToClick) => {
     // Find the element at the specified x,y coordinates
