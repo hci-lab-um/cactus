@@ -1,11 +1,11 @@
 // const fs                        = require('original-fs')
 // const path                      = require('path')
 const { ipcRenderer }           = require('electron')
-const { byId, dwell } = require('./js/utils')
+const { byId, dwell } = require('../../tools/utils')
 // const { byId, readFile, dwell } = require('./js/utils')
 // const { drop, isEqual }         = require('lodash')
 // const Config                    = require('./js/config')
-const { createCursor, followCursor } = require('./js/cursor')
+const { createCursor, followCursor } = require('../../tools/cursor')
 
 // let backOrForward, browserviewContainer
 // let cancelNavBtn, backNavBtn, forwardNavBtn, overlayNav

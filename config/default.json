@@ -12,5 +12,15 @@
     },
   "puppeteer": {
       "mode": "new"
+  },
+  "sidebar": {
+    "maxLinks": 6,
+    "urlLength": 30,
+    "titleLength": 60
+  },
+  "dwelling": {
+    "dwellTime": 1500,
+    "rangeWidth": 300,
+    "rangeHeight": 150
   }
 }

@@ -1,7 +1,7 @@
-const config = require('./config')
+const config = require('config');
 const { throttle } = require('lodash')
 
-let dwellTime = config.dwellTime;
+let dwellTime = config.get('dwelling.dwellTime');
 
 module.exports = {
   byId: (id) => {

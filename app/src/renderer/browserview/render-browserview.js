@@ -1,6 +1,6 @@
 const { ipcRenderer, webContents }           = require('electron')
-const { createCursor, followCursor } = require('./js/cursor')
-const { scrollBy } = require('./js/utils')
+const { createCursor, followCursor } = require('../../tools/cursor')
+const { scrollBy } = require('../../tools/utils')
 //const { byId, readFile, dwell } = require('./js/utils')
 const { QuadtreeBuilder, InteractiveElement, PageDocument, Options, Range } = require('cactus-quadtree-builder')
 

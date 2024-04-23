@@ -2,7 +2,7 @@
   "name": "cactus",
   "version": "1.0.0",
   "description": "Gaze Interaction Browser",
-  "main": "main.js",
+  "main": "app/electron/main.js",
   "scripts": {
     "start": "gulp mainCss && gulp webviewCss && gulp bookmarksCss && electron .",
     "build": "gulp mainCss && gulp webviewCss && gulp bookmarksCss",
