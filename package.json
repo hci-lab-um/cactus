@@ -28,6 +28,7 @@
 			]
 		},
 		"linux": {
+			"icon": "/app/resources/logo.png",
 			"target": [
 				"AppImage",
 				"deb"
@@ -35,7 +36,10 @@
 		},
 		"win": {
 			"target": "squirrel",
-			"icon": "build/icon.ico"
+			"icon": "/app/resources/logo.png"
+		},
+		"mac": {
+			"icon": "/app/resources/logo.png"
 		}
 	},
 	"devDependencies": {

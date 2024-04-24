@@ -119,10 +119,9 @@ function createWindow() {
             webPreferences: {
                 nodeIntegrationInWorker: true,
                 contextIsolation: false,
-                preload: path.join(__dirname, '../src/renderer/mainwindow/render-mainwindow.js'),
-                icon: __dirname + '/AppIcon.icns'
+                preload: path.join(__dirname, '../src/renderer/mainwindow/render-mainwindow.js')
             },
-            icon: __dirname + '/AppIcon.icns'
+            icon: path.join(__dirname + '../../resources/logo.png')
         })
 
         mainWindow.maximize();
