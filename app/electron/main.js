@@ -4,14 +4,18 @@ const { log } = require('electron-log');
 
 const isDevelopment = process.env.NODE_ENV === "development";
 
-let mainWindow
+let mainWindow, splashWindow
 let menusOverlay;
-let defaultUrl = 'https://google.com/search?q=cats';
+let defaultUrl = 'https://gov.uk';
 let tabList = [];
 
 // This method is called when Electron has finished initializing
 app.whenReady().then(() => {
-    createWindow();
+    createSplashWindow();
+    // Show splash screen for a short while
+    setTimeout(() => {
+        createMainWindow();
+    }, 2000);
 });
 
 // App closes when all windows are closed, however this is not default behaviour on macOS (applications and their menu bar to stay active)
@@ -112,7 +116,20 @@ ipcMain.on('log', (event, loggedItem) => {
     log.info(loggedItem);
 });
 
-function createWindow() {
+function createSplashWindow() {
+    splashWindow = new BrowserWindow({
+        width: 600,
+        height: 600,
+        transparent: true,
+        frame: false,
+        alwaysOnTop: true
+    });
+
+    // Load the splash screen HTML file
+    splashWindow.loadURL(path.join(__dirname, '../src/pages/splash.html'));
+}
+
+function createMainWindow() {
     try {
         mainWindow = new BrowserWindow({
             //https://www.electronjs.org/docs/latest/tutorial/security
@@ -121,10 +138,12 @@ function createWindow() {
                 contextIsolation: false,
                 preload: path.join(__dirname, '../src/renderer/mainwindow/render-mainwindow.js')
             },
-            icon: path.join(__dirname + '../../resources/logo.png')
+            icon: path.join(__dirname + '../../resources/logo.png'),
+            show: false //until loaded
         })
 
         mainWindow.maximize();
+
         mainWindow.loadURL(path.join(__dirname, '../src/pages/index.html')).then(() => {
             mainWindow.webContents.send('mainWindowLoaded');
             if (isDevelopment) mainWindow.webContents.openDevTools();
@@ -154,7 +173,17 @@ function createWindow() {
                 });
         })
 
-        if (isDevelopment) mainWindow.webContents.openDevTools()
+        // Show the main window when it's ready
+        mainWindow.once('ready-to-show', () => {
+
+            mainWindow.show();
+
+            // Close the splash window once the main window is ready
+            if (splashWindow) {
+                splashWindow.close();
+            }
+            if (isDevelopment) mainWindow.webContents.openDevTools()
+        });
 
         mainWindow.on('closed', () => {
             mainWindow = null
