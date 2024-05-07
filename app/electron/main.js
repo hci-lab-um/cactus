@@ -119,7 +119,7 @@ ipcMain.on('log', (event, loggedItem) => {
 function createSplashWindow() {
     splashWindow = new BrowserWindow({
         width: 600,
-        height: 600,
+        height: 800,
         transparent: true,
         frame: false,
         alwaysOnTop: true

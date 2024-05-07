@@ -1,64 +1,69 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8">
-    <title>CACTUS - Gaze-Native Web Browser</title>
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/webview.css">
-    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
-  </head>
-  <body id="browser">
-    <nav id="navbar">
-      <div id="backOrForwardBtn">
-        <div id="backBtn">
-          <i class="fa fa-arrow-left" aria-hidden="true"></i>
+
+<head>
+  <meta charset="UTF-8">
+  <title>CACTUS - Gaze-Native Web Browser</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/webview.css">
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
+</head>
+
+<body id="browser">
+  <nav id="navbar">
+    <div id="backOrForwardBtn">
+      <div id="backBtn">
+        <i class="fa fa-arrow-left" aria-hidden="true"></i>
+      </div>
+      <div id="forwardBtn">
+        <i class="fa fa-arrow-right" aria-hidden="true"></i>
+      </div>
+    </div>
+
+    <div id="omnibox">
+      <div id="loader"></div>
+      <div id="favicon">
+        <i class="fas fa-check"></i>
+      </div>
+      <input type="text" id="url" placeholder="Loading..">
+    </div>
+
+    <div id="accessibilityBtn">
+      <i class="fas fa-universal-access"></i>
+    </div>
+
+  </nav>
+
+  <div id="views">
+    <div id='browsing-container'>
+      <div id='sidebar'>
+        <div id='sidebar_header'>
+          <div id='sidebar_header_icon'>
+            <span class="fa-stack fa-2x">
+              <i class="fas fa-circle fa-stack-2x"></i>
+              <i class="fas fa-link fa-stack-1x fa-inverse"></i>
+            </span>
+          </div>
+          <div id='sidebar_header_title'>Links</div>
         </div>
-        <div id="forwardBtn">
-          <i class="fa fa-arrow-right" aria-hidden="true"></i>
+        <div id='sidebar_items'>
+          <!-- Links Rendered Here -->
         </div>
       </div>
-
-      <div id="omnibox">
-        <div id="loader"></div>
-        <div id="favicon">
-          <i class="fas fa-check"></i>
+      <div id="webpage" class="webpage"></div>
+      <div id="scrollbar">
+        <div id="scroll-up" class="scrollBtn">
+          <i class="fas fa-chevron-up fa-5x"></i>
         </div>
-        <input type="text" id="url" placeholder="Loading..">
-      </div>
-
-      <div id="accessibilityBtn">
-        <i class="fas fa-universal-access"></i>
-      </div>
-
-    </nav>
-
-    <div id="views">
-      <div id='browsing-container'>
-        <div id='sidebar'>
-          <div id='sidebar_header'>
-            <div id='sidebar_header_icon'>
-              <span class="fa-stack fa-2x">
-                <i class="fas fa-circle fa-stack-2x"></i>
-                <i class="fas fa-link fa-stack-1x fa-inverse"></i>
-              </span>
-            </div>
-            <div id='sidebar_header_title'>Links</div>
-          </div>
-          <div id='sidebar_items'>
-            <!-- Links Rendered Here -->
-          </div>
-        </div>
-        <div id="webpage" class="webpage"></div>
-        <div id="scrollbar">
-          <div id="scroll-up" class="scrollBtn">
-            <i class="fas fa-chevron-up fa-5x"></i>
-          </div>
-          <div id="scroll-down" class="scrollBtn">
-            <i class="fas fa-chevron-down fa-5x"></i>
-          </div>
+        <div id="scroll-down" class="scrollBtn">
+          <i class="fas fa-chevron-down fa-5x"></i>
         </div>
       </div>
     </div>
-    <script defer src="https://use.fontawesome.com/releases/v5.7.2/js/all.js" integrity="sha384-0pzryjIRos8mFBWMzSSZApWtPl/5++eIfzYmTgBBmXYdhvxPc+XcFEk+zJwDgWbP" crossorigin="anonymous"></script>
-  </body>
+  </div>
+  <script defer src="https://use.fontawesome.com/releases/v5.7.2/js/all.js"
+    integrity="sha384-0pzryjIRos8mFBWMzSSZApWtPl/5++eIfzYmTgBBmXYdhvxPc+XcFEk+zJwDgWbP"
+    crossorigin="anonymous"></script>
+</body>
+
 </html>

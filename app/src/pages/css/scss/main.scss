@@ -21,6 +21,26 @@ body {
 }
 
 // ***************************************
+// ********* SPLASH VIEW ************
+// ***************************************
+.splash-container {
+  text-align: center;
+  padding: 30px;
+  background-color: white;
+}
+
+.splash-um-logo {
+  width: 30%;
+  height: auto;
+}
+
+.splash-image {
+  max-width: 80%;
+  height: auto;
+  margin: 0 auto;
+}
+
+// ***************************************
 // ********* BOOKMARKING VIEW ************
 // ***************************************
 
@@ -56,7 +76,7 @@ body {
 }
 
 #sidebar {
-  flex:20%;
+  flex: 20%;
   // grid-column-start: 1;
   top: 0;
   left: 0;
@@ -143,7 +163,7 @@ body {
 
 // *********** MAIN CONTENT **************
 #webpage {
-  flex:70%;
+  flex: 70%;
   // grid-column-start: 2 / span 1;
   top: 0;
   bottom: 0;
@@ -153,7 +173,7 @@ body {
 
 // *********** SCROLLBAR **************
 #scrollbar {
-  flex:10%;
+  flex: 10%;
   top: 0;
   right: 0;
   height: calc(100vh - #{$navHeight});
@@ -198,5 +218,3 @@ body {
   position: fixed;
   bottom: 70px;
 }
-
-
