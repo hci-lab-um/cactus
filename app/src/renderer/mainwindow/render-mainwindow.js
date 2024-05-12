@@ -132,7 +132,7 @@ function setupScrollers() {
 
 
 // =================================
-// ==== Sidebar element management ====
+// == Sidebar element management ===
 // =================================
 ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
 	let sidebar = byId('sidebar_items');
@@ -186,8 +186,14 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
 					dwell(sidebarItems[i], () => {
 						const dataIdValue = parseInt(sidebarItems[i].getAttribute('id'));
 						const elementToClick = elements.filter(e => e.id == dataIdValue);
-						if (elementToClick)
+						if (elementToClick) {
 							ipcRenderer.send('ipc-mainwindow-click-sidebar-element', elementToClick[0]);
+							//Show click event animation and clear sidebar
+							sidebarItems[i].classList.add('fadeOutDown');
+							setTimeout(() => {
+								sidebar.innerHTML = "";
+							}, 300);
+						}
 					})
 				})(i)
 			}
