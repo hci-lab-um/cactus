@@ -11,10 +11,10 @@ module.exports = {
   readFile: (file, callback) => {
     var rawFile = new XMLHttpRequest()
     rawFile.open("GET", file, true)
-  
+
     rawFile.onreadystatechange = () => {
-      if(rawFile.readyState === 4) {
-        if(rawFile.status === 200 || rawFile.status == 0) {
+      if (rawFile.readyState === 4) {
+        if (rawFile.status === 200 || rawFile.status == 0) {
           callback(rawFile.responseText, null)
         }
       }
@@ -27,7 +27,7 @@ module.exports = {
   //   elem.onmouseover = () => {
   //     timeout = setTimeout(callback, dwellTime)
   //   };
-  
+
   //   elem.onmouseout = () => {
   //     clearTimeout(timeout)
   //   }
@@ -56,6 +56,14 @@ module.exports = {
     return '_' + Math.random().toString(36).substr(2, 9)
   },
 
+  generateUUID: () => {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  },
+
   isElementANavElement: element => {
     var parentNav = element.closest('nav')
     var parentRoleNav = element.closest('div[role="navigation"]')
@@ -69,13 +77,13 @@ module.exports = {
     document.body.scrollBy({
       top: amountY,
       left: amountX,
-      behavior : "smooth"
+      behavior: "smooth"
     });
-    
+
     document.documentElement.scrollBy({
-        top: amountY,
-        left: amountX,
-        behavior : "smooth"
-      });
+      top: amountY,
+      left: amountX,
+      behavior: "smooth"
+    });
   }
 }

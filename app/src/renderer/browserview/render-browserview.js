@@ -1,6 +1,6 @@
 const { ipcRenderer } = require('electron')
 const { createCursor, followCursor } = require('../../tools/cursor')
-const { scrollBy } = require('../../tools/utils')
+const { scrollBy, generateUUID } = require('../../tools/utils')
 const config = require('config');
 //const { byId, readFile, dwell } = require('./js/utils')
 const { QuadtreeBuilder, InteractiveElement, PageDocument, Options, Range } = require('cactus-quadtree-builder')
@@ -33,7 +33,7 @@ function filterVisibleElements(elements) {
 	});
 }
 
-function removePreviousPoints() {
+function clearHighlightedElements() {
 	// Remove all previous points with class "point"
 	const previousPoints = document.querySelectorAll('.qtpoint');
 	previousPoints.forEach(point => point.remove());
@@ -45,8 +45,10 @@ function generateQuadTree() {
 	qtBuilder = new QuadtreeBuilder(qtOptions);
 	// Query for elements matching the provided selector
 	const elements = Array.from(document.querySelectorAll('button, a, textarea, input, select, date, div[role="button"], span[role="button"], div[role="link"], span[role="link"], [role="checkbox"], [role="radio"], [role="option"], [role="tab"], [role="menu"], [role="switch"], [role="slider"]'));
-	// Filter the visible elements
+
+	// Filter the visible elements and assign unique ID
 	const visibleElements = filterVisibleElements(elements).map(e => {
+		// e.setAttribute('cactus-id', generateUUID());
 		return InteractiveElement.fromHTMLElement(e);
 	});
 
@@ -54,18 +56,19 @@ function generateQuadTree() {
 	qtBuilder.buildAsync(pageDocument).then((qt) => {
 		currentQt = qt;
 
-		//Only in debug mode - show which points are available
-		removePreviousPoints();
-		//Highlight all elements in view (use the Range approach)
-		const queryAllElementsInView = new Range(0, 0, pageDocument.documentWidth, pageDocument.documentHeight);
-		const elementsInQueryRange = qt.queryRange(queryAllElementsInView);
-		elementsInQueryRange.forEach(ve => {
-			if (isDevelopment) highlightArea(ve.x, ve.y, ve.width, ve.height);
-		});
+		//Only in debug mode - show which points are available for interaction
+		if (isDevelopment) {
+			const viewRange = new Range(0, 0, pageDocument.documentWidth, pageDocument.documentHeight);
+			const elementsInView = qt.queryRange(viewRange);
+			clearHighlightedElements();
+			elementsInView.forEach(ve => {
+				highlightAvailableElements(ve.x, ve.y, ve.width, ve.height);
+			});
+		}
 	});
 }
 
-function highlightArea(x, y, width, height) {
+function highlightAvailableElements(x, y, width, height) {
 	// Create a new div element for the point
 	const point = document.createElement('div');
 
@@ -147,7 +150,7 @@ ipcRenderer.on('ipc-main-browserview-loaded', () => {
 	});
 
 	const observerOptions = {
-		attributes: true,
+		attributes: true, //false might be needed since we're injecting IDs
 		childList: true,
 		subtree: true,
 	};
@@ -182,6 +185,7 @@ ipcRenderer.on('ipc-main-browserview-loaded', () => {
 				elementsInQueryRange.forEach(function (el) {
 					if (!seenElements.has(el.id)) {
 						seenElements.add(el.id);
+						// document.querySelectorAll('[cactus-id="' + el.id + '"]')[0].classList.add('linkVisualise')
 						uniqueInteractiveElementsInQueryRange.push(el);
 					}
 				});

@@ -6,6 +6,7 @@ This project was developed at the University of Malta (HCI Lab) by Daniel Vella,
 
 ## Installation
 
+Node >= 20.11.1
 ```
 1. Download and install node
 2. `cd` into repository
