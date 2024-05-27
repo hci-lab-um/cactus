@@ -143,8 +143,8 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
 		//Check if element to add already exists and remove it from list, not to add twice
 		const existingInteractiveElementsOnSidebar = [];
 		sidebarItems.forEach(element => {
-			const dataIdValue = parseInt(element.getAttribute('id'));
-			existingInteractiveElementsOnSidebar.push(dataIdValue);
+			const elementId = element.getAttribute('id');
+			existingInteractiveElementsOnSidebar.push(elementId);
 		});
 
 		//Remove elements from the list of elements to add - in reverse order, not to affect the iteration
@@ -156,8 +156,8 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
 
 		//Remove out of scope elements from sidebar first
 		sidebarItems.forEach(element => {
-			const dataIdValue = parseInt(element.getAttribute('id'));
-			if (!elementIdsToAdd.includes(dataIdValue)) {
+			const elementId = element.getAttribute('id');
+			if (!elementIdsToAdd.includes(elementId)) {
 				element.remove();
 			}
 		});
@@ -184,8 +184,8 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
 			for (let i = 0; i < sidebarItems.length; i++) {
 				(function (i) {
 					dwell(sidebarItems[i], () => {
-						const dataIdValue = parseInt(sidebarItems[i].getAttribute('id'));
-						const elementToClick = elements.filter(e => e.id == dataIdValue);
+						const elementId = sidebarItems[i].getAttribute('id');
+						const elementToClick = elements.filter(e => e.id == elementId);
 						if (elementToClick) {
 							ipcRenderer.send('ipc-mainwindow-click-sidebar-element', elementToClick[0]);
 							//Show click event animation and clear sidebar
