@@ -48,7 +48,7 @@ function generateQuadTree() {
 
 	// Filter the visible elements and assign unique ID
 	const visibleElements = filterVisibleElements(elements).map(e => {
-		// e.setAttribute('cactus-id', generateUUID());
+		e.dataset.cactusId = generateUUID();
 		return InteractiveElement.fromHTMLElement(e);
 	});
 
@@ -131,9 +131,15 @@ ipcRenderer.on('ipc-main-browserview-loaded', () => {
 		// If callback is already executing, ignore this invocation
 		if (mutationObserverCallbackExecuting) return;
 
-		// Iterate through the list of mutations, and only generate quadTrees when not custom Cursor related (debounce every x ms to avoid too many quadtree gen calls)
+		// Iterate through the list of mutations, and only generate quadTrees when: 
+		// a) not custom Cursor related (debounce every x ms to avoid too many quadtree gen calls)
+		// b) not a known attribute being added/removed
 		for (let mutation of mutationsList) {
-			if (mutation.target.id != 'cactus_cursor') {
+			if (
+				mutation.target.id != 'cactus_cursor'
+				&& !mutation.target.classList.contains('cactusElementVisualise')
+				&& !mutation.target.classList.contains('cactusElementVisualiseRemoved')
+			) {
 				//Indicate callback execution
 				mutationObserverCallbackExecuting = true;
 
@@ -150,7 +156,7 @@ ipcRenderer.on('ipc-main-browserview-loaded', () => {
 	});
 
 	const observerOptions = {
-		attributes: true, //false might be needed since we're injecting IDs
+		attributes: true, //necessary for collapsable elements etc...
 		childList: true,
 		subtree: true,
 	};
@@ -185,7 +191,6 @@ ipcRenderer.on('ipc-main-browserview-loaded', () => {
 				elementsInQueryRange.forEach(function (el) {
 					if (!seenElements.has(el.id)) {
 						seenElements.add(el.id);
-						// document.querySelectorAll('[cactus-id="' + el.id + '"]')[0].classList.add('linkVisualise')
 						uniqueInteractiveElementsInQueryRange.push(el);
 					}
 				});
@@ -239,6 +244,20 @@ ipcRenderer.on('ipc-browserview-click-element', async (event, elementToClick) =>
 	// Find the element at the specified x,y coordinates
 	const element = document.elementFromPoint(elementToClick.insertionPointX, elementToClick.insertionPointY);
 	element.click();
+});
+
+ipcRenderer.on('ipc-browserview-highlight-elements', async (event, elementsToHighlight) => {
+	elementsToHighlight.forEach(el => {
+		var elementToMark = document.querySelector('[data-cactus-id="' + el.id + '"]');
+		if (!elementToMark.classList.contains('cactusElementVisualise')) {
+			elementToMark.classList.add('cactusElementVisualise');
+			setTimeout(function () {
+				//cactusElementVisualiseRemoved class is necessary to filter out cactus-initiated attribute mutations and stop the QT being regenerated
+				elementToMark.classList.add('cactusElementVisualiseRemoved');
+				elementToMark.classList.remove('cactusElementVisualise');
+			}, 800);
+		}
+	});
 });
 
 ipcRenderer.on('ipc-browserview-create-quadtree', () => {

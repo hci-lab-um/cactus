@@ -6,7 +6,7 @@ const isDevelopment = process.env.NODE_ENV === "development";
 
 let mainWindow, splashWindow
 let menusOverlay;
-let defaultUrl = 'https://en.wikipedia.org/wiki/Glasgow';
+let defaultUrl = 'https://www.wikipedia.org';
 let tabList = [];
 
 // This method is called when Electron has finished initializing
@@ -55,8 +55,15 @@ ipcMain.on('ipc-mainwindow-click-sidebar-element', (event, elementToClick) => {
 })
 
 ipcMain.on('ipc-browserview-elements-in-mouserange', (event, elements) => {
+    //Render in sidebar
     mainWindow.webContents.send('ipc-mainwindow-sidebar-render-elements', elements)
 })
+
+ipcMain.on('ipc-mainwindow-highlight-elements-on-page', (event, elements) => {
+    //Highlight elements on page
+    var tab = tabList.find(tab => tab.isActive === true);
+    tab.browserView.webContents.send('ipc-browserview-highlight-elements', elements);
+});
 
 ipcMain.on('ipc-mainwindow-show-overlay', (event, overlayAreaToShow) => {
     createMenuOverlay(overlayAreaToShow);
@@ -260,6 +267,47 @@ function createBrowserviewInTab(url, properties) {
         /* Handle on hover */
         ::-webkit-scrollbar-thumb:hover {
             background: #638eec; 
+        }
+
+        /* Quadtree markers */
+        .cactusElementMark {
+            position: relative;
+            // background-color: transparent;
+        }
+
+        .cactusElementVisualise {
+            color: #10468b !important;
+            transition: background-color 0.5s ease;
+            background-color: #e6f1fa !important;
+            border-radius: 5px;
+        }
+
+        .cactusElementVisualiseRemoved {
+        }
+
+        .cactusNavMarker {
+            color: inherit;
+
+            &:after {
+                content: '';
+                position: absolute;
+                bottom: 100%;
+                left: 0;
+                width: 0%;
+                height: 3px;
+                display: block;
+                background: #03644f !important;
+                transition: 1.5s ease-in-out;
+            }
+        }
+
+        .cactusNavMarker:hover {
+            color: #2d3d4d;
+            background-color: lighten(#03644f, 50%) !important;
+
+            &:after {
+                width: 100%;
+            }
         }
         `);
         if (isDevelopment) browserView.webContents.openDevTools();

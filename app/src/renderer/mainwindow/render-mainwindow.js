@@ -178,6 +178,9 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
 
 		sidebar.insertAdjacentHTML('afterbegin', markup);
 
+		//Highlight newly added elements on page
+		ipcRenderer.send('ipc-mainwindow-highlight-elements-on-page', elements);
+
 		//Attach dwell
 		sidebarItems = document.querySelectorAll('.sidebar_item')
 		if (sidebarItems.length) {
