@@ -44,6 +44,7 @@
 	},
 	"devDependencies": {
 		"cactus-quadtree-builder": "git+ssh://git@github.com:hci-lab-um/cactus-quadtree-builder.git",
+		"cactus-menu-builder": "git+ssh://git@github.com:hci-lab-um/cactus-menu-builder.git",
 		"devtron": "^1.4.0",
 		"electron": "^29.1.2",
 		"electron-builder": "^20.39.0",

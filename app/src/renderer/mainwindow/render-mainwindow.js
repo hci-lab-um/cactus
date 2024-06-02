@@ -338,14 +338,14 @@ function displayOmni(value) {
 
 
 // ======== HIDE ALL OVERLAYS ========
-function hideAllOverlays() {
-	const overlayNav = byId('overlay-nav');
-	const overlayOmnibox = byId('overlay-omnibox');
-	const overlayOptions = byId('overlay-options');
-	if (overlayNav) overlayNav.style.display = 'none'
-	if (overlayOmnibox) overlayOmnibox.style.display = 'none'
-	if (overlayOptions) overlayOptions.style.display = 'none'
-}
+// function hideAllOverlays() {
+// 	const overlayNav = byId('overlay-nav');
+// 	const overlayOmnibox = byId('overlay-omnibox');
+// 	const overlayOptions = byId('overlay-options');
+// 	if (overlayNav) overlayNav.style.display = 'none'
+// 	if (overlayOmnibox) overlayOmnibox.style.display = 'none'
+// 	if (overlayOptions) overlayOptions.style.display = 'none'
+// }
 
 // ======== SHOW ALL OVERLAYS ========
 function showOmniOverlay(overlayAreaToShow) {

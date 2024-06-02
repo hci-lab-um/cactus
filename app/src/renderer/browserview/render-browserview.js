@@ -4,6 +4,7 @@ const { scrollBy, generateUUID } = require('../../tools/utils')
 const config = require('config');
 //const { byId, readFile, dwell } = require('./js/utils')
 const { QuadtreeBuilder, InteractiveElement, PageDocument, Options, Range } = require('cactus-quadtree-builder')
+// const { MenuBuilder, Options, Range } = require('cactus-menu-builder')
 
 const isDevelopment = process.env.NODE_ENV === "development";
 
@@ -127,7 +128,7 @@ ipcRenderer.on('ipc-main-browserview-loaded', () => {
 
 	let mutationObserverCallbackExecuting = false;
 	// Create an observer instance linked to the callback function
-	const observer = new MutationObserver((mutationsList, observer) => {
+	const observer = new MutationObserver((mutationsList) => {
 		// If callback is already executing, ignore this invocation
 		if (mutationObserverCallbackExecuting) return;
 
