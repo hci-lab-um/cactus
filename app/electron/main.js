@@ -6,7 +6,7 @@ const isDevelopment = process.env.NODE_ENV === "development";
 
 let mainWindow, splashWindow
 let menusOverlay;
-let defaultUrl = 'https://www.wikipedia.org';
+let defaultUrl = 'https://google.com';
 let tabList = [];
 
 // This method is called when Electron has finished initializing
@@ -247,7 +247,12 @@ function createBrowserviewInTab(url, properties) {
         browserView.webContents.send('ipc-main-browserview-loaded');
         browserView.webContents.insertCSS(`
         html, body { overflow-x: hidden; } 
-        a, input, button, div { cursor: none; }
+        
+        /* IMP: user-select:none and pointer-events:none rules removed in different selectors */
+
+        a, input, textarea, button, div { 
+            cursor: none !important; 
+        }
         /* width */
         ::-webkit-scrollbar {
             width: 5px;
@@ -276,10 +281,12 @@ function createBrowserviewInTab(url, properties) {
         }
 
         .cactusElementVisualise {
-            color: #10468b !important;
+            border-radius: 5px;
+            border: 1px solid #10468b;
             transition: background-color 0.5s ease;
             background-color: #e6f1fa !important;
-            border-radius: 5px;
+            //color: #e6f1fa !important;
+            //border-radius: 5px;
         }
 
         .cactusElementVisualiseRemoved {

@@ -20,7 +20,8 @@
   },
   "dwelling": {
     "dwellTime": 1500,
-    "rangeWidth": 100,
-    "rangeHeight": 50
+    "rangeWidth": 150,
+    "rangeHeight": 50,
+    "scrollDistance": 300
   }
 }

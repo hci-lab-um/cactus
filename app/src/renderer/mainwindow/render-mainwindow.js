@@ -167,11 +167,22 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
 			`<div class='sidebar_item fadeInDown' id='${e.id}'>
 			<div>
 			<div class='sidebar_item_title'>
-			${e.accessibleName}
+				${e.accessibleName}
+			</div>
+			<div class='sidebar_item_link'>
+				${e.type}
 			</div>
 			</div>
 			<div class='sidebar_item_icon'>
-			<i class="fas fa-angle-right"></i>
+				<i class="${e.children ? 'fas fa-bars' :
+				e.type == 'a' ? 'fas fa-link' :
+					(e.type == 'button' || e.type == 'submit') ? 'fas fa-computer-mouse' :
+						e.type == 'textarea' ? 'fas fa-font' :
+							e.type == 'checkbox' ? 'fas fa-square-check' :
+								e.type == 'radio' ? 'fas fa-toggle-on' :
+									e.type == 'date' ? 'fas fa-calendar-days' :
+										e.type == 'select' ? 'fas fa-caret-down' : 'fas fa-angle-right'
+			}"></i>
 			</div>
 			</div>
 			`).join('')}`

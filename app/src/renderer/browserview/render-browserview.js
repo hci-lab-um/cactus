@@ -3,8 +3,8 @@ const { createCursor, followCursor } = require('../../tools/cursor')
 const { scrollBy, generateUUID } = require('../../tools/utils')
 const config = require('config');
 //const { byId, readFile, dwell } = require('./js/utils')
-const { QuadtreeBuilder, InteractiveElement, PageDocument, Options, Range } = require('cactus-quadtree-builder')
-// const { MenuBuilder, Options, Range } = require('cactus-menu-builder')
+const { QuadtreeBuilder, InteractiveElement, PageDocument, QtBuilderOptions, QtRange } = require('cactus-quadtree-builder')
+// const { MenuBuilder, MenuBuilderOptions, MenuRange } = require('cactus-menu-builder')
 
 const isDevelopment = process.env.NODE_ENV === "development";
 
@@ -14,6 +14,10 @@ let qtBuilder;
 let qtOptions;
 let currentQt;
 let timeoutCursorHovering;
+
+// let menuBuilder;
+// let menuBuilderOptions;
+// let currentNavAreaTree;
 
 //This function filters out elements that are not visible (in viewport) or have no dimensions
 function filterVisibleElements(elements) {
@@ -42,7 +46,7 @@ function clearHighlightedElements() {
 
 function generateQuadTree() {
 	//Recreate quadtree
-	qtOptions = new Options(window.innerWidth, window.innerHeight, 'new', 1);
+	qtOptions = new QtBuilderOptions(window.innerWidth, window.innerHeight, 'new', 1);
 	qtBuilder = new QuadtreeBuilder(qtOptions);
 	// Query for elements matching the provided selector
 	const elements = Array.from(document.querySelectorAll('button, a, textarea, input, select, date, div[role="button"], span[role="button"], div[role="link"], span[role="link"], [role="checkbox"], [role="radio"], [role="option"], [role="tab"], [role="menu"], [role="switch"], [role="slider"]'));
@@ -59,7 +63,7 @@ function generateQuadTree() {
 
 		//Only in debug mode - show which points are available for interaction
 		if (isDevelopment) {
-			const viewRange = new Range(0, 0, pageDocument.documentWidth, pageDocument.documentHeight);
+			const viewRange = new QtRange(0, 0, pageDocument.documentWidth, pageDocument.documentHeight);
 			const elementsInView = qt.queryRange(viewRange);
 			clearHighlightedElements();
 			elementsInView.forEach(ve => {
@@ -68,6 +72,27 @@ function generateQuadTree() {
 		}
 	});
 }
+
+// function generateNavAreasTree() {
+// 	//Recreate quadtree
+// 	menuBuilderOptions = new MenuBuilderOptions(window.innerWidth, window.innerHeight, 'new');
+// 	menuBuilder = new QuadtreeBuilder(qtOptions);
+
+// 	let pageDocument = new PageDocument(document.title, document.URL, visibleElements, window.innerWidth, window.innerHeight, null);
+// 	qtBuilder.buildAsync(pageDocument).then((qt) => {
+// 		currentQt = qt;
+
+// 		//Only in debug mode - show which points are available for interaction
+// 		if (isDevelopment) {
+// 			const viewRange = new MenuRange(0, 0, pageDocument.documentWidth, pageDocument.documentHeight);
+// 			const elementsInView = qt.queryRange(viewRange);
+// 			clearHighlightedElements();
+// 			elementsInView.forEach(ve => {
+// 				highlightAvailableElements(ve.x, ve.y, ve.width, ve.height);
+// 			});
+// 		}
+// 	});
+// }
 
 function highlightAvailableElements(x, y, width, height) {
 	// Create a new div element for the point
@@ -96,7 +121,7 @@ function highlightAvailableElements(x, y, width, height) {
 
 	let rangeWidth = config.get('dwelling.rangeWidth');
 	let rangeHeight = config.get('dwelling.rangeHeight');
-	//TODO: needs to be centred
+	//TODO: needs to be centred - this will also enlarge eye icon
 	cursor.style.width = rangeWidth + 'px';
 	cursor.style.height = rangeHeight + 'px';
 	cursor.style.border = '2px solid red';
@@ -183,7 +208,7 @@ ipcRenderer.on('ipc-main-browserview-loaded', () => {
 				var y = event.clientY; // Y location relative to the viewport
 				let rangeWidth = config.get('dwelling.rangeWidth');
 				let rangeHeight = config.get('dwelling.rangeHeight');
-				const queryAllElementsInView = new Range(x - (rangeWidth / 2), y - (rangeHeight / 2), rangeWidth, rangeHeight);
+				const queryAllElementsInView = new QtRange(x - (rangeWidth / 2), y - (rangeHeight / 2), rangeWidth, rangeHeight);
 				const elementsInQueryRange = currentQt.queryRange(queryAllElementsInView);
 
 				//Remove duplicate elements by ID (larger elements are split into multiple smaller elements, replicating the ID)
@@ -210,14 +235,16 @@ ipcRenderer.on('ipc-main-browserview-loaded', () => {
 });
 
 ipcRenderer.on('ipc-browserview-scrolldown', () => {
-	scrollBy(0, 100);
+	let scrollDistance = config.get('dwelling.scrollDistance');
+	scrollBy(0, scrollDistance);
 	setTimeout(function () {
 		generateQuadTree();
 	}, 500);
 })
 
 ipcRenderer.on('ipc-browserview-scrollup', () => {
-	scrollBy(0, -100);
+	let scrollDistance = config.get('dwelling.scrollDistance');
+	scrollBy(0, scrollDistance * -1);
 	setTimeout(function () {
 		generateQuadTree();
 	}, 500);
