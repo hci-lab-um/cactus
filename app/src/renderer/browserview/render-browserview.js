@@ -49,7 +49,7 @@ function generateQuadTree() {
 	qtOptions = new QtBuilderOptions(window.innerWidth, window.innerHeight, 'new', 1);
 	qtBuilder = new QuadtreeBuilder(qtOptions);
 	// Query for elements matching the provided selector
-	const elements = Array.from(document.querySelectorAll('button, a, textarea, input, select, date, div[role="button"], span[role="button"], div[role="link"], span[role="link"], [role="checkbox"], [role="radio"], [role="option"], [role="tab"], [role="menu"], [role="switch"], [role="slider"]'));
+	const elements = Array.from(document.querySelectorAll('button, a, textarea, input, select, date, div[role="button"], span[role="button"], div[role="link"], span[role="link"], [role="checkbox"], [role="radio"], [role="option"], [role="tab"], [role="menu"], [role="switch"], [role="slider"], [role="combobox"]'));
 
 	// Filter the visible elements and assign unique ID
 	const visibleElements = filterVisibleElements(elements).map(e => {
