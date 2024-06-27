@@ -6,7 +6,7 @@ const isDevelopment = process.env.NODE_ENV === "development";
 
 let mainWindow, splashWindow
 let menusOverlay;
-let defaultUrl = 'https://accounts.google.com/v3/signin/identifier?continue=https%3A%2F%2Fmail.google.com%2Fmail%2Fu%2F0%2F&emr=1&followup=https%3A%2F%2Fmail.google.com%2Fmail%2Fu%2F0%2F&ifkv=AS5LTARB7Acc5Vy-_ZfjIvbmhi2hmtM1-uT0gaYfifvY3ZWjgz4ibyj72T1Co4hQhLQDlAXEbG7MaA&osid=1&passive=1209600&service=mail&flowName=WebLiteSignIn&flowEntry=ServiceLogin&dsh=S-318190456%3A1719475323427625https://accounts.google.com/v3/signin/identifier?continue=https%3A%2F%2Fmail.google.com%2Fmail%2Fu%2F0%2F&emr=1&followup=https%3A%2F%2Fmail.google.com%2Fmail%2Fu%2F0%2F&ifkv=AS5LTAQqZGEEP-ju6DJL0Ugl74uwX4lENfHYULovOD5KBwVnbc_QzbHNzqm7oxBcEOILgATK5ZBSDw&osid=1&passive=1209600&service=mail&flowName=GlifWebSignIn&flowEntry=ServiceLogin&dsh=S1526861648%3A1719475494326559&ddm=0';
+let defaultUrl = 'https://facebook.com';
 let tabList = [];
 
 // This method is called when Electron has finished initializing

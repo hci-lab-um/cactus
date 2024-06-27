@@ -1,6 +1,7 @@
 const { ipcRenderer } = require('electron')
 const { createCursor, followCursor } = require('../../tools/cursor')
 const { scrollBy, generateUUID } = require('../../tools/utils')
+const DOMPurify = require('dompurify');
 const config = require('config');
 //const { byId, readFile, dwell } = require('./js/utils')
 const { QuadtreeBuilder, InteractiveElement, PageDocument, QtBuilderOptions, QtRange } = require('cactus-quadtree-builder')
@@ -18,7 +19,6 @@ let timeoutCursorHovering;
 // Exposes an HTML sanitizer to allow for innerHtml assignments when TrustedHTML policies are set ('This document requires 'TrustedHTML' assignment')
 window.addEventListener('DOMContentLoaded', () => {
 	// Expose DOMPurify to the renderer process
-	const DOMPurify = require('dompurify');
 	window.sanitizeHTML = (html) => {
 		return DOMPurify.sanitize(html, { RETURN_TRUSTED_TYPE: true });
 	};

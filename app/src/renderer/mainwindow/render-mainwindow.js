@@ -6,6 +6,7 @@ const { byId, dwell } = require('../../tools/utils')
 // const { drop, isEqual }         = require('lodash')
 // const Config                    = require('./js/config')
 const { createCursor, followCursor } = require('../../tools/cursor')
+const DOMPurify = require('dompurify');
 
 // let backOrForward, browserviewContainer
 // let cancelNavBtn, backNavBtn, forwardNavBtn, overlayNav
@@ -24,7 +25,6 @@ let timeoutScroll
 // Exposes an HTML sanitizer to allow for innerHtml assignments when TrustedHTML policies are set ('This document requires 'TrustedHTML' assignment')
 window.addEventListener('DOMContentLoaded', () => {
 	// Expose DOMPurify to the renderer process
-	const DOMPurify = require('dompurify');
 	window.sanitizeHTML = (html) => {
 		return DOMPurify.sanitize(html, { RETURN_TRUSTED_TYPE: true });
 	};
