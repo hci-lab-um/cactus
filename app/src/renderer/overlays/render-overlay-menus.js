@@ -9,12 +9,13 @@ window.addEventListener('DOMContentLoaded', () => {
 	window.sanitizeHTML = (html) => {
 		return DOMPurify.sanitize(html, { RETURN_TRUSTED_TYPE: true });
 	};
+
+	//Init cursor
+	createCursor('cactus_cursor');
+	followCursor('cactus_cursor');
 });
 
 ipcRenderer.on('ipc-main-overlays-loaded', (event, overlayToShow) => {
-	createCursor('cactus_cursor');
-	followCursor('cactus_cursor');
-
 	switch (overlayToShow) {
 		case 'omni': {
 			byId('overlay-omnibox').style.display = 'grid'

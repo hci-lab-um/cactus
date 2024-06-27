@@ -22,6 +22,11 @@ window.addEventListener('DOMContentLoaded', () => {
 	window.sanitizeHTML = (html) => {
 		return DOMPurify.sanitize(html, { RETURN_TRUSTED_TYPE: true });
 	};
+
+	//Init cursor
+	createCursor('cactus_cursor');
+	cursor = document.getElementById('cactus_cursor');
+	followCursor('cactus_cursor');
 });
 
 // let menuBuilder;
@@ -139,12 +144,6 @@ function highlightAvailableElements(x, y, width, height) {
 ipcRenderer.on('ipc-main-browserview-loaded', () => {
 	//Create tree on visible elements
 	generateQuadTree();
-
-	//Create cursor
-	createCursor('cactus_cursor');
-	cursor = document.getElementById('cactus_cursor');
-	followCursor('cactus_cursor');
-
 
 	//EXPERIMENTAL - JS EVENTS (E.g. click on tab element, does not fire up (although it's firing up changes in quick succession when banners change etc...) - to test properly)
 	//Set mutation observer - and re-generate quadtree on mutations
