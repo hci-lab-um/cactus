@@ -29,6 +29,7 @@ window.addEventListener('DOMContentLoaded', () => {
 	followCursor('cactus_cursor');
 });
 
+
 // let menuBuilder;
 // let menuBuilderOptions;
 // let currentNavAreaTree;
@@ -279,7 +280,10 @@ ipcRenderer.on('ipc-browserview-forward', () => {
 ipcRenderer.on('ipc-browserview-click-element', async (event, elementToClick) => {
 	// Find the element at the specified x,y coordinates
 	const element = document.elementFromPoint(elementToClick.insertionPointX, elementToClick.insertionPointY);
-	element.click();
+	if (element) {
+		element.focus();
+		element.click();
+	}
 });
 
 ipcRenderer.on('ipc-browserview-highlight-elements', async (event, elementsToHighlight) => {

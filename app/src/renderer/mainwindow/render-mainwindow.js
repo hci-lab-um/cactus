@@ -187,11 +187,12 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
 				e.type == 'a' ? 'fas fa-link' :
 					(e.type == 'button' || e.type == 'submit') ? 'fas fa-computer-mouse' :
 						(e.type == 'textarea' || e.type == 'text') ? 'fas fa-font' :
-							e.type == 'checkbox' ? 'fas fa-square-check' :
-								e.type == 'radio' ? 'fas fa-toggle-on' :
-									e.type == 'option' ? 'fas fa-list' :
-										e.type == 'date' ? 'fas fa-calendar-days' :
-											e.type == 'select' ? 'fas fa-caret-down' : 'fas fa-angle-right'
+							e.type == 'password' ? 'fas fa-user-secret' :
+								e.type == 'checkbox' ? 'fas fa-square-check' :
+									e.type == 'radio' ? 'fas fa-toggle-on' :
+										e.type == 'option' ? 'fas fa-list' :
+											e.type == 'date' ? 'fas fa-calendar-days' :
+												e.type == 'select' ? 'fas fa-caret-down' : 'fas fa-angle-right'
 			}"></i>
 			</div>
 			</div>
