@@ -21,6 +21,15 @@ let cursor
 let scrollUpBtn, scrollDownBtn
 let timeoutScroll
 
+// Exposes an HTML sanitizer to allow for innerHtml assignments when TrustedHTML policies are set ('This document requires 'TrustedHTML' assignment')
+window.addEventListener('DOMContentLoaded', () => {
+	// Expose DOMPurify to the renderer process
+	const DOMPurify = require('dompurify');
+	window.sanitizeHTML = (html) => {
+		return DOMPurify.sanitize(html, { RETURN_TRUSTED_TYPE: true });
+	};
+});
+
 ipcRenderer.on('mainWindowLoaded', () => {
 
 	//Setup cursors

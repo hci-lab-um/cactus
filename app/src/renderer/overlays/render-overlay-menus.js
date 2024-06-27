@@ -2,6 +2,15 @@ const { ipcRenderer } = require('electron')
 const { byId, dwell } = require('../../../src/tools/utils')
 const { createCursor, followCursor } = require('../../../src/tools/cursor')
 
+// Exposes an HTML sanitizer to allow for innerHtml assignments when TrustedHTML policies are set ('This document requires 'TrustedHTML' assignment')
+window.addEventListener('DOMContentLoaded', () => {
+	// Expose DOMPurify to the renderer process
+	const DOMPurify = require('dompurify');
+	window.sanitizeHTML = (html) => {
+		return DOMPurify.sanitize(html, { RETURN_TRUSTED_TYPE: true });
+	};
+});
+
 ipcRenderer.on('ipc-main-overlays-loaded', (event, overlayToShow) => {
 	createCursor('cactus_cursor');
 	followCursor('cactus_cursor');
