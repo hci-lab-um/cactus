@@ -4,8 +4,8 @@ const { scrollBy, generateUUID } = require('../../tools/utils')
 const DOMPurify = require('dompurify');
 const config = require('config');
 //const { byId, readFile, dwell } = require('./js/utils')
-const { QuadtreeBuilder, InteractiveElement, PageDocument, QtBuilderOptions, QtRange } = require('cactus-quadtree-builder')
-// const { MenuBuilder, MenuBuilderOptions, MenuRange } = require('cactus-menu-builder')
+const { QuadtreeBuilder, InteractiveElement, QtPageDocument, QtBuilderOptions, QtRange } = require('cactus-quadtree-builder')
+const { MenuBuilder, NavArea, MenuPageDocument, MenuBuilderOptions, MenuRange } = require('cactus-menu-builder')
 
 const isDevelopment = process.env.NODE_ENV === "development";
 
@@ -15,6 +15,9 @@ let qtBuilder;
 let qtOptions;
 let currentQt;
 let timeoutCursorHovering;
+let menuBuilder;
+let menuBuilderOptions;
+let currentNavAreaTree;
 
 // Exposes an HTML sanitizer to allow for innerHtml assignments when TrustedHTML policies are set ('This document requires 'TrustedHTML' assignment')
 window.addEventListener('DOMContentLoaded', () => {
@@ -29,10 +32,6 @@ window.addEventListener('DOMContentLoaded', () => {
 	followCursor('cactus_cursor');
 });
 
-
-// let menuBuilder;
-// let menuBuilderOptions;
-// let currentNavAreaTree;
 
 //This function filters out elements that are not visible (in viewport) or have no dimensions
 function filterVisibleElements(elements) {
@@ -55,7 +54,7 @@ function filterVisibleElements(elements) {
 
 function clearHighlightedElements() {
 	// Remove all previous points with class "point"
-	const previousPoints = document.querySelectorAll('.qtpoint');
+	const previousPoints = document.querySelectorAll('.cactus-element-highlight');
 	previousPoints.forEach(point => point.remove());
 }
 
@@ -72,7 +71,7 @@ function generateQuadTree() {
 		return InteractiveElement.fromHTMLElement(e);
 	});
 
-	let pageDocument = new PageDocument(document.title, document.URL, visibleElements, window.innerWidth, window.innerHeight, null);
+	let pageDocument = new QtPageDocument(document.title, document.URL, visibleElements, window.innerWidth, window.innerHeight, null);
 	qtBuilder.buildAsync(pageDocument).then((qt) => {
 		currentQt = qt;
 
@@ -82,34 +81,40 @@ function generateQuadTree() {
 			const elementsInView = qt.queryRange(viewRange);
 			clearHighlightedElements();
 			elementsInView.forEach(ve => {
-				highlightAvailableElements(ve.x, ve.y, ve.width, ve.height);
+				highlightAvailableElements(ve.x, ve.y, ve.width, ve.height, '#702963');
 			});
 		}
 	});
 }
 
-// function generateNavAreasTree() {
-// 	//Recreate quadtree
-// 	menuBuilderOptions = new MenuBuilderOptions(window.innerWidth, window.innerHeight, 'new');
-// 	menuBuilder = new QuadtreeBuilder(qtOptions);
+function generateNavAreasTree() {
+	//Recreate quadtree
+	menuBuilderOptions = new MenuBuilderOptions(window.innerWidth, window.innerHeight, 'new');
+	menuBuilder = new MenuBuilder(menuBuilderOptions);
 
-// 	let pageDocument = new PageDocument(document.title, document.URL, visibleElements, window.innerWidth, window.innerHeight, null);
-// 	qtBuilder.buildAsync(pageDocument).then((qt) => {
-// 		currentQt = qt;
+	const interactiveMenus = Array.from(document.querySelectorAll('[role="navigation"], nav, [role="menubar"], [class="nav-wrapper"]'));
 
-// 		//Only in debug mode - show which points are available for interaction
-// 		if (isDevelopment) {
-// 			const viewRange = new MenuRange(0, 0, pageDocument.documentWidth, pageDocument.documentHeight);
-// 			const elementsInView = qt.queryRange(viewRange);
-// 			clearHighlightedElements();
-// 			elementsInView.forEach(ve => {
-// 				highlightAvailableElements(ve.x, ve.y, ve.width, ve.height);
-// 			});
-// 		}
-// 	});
-// }
+	// Filter the visible elements and assign unique ID
+	const visibleElements = filterVisibleElements(interactiveMenus).map(e => {
+		return NavArea.fromHTMLElement(e);
+	});
+	let pageDocument = new MenuPageDocument(document.title, document.URL, visibleElements, window.innerWidth, window.innerHeight, null);
 
-function highlightAvailableElements(x, y, width, height) {
+	menuBuilder.buildAsync(pageDocument).then((hierarchicalAreas) => {
+		currentNavAreaTree = hierarchicalAreas;
+
+		//Only in debug mode - show which points are available for interaction
+		if (isDevelopment) {
+			const viewRange = new MenuRange(0, 0, pageDocument.documentWidth, pageDocument.documentHeight);
+			const elementsInView = currentNavAreaTree.queryRange(viewRange);
+			elementsInView.forEach(ve => {
+				highlightAvailableElements(ve.x, ve.y, ve.width, ve.height, '#E34234');
+			});
+		}
+	});
+}
+
+function highlightAvailableElements(x, y, width, height, color) {
 	// Create a new div element for the point
 	const point = document.createElement('div');
 
@@ -118,15 +123,15 @@ function highlightAvailableElements(x, y, width, height) {
 	const viewportY = window.scrollY;
 
 	// Set styles for the point
-	point.classList.add('qtpoint');
+	point.classList.add('cactus-element-highlight');
 	point.style.width = width + 'px';
 	point.style.height = height + 'px';
 	point.style.backgroundColor = 'transparent';
-	point.style.border = '2px solid blue';
-	point.style.outline = '2px dashed red';
-	// point.style.backgroundColor = 'rgba(0, 255, 0, 0.5)';
+	//point.style.border = '2px solid ' + color;
+	point.style.outline = '2px dashed ' + color;
+	point.style.backgroundColor = 'rgba(0, 255, 0, 0.1)';
 	point.style.position = 'absolute';
-
+	point.style.zIndex = 99999999;
 	// Set the position of the point relative to the viewport
 	point.style.left = (x + viewportX) + 'px';
 	point.style.top = (y + viewportY) + 'px';
@@ -134,6 +139,7 @@ function highlightAvailableElements(x, y, width, height) {
 	// Append the point to the viewport container
 	document.body.appendChild(point);
 
+	//Highlight cursor
 	let rangeWidth = config.get('dwelling.rangeWidth');
 	let rangeHeight = config.get('dwelling.rangeHeight');
 	//TODO: needs to be centred - this will also enlarge eye icon
@@ -143,23 +149,11 @@ function highlightAvailableElements(x, y, width, height) {
 }
 
 ipcRenderer.on('ipc-main-browserview-loaded', () => {
-	//Create tree on visible elements
+	//Create trees on visible elements
 	generateQuadTree();
+	generateNavAreasTree();
 
 	//EXPERIMENTAL - JS EVENTS (E.g. click on tab element, does not fire up (although it's firing up changes in quick succession when banners change etc...) - to test properly)
-	//Set mutation observer - and re-generate quadtree on mutations
-
-	//Consdier this: https://kasp9023.medium.com/easily-observe-changes-in-dom-tree-with-mutationobserver-api-1c27cbc3ea7e
-	// const observer = new MutationObserver((mutationsList, observer) => {
-	//   for(const mutation of mutationsList) {
-	//     if (mutation.type === 'subtree') { //childlist was firing up too many events... this might not work as expected.
-	//       generateQuadTree();
-	//     }
-	//   }
-	// });
-	// const config = { attributes: true, childList: true, subtree: true };
-	// observer.observe(document.body, config);
-
 	let mutationObserverCallbackExecuting = false;
 	// Create an observer instance linked to the callback function
 	const observer = new MutationObserver((mutationsList) => {
@@ -174,12 +168,14 @@ ipcRenderer.on('ipc-main-browserview-loaded', () => {
 				mutation.target.id != 'cactus_cursor'
 				&& !mutation.target.classList.contains('cactusElementVisualise')
 				&& !mutation.target.classList.contains('cactusElementVisualiseRemoved')
+				&& !mutation.target.classList.contains('cactus-element-highlight')
 			) {
 				//Indicate callback execution
 				mutationObserverCallbackExecuting = true;
 
 				//Execute quadtree generation
 				generateQuadTree();
+				generateNavAreasTree();
 
 				//Reset flag to allow next callback execution on x ms
 				setTimeout(() => {
@@ -248,6 +244,7 @@ ipcRenderer.on('ipc-browserview-scrolldown', () => {
 	scrollBy(0, scrollDistance);
 	setTimeout(function () {
 		generateQuadTree();
+		generateNavAreasTree();
 	}, 500);
 })
 
@@ -256,6 +253,7 @@ ipcRenderer.on('ipc-browserview-scrollup', () => {
 	scrollBy(0, scrollDistance * -1);
 	setTimeout(function () {
 		generateQuadTree();
+		generateNavAreasTree();
 	}, 500);
 })
 
@@ -303,4 +301,5 @@ ipcRenderer.on('ipc-browserview-highlight-elements', async (event, elementsToHig
 ipcRenderer.on('ipc-browserview-create-quadtree', () => {
 	//ISSUES: Node-Config is required by Cactus, and the config/default.json file would need to be recreated on cactus itself, rather than just the builder code. Which might not be a bad idea. Think about it.
 	generateQuadTree();
+	generateNavAreasTree();
 })
