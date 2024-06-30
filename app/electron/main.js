@@ -33,8 +33,19 @@ app.on('activate', () => {
 })
 
 ipcMain.on('browse-to-url', (event, url) => {
+    let fullUrl = '';
     var tab = tabList.find(tab => tab.isActive === true);
-    tab.browserView.webContents.loadURL(url);
+    //Handle relative URLs first
+    if (url.startsWith('/')) {
+        const currentURL = new URL(tab.browserView.webContents.getURL());
+        const protocol = currentURL.protocol + '//';
+        const host = currentURL.host;
+        fullUrl = protocol + host + url;
+    }
+    else {
+        fullUrl = url;
+    }
+    tab.browserView.webContents.loadURL(fullUrl);
 });
 
 ipcMain.on('ipc-mainwindow-scrolldown', () => {
@@ -57,6 +68,10 @@ ipcMain.on('ipc-mainwindow-click-sidebar-element', (event, elementToClick) => {
 ipcMain.on('ipc-browserview-elements-in-mouserange', (event, elements) => {
     //Render in sidebar
     mainWindow.webContents.send('ipc-mainwindow-sidebar-render-elements', elements)
+})
+
+ipcMain.on('ipc-browserview-navareas-in-mouserange', (event, navareas) => {
+    mainWindow.webContents.send('ipc-mainwindow-sidebar-render-navareas', navareas)
 })
 
 ipcMain.on('ipc-mainwindow-highlight-elements-on-page', (event, elements) => {

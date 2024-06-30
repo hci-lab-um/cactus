@@ -143,6 +143,77 @@ function setupScrollers() {
 // =================================
 // == Sidebar element management ===
 // =================================
+ipcRenderer.on('ipc-mainwindow-sidebar-render-navareas', (event, navAreas) => {
+	if (navAreas.length) {
+		//Clear sidebar
+		let sidebar = byId('sidebar_items');
+		sidebar.innerHTML = "";
+
+		navAreas.forEach(navArea => {
+			if (navArea.navItems) {
+				navArea.navItems.forEach(navItem => {
+					renderNavItemInSidebar(navItem);
+				})
+			}
+			//Highlight newly added elements on page
+			ipcRenderer.send('ipc-mainwindow-highlight-elements-on-page', navAreas);
+		})
+	}
+})
+
+function renderNavItemInSidebar(navItem) {
+	//Clear sidebar
+	let sidebar = byId('sidebar_items');
+	sidebar.innerHTML = "";
+	//Add elements to sidebar
+	if (navItem.children) {
+		const markup = `${navItem.children.map(e =>
+			`<div class='sidebar_item fadeInDown' id='${e.id}'>
+							<div>
+							<div class='sidebar_item_title'>
+								${e.label}
+							</div>
+							<div class='sidebar_item_link'>
+								${e.isLeaf}
+							</div>
+							</div>
+							<div class='sidebar_item_icon'>
+								<i class="${e.children.length > 0 ? 'fas fa-bars' : 'fas fa-angle-right'}"></i>
+							</div>
+							</div>
+							`).join('')}`
+
+		sidebar.insertAdjacentHTML('afterbegin', markup);
+
+		//Attach dwell
+		let sidebarItems = document.querySelectorAll('.sidebar_item')
+		if (sidebarItems.length) {
+			for (let i = 0; i < sidebarItems.length; i++) {
+				(function (i) {
+					dwell(sidebarItems[i], () => {
+						const elementId = sidebarItems[i].getAttribute('id');
+						const elementToClick = navItem.children.filter(e => e.id == elementId);
+						if (elementToClick) {
+							if (elementToClick[0].children.length == 0) {
+								//Show click event animation and clear sidebar
+								sidebarItems[i].classList.add('fadeOutDown');
+								setTimeout(() => {
+									sidebar.innerHTML = "";
+								}, 300);
+								ipcRenderer.send('browse-to-url', elementToClick[0].href);
+							}
+							else {
+								//Go down one level
+								renderNavItemInSidebar(elementToClick[0]);
+							}
+						}
+					})
+				})(i)
+			}
+		}
+	}
+}
+
 ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
 	let sidebar = byId('sidebar_items');
 	if (elements.length > 0) {

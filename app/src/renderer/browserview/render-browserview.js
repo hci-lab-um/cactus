@@ -100,6 +100,7 @@ function generateNavAreasTree() {
 
 	// Filter the visible elements and assign unique ID
 	const visibleElements = filterVisibleElements(interactiveMenus).map(e => {
+		e.dataset.cactusId = generateUUID();
 		return NavArea.fromHTMLElement(e);
 	});
 	let pageDocument = new MenuPageDocument(document.title, document.URL, visibleElements, window.innerWidth, window.innerHeight, null);
@@ -206,7 +207,7 @@ ipcRenderer.on('ipc-main-browserview-loaded', () => {
 		//Show cursor
 		cursor.style.visibility = 'visible'
 
-		if (currentQt) {
+		if (currentQt || currentNavAreaTree) {
 			// Clear any existing interval to avoid multiple intervals running simultaneously for mouse cursor hovering activity
 			clearInterval(timeoutCursorHovering);
 
@@ -217,20 +218,31 @@ ipcRenderer.on('ipc-main-browserview-loaded', () => {
 				var y = event.clientY; // Y location relative to the viewport
 				let rangeWidth = config.get('dwelling.rangeWidth');
 				let rangeHeight = config.get('dwelling.rangeHeight');
-				const queryAllElementsInView = new QtRange(x - (rangeWidth / 2), y - (rangeHeight / 2), rangeWidth, rangeHeight);
-				const elementsInQueryRange = currentQt.queryRange(queryAllElementsInView);
 
-				//Remove duplicate elements by ID (larger elements are split into multiple smaller elements, replicating the ID)
-				var uniqueInteractiveElementsInQueryRange = [];
-				var seenElements = new Set();
-				elementsInQueryRange.forEach(function (el) {
-					if (!seenElements.has(el.id)) {
-						seenElements.add(el.id);
-						uniqueInteractiveElementsInQueryRange.push(el);
-					}
-				});
+				const qtRangeToQuery = new QtRange(x - (rangeWidth / 2), y - (rangeHeight / 2), rangeWidth, rangeHeight);
+				const menuRangeToQuery = new MenuRange(x - (rangeWidth / 2), y - (rangeHeight / 2), rangeWidth, rangeHeight);
 
-				ipcRenderer.send('ipc-browserview-elements-in-mouserange', uniqueInteractiveElementsInQueryRange);
+				const navAreasInQueryRange = currentNavAreaTree.queryRange(menuRangeToQuery);
+				const elementsInQueryRange = currentQt.queryRange(qtRangeToQuery);
+
+				//Prioritise nav areas if in range
+				if (navAreasInQueryRange.length > 0) {
+					ipcRenderer.send('ipc-browserview-navareas-in-mouserange', navAreasInQueryRange);
+					//Stop continuously querying for elements when hitting a nav area (allow user to interact with menu)
+					clearInterval(timeoutCursorHovering);
+				}
+				else {
+					//Remove duplicate elements by ID (larger elements are split into multiple smaller elements, replicating the ID)
+					var uniqueInteractiveElementsInQueryRange = [];
+					var seenElements = new Set();
+					elementsInQueryRange.forEach(function (el) {
+						if (!seenElements.has(el.id)) {
+							seenElements.add(el.id);
+							uniqueInteractiveElementsInQueryRange.push(el);
+						}
+					});
+					ipcRenderer.send('ipc-browserview-elements-in-mouserange', uniqueInteractiveElementsInQueryRange);
+				}
 			}, 500);
 		}
 	})
