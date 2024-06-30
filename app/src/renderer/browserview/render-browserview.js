@@ -44,10 +44,14 @@ function filterVisibleElements(elements) {
 			style.visibility !== 'hidden' &&
 			element.offsetWidth > 0 &&
 			element.offsetHeight > 0 &&
-			rect.x >= 0 &&
-			rect.y >= 0 &&
-			(rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-				rect.right <= (window.innerWidth || document.documentElement.clientWidth))
+			//Check if element is, at least partly, within the viewport
+			(
+				rect.x <= (window.innerWidth || document.documentElement.clientWidth) &&
+				rect.x + rect.width >= 0 &&
+				rect.y <= (window.innerHeight || document.documentElement.clientHeight) &&
+				rect.y + rect.height >= 0
+
+			)
 		);
 	});
 }
