@@ -6,7 +6,7 @@ const isDevelopment = process.env.NODE_ENV === "development";
 
 let mainWindow, splashWindow
 let menusOverlay;
-let defaultUrl = 'https://timesofmalta.com/';
+let defaultUrl = 'https://ebay.co.uk/';
 let tabList = [];
 
 // This method is called when Electron has finished initializing

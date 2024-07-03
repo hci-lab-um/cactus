@@ -149,6 +149,7 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-navareas', (event, navAreas) => {
 		let sidebar = byId('sidebar_items');
 		sidebar.innerHTML = "";
 
+		//Only one will be rendered, although there's a foreach
 		navAreas.forEach(navArea => {
 			if (navArea.navItems) {
 				navArea.navItems.forEach(navItem => {

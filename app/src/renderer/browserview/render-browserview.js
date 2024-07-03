@@ -292,11 +292,20 @@ ipcRenderer.on('ipc-browserview-forward', () => {
 // }
 
 ipcRenderer.on('ipc-browserview-click-element', async (event, elementToClick) => {
-	// Find the element at the specified x,y coordinates
-	const element = document.elementFromPoint(elementToClick.insertionPointX, elementToClick.insertionPointY);
+	//Try finding the element using unique cactus-id
+	let element = document.querySelector('[data-cactus-id="' + elementToClick.id + '"]');
+	if (!element)
+		// Find the element at the specified x,y coordinates
+		element = document.elementFromPoint(elementToClick.insertionPointX, elementToClick.insertionPointY);
+
 	if (element) {
-		element.focus();
-		element.click();
+		//If it's a link - go to its href rather than rely on focusing/clicking (works nicely when anchor is hidden in some collapsable component)
+		if (element.nodeName == 'A' && (element.getAttribute('href') && element.getAttribute('href') != '#'))
+			ipcRenderer.send('browse-to-url', element.getAttribute('href'));
+		else {
+			element.focus();
+			element.click();
+		}
 	}
 });
 
