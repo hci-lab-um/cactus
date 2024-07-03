@@ -111,7 +111,7 @@ function generateNavAreasTree() {
 		//Only in debug mode - show which points are available for interaction
 		if (isDevelopment) {
 			const viewRange = new MenuRange(0, 0, pageDocument.documentWidth, pageDocument.documentHeight);
-			const elementsInView = currentNavAreaTree.queryRange(viewRange);
+			const elementsInView = currentNavAreaTree.queryRange(viewRange, true);
 			elementsInView.forEach(ve => {
 				highlightAvailableElements(ve.x, ve.y, ve.width, ve.height, '#E34234');
 			});
@@ -222,7 +222,7 @@ ipcRenderer.on('ipc-main-browserview-loaded', () => {
 				const qtRangeToQuery = new QtRange(x - (rangeWidth / 2), y - (rangeHeight / 2), rangeWidth, rangeHeight);
 				const menuRangeToQuery = new MenuRange(x - (rangeWidth / 2), y - (rangeHeight / 2), rangeWidth, rangeHeight);
 
-				const navAreasInQueryRange = currentNavAreaTree.queryRange(menuRangeToQuery);
+				const navAreasInQueryRange = currentNavAreaTree.queryRange(menuRangeToQuery, true);
 				const elementsInQueryRange = currentQt.queryRange(qtRangeToQuery);
 
 				//Prioritise nav areas if in range

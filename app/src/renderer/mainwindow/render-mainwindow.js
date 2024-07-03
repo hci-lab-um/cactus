@@ -152,22 +152,25 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-navareas', (event, navAreas) => {
 		navAreas.forEach(navArea => {
 			if (navArea.navItems) {
 				navArea.navItems.forEach(navItem => {
-					renderNavItemInSidebar(navItem);
+					if (Array.isArray(navItem))
+						renderNavItemInSidebar(navItem);
+					else
+						renderNavItemInSidebar([navItem]); //Pass as array, even if there's only one navItem at this or any level in the tree
 				})
 			}
-			//Highlight newly added elements on page
+			//TODO: Highlight newly added elements on page
 			ipcRenderer.send('ipc-mainwindow-highlight-elements-on-page', navAreas);
 		})
 	}
 })
 
-function renderNavItemInSidebar(navItem) {
+function renderNavItemInSidebar(navItems) {
 	//Clear sidebar
 	let sidebar = byId('sidebar_items');
 	sidebar.innerHTML = "";
 	//Add elements to sidebar
-	if (navItem.children) {
-		const markup = `${navItem.children.map(e =>
+	if (navItems) {
+		const markup = `${navItems.map(e =>
 			`<div class='sidebar_item fadeInDown' id='${e.id}'>
 							<div>
 							<div class='sidebar_item_title'>
@@ -192,7 +195,7 @@ function renderNavItemInSidebar(navItem) {
 				(function (i) {
 					dwell(sidebarItems[i], () => {
 						const elementId = sidebarItems[i].getAttribute('id');
-						const elementToClick = navItem.children.filter(e => e.id == elementId);
+						const elementToClick = navItems.filter(e => e.id == elementId);
 						if (elementToClick) {
 							if (elementToClick[0].children.length == 0) {
 								//Show click event animation and clear sidebar
@@ -204,7 +207,7 @@ function renderNavItemInSidebar(navItem) {
 							}
 							else {
 								//Go down one level
-								renderNavItemInSidebar(elementToClick[0]);
+								renderNavItemInSidebar(elementToClick[0].children);
 							}
 						}
 					})
