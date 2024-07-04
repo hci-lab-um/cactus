@@ -292,20 +292,21 @@ ipcRenderer.on('ipc-browserview-forward', () => {
 // }
 
 ipcRenderer.on('ipc-browserview-click-element', async (event, elementToClick) => {
-	//Try finding the element using unique cactus-id
-	let element = document.querySelector('[data-cactus-id="' + elementToClick.id + '"]');
-	if (!element)
-		// Find the element at the specified x,y coordinates
-		element = document.elementFromPoint(elementToClick.insertionPointX, elementToClick.insertionPointY);
-
+	// Find the element at the specified x,y coordinates
+	let element = document.elementFromPoint(elementToClick.insertionPointX, elementToClick.insertionPointY);
 	if (element) {
-		//If it's a link - go to its href rather than relying on focusing/clicking (works nicely when anchor is hidden in some collapsable component)
-		if (element.nodeName == 'A' && (element.getAttribute('href') && element.getAttribute('href') != '#'))
-			ipcRenderer.send('browse-to-url', element.getAttribute('href'));
-		else {
-			element.focus();
-			element.click();
+		element.focus();
+		element.click();
+	}
+	else {
+		//In case element has been hidden or has changed location, try finding it using the unique cactus-id
+		element = document.querySelector('[data-cactus-id="' + elementToClick.id + '"]');
+		if (element) {
+			//If it's a link - go to its href rather than relying on focusing/clicking (works nicely when anchor is hidden in some collapsable component)
+			if (element.nodeName == 'A' && (element.getAttribute('href') && element.getAttribute('href') != '#'))
+				ipcRenderer.send('browse-to-url', element.getAttribute('href'));
 		}
+
 	}
 });
 

@@ -6,7 +6,7 @@ const isDevelopment = process.env.NODE_ENV === "development";
 
 let mainWindow, splashWindow
 let menusOverlay;
-let defaultUrl = 'https://ebay.co.uk/';
+let defaultUrl = 'https://en.wikipedia.org/wiki/Euronews';
 let tabList = [];
 
 // This method is called when Electron has finished initializing
@@ -35,6 +35,7 @@ app.on('activate', () => {
 ipcMain.on('browse-to-url', (event, url) => {
     let fullUrl = '';
     var tab = tabList.find(tab => tab.isActive === true);
+    const currentURL = new URL(tab.browserView.webContents.getURL());
     //Handle relative URLs first
     if (url.startsWith('/')) {
         const currentURL = new URL(tab.browserView.webContents.getURL());
@@ -43,7 +44,19 @@ ipcMain.on('browse-to-url', (event, url) => {
         fullUrl = protocol + host + url;
     }
     else {
-        fullUrl = url;
+        //Handle anchors
+        if (url.startsWith('#')) {
+            let currentAnchorPos = currentURL.href.indexOf('#');
+            if (currentAnchorPos > 0) {
+                fullUrl = currentURL.href.substring(0, currentAnchorPos) + url;
+            } else {
+                fullUrl = currentURL.href + url;
+            }
+        }
+        else {
+            //Take as is
+            fullUrl = url;
+        }
     }
     tab.browserView.webContents.loadURL(fullUrl);
 });
