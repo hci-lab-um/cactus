@@ -46,6 +46,10 @@ module.exports = {
   dwell: (elem, callback) => {
     let throttledFunction = throttle(callback, dwellTime, { leading: false, trailing: true })
 
+    //Bypass dwelling in case a switch is being used
+    elem.addEventListener('click', callback)
+
+    //Dwelling
     elem.addEventListener('mouseover', throttledFunction)
     elem.addEventListener('mouseleave', () => {
       throttledFunction.cancel()

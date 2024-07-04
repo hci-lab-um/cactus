@@ -299,7 +299,7 @@ ipcRenderer.on('ipc-browserview-click-element', async (event, elementToClick) =>
 		element = document.elementFromPoint(elementToClick.insertionPointX, elementToClick.insertionPointY);
 
 	if (element) {
-		//If it's a link - go to its href rather than rely on focusing/clicking (works nicely when anchor is hidden in some collapsable component)
+		//If it's a link - go to its href rather than relying on focusing/clicking (works nicely when anchor is hidden in some collapsable component)
 		if (element.nodeName == 'A' && (element.getAttribute('href') && element.getAttribute('href') != '#'))
 			ipcRenderer.send('browse-to-url', element.getAttribute('href'));
 		else {
