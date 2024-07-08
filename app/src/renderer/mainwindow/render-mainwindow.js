@@ -112,7 +112,7 @@ function setupScrollers() {
 		// Start a new interval to execute the code every one second
 		timeoutScroll = setInterval(function () {
 			ipcRenderer.send('ipc-mainwindow-scrollup');
-		}, 1000); // 1000 milliseconds = 1 second
+		}, 300); // 1000 milliseconds = 1 second
 
 	}
 
@@ -128,7 +128,7 @@ function setupScrollers() {
 		// Start a new interval to execute the code every one second
 		timeoutScroll = setInterval(function () {
 			ipcRenderer.send('ipc-mainwindow-scrolldown');
-		}, 1000); // 1000 milliseconds = 1 second
+		}, 300); // 1000 milliseconds = 1 second
 
 	}
 
@@ -204,6 +204,7 @@ function renderNavItemInSidebar(navItems) {
 								setTimeout(() => {
 									sidebar.innerHTML = "";
 								}, 300);
+
 								ipcRenderer.send('browse-to-url', elementToClick[0].href);
 							}
 							else {

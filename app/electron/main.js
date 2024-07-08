@@ -6,7 +6,7 @@ const isDevelopment = process.env.NODE_ENV === "development";
 
 let mainWindow, splashWindow
 let menusOverlay;
-let defaultUrl = 'https://en.wikipedia.org/wiki/Euronews';
+let defaultUrl = 'https://amazon.com';
 let tabList = [];
 
 // This method is called when Electron has finished initializing
@@ -33,32 +33,34 @@ app.on('activate', () => {
 })
 
 ipcMain.on('browse-to-url', (event, url) => {
-    let fullUrl = '';
-    var tab = tabList.find(tab => tab.isActive === true);
-    const currentURL = new URL(tab.browserView.webContents.getURL());
-    //Handle relative URLs first
-    if (url.startsWith('/')) {
+    if (url) {
+        let fullUrl = '';
+        var tab = tabList.find(tab => tab.isActive === true);
         const currentURL = new URL(tab.browserView.webContents.getURL());
-        const protocol = currentURL.protocol + '//';
-        const host = currentURL.host;
-        fullUrl = protocol + host + url;
-    }
-    else {
-        //Handle anchors
-        if (url.startsWith('#')) {
-            let currentAnchorPos = currentURL.href.indexOf('#');
-            if (currentAnchorPos > 0) {
-                fullUrl = currentURL.href.substring(0, currentAnchorPos) + url;
-            } else {
-                fullUrl = currentURL.href + url;
-            }
+        //Handle relative URLs first
+        if (url.startsWith('/')) {
+            const currentURL = new URL(tab.browserView.webContents.getURL());
+            const protocol = currentURL.protocol + '//';
+            const host = currentURL.host;
+            fullUrl = protocol + host + url;
         }
         else {
-            //Take as is
-            fullUrl = url;
+            //Handle anchors
+            if (url.startsWith('#')) {
+                let currentAnchorPos = currentURL.href.indexOf('#');
+                if (currentAnchorPos > 0) {
+                    fullUrl = currentURL.href.substring(0, currentAnchorPos) + url;
+                } else {
+                    fullUrl = currentURL.href + url;
+                }
+            }
+            else {
+                //Take as is
+                fullUrl = url;
+            }
         }
+        tab.browserView.webContents.loadURL(fullUrl);
     }
-    tab.browserView.webContents.loadURL(fullUrl);
 });
 
 ipcMain.on('ipc-mainwindow-scrolldown', () => {
@@ -75,7 +77,6 @@ ipcMain.on('ipc-mainwindow-click-sidebar-element', (event, elementToClick) => {
     var tab = tabList.find(tab => tab.isActive === true);
     //Once the main page is loaded, create inner browserview and place it in the right position by getting the x,y,width,height of a positioned element in index.html
     tab.browserView.webContents.send('ipc-browserview-click-element', elementToClick);
-
 })
 
 ipcMain.on('ipc-browserview-elements-in-mouserange', (event, elements) => {

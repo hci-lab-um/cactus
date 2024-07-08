@@ -154,9 +154,13 @@ function highlightAvailableElements(x, y, width, height, color) {
 }
 
 ipcRenderer.on('ipc-main-browserview-loaded', () => {
+	//TODO: this is to be set as a quick user setting, allowing users to toggle between nav area navigation mode and not (i.e. normal QT approach)
+	//TODO: sometimes, nav areas are either not marked up properly (e.g. large number of elements on one level), or have a with no hrefs. 
+	let useNavAreas = config.get('dwelling.activateNavAreas');
+
 	//Create trees on visible elements
 	generateQuadTree();
-	generateNavAreasTree();
+	if (useNavAreas) generateNavAreasTree();
 
 	//EXPERIMENTAL - JS EVENTS (E.g. click on tab element, does not fire up (although it's firing up changes in quick succession when banners change etc...) - to test properly)
 	let mutationObserverCallbackExecuting = false;
@@ -180,7 +184,7 @@ ipcRenderer.on('ipc-main-browserview-loaded', () => {
 
 				//Execute quadtree generation
 				generateQuadTree();
-				generateNavAreasTree();
+				if (useNavAreas) generateNavAreasTree();
 
 				//Reset flag to allow next callback execution on x ms
 				setTimeout(() => {
@@ -207,44 +211,44 @@ ipcRenderer.on('ipc-main-browserview-loaded', () => {
 		//Show cursor
 		cursor.style.visibility = 'visible'
 
-		if (currentQt || currentNavAreaTree) {
-			// Clear any existing interval to avoid multiple intervals running simultaneously for mouse cursor hovering activity
-			clearInterval(timeoutCursorHovering);
+		// Clear any existing interval to avoid multiple intervals running simultaneously for mouse cursor hovering activity
+		clearInterval(timeoutCursorHovering);
 
-			// Start a new interval to execute the code every one second
-			timeoutCursorHovering = setInterval(function () {
-				//Find the elements in the quadtree
-				var x = event.clientX; // X location relative to the viewport
-				var y = event.clientY; // Y location relative to the viewport
-				let rangeWidth = config.get('dwelling.rangeWidth');
-				let rangeHeight = config.get('dwelling.rangeHeight');
+		// Start a new interval to execute the code every one second
+		timeoutCursorHovering = setInterval(function () {
+			//Find the elements in the quadtree
+			var x = event.clientX; // X location relative to the viewport
+			var y = event.clientY; // Y location relative to the viewport
+			let rangeWidth = config.get('dwelling.rangeWidth');
+			let rangeHeight = config.get('dwelling.rangeHeight');
 
-				const qtRangeToQuery = new QtRange(x - (rangeWidth / 2), y - (rangeHeight / 2), rangeWidth, rangeHeight);
-				const menuRangeToQuery = new MenuRange(x - (rangeWidth / 2), y - (rangeHeight / 2), rangeWidth, rangeHeight);
 
-				const navAreasInQueryRange = currentNavAreaTree.queryRange(menuRangeToQuery, true);
-				const elementsInQueryRange = currentQt.queryRange(qtRangeToQuery);
+			const qtRangeToQuery = new QtRange(x - (rangeWidth / 2), y - (rangeHeight / 2), rangeWidth, rangeHeight);
+			const menuRangeToQuery = new MenuRange(x - (rangeWidth / 2), y - (rangeHeight / 2), rangeWidth, rangeHeight);
 
-				//Prioritise nav areas if in range
-				if (navAreasInQueryRange.length > 0) {
-					ipcRenderer.send('ipc-browserview-navareas-in-mouserange', navAreasInQueryRange);
-					//Stop continuously querying for elements when hitting a nav area (allow user to interact with menu)
-					clearInterval(timeoutCursorHovering);
-				}
-				else {
-					//Remove duplicate elements by ID (larger elements are split into multiple smaller elements, replicating the ID)
-					var uniqueInteractiveElementsInQueryRange = [];
-					var seenElements = new Set();
-					elementsInQueryRange.forEach(function (el) {
-						if (!seenElements.has(el.id)) {
-							seenElements.add(el.id);
-							uniqueInteractiveElementsInQueryRange.push(el);
-						}
-					});
-					ipcRenderer.send('ipc-browserview-elements-in-mouserange', uniqueInteractiveElementsInQueryRange);
-				}
-			}, 500);
-		}
+			const elementsInQueryRange = currentQt ? currentQt.queryRange(qtRangeToQuery) : [];
+			const navAreasInQueryRange = useNavAreas ? (currentNavAreaTree ? currentNavAreaTree.queryRange(menuRangeToQuery, true) : []) : [];
+
+			//Prioritise nav areas if in range
+			if (useNavAreas && navAreasInQueryRange.length > 0) {
+				ipcRenderer.send('ipc-browserview-navareas-in-mouserange', navAreasInQueryRange);
+				//Stop continuously querying for elements when hitting a nav area (allow user to interact with menu)
+				clearInterval(timeoutCursorHovering);
+			}
+			else {
+				//Remove duplicate elements by ID (larger elements are split into multiple smaller elements, replicating the ID)
+				var uniqueInteractiveElementsInQueryRange = [];
+				var seenElements = new Set();
+				elementsInQueryRange.forEach(function (el) {
+					if (!seenElements.has(el.id)) {
+						seenElements.add(el.id);
+						uniqueInteractiveElementsInQueryRange.push(el);
+					}
+				});
+				ipcRenderer.send('ipc-browserview-elements-in-mouserange', uniqueInteractiveElementsInQueryRange);
+			}
+		}, 500);
+
 	})
 
 	browserView.addEventListener('mouseout', () => {
@@ -257,19 +261,23 @@ ipcRenderer.on('ipc-main-browserview-loaded', () => {
 
 ipcRenderer.on('ipc-browserview-scrolldown', () => {
 	let scrollDistance = config.get('dwelling.scrollDistance');
+	let useNavAreas = config.get('dwelling.activateNavAreas');
+
 	scrollBy(0, scrollDistance);
 	setTimeout(function () {
 		generateQuadTree();
-		generateNavAreasTree();
+		if (useNavAreas) generateNavAreasTree();
 	}, 500);
 })
 
 ipcRenderer.on('ipc-browserview-scrollup', () => {
 	let scrollDistance = config.get('dwelling.scrollDistance');
+	let useNavAreas = config.get('dwelling.activateNavAreas');
+
 	scrollBy(0, scrollDistance * -1);
 	setTimeout(function () {
 		generateQuadTree();
-		generateNavAreasTree();
+		if (useNavAreas) generateNavAreasTree();
 	}, 500);
 })
 
@@ -326,6 +334,8 @@ ipcRenderer.on('ipc-browserview-highlight-elements', async (event, elementsToHig
 
 ipcRenderer.on('ipc-browserview-create-quadtree', () => {
 	//ISSUES: Node-Config is required by Cactus, and the config/default.json file would need to be recreated on cactus itself, rather than just the builder code. Which might not be a bad idea. Think about it.
+	let useNavAreas = config.get('dwelling.activateNavAreas');
+
 	generateQuadTree();
-	generateNavAreasTree();
+	if (useNavAreas) generateNavAreasTree();
 })

@@ -21,7 +21,8 @@
   "dwelling": {
     "dwellTime": 1500,
     "rangeWidth": 150,
-    "rangeHeight": 50,
-    "scrollDistance": 300
+    "rangeHeight": 100,
+    "scrollDistance": 300,
+    "activateNavAreas": false
   }
 }

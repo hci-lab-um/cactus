@@ -9,6 +9,8 @@
 5. Integrate with WebGazer for cursor control without the need for an eye tracker (configurable)
 6. Add Configuration screens 
 7. Make all parameterized via Config (e.g. rangeWidth/rangeHeight)
+8. config.get('dwelling.activateNavAreas'); should be provided as a quick user setting (e.g. UI toggle), allowing users to toggle between nav area navigation mode and not (i.e. normal QT approach). Sometimes, nav areas are either not marked up properly (e.g. large number of elements on one level), or have a with no hrefs. 
+
 
 ## Notes
 1. It might be better if Cactus works with any ET that is supported by Windows Eye Control or Tobii Gaze Point, as opposed to integrating directly with specific ETs. 
