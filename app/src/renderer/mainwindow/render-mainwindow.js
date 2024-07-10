@@ -2,6 +2,7 @@
 // const path                      = require('path')
 const { ipcRenderer } = require('electron')
 const { byId, dwell } = require('../../tools/utils')
+const config = require('config');
 // const { byId, readFile, dwell } = require('./js/utils')
 // const { drop, isEqual }         = require('lodash')
 // const Config                    = require('./js/config')
@@ -17,10 +18,11 @@ const DOMPurify = require('dompurify');
 //Omnibox - combined location and search field 
 // let omni = byId('url')
 
-let omni, navbar, sidebar, scrollbar
+let omni, navbar, sidebar, sidebarItemArea, scrollbar, menuNavLevelup, menuScrollUp, menuScrollDown
 let cursor
 let scrollUpBtn, scrollDownBtn
 let timeoutScroll
+let navAreaStack = [];
 
 // Exposes an HTML sanitizer to allow for innerHtml assignments when TrustedHTML policies are set ('This document requires 'TrustedHTML' assignment')
 window.addEventListener('DOMContentLoaded', () => {
@@ -38,6 +40,8 @@ ipcRenderer.on('mainWindowLoaded', () => {
 	setupScrollers();
 	//Setup browser functionality events 
 	setupFunctionality();
+	//Setup navigation sidebar
+	setupNavigationSideBar();
 })
 
 // =================================
@@ -106,13 +110,15 @@ function setupScrollers() {
 	})
 
 	scrollUpBtn.onmouseover = () => {
+		let scrollInterval = config.get('dwelling.browserAreaScrollIntervalInMs');
+
 		// Clear any existing interval to avoid multiple intervals running simultaneously
 		clearInterval(timeoutScroll);
 
-		// Start a new interval to execute the code every one second
+		// Start a new interval to execute the code every x ms
 		timeoutScroll = setInterval(function () {
 			ipcRenderer.send('ipc-mainwindow-scrollup');
-		}, 300); // 1000 milliseconds = 1 second
+		}, scrollInterval);
 
 	}
 
@@ -122,13 +128,15 @@ function setupScrollers() {
 	}
 
 	scrollDownBtn.onmouseover = () => {
+		let scrollInterval = config.get('dwelling.browserAreaScrollIntervalInMs');
+
 		// Clear any existing interval to avoid multiple intervals running simultaneously
 		clearInterval(timeoutScroll);
 
-		// Start a new interval to execute the code every one second
+		// Start a new interval to execute the code every x ms
 		timeoutScroll = setInterval(function () {
 			ipcRenderer.send('ipc-mainwindow-scrolldown');
-		}, 300); // 1000 milliseconds = 1 second
+		}, scrollInterval);
 
 	}
 
@@ -141,53 +149,138 @@ function setupScrollers() {
 
 
 // =================================
+// ==== Browser Functionality ======
+// =================================
+
+function setupNavigationSideBar() {
+	clearNavigationSidebar();
+
+	menuNavLevelup = byId('sidebar_levelup')
+	menuScrollUp = byId('sidebar_scrollup')
+	menuScrollDown = byId('sidebar_scrolldown')
+	sidebarItemArea = byId('sidebar_items')
+
+	dwell(menuNavLevelup, () => {
+		if (navAreaStack.length) {
+			const previousLevel = navAreaStack.pop();
+			renderNavItemInSidebar([previousLevel]);
+		}
+	});
+
+	const scrollDistance = config.get('dwelling.menuAreaScrollDistance');
+	const scrollInterval = config.get('dwelling.menuAreaScrollIntervalInMs');
+	//Set up scrolling event
+	menuScrollUp.onmouseover = () => {
+		// Clear any existing interval to avoid multiple intervals running simultaneously
+		clearInterval(timeoutScroll);
+
+		// Start a new interval to execute the code every x ms
+		timeoutScroll = setInterval(function () {
+			sidebarItemArea.scrollBy({
+				top: (scrollDistance * -1),
+				left: 0,
+				behavior: "smooth"
+			});
+		}, scrollInterval);
+	}
+
+	menuScrollDown.onmouseover = () => {
+		// Clear any existing interval to avoid multiple intervals running simultaneously
+		clearInterval(timeoutScroll);
+
+		// Start a new interval to execute the code every x ms
+		timeoutScroll = setInterval(function () {
+			sidebarItemArea.scrollBy({
+				top: scrollDistance,
+				left: 0,
+				behavior: "smooth"
+			});
+		}, scrollInterval);
+	}
+
+	//Clear timeouts
+	menuScrollUp.onmouseout = () => {
+		// Clear the interval when the mouse leaves the element
+		clearInterval(timeoutScroll);
+	}
+
+	menuScrollDown.onmouseout = () => {
+		// Clear the interval when the mouse leaves the element
+		clearInterval(timeoutScroll);
+	}
+}
+
+function setupFunctionality() {
+	omni = byId('url')
+
+	dwell(omni, () => {
+		// hideAllOverlays()
+		showOmniOverlay('omni');
+	});
+
+	let backOrForward = byId('backOrForwardBtn')
+	dwell(backOrForward, () => {
+		showOmniOverlay('navigation')
+	})
+
+	let accessibility = byId('accessibilityBtn')
+	dwell(accessibility, () => {
+		showOmniOverlay('accessibility')
+	})
+}
+
+
+// =================================
 // == Sidebar element management ===
 // =================================
 ipcRenderer.on('ipc-mainwindow-sidebar-render-navareas', (event, navAreas) => {
 	if (navAreas.length) {
 		//Clear sidebar
-		let sidebar = byId('sidebar_items');
-		sidebar.innerHTML = "";
+		sidebarItemArea = byId('sidebar_items');
+		sidebarItemArea.innerHTML = "";
 
-		//Only one will be rendered, although there's a foreach
-		navAreas.forEach(navArea => {
-			if (navArea.navItems) {
-				navArea.navItems.forEach(navItem => {
-					if (Array.isArray(navItem))
-						renderNavItemInSidebar(navItem);
-					else
-						renderNavItemInSidebar([navItem]); //Pass as array, even if there's only one navItem at this or any level in the tree
-				})
+		//Render only one navArea at a time
+		if (navAreas.length > 0) {
+			if (navAreas[0].navItems) {
+				renderNavItemInSidebar(navAreas[0].navItems);
 			}
-			//TODO: Highlight newly added elements on page
+			//Highlight newly added elements on page
 			ipcRenderer.send('ipc-mainwindow-highlight-elements-on-page', navAreas);
-		})
+		}
+
 	}
 })
 
+function getNavItemMarkup(navItem) {
+	return `<div class='sidebar_item fadeInDown' id='${navItem.id}'>
+				<div>
+				<div class='sidebar_item_title'>
+					${navItem.label}
+				</div>
+				<div class='sidebar_item_link'>
+					${navItem.isLeaf}
+				</div>
+				</div>
+				<div class='sidebar_item_icon'>
+					<i class="${navItem.children.length > 0 ? 'fas fa-bars' : 'fas fa-angle-right'}"></i>
+				</div>
+				</div>`;
+}
+
 function renderNavItemInSidebar(navItems) {
 	//Clear sidebar
-	let sidebar = byId('sidebar_items');
-	sidebar.innerHTML = "";
+	sidebarItemArea = byId('sidebar_items');
+	sidebarItemArea.innerHTML = "";
 	//Add elements to sidebar
-	if (navItems) {
-		const markup = `${navItems.map(e =>
-			`<div class='sidebar_item fadeInDown' id='${e.id}'>
-							<div>
-							<div class='sidebar_item_title'>
-								${e.label}
-							</div>
-							<div class='sidebar_item_link'>
-								${e.isLeaf}
-							</div>
-							</div>
-							<div class='sidebar_item_icon'>
-								<i class="${e.children.length > 0 ? 'fas fa-bars' : 'fas fa-angle-right'}"></i>
-							</div>
-							</div>
-							`).join('')}`
+	navItems.forEach((navItem) => {
+		const markup = Array.isArray(navItem) ?
+			navItem.map(e =>
+				getNavItemMarkup(e)
+			).join('')
+			:
+			getNavItemMarkup(navItem);
 
-		sidebar.insertAdjacentHTML('afterbegin', markup);
+		sidebarItemArea.insertAdjacentHTML('beforeend', markup);
 
 		//Attach dwell
 		let sidebarItems = document.querySelectorAll('.sidebar_item')
@@ -196,18 +289,21 @@ function renderNavItemInSidebar(navItems) {
 				(function (i) {
 					dwell(sidebarItems[i], () => {
 						const elementId = sidebarItems[i].getAttribute('id');
-						const elementToClick = navItems.filter(e => e.id == elementId);
+						const elementToClick = Array.isArray(navItem) ? navItem.filter(e => e.id == elementId) : [navItem];
 						if (elementToClick) {
 							if (elementToClick[0].children.length == 0) {
 								//Show click event animation and clear sidebar
 								sidebarItems[i].classList.add('fadeOutDown');
 								setTimeout(() => {
-									sidebar.innerHTML = "";
+									sidebarItemArea.innerHTML = "";
 								}, 300);
 
 								ipcRenderer.send('browse-to-url', elementToClick[0].href);
+								clearNavigationSidebar();
 							}
 							else {
+								//Set current level in stack
+								navAreaStack.push(navItem);
 								//Go down one level
 								renderNavItemInSidebar(elementToClick[0].children);
 							}
@@ -216,11 +312,29 @@ function renderNavItemInSidebar(navItems) {
 				})(i)
 			}
 		}
-	}
+	});
+
+	//Set up hierarchical navigation controls in sidebar
+	menuNavLevelup = byId('sidebar_levelup')
+	if (navAreaStack.length > 0)
+		menuNavLevelup.style.display = 'flex';
+	else
+		menuNavLevelup.style.display = 'none'
+}
+
+function clearNavigationSidebar() {
+	//Clear sidebar
+	sidebarItemArea = byId('sidebar_items');
+	sidebarItemArea.innerHTML = "";
+	navAreaStack = [];
+
+	//Hide nav level up button
+	menuNavLevelup = byId('sidebar_levelup')
+	menuNavLevelup.style.display = 'none'
 }
 
 ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
-	let sidebar = byId('sidebar_items');
+	sidebarItemArea = byId('sidebar_items');
 	if (elements.length > 0) {
 		let sidebarItems = document.querySelectorAll('.sidebar_item');
 		const elementIdsToAdd = elements.map((e) => e.id);
@@ -272,9 +386,10 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
 			}"></i>
 			</div>
 			</div>
-			`).join('')}`
+			`).join('')
+			}`
 
-		sidebar.insertAdjacentHTML('afterbegin', markup);
+		sidebarItemArea.insertAdjacentHTML('afterbegin', markup);
 
 		//Highlight newly added elements on page
 		ipcRenderer.send('ipc-mainwindow-highlight-elements-on-page', elements);
@@ -292,8 +407,10 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
 							//Show click event animation and clear sidebar
 							sidebarItems[i].classList.add('fadeOutDown');
 							setTimeout(() => {
-								sidebar.innerHTML = "";
+								sidebarItemArea.innerHTML = "";
 							}, 300);
+
+							clearNavigationSidebar();
 						}
 					})
 				})(i)
@@ -301,7 +418,7 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
 		}
 	}
 	else {
-		sidebar.innerHTML = "";
+		sidebarItemArea.innerHTML = "";
 	}
 	//const sidebarItems = document.querySelectorAll('.sidebar_item')
 	// if (sidebarItems.length) {
@@ -363,27 +480,7 @@ function sanitiseUrl(event) {
 	}
 }
 
-// =================================
-// ==== Browser Functionality ======
-// =================================
 
-function setupFunctionality() {
-	omni = byId('url')
-	dwell(omni, () => {
-		// hideAllOverlays()
-		showOmniOverlay('omni');
-	});
-
-	let backOrForward = byId('backOrForwardBtn')
-	dwell(backOrForward, () => {
-		showOmniOverlay('navigation')
-	})
-
-	let accessibility = byId('accessibilityBtn')
-	dwell(accessibility, () => {
-		showOmniOverlay('accessibility')
-	})
-}
 
 // function reload() {
 //   hideAllOverlays()

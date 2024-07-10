@@ -1,3 +1,29 @@
+.scrollBtn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100px;
+  height: 100px;
+  padding: 20px;
+  // padding-top: 20px;
+  // padding-left: 20px;
+  outline: none;
+  overflow: hidden;
+  position: relative;
+  background-color: transparent;
+  z-index: 3;
+  border-radius: 50%;
+  right: 30px;
+  opacity: 0.5;
+  color: $blue-2;
+  transition: $dwellTime/2;
+
+  &:hover {
+    color: $blue-light;
+    background-color: $blue-2;
+  }
+}
+
 .dwellBtn {
   color: $blue-2;
   font-size: 20px;
@@ -5,7 +31,6 @@
   border: 15px solid $white;
   border-radius: 20px;
   background-color: $blue-light;
-  width: 15%;
   transition: $dwellTime;
   outline: none;
   overflow: hidden;
@@ -20,21 +45,23 @@
     position: absolute;
     top: 50%;
     left: 50%;
+
     margin: {
       left: (5em / -2);
       top: (5em / -2);
     }
+
     border-radius: 50%;
     opacity: 0;
     transform: scale(1);
-    transition:
-      opacity $dwellTime cubic-bezier(0,0,.2,1),
-      transform $dwellTime cubic-bezier(0,0,.2,1);
+    transition: opacity $dwellTime cubic-bezier(0, 0, .2, 1),
+    transform $dwellTime cubic-bezier(0, 0, .2, 1);
   }
 
   &:hover {
     color: $blue-light;
     background-color: $blue-2;
+
     &:before {
       opacity: 0.6;
       transform: scale(0);

@@ -260,7 +260,7 @@ ipcRenderer.on('ipc-main-browserview-loaded', () => {
 });
 
 ipcRenderer.on('ipc-browserview-scrolldown', () => {
-	let scrollDistance = config.get('dwelling.scrollDistance');
+	let scrollDistance = config.get('dwelling.browserAreaScrollDistance');
 	let useNavAreas = config.get('dwelling.activateNavAreas');
 
 	scrollBy(0, scrollDistance);
@@ -271,7 +271,7 @@ ipcRenderer.on('ipc-browserview-scrolldown', () => {
 })
 
 ipcRenderer.on('ipc-browserview-scrollup', () => {
-	let scrollDistance = config.get('dwelling.scrollDistance');
+	let scrollDistance = config.get('dwelling.browserAreaScrollDistance');
 	let useNavAreas = config.get('dwelling.activateNavAreas');
 
 	scrollBy(0, scrollDistance * -1);

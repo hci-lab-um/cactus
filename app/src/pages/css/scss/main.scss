@@ -104,13 +104,40 @@ body {
     }
   }
 
+  &_levelup {
+    @extend .dwellBtn;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 20px;
+  }
+
+  &_scrollup {
+    @extend .dwellBtn;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 20px;
+  }
+
+  &_scrolldown {
+    @extend .dwellBtn;
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 20px;
+  }
+
   &_items {
     width: 100%;
     overflow-y: auto;
   }
 }
 
-// *********** SIDEBAR **************
 .sidebar {
   &_item {
     @extend .dwellBtn;
@@ -175,32 +202,6 @@ body {
   border-right: 1px solid $lightgrey;
   overflow: hidden;
   text-align: left;
-}
-
-.scrollBtn {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100px;
-  height: 100px;
-  padding: 20px;
-  // padding-top: 20px;
-  // padding-left: 20px;
-  outline: none;
-  overflow: hidden;
-  position: relative;
-  background-color: transparent;
-  z-index: 3;
-  border-radius: 50%;
-  right: 30px;
-  opacity: 0.5;
-  color: $blue-2;
-  transition: $dwellTime/2;
-
-  &:hover {
-    color: $blue-light;
-    background-color: $blue-2;
-  }
 }
 
 #scroll-up {
