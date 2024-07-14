@@ -6,7 +6,7 @@ const isDevelopment = process.env.NODE_ENV === "development";
 
 let mainWindow, splashWindow
 let menusOverlay;
-let defaultUrl = 'https://um.edu.mt';
+let defaultUrl = 'https://www.euronews.com/';
 let tabList = [];
 
 // This method is called when Electron has finished initializing
@@ -34,31 +34,39 @@ app.on('activate', () => {
 
 ipcMain.on('browse-to-url', (event, url) => {
     if (url) {
-        let fullUrl = '';
+        //Assume all is ok
+        let fullUrl = url;
         var tab = tabList.find(tab => tab.isActive === true);
         const currentURL = new URL(tab.browserView.webContents.getURL());
-        //Handle relative URLs first
-        if (url.startsWith('/')) {
-            const currentURL = new URL(tab.browserView.webContents.getURL());
-            const protocol = currentURL.protocol + '//';
-            const host = currentURL.host;
-            fullUrl = protocol + host + url;
+        const protocol = currentURL.protocol;
+        const host = currentURL.host;
+
+        //Handle URLs without protocol (e.g. //www.google.com)
+        if (url.startsWith('//')) {
+            fullUrl = protocol + url;
         }
         else {
-            //Handle anchors
-            if (url.startsWith('#')) {
-                let currentAnchorPos = currentURL.href.indexOf('#');
-                if (currentAnchorPos > 0) {
-                    fullUrl = currentURL.href.substring(0, currentAnchorPos) + url;
-                } else {
-                    fullUrl = currentURL.href + url;
-                }
+            //Handle relative path URLs (e.g. /path/to/resource)
+            if (url.startsWith('/')) {
+                fullUrl = protocol + '//' + host + url;
             }
             else {
-                //Take as is
-                fullUrl = url;
+                //Handle anchors (e.g. #element-id)
+                if (url.startsWith('#')) {
+                    let currentAnchorPos = currentURL.href.indexOf('#');
+                    if (currentAnchorPos > 0) {
+                        fullUrl = currentURL.href.substring(0, currentAnchorPos) + url;
+                    } else {
+                        fullUrl = currentURL.href + url;
+                    }
+                }
+                else {
+                    //Take as is
+                    fullUrl = url;
+                }
             }
         }
+
         tab.browserView.webContents.loadURL(fullUrl);
     }
 });

@@ -54,6 +54,168 @@ function setEventHandlersForOmniMenu() {
 	dwell(cancelOmniBtn, () => {
 		ipcRenderer.send('ipc-overlays-remove');
 	})
+
+	// // =================================
+	// // ======== OMNIBOX OVERLAY ========
+	// // =================================
+
+	// var bookmarksWebview
+
+	// const overlayOmnibox = byId('overlay-omnibox')
+	// const refreshOmniBtn = byId('refreshPageBtn')
+	// const searchOmniBtn = byId('searchBtn')
+	// const bookmarkOmniBtn = byId('bookmarkPageBtn')
+	// const viewBookmarksOmniBtn = byId('showBookmarksBtn')
+	// const cancelOmniBtn = byId('cancel-omni')
+	// const omnibox = byId('omnibox')
+	// const cancelSearchBtn = byId('cancel-search')
+	// const submitSearchBtn = byId('submit-search')
+	// const overlaySearchBox = byId('overlay-search')
+	// const inputSearchBox = byId('searchText')
+
+	// dialog = byId('dialog')
+	// dialogMessage = byId('dialogMessage')
+	// dialogErrorIcon = byId('dialogError')
+	// dialogSuccessIcon = byId('dialogSuccess')
+
+	// dwell(omnibox, () => {
+	//   hideAllOverlays()
+	//   overlayOmnibox.style.display = 'grid'
+	// })
+
+	// dwell(cancelOmniBtn, () => {
+	//   overlayOmnibox.style.display = 'none'
+	// })
+
+	// dwell(refreshOmniBtn, reload)
+
+	// dwell(searchOmniBtn, () => {
+	//   hideAllOverlays()
+	//   overlaySearchBox.style.display="grid"
+	//   inputSearchBox.focus();
+	// })
+
+	// dwell(submitSearchBtn, () => {
+	//   hideAllOverlays()
+	//   overlaySearchBox.style.display="none"
+	//   webview.loadURL("https://www.bing.com/search?q=" + inputSearchBox.value).then(() => {
+	//     console.debug('ok');
+	//   }).catch((ex) =>
+	//     {
+	//       console.debug(ex);
+	//     });
+	// })
+
+	// dwell(cancelSearchBtn, () => {
+	//   overlaySearchBox.style.display = 'none'
+	// })
+
+	// // BOOKMARKS
+	// dwell(bookmarkOmniBtn, () => {
+	//   let bookmarksPath = path.join(__dirname, 'bookmarks.json')
+	//   fs.readFile(bookmarksPath, 'utf8', (err, data) => {
+	//     let bMarkName = webview.src.replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0];
+	//     var bookmark = { url: webview.src, name: bMarkName}
+
+	//     if (err) {
+	//       return err
+	//     } else {
+	//       var bookmarks = JSON.parse(data)
+	//       var exists = false;
+
+	//       for(var i=0; bookmarks.bookmarks.length > i; i++) {
+	//         if (bookmarks.bookmarks[i].url === bookmark.url) {
+	//           exists = true;
+	//         }
+	//       }
+
+	//       if (!exists) {
+	//         bookmarks.bookmarks.push(bookmark)
+	//         let bookmarksJson = JSON.stringify(bookmarks)
+	//         fs.writeFile(bookmarksPath, bookmarksJson, 'utf8', (err) => {
+	//           if (err) throw err
+	//         })
+	//         dialogMessage.innerHTML = 'Bookmark added succesfully!'
+	//         dialogErrorIcon.style.display = 'none'
+	//         dialogSuccessIcon.style.display = 'block'
+	//       } else {
+	//         dialogSuccessIcon.style.display = 'none'
+	//         dialogMessage.innerHTML = 'Bookmark already exists!'
+	//         dialogErrorIcon.style.display = 'block'
+	//       }
+	//     }
+	//   })
+
+	//   hideAllOverlays()
+	//   dialog.style.display = 'flex'
+	//   setTimeout(() => {
+	//     dialog.classList.add('fadeOutDown')
+	//   }, 3000);
+
+	//   setTimeout(() => {
+	//     dialog.style.display = 'none'
+	//     dialog.classList.remove('fadeOutDown')
+	//   }, 3600);
+	// })
+
+	// dwell(viewBookmarksOmniBtn, () => {
+	//   webviewContainer = byId('webview-container')
+	//   webviewContainer.insertAdjacentHTML('beforeend', `
+	//     <webview id="bookmarkview" class="webpage" src="./bookmarks.html" preload="./injectBookmark.js" autosize="on"></webview>
+	//   `)
+	//   hideAllOverlays()
+	//   bookmarksWebview = byId('bookmarkview')
+
+	//   bookmarksWebview.addEventListener('mouseover', () => {
+	//     cursor.style.visibility = 'hidden'
+	//   })
+
+	//   bookmarksWebview.addEventListener('mouseout', () => {
+	//     cursor.style.visibility = 'visible'
+	//   })
+
+	//   bookmarksWebview.addEventListener('dom-ready', () => {
+	//     // bookmarksWebview.openDevTools()
+	//   })
+
+	//   webview.style.display = 'none';
+	//   bookmarksWebview.style.display = 'flex'
+
+	//   let bookmarksPath = path.join(__dirname, 'bookmarks.json')
+	//   let bookmarksJson = fs.readFileSync(bookmarksPath, 'utf8')
+
+	//   bookmarksWebview.addEventListener('dom-ready', () => {
+	//     bookmarksWebview.send('getBookmarks', bookmarksJson)
+	//   })
+
+	//   ipcRenderer.on('loadBookmark', (event, message) => {
+	//     webview.loadURL(message)
+	//     // webview.src = message
+	//     webview.style.display = 'flex'
+	//     bookmarksWebview.style.display = 'none'
+	//     document.getElementById("bookmarkview").remove();
+	//   })
+	// })
+
+	// ipcRenderer.on('closeBookmarks', () => {
+	//   webview.style.display = 'flex'
+	//   bookmarksWebview.style.display = 'none'
+	//   document.getElementById("bookmarkview").remove();
+	// })
+
+
+	// // webview.addEventListener('dom-ready', () => {
+	// //   // Insert CSS to Webview
+	// //   var head = document.getElementsByTagName('head')[0]
+	// //   var linkToWebviewCss = head.children[4].href
+	// //   readFile(linkToWebviewCss, (css, err) => {
+	// //     if (err) throw err
+	// //     var cssContent = String(css)
+	// //     webview.insertCSS(cssContent)
+	// //   })
+	// // })
+
+	// })
 }
 
 function setEventHandlersForAccessibilityMenu() {
