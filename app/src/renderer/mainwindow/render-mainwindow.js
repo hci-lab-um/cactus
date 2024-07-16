@@ -212,6 +212,7 @@ function setupNavigationSideBar() {
 
 function setupFunctionality() {
 	omni = byId('url')
+	omni.addEventListener('keydown', (event) => browserToUrl(event));
 	dwell(omni, () => {
 		// hideAllOverlays()
 		showOverlay('omni');
@@ -434,7 +435,7 @@ ipcRenderer.on('browserview-loading-stop', (event, pageDetails) => {
 });
 
 // Sanitises URL
-function sanitiseUrl(event) {
+function browserToUrl(event) {
 	let omni = byId('url')
 	if (event.keyCode === 13) {
 		omni.blur();
@@ -469,9 +470,9 @@ const omniboxLoadStop = (pageDetails) => {
 	favicon.style.display = "block"
 	loader.style.display = "none"
 	omni.value = pageDetails.title;
-	omni.addEventListener('click', () => displayOmni(pageDetails.url));
-	omni.addEventListener('blur', () => displayOmni(pageDetails.title));
-	omni.addEventListener('keydown', (event) => sanitiseUrl(event));
+
+	omni.addEventListener('click', () => displayOmni(pageDetails.url), { once: true });
+	omni.addEventListener('blur', () => displayOmni(pageDetails.title), { once: true });
 }
 
 function displayOmni(value) {

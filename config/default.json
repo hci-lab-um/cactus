@@ -27,5 +27,8 @@
     "menuAreaScrollDistance": 200,
     "menuAreaScrollIntervalInMs": 300,
     "activateNavAreas": true
+  },
+  "browser": {
+    "defaultUrl": "https://www.euronews.com"
   }
 }

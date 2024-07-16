@@ -1,4 +1,5 @@
 const { app, BrowserWindow, BrowserView, ipcMain } = require('electron')
+const config = require('config');
 const path = require('path')
 const { log } = require('electron-log');
 
@@ -6,11 +7,11 @@ const isDevelopment = process.env.NODE_ENV === "development";
 
 let mainWindow, splashWindow
 let menusOverlay;
-let defaultUrl = 'https://www.euronews.com/';
+let defaultUrl = config.get('browser.defaultUrl');
 let tabList = [];
 
-// This method is called when Electron has finished initializing
 app.whenReady().then(() => {
+    // This method is called when Electron has finished initializing
     createSplashWindow();
     // Show splash screen for a short while
     setTimeout(() => {
@@ -18,8 +19,8 @@ app.whenReady().then(() => {
     }, 2000);
 });
 
-// App closes when all windows are closed, however this is not default behaviour on macOS (applications and their menu bar to stay active)
 app.on('window-all-closed', () => {
+    // App closes when all windows are closed, however this is not default behaviour on macOS (applications and their menu bar to stay active)
     if (process.platform !== 'darwin') {
         app.quit()
     }
