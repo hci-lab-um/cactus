@@ -1,0 +1,495 @@
+// const fs                        = require('original-fs')
+// const path                      = require('path')
+const { ipcRenderer } = require('electron')
+const { byId, dwell } = require('../../tools/utils')
+const config = require('config');
+// const { byId, readFile, dwell } = require('./js/utils')
+// const { drop, isEqual }         = require('lodash')
+// const Config                    = require('./js/config')
+const { createCursor, followCursor } = require('../../tools/cursor')
+const DOMPurify = require('dompurify');
+
+// let backOrForward, browserviewContainer
+// let cancelNavBtn, backNavBtn, forwardNavBtn, overlayNav
+// let dialog, dialogMessage, dialogErrorIcon, dialogSuccessIcon
+
+// let webviewContainer
+
+//Omnibox - combined location and search field 
+// let omni = byId('url')
+
+let omni, navbar, sidebar, sidebarItemArea, scrollbar, menuNavLevelup, menuScrollUp, menuScrollDown
+let cursor
+let scrollUpBtn, scrollDownBtn
+let timeoutScroll
+let navAreaStack = [];
+
+// Exposes an HTML sanitizer to allow for innerHtml assignments when TrustedHTML policies are set ('This document requires 'TrustedHTML' assignment')
+window.addEventListener('DOMContentLoaded', () => {
+	// Expose DOMPurify to the renderer process
+	window.sanitizeHTML = (html) => {
+		return DOMPurify.sanitize(html, { RETURN_TRUSTED_TYPE: true });
+	};
+});
+
+ipcRenderer.on('mainWindowLoaded', () => {
+
+	//Setup cursors
+	setupCursor();
+	//Setup scrollers
+	setupScrollers();
+	//Setup browser functionality events 
+	setupFunctionality();
+	//Setup navigation sidebar
+	setupNavigationSideBar();
+})
+
+// =================================
+// ==== Cursor management ====
+// =================================
+
+function setupCursor() {
+	//Setup cursor on main window view
+	createCursor('cactus_cursor');
+	cursor = document.getElementById('cactus_cursor');
+	followCursor('cactus_cursor');
+
+	//Get reference to browserViewContainer
+	navbar = byId('navbar')
+	sidebar = byId('sidebar')
+	scrollbar = byId('scrollbar')
+
+	navbar.addEventListener('mouseout', () => {
+		cursor.style.visibility = 'hidden'
+	})
+
+	navbar.addEventListener('mouseover', () => {
+		cursor.style.visibility = 'visible'
+	})
+
+	sidebar.addEventListener('mouseout', () => {
+		cursor.style.visibility = 'hidden'
+	})
+
+	sidebar.addEventListener('mouseover', () => {
+		cursor.style.visibility = 'visible'
+	})
+
+	scrollbar.addEventListener('mouseout', () => {
+		cursor.style.visibility = 'hidden'
+	})
+
+	scrollbar.addEventListener('mouseover', () => {
+		cursor.style.visibility = 'visible'
+	})
+}
+
+
+// =================================
+// ==== Scrolling Functionality ====
+// =================================
+
+function setupScrollers() {
+	scrollUpBtn = byId('scroll-up')
+	scrollDownBtn = byId('scroll-down')
+
+	ipcRenderer.on('ipc-mainwindow-scroll-up-hide', () => {
+		scrollUpBtn.style.display = 'none'
+	})
+
+	ipcRenderer.on('ipc-mainwindow-scroll-up-show', () => {
+		scrollUpBtn.style.display = 'flex'
+	})
+
+	ipcRenderer.on('ipc-mainwindow-scroll-down-hide', () => {
+		scrollDownBtn.style.display = 'none'
+	})
+
+	ipcRenderer.on('ipc-mainwindow-scroll-down-show', () => {
+		scrollDownBtn.style.display = 'flex'
+	})
+
+	scrollUpBtn.onmouseover = () => {
+		let scrollInterval = config.get('dwelling.browserAreaScrollIntervalInMs');
+
+		// Clear any existing interval to avoid multiple intervals running simultaneously
+		clearInterval(timeoutScroll);
+
+		// Start a new interval to execute the code every x ms
+		timeoutScroll = setInterval(function () {
+			ipcRenderer.send('ipc-mainwindow-scrollup');
+		}, scrollInterval);
+
+	}
+
+	scrollUpBtn.onmouseout = () => {
+		// Clear the interval when the mouse leaves the element
+		clearInterval(timeoutScroll);
+	}
+
+	scrollDownBtn.onmouseover = () => {
+		let scrollInterval = config.get('dwelling.browserAreaScrollIntervalInMs');
+
+		// Clear any existing interval to avoid multiple intervals running simultaneously
+		clearInterval(timeoutScroll);
+
+		// Start a new interval to execute the code every x ms
+		timeoutScroll = setInterval(function () {
+			ipcRenderer.send('ipc-mainwindow-scrolldown');
+		}, scrollInterval);
+
+	}
+
+	scrollDownBtn.onmouseout = () => {
+		// Clear the interval when the mouse leaves the element
+		clearInterval(timeoutScroll);
+	}
+
+}
+
+
+// =================================
+// ==== Browser Functionality ======
+// =================================
+
+function setupNavigationSideBar() {
+	clearNavigationSidebar();
+
+	menuNavLevelup = byId('sidebar_levelup')
+	menuScrollUp = byId('sidebar_scrollup')
+	menuScrollDown = byId('sidebar_scrolldown')
+	sidebarItemArea = byId('sidebar_items')
+
+	dwell(menuNavLevelup, () => {
+		if (navAreaStack.length) {
+			const previousLevel = navAreaStack.pop();
+			renderNavItemInSidebar(previousLevel);
+		}
+	});
+
+	const scrollDistance = config.get('dwelling.menuAreaScrollDistance');
+	const scrollInterval = config.get('dwelling.menuAreaScrollIntervalInMs');
+	//Set up scrolling event
+	menuScrollUp.onmouseover = () => {
+		// Clear any existing interval to avoid multiple intervals running simultaneously
+		clearInterval(timeoutScroll);
+
+		// Start a new interval to execute the code every x ms
+		timeoutScroll = setInterval(function () {
+			sidebarItemArea.scrollBy({
+				top: (scrollDistance * -1),
+				left: 0,
+				behavior: "smooth"
+			});
+		}, scrollInterval);
+	}
+
+	menuScrollDown.onmouseover = () => {
+		// Clear any existing interval to avoid multiple intervals running simultaneously
+		clearInterval(timeoutScroll);
+
+		// Start a new interval to execute the code every x ms
+		timeoutScroll = setInterval(function () {
+			sidebarItemArea.scrollBy({
+				top: scrollDistance,
+				left: 0,
+				behavior: "smooth"
+			});
+		}, scrollInterval);
+	}
+
+	//Clear timeouts
+	menuScrollUp.onmouseout = () => {
+		// Clear the interval when the mouse leaves the element
+		clearInterval(timeoutScroll);
+	}
+
+	menuScrollDown.onmouseout = () => {
+		// Clear the interval when the mouse leaves the element
+		clearInterval(timeoutScroll);
+	}
+}
+
+function setupFunctionality() {
+	omni = byId('url')
+	omni.addEventListener('keydown', (event) => browserToUrl(event));
+	dwell(omni, () => {
+		// hideAllOverlays()
+		showOverlay('omni');
+	});
+
+	let backOrForward = byId('backOrForwardBtn')
+	dwell(backOrForward, () => {
+		showOverlay('navigation')
+	})
+
+	let accessibility = byId('accessibilityBtn')
+	dwell(accessibility, () => {
+		showOverlay('accessibility')
+	})
+}
+
+
+// =================================
+// == Sidebar element management ===
+// =================================
+ipcRenderer.on('ipc-mainwindow-sidebar-render-navareas', (event, navAreas) => {
+	if (navAreas.length) {
+		//Clear sidebar
+		sidebarItemArea = byId('sidebar_items');
+		sidebarItemArea.innerHTML = "";
+
+		//Render only one navArea at a time
+		if (navAreas.length > 0) {
+			if (navAreas[0].navItems) {
+				renderNavItemInSidebar(navAreas[0].navItems[0]); //Root
+			}
+			//Highlight newly added elements on page
+			ipcRenderer.send('ipc-mainwindow-highlight-elements-on-page', navAreas);
+		}
+
+	}
+})
+
+function getNavItemMarkup(navItem) {
+	return `<div class='sidebar_item fadeInDown' id='${navItem.id}'>
+				<div>
+				<div class='sidebar_item_title'>
+					${navItem.label}
+				</div>
+				<div class='sidebar_item_link'>
+					${navItem.isLeaf}
+				</div>
+				</div>
+				<div class='sidebar_item_icon'>
+					<i class="${navItem.children.length > 0 ? 'fas fa-bars' : 'fas fa-angle-right'}"></i>
+				</div>
+				</div>`;
+}
+
+//Aceepts an array of NavItems [x] => [...NavItem]
+function renderNavItemInSidebar(navItems) {
+	//Clear sidebar
+	sidebarItemArea = byId('sidebar_items');
+	sidebarItemArea.innerHTML = "";
+	//Add elements to sidebar
+	// navItemArray.forEach((navItems) => {
+	const markup = Array.isArray(navItems) ?
+		navItems.map(e =>
+			getNavItemMarkup(e)
+		).join('')
+		:
+		getNavItemMarkup(navItems);
+
+	sidebarItemArea.insertAdjacentHTML('beforeend', markup);
+
+	//Scroll to top (in case already mid-way)
+	sidebarItemArea.scrollTo(0, 0);
+
+	//Attach dwell
+	let sidebarItems = document.querySelectorAll('.sidebar_item')
+	if (sidebarItems.length) {
+		for (let i = 0; i < sidebarItems.length; i++) {
+			(function (i) {
+				dwell(sidebarItems[i], () => {
+					const elementId = sidebarItems[i].getAttribute('id');
+					const elementToClick = Array.isArray(navItems) ? navItems.filter(e => e.id == elementId) : [navItems];
+					if (elementToClick) {
+						if (!elementToClick[0].children || elementToClick[0].children.length == 0) {
+							//Show click event animation and clear sidebar
+							sidebarItems[i].classList.add('fadeOutDown');
+							setTimeout(() => {
+								sidebarItemArea.innerHTML = "";
+							}, 300);
+
+							ipcRenderer.send('browse-to-url', elementToClick[0].href);
+							clearNavigationSidebar();
+						}
+						else {
+							//Set current level in stack
+							navAreaStack.push(navItems);
+							//Go down one level
+							renderNavItemInSidebar(elementToClick[0].children);
+						}
+					}
+				})
+			})(i)
+		}
+	}
+	// });
+
+	//Set up hierarchical navigation controls in sidebar
+	menuNavLevelup = byId('sidebar_levelup')
+	if (navAreaStack.length > 0)
+		menuNavLevelup.style.display = 'flex';
+	else
+		menuNavLevelup.style.display = 'none'
+}
+
+function clearNavigationSidebar() {
+	//Clear sidebar
+	sidebarItemArea = byId('sidebar_items');
+	sidebarItemArea.innerHTML = "";
+	navAreaStack = [];
+
+	//Hide nav level up button
+	menuNavLevelup = byId('sidebar_levelup')
+	menuNavLevelup.style.display = 'none'
+}
+
+ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
+	sidebarItemArea = byId('sidebar_items');
+	if (elements.length > 0) {
+		let sidebarItems = document.querySelectorAll('.sidebar_item');
+		const elementIdsToAdd = elements.map((e) => e.id);
+
+		//Check if element to add already exists and remove it from list, not to add twice
+		const existingInteractiveElementsOnSidebar = [];
+		sidebarItems.forEach(element => {
+			const elementId = element.getAttribute('id');
+			existingInteractiveElementsOnSidebar.push(elementId);
+		});
+
+		//Remove elements from the list of elements to add - in reverse order, not to affect the iteration
+		for (let i = elements.length - 1; i >= 0; i--) {
+			if (existingInteractiveElementsOnSidebar.includes(elements[i].id)) {
+				elements.splice(i, 1); // Remove element at index i
+			}
+		}
+
+		//Remove out of scope elements from sidebar first
+		sidebarItems.forEach(element => {
+			const elementId = element.getAttribute('id');
+			if (!elementIdsToAdd.includes(elementId)) {
+				element.remove();
+			}
+		});
+
+		//Add elements to sidebar
+		const markup = `${elements.map(e =>
+			`<div class='sidebar_item fadeInDown' id='${e.id}'>
+			<div>
+			<div class='sidebar_item_title'>
+				${e.accessibleName}
+			</div>
+			<div class='sidebar_item_link'>
+				${e.type}
+			</div>
+			</div>
+			<div class='sidebar_item_icon'>
+				<i class="${e.children ? 'fas fa-bars' :
+				e.type == 'a' ? 'fas fa-link' :
+					(e.type == 'button' || e.type == 'submit') ? 'fas fa-computer-mouse' :
+						(e.type == 'textarea' || e.type == 'text') ? 'fas fa-font' :
+							e.type == 'password' ? 'fas fa-user-secret' :
+								e.type == 'checkbox' ? 'fas fa-square-check' :
+									e.type == 'radio' ? 'fas fa-toggle-on' :
+										e.type == 'option' ? 'fas fa-list' :
+											e.type == 'date' ? 'fas fa-calendar-days' :
+												e.type == 'select' ? 'fas fa-caret-down' : 'fas fa-angle-right'
+			}"></i>
+			</div>
+			</div>
+			`).join('')
+			}`
+
+		sidebarItemArea.insertAdjacentHTML('afterbegin', markup);
+
+		//Highlight newly added elements on page
+		ipcRenderer.send('ipc-mainwindow-highlight-elements-on-page', elements);
+
+		//Attach dwell
+		sidebarItems = document.querySelectorAll('.sidebar_item')
+		if (sidebarItems.length) {
+			for (let i = 0; i < sidebarItems.length; i++) {
+				(function (i) {
+					dwell(sidebarItems[i], () => {
+						const elementId = sidebarItems[i].getAttribute('id');
+						const elementToClick = elements.filter(e => e.id == elementId);
+						if (elementToClick) {
+							ipcRenderer.send('ipc-mainwindow-click-sidebar-element', elementToClick[0]);
+							//Show click event animation and clear sidebar
+							sidebarItems[i].classList.add('fadeOutDown');
+							setTimeout(() => {
+								sidebarItemArea.innerHTML = "";
+							}, 300);
+
+							clearNavigationSidebar();
+						}
+					})
+				})(i)
+			}
+		}
+	}
+	else {
+		sidebarItemArea.innerHTML = "";
+	}
+});
+
+ipcRenderer.on('browserview-loading-start', () => {
+	omniboxLoadStart();
+});
+
+ipcRenderer.on('browserview-loading-stop', (event, pageDetails) => {
+	omniboxLoadStop(pageDetails);
+});
+
+// Sanitises URL
+function browserToUrl(event) {
+	let omni = byId('url')
+	if (event.keyCode === 13) {
+		omni.blur();
+		let val = omni.value;
+		let https = val.slice(0, 8).toLowerCase();
+		let http = val.slice(0, 7).toLowerCase();
+		if (https === 'https://') {
+			ipcRenderer.send('browse-to-url', val);
+		} else if (http === 'http://') {
+			ipcRenderer.send('browse-to-url', 'https://' + val);
+		} else {
+			ipcRenderer.send('browse-to-url', 'https://' + val);
+		}
+	}
+}
+
+const omniboxLoadStart = () => {
+	let loader = byId('loader');
+	let favicon = byId('favicon');
+	let omni = byId('url')
+
+	favicon.style.display = "none";
+	loader.style.display = "block";
+	omni.value = 'Loading..';
+}
+
+const omniboxLoadStop = (pageDetails) => {
+	let loader = byId('loader');
+	let favicon = byId('favicon');
+	let omni = byId('url')
+
+	favicon.style.display = "block"
+	loader.style.display = "none"
+	omni.value = pageDetails.title;
+
+	omni.addEventListener('click', () => displayOmni(pageDetails.url), { once: true });
+	omni.addEventListener('blur', () => displayOmni(pageDetails.title), { once: true });
+}
+
+function displayOmni(value) {
+	let omni = byId('url')
+	omni.classList.add('fadeOutDown')
+	setTimeout(() => {
+		omni.classList.remove('fadeOutDown')
+		omni.value = value;
+		omni.classList.add('fadeInUp')
+	}, 200);
+}
+
+
+// =================================
+// ============ Overlays ===========
+// =================================
+
+function showOverlay(overlayAreaToShow) {
+	ipcRenderer.send('ipc-mainwindow-show-overlay', overlayAreaToShow);
+}

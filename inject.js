@@ -1,4 +1,5 @@
-const { ipcRenderer, webFrame }               = require('electron')
+// const { ipcRenderer, webFrame }               = require('electron')
+const { ipcRenderer }               = require('electron')
 const { createCursor, followCursor }          = require('./js/cursor.js')
 const { Link, Rectangle, QuadTree }           = require('../cactus-quadtree-builder/src/models')
 const { throttle, isEqual }                   = require('lodash')
@@ -6,28 +7,28 @@ const { genId, isElementANavElement }         = require('./js/utils')
 const { markNavbars, passNavElementOnDwell }  = require('./js/navbar-pattern')
 const Config                                  = require('./js/config')
 
-var _browser_zoomLevel = 0
-var _browser_maxZoom = 9
-var _browser_minZoom = -8
+// var _browser_zoomLevel = 0
+// var _browser_maxZoom = 9
+// var _browser_minZoom = -8
 
-ipcRenderer.on('zoomIn', () => {
-  if (_browser_maxZoom > _browser_zoomLevel) {
-    _browser_zoomLevel += 0.75
-  }
-  webFrame.setZoomLevel(_browser_zoomLevel)
-})
+// ipcRenderer.on('zoomIn', () => {
+//   if (_browser_maxZoom > _browser_zoomLevel) {
+//     _browser_zoomLevel += 0.75
+//   }
+//   webFrame.setZoomLevel(_browser_zoomLevel)
+// })
 
-ipcRenderer.on('zoomOut', () => {
-  if (_browser_minZoom < _browser_zoomLevel) {
-    _browser_zoomLevel -= 0.75
-  }
-  webFrame.setZoomLevel(_browser_zoomLevel)
-})
+// ipcRenderer.on('zoomOut', () => {
+//   if (_browser_minZoom < _browser_zoomLevel) {
+//     _browser_zoomLevel -= 0.75
+//   }
+//   webFrame.setZoomLevel(_browser_zoomLevel)
+// })
 
-ipcRenderer.on('zoomReset', () => {
-  _browser_zoomLevel = 0
-  webFrame.setZoomLevel(_browser_zoomLevel)
-})
+// ipcRenderer.on('zoomReset', () => {
+//   _browser_zoomLevel = 0
+//   webFrame.setZoomLevel(_browser_zoomLevel)
+// })
 
 var c
 let qTree
