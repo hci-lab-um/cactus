@@ -251,92 +251,6 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-navareas', (event, navAreas) => {
 	}
 })
 
-function getNavItemMarkup(navItem) {
-	return `<div class='sidebar_item fadeInDown' id='${navItem.id}'>
-				<div>
-				<div class='sidebar_item_title'>
-					${navItem.label}
-				</div>
-				<div class='sidebar_item_link'>
-					${navItem.isLeaf}
-				</div>
-				</div>
-				<div class='sidebar_item_icon'>
-					<i class="${navItem.children.length > 0 ? 'fas fa-bars' : 'fas fa-angle-right'}"></i>
-				</div>
-				</div>`;
-}
-
-//Aceepts an array of NavItems [x] => [...NavItem]
-function renderNavItemInSidebar(navItems) {
-	//Clear sidebar
-	sidebarItemArea = byId('sidebar_items');
-	sidebarItemArea.innerHTML = "";
-	//Add elements to sidebar
-	// navItemArray.forEach((navItems) => {
-	const markup = Array.isArray(navItems) ?
-		navItems.map(e =>
-			getNavItemMarkup(e)
-		).join('')
-		:
-		getNavItemMarkup(navItems);
-
-	sidebarItemArea.insertAdjacentHTML('beforeend', markup);
-
-	//Scroll to top (in case already mid-way)
-	sidebarItemArea.scrollTo(0, 0);
-
-	//Attach dwell
-	let sidebarItems = document.querySelectorAll('.sidebar_item')
-	if (sidebarItems.length) {
-		for (let i = 0; i < sidebarItems.length; i++) {
-			(function (i) {
-				dwell(sidebarItems[i], () => {
-					const elementId = sidebarItems[i].getAttribute('id');
-					const elementToClick = Array.isArray(navItems) ? navItems.filter(e => e.id == elementId) : [navItems];
-					if (elementToClick) {
-						if (!elementToClick[0].children || elementToClick[0].children.length == 0) {
-							//Show click event animation and clear sidebar
-							sidebarItems[i].classList.add('fadeOutDown');
-							setTimeout(() => {
-								sidebarItemArea.innerHTML = "";
-							}, 300);
-
-							ipcRenderer.send('browse-to-url', elementToClick[0].href);
-							clearNavigationSidebar();
-						}
-						else {
-							//Set current level in stack
-							navAreaStack.push(navItems);
-							//Go down one level
-							renderNavItemInSidebar(elementToClick[0].children);
-						}
-					}
-				})
-			})(i)
-		}
-	}
-	// });
-
-	//Set up hierarchical navigation controls in sidebar
-	menuNavLevelup = byId('sidebar_levelup')
-	if (navAreaStack.length > 0)
-		menuNavLevelup.style.display = 'flex';
-	else
-		menuNavLevelup.style.display = 'none'
-}
-
-function clearNavigationSidebar() {
-	//Clear sidebar
-	sidebarItemArea = byId('sidebar_items');
-	sidebarItemArea.innerHTML = "";
-	navAreaStack = [];
-
-	//Hide nav level up button
-	menuNavLevelup = byId('sidebar_levelup')
-	menuNavLevelup.style.display = 'none'
-}
-
 ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
 	sidebarItemArea = byId('sidebar_items');
 	if (elements.length > 0) {
@@ -434,7 +348,92 @@ ipcRenderer.on('browserview-loading-stop', (event, pageDetails) => {
 	omniboxLoadStop(pageDetails);
 });
 
-// Sanitises URL
+function getNavItemMarkup(navItem) {
+	return `<div class='sidebar_item fadeInDown' id='${navItem.id}'>
+				<div>
+				<div class='sidebar_item_title'>
+					${navItem.label}
+				</div>
+				<div class='sidebar_item_link'>
+					${navItem.isLeaf}
+				</div>
+				</div>
+				<div class='sidebar_item_icon'>
+					<i class="${navItem.children.length > 0 ? 'fas fa-bars' : 'fas fa-angle-right'}"></i>
+				</div>
+				</div>`;
+}
+
+//Accepts an array of NavItems [x] => [...NavItem]
+function renderNavItemInSidebar(navItems) {
+	//Clear sidebar
+	sidebarItemArea = byId('sidebar_items');
+	sidebarItemArea.innerHTML = "";
+	//Add elements to sidebar
+	// navItemArray.forEach((navItems) => {
+	const markup = Array.isArray(navItems) ?
+		navItems.map(e =>
+			getNavItemMarkup(e)
+		).join('')
+		:
+		getNavItemMarkup(navItems);
+
+	sidebarItemArea.insertAdjacentHTML('beforeend', markup);
+
+	//Scroll to top (in case already mid-way)
+	sidebarItemArea.scrollTo(0, 0);
+
+	//Attach dwell
+	let sidebarItems = document.querySelectorAll('.sidebar_item')
+	if (sidebarItems.length) {
+		for (let i = 0; i < sidebarItems.length; i++) {
+			(function (i) {
+				dwell(sidebarItems[i], () => {
+					const elementId = sidebarItems[i].getAttribute('id');
+					const elementToClick = Array.isArray(navItems) ? navItems.filter(e => e.id == elementId) : [navItems];
+					if (elementToClick) {
+						if (!elementToClick[0].children || elementToClick[0].children.length == 0) {
+							//Show click event animation and clear sidebar
+							sidebarItems[i].classList.add('fadeOutDown');
+							setTimeout(() => {
+								sidebarItemArea.innerHTML = "";
+							}, 300);
+
+							ipcRenderer.send('browse-to-url', elementToClick[0].href);
+							clearNavigationSidebar();
+						}
+						else {
+							//Set current level in stack
+							navAreaStack.push(navItems);
+							//Go down one level
+							renderNavItemInSidebar(elementToClick[0].children);
+						}
+					}
+				})
+			})(i)
+		}
+	}
+	// });
+
+	//Set up hierarchical navigation controls in sidebar
+	menuNavLevelup = byId('sidebar_levelup')
+	if (navAreaStack.length > 0)
+		menuNavLevelup.style.display = 'flex';
+	else
+		menuNavLevelup.style.display = 'none'
+}
+
+function clearNavigationSidebar() {
+	//Clear sidebar
+	sidebarItemArea = byId('sidebar_items');
+	sidebarItemArea.innerHTML = "";
+	navAreaStack = [];
+
+	//Hide nav level up button
+	menuNavLevelup = byId('sidebar_levelup')
+	menuNavLevelup.style.display = 'none'
+}
+
 function browserToUrl(event) {
 	let omni = byId('url')
 	if (event.keyCode === 13) {
