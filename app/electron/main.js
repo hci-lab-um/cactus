@@ -180,7 +180,7 @@ function createMainWindow() {
             //https://www.electronjs.org/docs/latest/tutorial/security
             webPreferences: {
                 nodeIntegrationInWorker: true,
-                contextIsolation: false,
+                contextIsolation: true,
                 preload: path.join(__dirname, '../src/renderer/mainwindow/render-mainwindow.js')
             },
             icon: path.join(__dirname + '../../resources/logo.png'),
@@ -245,7 +245,7 @@ function createBrowserviewInTab(url, properties) {
         //https://www.electronjs.org/docs/latest/tutorial/security
         webPreferences: {
             nodeIntegrationInWorker: true,
-            contextIsolation: false,
+            contextIsolation: true,
             preload: path.join(__dirname, '../src/renderer/browserview/render-browserview.js'),
         }
     });
@@ -415,7 +415,7 @@ function createMenuOverlay(overlayAreaToShow) {
                 //https://www.electronjs.org/docs/latest/tutorial/security
                 webPreferences: {
                     nodeIntegrationInWorker: true,
-                    contextIsolation: false,
+                    contextIsolation: true,
                     preload: path.join(__dirname, '../src/renderer/overlays/render-overlay-menus.js'),
                 }
             });
