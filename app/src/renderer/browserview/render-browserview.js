@@ -214,7 +214,7 @@ ipcRenderer.on('ipc-main-browserview-loaded', () => {
 		// Clear any existing interval to avoid multiple intervals running simultaneously for mouse cursor hovering activity
 		clearInterval(timeoutCursorHovering);
 
-		// Start a new interval to execute the code every one second
+		// Start a new interval to execute the code every x ms
 		timeoutCursorHovering = setInterval(function () {
 			//Find the elements in the quadtree
 			var x = event.clientX; // X location relative to the viewport
