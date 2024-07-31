@@ -18,7 +18,7 @@ const DOMPurify = require('dompurify');
 //Omnibox - combined location and search field 
 // let omni = byId('url')
 
-let omni, navbar, sidebar, sidebarItemArea, scrollbar, menuNavLevelup, menuScrollUp, menuScrollDown
+let omni, navbar, sidebar, sidebarItemArea, selectedNavItemTitle, scrollbar, menuNavLevelup, menuScrollUp, menuScrollDown
 let cursor
 let scrollUpBtn, scrollDownBtn
 let timeoutScroll
@@ -163,7 +163,8 @@ function setupNavigationSideBar() {
 	dwell(menuNavLevelup, () => {
 		if (navAreaStack.length) {
 			const previousLevel = navAreaStack.pop();
-			renderNavItemInSidebar(previousLevel);
+			selectedNavItemTitle.textContent = previousLevel.title;
+			renderNavItemInSidebar(previousLevel.items);
 		}
 	});
 
@@ -252,21 +253,25 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-navareas', (event, navAreas) => {
 })
 
 ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
+	//Clear any previous navItem titles
+	selectedNavItemTitle = byId('sidebar_selected_navitem_title');
+	selectedNavItemTitle.textContent = ""
+
 	sidebarItemArea = byId('sidebar_items');
 	if (elements.length > 0) {
 		let sidebarItems = document.querySelectorAll('.sidebar_item');
-		const elementIdsToAdd = elements.map((e) => e.id);
+		const elementIDsToAdd = elements.map((e) => e.id);
 
 		//Check if element to add already exists and remove it from list, not to add twice
-		const existingInteractiveElementsOnSidebar = [];
+		const existingInteractiveElementIDsOnSidebar = [];
 		sidebarItems.forEach(element => {
 			const elementId = element.getAttribute('id');
-			existingInteractiveElementsOnSidebar.push(elementId);
+			existingInteractiveElementIDsOnSidebar.push(elementId);
 		});
 
 		//Remove elements from the list of elements to add - in reverse order, not to affect the iteration
 		for (let i = elements.length - 1; i >= 0; i--) {
-			if (existingInteractiveElementsOnSidebar.includes(elements[i].id)) {
+			if (existingInteractiveElementIDsOnSidebar.includes(elements[i].id)) {
 				elements.splice(i, 1); // Remove element at index i
 			}
 		}
@@ -274,7 +279,7 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
 		//Remove out of scope elements from sidebar first
 		sidebarItems.forEach(element => {
 			const elementId = element.getAttribute('id');
-			if (!elementIdsToAdd.includes(elementId)) {
+			if (!elementIDsToAdd.includes(elementId)) {
 				element.remove();
 			}
 		});
@@ -322,6 +327,7 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
 						const elementToClick = elements.filter(e => e.id == elementId);
 						if (elementToClick) {
 							ipcRenderer.send('ipc-mainwindow-click-sidebar-element', elementToClick[0]);
+
 							//Show click event animation and clear sidebar
 							sidebarItems[i].classList.add('fadeOutDown');
 							setTimeout(() => {
@@ -369,6 +375,7 @@ function renderNavItemInSidebar(navItems) {
 	//Clear sidebar
 	sidebarItemArea = byId('sidebar_items');
 	sidebarItemArea.innerHTML = "";
+
 	//Add elements to sidebar
 	// navItemArray.forEach((navItems) => {
 	const markup = Array.isArray(navItems) ?
@@ -404,7 +411,15 @@ function renderNavItemInSidebar(navItems) {
 						}
 						else {
 							//Set current level in stack
-							navAreaStack.push(navItems);
+							navAreaStack.push({ 
+								title: selectedNavItemTitle.textContent,
+								items: navItems
+							});
+
+							// Update the title to the clicked nav item
+							selectedNavItemTitle = byId('sidebar_selected_navitem_title');
+							selectedNavItemTitle.textContent = elementToClick[0].label;
+
 							//Go down one level
 							renderNavItemInSidebar(elementToClick[0].children);
 						}
@@ -423,6 +438,7 @@ function renderNavItemInSidebar(navItems) {
 		menuNavLevelup.style.display = 'none'
 }
 
+// Resets the navigation sidebar to its initial state
 function clearNavigationSidebar() {
 	//Clear sidebar
 	sidebarItemArea = byId('sidebar_items');
@@ -432,6 +448,10 @@ function clearNavigationSidebar() {
 	//Hide nav level up button
 	menuNavLevelup = byId('sidebar_levelup')
 	menuNavLevelup.style.display = 'none'
+
+	//Clear the submenu showing the selection history
+	selectedNavItemTitle = byId('sidebar_selected_navitem_title');
+	selectedNavItemTitle.textContent = ""
 }
 
 function browserToUrl(event) {
