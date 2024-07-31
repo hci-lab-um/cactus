@@ -153,7 +153,7 @@ function setupScrollers() {
 // =================================
 
 function setupNavigationSideBar() {
-	clearNavigationSidebar();
+	resetNavigationSidebar();
 
 	menuNavLevelup = byId('sidebar_levelup')
 	menuScrollUp = byId('sidebar_scrollup')
@@ -253,9 +253,7 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-navareas', (event, navAreas) => {
 })
 
 ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
-	//Clear any previous navItem titles
-	selectedNavItemTitle = byId('sidebar_selected_navitem_title');
-	selectedNavItemTitle.textContent = ""
+	resetNavigationSidebar({ clearItems: false });
 
 	sidebarItemArea = byId('sidebar_items');
 	if (elements.length > 0) {
@@ -334,7 +332,7 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
 								sidebarItemArea.innerHTML = "";
 							}, 300);
 
-							clearNavigationSidebar();
+							resetNavigationSidebar();
 						}
 					})
 				})(i)
@@ -407,7 +405,7 @@ function renderNavItemInSidebar(navItems) {
 							}, 300);
 
 							ipcRenderer.send('browse-to-url', elementToClick[0].href);
-							clearNavigationSidebar();
+							resetNavigationSidebar();
 						}
 						else {
 							//Set current level in stack
@@ -439,10 +437,16 @@ function renderNavItemInSidebar(navItems) {
 }
 
 // Resets the navigation sidebar to its initial state
-function clearNavigationSidebar() {
-	//Clear sidebar
-	sidebarItemArea = byId('sidebar_items');
-	sidebarItemArea.innerHTML = "";
+function resetNavigationSidebar(options = {}) {
+	const { clearItems = true } = options;
+
+	if (clearItems) {
+		//Clear sidebar items
+		sidebarItemArea = byId('sidebar_items');
+		sidebarItemArea.innerHTML = "";
+	}
+	
+	//Clear the selection history from stack
 	navAreaStack = [];
 
 	//Hide nav level up button
