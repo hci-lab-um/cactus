@@ -136,6 +136,13 @@ body {
     width: 100%;
     overflow-y: auto;
   }
+
+  #sidebar_selected_navitem_title {
+    color: #2d3d4d;
+    padding: 10px 20px;
+    display: block;
+    font-size: 1.2em;
+  }
 }
 
 .sidebar {

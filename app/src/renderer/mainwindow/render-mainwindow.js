@@ -164,6 +164,7 @@ function setupNavigationSideBar() {
 		if (navAreaStack.length) {
 			const previousLevel = navAreaStack.pop();
 			selectedNavItemTitle.textContent = previousLevel.title;
+			if (selectedNavItemTitle.textContent == "") selectedNavItemTitle.style.display = 'none';
 			renderNavItemInSidebar(previousLevel.items);
 		}
 	});
@@ -416,6 +417,7 @@ function renderNavItemInSidebar(navItems) {
 
 							// Update the title to the clicked nav item
 							selectedNavItemTitle = byId('sidebar_selected_navitem_title');
+							selectedNavItemTitle.style.display = 'block';
 							selectedNavItemTitle.textContent = elementToClick[0].label;
 
 							//Go down one level
@@ -456,6 +458,7 @@ function resetNavigationSidebar(options = {}) {
 	//Clear the submenu showing the selection history
 	selectedNavItemTitle = byId('sidebar_selected_navitem_title');
 	selectedNavItemTitle.textContent = ""
+	selectedNavItemTitle.style.display = 'none'
 }
 
 function browserToUrl(event) {
