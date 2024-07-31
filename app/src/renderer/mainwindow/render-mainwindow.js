@@ -238,8 +238,7 @@ function setupFunctionality() {
 ipcRenderer.on('ipc-mainwindow-sidebar-render-navareas', (event, navAreas) => {
 	if (navAreas.length) {
 		//Clear sidebar
-		sidebarItemArea = byId('sidebar_items');
-		sidebarItemArea.innerHTML = "";
+		resetNavigationSidebar();
 
 		//Render only one navArea at a time
 		if (navAreas.length > 0) {
