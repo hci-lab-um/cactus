@@ -28,7 +28,7 @@ app.on('window-all-closed', () => {
 
 app.on('activate', () => {
     // On macOS re-create window when the dock icon is clicked (with no other windows open).
-    if (BrowserWindow.getAllWindows().length === 0) {
+    if (BaseWindow.getAllWindows().length === 0) {
         createMainWindow();
     }
 })
@@ -38,7 +38,7 @@ ipcMain.on('browse-to-url', (event, url) => {
         //Assume all is ok
         let fullUrl = url;
         var tab = tabList.find(tab => tab.isActive === true);
-        const currentURL = new URL(tab.browserView.webContents.getURL());
+        const currentURL = new URL(tab.webContentsView.webContents.getURL());
         const protocol = currentURL.protocol;
         const host = currentURL.host;
 
@@ -68,24 +68,24 @@ ipcMain.on('browse-to-url', (event, url) => {
             }
         }
 
-        tab.browserView.webContents.loadURL(fullUrl);
+        tab.webContentsView.webContents.loadURL(fullUrl);
     }
 });
 
 ipcMain.on('ipc-mainwindow-scrolldown', () => {
     var tab = tabList.find(tab => tab.isActive === true);
-    tab.browserView.webContents.send('ipc-browserview-scrolldown');
+    tab.webContentsView.webContents.send('ipc-browserview-scrolldown');
 });
 
 ipcMain.on('ipc-mainwindow-scrollup', () => {
     var tab = tabList.find(tab => tab.isActive === true);
-    tab.browserView.webContents.send('ipc-browserview-scrollup');
+    tab.webContentsView.webContents.send('ipc-browserview-scrollup');
 });
 
 ipcMain.on('ipc-mainwindow-click-sidebar-element', (event, elementToClick) => {
     var tab = tabList.find(tab => tab.isActive === true);
     //Once the main page is loaded, create inner browserview and place it in the right position by getting the x,y,width,height of a positioned element in index.html
-    tab.browserView.webContents.send('ipc-browserview-click-element', elementToClick);
+    tab.webContentsView.webContents.send('ipc-browserview-click-element', elementToClick);
 })
 
 ipcMain.on('ipc-browserview-elements-in-mouserange', (event, elements) => {
@@ -100,7 +100,7 @@ ipcMain.on('ipc-browserview-navareas-in-mouserange', (event, navareas) => {
 ipcMain.on('ipc-mainwindow-highlight-elements-on-page', (event, elements) => {
     //Highlight elements on page
     var tab = tabList.find(tab => tab.isActive === true);
-    tab.browserView.webContents.send('ipc-browserview-highlight-elements', elements);
+    tab.webContentsView.webContents.send('ipc-browserview-highlight-elements', elements);
 });
 
 ipcMain.on('ipc-mainwindow-show-overlay', (event, overlayAreaToShow) => {
@@ -122,35 +122,35 @@ ipcMain.on('ipc-browserview-scroll-up-show', () => {
 ipcMain.on('ipc-overlays-back', () => {
     //Select active browserview
     var tab = tabList.find(tab => tab.isActive === true);
-    tab.browserView.webContents.send('ipc-browserview-back');
+    tab.webContentsView.webContents.send('ipc-browserview-back');
 })
 
 ipcMain.on('ipc-overlays-forward', () => {
     //Select active browserview
     var tab = tabList.find(tab => tab.isActive === true);
-    tab.browserView.webContents.send('ipc-browserview-forward');
+    tab.webContentsView.webContents.send('ipc-browserview-forward');
 })
 
 ipcMain.on('ipc-overlays-zoom-in', () => {
     //Select active browserview
     var tab = tabList.find(tab => tab.isActive === true);
-    var zoomLevel = tab.browserView.webContents.getZoomLevel();
-    tab.browserView.webContents.setZoomLevel(zoomLevel + 1);
+    var zoomLevel = tab.webContentsView.webContents.getZoomLevel();
+    tab.webContentsView.webContents.setZoomLevel(zoomLevel + 1);
     removeMenusOverlay();
 })
 
 ipcMain.on('ipc-overlays-zoom-out', () => {
     //Select active browserview
     var tab = tabList.find(tab => tab.isActive === true);
-    var zoomLevel = tab.browserView.webContents.getZoomLevel();
-    tab.browserView.webContents.setZoomLevel(zoomLevel - 1);
+    var zoomLevel = tab.webContentsView.webContents.getZoomLevel();
+    tab.webContentsView.webContents.setZoomLevel(zoomLevel - 1);
     removeMenusOverlay();
 })
 
 ipcMain.on('ipc-overlays-zoom-reset', () => {
     //Select active browserview
     var tab = tabList.find(tab => tab.isActive === true);
-    tab.browserView.webContents.setZoomLevel(0);
+    tab.webContentsView.webContents.setZoomLevel(0);
     removeMenusOverlay();
 })
 
@@ -179,7 +179,10 @@ function createSplashWindow() {
 
 function createMainWindow() {
     try {
-        mainWindow = new BaseWindow();
+        mainWindow = new BaseWindow({
+            frame: true,
+            title: "Cactus"
+        });
         mainWindowContent = new WebContentsView({
             //https://www.electronjs.org/docs/latest/tutorial/security
             webPreferences: {
@@ -193,7 +196,7 @@ function createMainWindow() {
 
         mainWindow.contentView.addChildView(mainWindowContent)
         mainWindow.maximize();
-        mainWindowContent.setBounds({ x: 0, y: 0, width: mainWindow.getBounds().width, height: mainWindow.getBounds().height })
+        mainWindowContent.setBounds({ x: 0, y: 0, width: mainWindow.getContentBounds().width, height: mainWindow.getContentBounds().height })
 
         mainWindowContent.webContents.loadURL(path.join(__dirname, '../src/pages/index.html')).then(() => {
             mainWindowContent.webContents.send('mainWindowLoaded');
@@ -224,6 +227,15 @@ function createMainWindow() {
                 });
         })
 
+        //Handle resize and maxmised events
+        mainWindow.on('resized', () => {
+            resizeMainWindow();
+
+        });
+        mainWindow.on('maximize', () => {
+            resizeMainWindow();
+        });
+
         // Show the main window when it's ready
         mainWindow.once('ready-to-show', () => {
 
@@ -245,6 +257,42 @@ function createMainWindow() {
     }
 }
 
+function resizeMainWindow() {
+    mainWindowContent.setBounds({ x: 0, y: 0, width: mainWindow.getContentBounds().width, height: mainWindow.getContentBounds().height })
+
+    mainWindowContent.webContents.executeJavaScript(`
+            (() => {
+                const element = document.querySelector('#webpage');
+                if (element) {
+                    const rect = element.getBoundingClientRect();
+                    return {
+                        x: rect.left,
+                        y: rect.top,
+                        width: rect.width,
+                        height: rect.height
+                    };
+                } else {
+                    return null;
+                }
+            })()
+            `)
+        .then(properties => {
+            tabList.forEach(tab => {
+                tab.webContentsView.setBounds({
+                    x: Math.floor(properties.x),
+                    y: Math.floor(properties.y),
+                    width: Math.floor(properties.width),
+                    height: Math.floor(properties.height)
+                });
+            });
+
+        })
+        .catch(err => {
+            log.error(err);
+        });
+
+}
+
 function createBrowserviewInTab(url, properties) {
     //Create browser view
     let browserView = new WebContentsView({
@@ -260,7 +308,7 @@ function createBrowserviewInTab(url, properties) {
     tabList.forEach(tab => {
         tab.isActive = false
     });
-    tabList.push({ tabId: tabList.length + 1, browserView: browserView, isActive: true });
+    tabList.push({ tabId: tabList.length + 1, webContentsView: browserView, isActive: true });
 
 
     //Attach the browser view to the parent window
@@ -391,14 +439,16 @@ function removeMenusOverlay() {
 function createMenuOverlay(overlayAreaToShow) {
     removeMenusOverlay();
 
-    let mainWindowBounds = mainWindow.getBounds();
+    let mainWindowContentBounds = mainWindow.getContentBounds();
 
     menusOverlayWindow = new BaseWindow({
         parent: mainWindow,
-        width: mainWindowBounds.width,
-        height: mainWindowBounds.height,
-        x: mainWindowBounds.x,
-        y: mainWindowBounds.y,
+        modal: true,
+        title: "Cactus - Menu",
+        width: mainWindowContentBounds.width,
+        height: mainWindowContentBounds.height,
+        x: mainWindowContentBounds.x,
+        y: mainWindowContentBounds.y,
         transparent: true,
         frame: false,
         alwaysOnTop: true
@@ -414,8 +464,7 @@ function createMenuOverlay(overlayAreaToShow) {
         }
     })
     menusOverlayWindow.contentView.addChildView(menusOverlayContent)
-
-    menusOverlayContent.setBounds({ x: 0, y: 0, width: mainWindowBounds.width, height: mainWindowBounds.height })
+    menusOverlayContent.setBounds({ x: 0, y: 0, width: mainWindowContentBounds.width, height: mainWindowContentBounds.height })
     menusOverlayContent.webContents.loadURL(path.join(__dirname, '../src/pages/overlays.html'));
 
     menusOverlayContent.webContents.send('ipc-main-overlays-loaded', overlayAreaToShow)
