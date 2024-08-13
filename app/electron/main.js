@@ -1,6 +1,7 @@
 const { app, BaseWindow, WebContentsView, ipcMain } = require('electron')
 const config = require('config');
 const path = require('path')
+const fs = require('fs')
 const { log } = require('electron-log');
 
 const isDevelopment = process.env.NODE_ENV === "development";
@@ -293,14 +294,33 @@ function resizeMainWindow() {
 
 }
 
+// Handle IPC from renderer
+ipcMain.handle('get-app-info', async () => {
+    return {
+        appName: app.name,
+        appVersion: app.getVersion(),
+    };
+});
+
+ipcMain.handle('get-tab-renderer-script', async () => {
+    try {
+        const scriptToExecute = path.join(__dirname, '../src/renderer/browserview/render-tabview.js');
+        const scriptContent = await fs.readFileSync(scriptToExecute, 'utf-8');
+        return scriptContent;
+    }
+    catch (ex) {
+        console.log(ex);
+    }
+})
+
 function createBrowserviewInTab(url, properties) {
     //Create browser view
     let browserView = new WebContentsView({
         //https://www.electronjs.org/docs/latest/tutorial/security
         webPreferences: {
-            nodeIntegrationInWorker: true,
+            nodeIntegration: false,
             contextIsolation: true,
-            preload: path.join(__dirname, '../src/renderer/browserview/render-browserview.js'),
+            preload: path.join(__dirname, '../src/preload/browserview/preload-browserview.js'),
         }
     });
 
@@ -329,100 +349,100 @@ function createBrowserviewInTab(url, properties) {
     //Once the DOM is ready, send a message to initiate some further logic
     browserView.webContents.on('dom-ready', () => {
         // This event fires when the BrowserView is attached
-        browserView.webContents.send('ipc-main-browserview-loaded');
-        browserView.webContents.insertCSS(`
-        html, body { overflow-x: hidden; } 
-        
-        /* IMP: user-select:none and pointer-events:none rules removed in different selectors */
+        // browserView.webContents.send('ipc-main-browserview-loaded');
+        // browserView.webContents.insertCSS(`
+        // html, body { overflow-x: hidden; } 
 
-        a, input, textarea, button, div { 
-            cursor: none !important; 
-        }
-        /* width */
-        ::-webkit-scrollbar {
-            width: 5px;
-        }
-        /* Track */
-        ::-webkit-scrollbar-track {
-            box-shadow: inset 0 0 5px grey; 
-            border-radius: 2px;
-        }
-        
-        /* Handle */
-        ::-webkit-scrollbar-thumb {
-            background: #10468b; 
-            border-radius: 2px;
-        }
-        
-        /* Handle on hover */
-        ::-webkit-scrollbar-thumb:hover {
-            background: #638eec; 
-        }
+        // /* IMP: user-select:none and pointer-events:none rules removed in different selectors */
 
-        /* Quadtree markers */
-        .cactusElementMark {
-            position: relative;
-            // background-color: transparent;
-        }
+        // a, input, textarea, button, div { 
+        //     cursor: none !important; 
+        // }
+        // /* width */
+        // ::-webkit-scrollbar {
+        //     width: 5px;
+        // }
+        // /* Track */
+        // ::-webkit-scrollbar-track {
+        //     box-shadow: inset 0 0 5px grey; 
+        //     border-radius: 2px;
+        // }
 
-        .cactusElementVisualise {
-            border-radius: 5px;
-            border: 1px solid #10468b;
-            transition: background-color 0.5s ease;
-            background-color: #e6f1fa !important;
-            //color: #e6f1fa !important;
-            //border-radius: 5px;
-        }
+        // /* Handle */
+        // ::-webkit-scrollbar-thumb {
+        //     background: #10468b; 
+        //     border-radius: 2px;
+        // }
 
-        .cactusElementVisualiseRemoved {
-        }
+        // /* Handle on hover */
+        // ::-webkit-scrollbar-thumb:hover {
+        //     background: #638eec; 
+        // }
 
-        .cactusNavMarker {
-            color: inherit;
+        // /* Quadtree markers */
+        // .cactusElementMark {
+        //     position: relative;
+        //     // background-color: transparent;
+        // }
 
-            &:after {
-                content: '';
-                position: absolute;
-                bottom: 100%;
-                left: 0;
-                width: 0%;
-                height: 3px;
-                display: block;
-                background: #03644f !important;
-                transition: 1.5s ease-in-out;
-            }
-        }
+        // .cactusElementVisualise {
+        //     border-radius: 5px;
+        //     border: 1px solid #10468b;
+        //     transition: background-color 0.5s ease;
+        //     background-color: #e6f1fa !important;
+        //     //color: #e6f1fa !important;
+        //     //border-radius: 5px;
+        // }
 
-        .cactusNavMarker:hover {
-            color: #2d3d4d;
-            background-color: lighten(#03644f, 50%) !important;
+        // .cactusElementVisualiseRemoved {
+        // }
 
-            &:after {
-                width: 100%;
-            }
-        }
-        `);
+        // .cactusNavMarker {
+        //     color: inherit;
+
+        //     &:after {
+        //         content: '';
+        //         position: absolute;
+        //         bottom: 100%;
+        //         left: 0;
+        //         width: 0%;
+        //         height: 3px;
+        //         display: block;
+        //         background: #03644f !important;
+        //         transition: 1.5s ease-in-out;
+        //     }
+        // }
+
+        // .cactusNavMarker:hover {
+        //     color: #2d3d4d;
+        //     background-color: lighten(#03644f, 50%) !important;
+
+        //     &:after {
+        //         width: 100%;
+        //     }
+        // }
+        // `);
         if (isDevelopment) browserView.webContents.openDevTools();
     });
 
-    //Loading event - update omnibox
-    browserView.webContents.on('did-start-loading', () => {
-        mainWindowContent.webContents.send('browserview-loading-start');
-    });
+    // //Loading event - update omnibox
+    // browserView.webContents.on('did-start-loading', () => {
+    //     mainWindowContent.webContents.send('browserview-loading-start');
+    // });
 
-    browserView.webContents.on('did-stop-loading', () => {
-        const url = browserView.webContents.getURL();
-        const title = browserView.webContents.getTitle();
-        mainWindowContent.webContents.send('browserview-loading-stop', { url: url, title: title });
-    });
+    // browserView.webContents.on('did-stop-loading', () => {
+    //     const url = browserView.webContents.getURL();
+    //     const title = browserView.webContents.getTitle();
+    //     mainWindowContent.webContents.send('browserview-loading-stop', { url: url, title: title });
+    // });
 
-    //React to in-page navigation (e.g. anchor links)
-    browserView.webContents.on('did-navigate-in-page', (event, url) => {
-        const anchorTag = url.split('#')[1];
-        if (anchorTag) {
-            browserView.webContents.send('ipc-browserview-create-quadtree');
-        }
-    });
+    // //React to in-page navigation (e.g. anchor links)
+    // browserView.webContents.on('did-navigate-in-page', (event, url) => {
+    //     const anchorTag = url.split('#')[1];
+    //     if (anchorTag) {
+    //         browserView.webContents.send('ipc-browserview-create-quadtree');
+    //     }
+    // });
 
     browserView.webContents.setWindowOpenHandler(({ url }) => {
         createBrowserviewInTab(url, properties);

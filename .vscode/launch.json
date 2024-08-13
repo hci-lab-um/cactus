@@ -5,7 +5,7 @@
 			"name": "Debug Main Process",
 			"type": "node",
 			"env": {
-				"NODE_ENV": "production"
+				"NODE_ENV": "development"
 			},
 			"request": "launch",
 			"cwd": "${workspaceFolder}",
