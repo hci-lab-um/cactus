@@ -117,7 +117,11 @@ function setupScrollers() {
 
 		// Start a new interval to execute the code every x ms
 		timeoutScroll = setInterval(function () {
-			ipcRenderer.send('ipc-mainwindow-scrollup');
+			let configData =  {
+				scrollDistance: config.get('dwelling.browserAreaScrollDistance'), 
+				useNavAreas: config.get('dwelling.activateNavAreas')
+			};
+			ipcRenderer.send('ipc-mainwindow-scrollup', configData);
 		}, scrollInterval);
 
 	}
@@ -135,7 +139,11 @@ function setupScrollers() {
 
 		// Start a new interval to execute the code every x ms
 		timeoutScroll = setInterval(function () {
-			ipcRenderer.send('ipc-mainwindow-scrolldown');
+			let configData =  {
+				scrollDistance: config.get('dwelling.browserAreaScrollDistance'), 
+				useNavAreas: config.get('dwelling.activateNavAreas')
+			};
+			ipcRenderer.send('ipc-mainwindow-scrolldown', configData);
 		}, scrollInterval);
 
 	}

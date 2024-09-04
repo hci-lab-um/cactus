@@ -2,12 +2,19 @@ const { app, BaseWindow, WebContentsView, ipcMain } = require('electron')
 const config = require('config');
 const path = require('path')
 const fs = require('fs')
+const { QuadtreeBuilder, InteractiveElement, HTMLSerializableElement, QtPageDocument, QtBuilderOptions, QtRange } = require('cactus-quadtree-builder');
+const { MenuBuilder, NavArea, HTMLSerializableMenuElement, MenuPageDocument, MenuBuilderOptions, MenuRange } = require('cactus-menu-builder');
 const { log } = require('electron-log');
 
 const isDevelopment = process.env.NODE_ENV === "development";
+const rangeWidth = config.get('dwelling.rangeWidth');
+const rangeHeight = config.get('dwelling.rangeHeight');
+const useNavAreas = config.get('dwelling.activateNavAreas');
 
 let mainWindow, splashWindow, menusOverlayWindow
-let mainWindowContent
+let mainWindowContent, browserView
+let currentQt, currentNavAreaTree
+let timeoutCursorHovering
 let defaultUrl = config.get('browser.defaultUrl');
 let tabList = [];
 
@@ -33,6 +40,121 @@ app.on('activate', () => {
         createMainWindow();
     }
 })
+
+ipcMain.handle('get-tab-renderer-script', async () => {
+    try {
+        const scriptToExecute = path.join(__dirname, '../src/renderer/browserview/render-tabview.js');
+        const scriptContent = await fs.readFileSync(scriptToExecute, 'utf-8');
+        return scriptContent;
+    }
+    catch (ex) {
+        console.log(ex);
+    }
+})
+let count_generateQuadTree = 0;
+// This creates a quadtree using serialisable HTML elements passed on from the renderer
+ipcMain.on('ipc-browserview-generateQuadTree', (event, contents) => {
+    count_generateQuadTree++;
+    console.log("Generate Quad Tree Counter:", count_generateQuadTree);
+    // Recreate quadtree
+    let bounds = browserView.getBounds();
+    qtOptions = new QtBuilderOptions(bounds.width, bounds.height, 'new', 1);
+    qtBuilder = new QuadtreeBuilder(qtOptions);
+
+    const visibleElements = contents.serializedVisibleElements.map(e => {
+        let htmlSerializableElement = new HTMLSerializableElement(e);
+        return InteractiveElement.fromHTMLElement(htmlSerializableElement);
+    });
+
+    let pageDocument = new QtPageDocument(contents.docTitle, contents.docURL, visibleElements, bounds.width, bounds.height, null);
+
+    qtBuilder.buildAsync(pageDocument).then((qt) => {
+		currentQt = qt;
+
+        //Only in debug mode - show which points are available for interaction
+		if (isDevelopment) {
+            const viewRange = new QtRange(0, 0, pageDocument.documentWidth, pageDocument.documentHeight);
+			const elementsInView = qt.queryRange(viewRange);
+            
+            contents = { 
+                elementsInView: elementsInView, 
+                rangeWidth: rangeWidth, 
+                rangeHeight: rangeHeight,
+                color: '#702963'
+            }; 
+
+            browserView.webContents.send('ipc-clear-highlighted-elements');
+            browserView.webContents.send('ipc-highlight-available-elements', contents);
+		}
+	});
+});
+
+ipcMain.on('ipc-browserview-generateNavAreasTree', (event, contents) => {
+    //Recreate quadtree
+    let bounds = browserView.getBounds();
+	let menuBuilderOptions = new MenuBuilderOptions(bounds.width, bounds.height, 'new');
+	let menuBuilder = new MenuBuilder(menuBuilderOptions);
+
+    const visibleElements = contents.serializedVisibleMenus.map(e => {
+        let htmlSerializableMenuElement = createHTMLSerializableMenuElement(e);
+        return NavArea.fromHTMLElement(htmlSerializableMenuElement);
+    });
+
+    let pageDocument = new MenuPageDocument(contents.docTitle, contents.docURL, visibleElements, bounds.width, bounds.height, null);
+
+    menuBuilder.buildAsync(pageDocument).then((hierarchicalAreas) => {
+		currentNavAreaTree = hierarchicalAreas;
+        // browserView.webContents.send('ipc-set-cactus-id');
+
+		//Only in debug mode - show which points are available for interaction
+		if (isDevelopment) {
+			const viewRange = new MenuRange(0, 0, pageDocument.documentWidth, pageDocument.documentHeight);
+			const elementsInView = currentNavAreaTree.queryRange(viewRange, true);
+            
+            contents = { 
+                elementsInView: elementsInView, 
+                rangeWidth: rangeWidth, 
+                rangeHeight: rangeHeight,
+                color: '#E34234'
+            }; 
+
+            browserView.webContents.send('ipc-highlight-available-elements', contents);
+		}
+	});
+});
+
+ipcMain.on('ipc-browserview-cursor-mouseover', (event, mouseData) => {
+    clearInterval(timeoutCursorHovering);
+
+    timeoutCursorHovering = setInterval(() => {
+        const { x, y } = mouseData;
+
+        const qtRangeToQuery = new QtRange(x - (rangeWidth / 2), y - (rangeHeight / 2), rangeWidth, rangeHeight);
+        const menuRangeToQuery = new MenuRange(x - (rangeWidth / 2), y - (rangeHeight / 2), rangeWidth, rangeHeight);
+
+        const elementsInQueryRange = currentQt ? currentQt.queryRange(qtRangeToQuery) : [];
+        const navAreasInQueryRange = useNavAreas ? (currentNavAreaTree ? currentNavAreaTree.queryRange(menuRangeToQuery, true) : []) : [];
+
+        if (useNavAreas && navAreasInQueryRange.length > 0) {
+            mainWindowContent.webContents.send('ipc-mainwindow-sidebar-render-navareas', navAreasInQueryRange)
+            clearInterval(timeoutCursorHovering);
+        } else {
+            const uniqueInteractiveElementsInQueryRange = [];
+            const seenElements = new Set();
+            elementsInQueryRange.forEach(el => {
+                if (!seenElements.has(el.id)) {
+                    seenElements.add(el.id);
+                    uniqueInteractiveElementsInQueryRange.push(el);
+                }
+            });
+            mainWindowContent.webContents.send('ipc-mainwindow-sidebar-render-elements', uniqueInteractiveElementsInQueryRange)
+        }
+    }, 500);
+});
+
+ipcMain.on('ipc-browserview-cursor-mouseout', (event) => {
+    clearInterval(timeoutCursorHovering);
+});
 
 ipcMain.on('browse-to-url', (event, url) => {
     if (url) {
@@ -73,29 +195,20 @@ ipcMain.on('browse-to-url', (event, url) => {
     }
 });
 
-ipcMain.on('ipc-mainwindow-scrolldown', () => {
+ipcMain.on('ipc-mainwindow-scrolldown', (event, configData) => {
     var tab = tabList.find(tab => tab.isActive === true);
-    tab.webContentsView.webContents.send('ipc-browserview-scrolldown');
+    tab.webContentsView.webContents.send('ipc-browserview-scrolldown', configData);
 });
 
-ipcMain.on('ipc-mainwindow-scrollup', () => {
+ipcMain.on('ipc-mainwindow-scrollup', (event, configData) => {
     var tab = tabList.find(tab => tab.isActive === true);
-    tab.webContentsView.webContents.send('ipc-browserview-scrollup');
+    tab.webContentsView.webContents.send('ipc-browserview-scrollup', configData);
 });
 
 ipcMain.on('ipc-mainwindow-click-sidebar-element', (event, elementToClick) => {
     var tab = tabList.find(tab => tab.isActive === true);
     //Once the main page is loaded, create inner browserview and place it in the right position by getting the x,y,width,height of a positioned element in index.html
     tab.webContentsView.webContents.send('ipc-browserview-click-element', elementToClick);
-})
-
-ipcMain.on('ipc-browserview-elements-in-mouserange', (event, elements) => {
-    //Render in sidebar
-    mainWindowContent.webContents.send('ipc-mainwindow-sidebar-render-elements', elements)
-})
-
-ipcMain.on('ipc-browserview-navareas-in-mouserange', (event, navareas) => {
-    mainWindowContent.webContents.send('ipc-mainwindow-sidebar-render-navareas', navareas)
 })
 
 ipcMain.on('ipc-mainwindow-highlight-elements-on-page', (event, elements) => {
@@ -294,28 +407,9 @@ function resizeMainWindow() {
 
 }
 
-// Handle IPC from renderer
-ipcMain.handle('get-app-info', async () => {
-    return {
-        appName: app.name,
-        appVersion: app.getVersion(),
-    };
-});
-
-ipcMain.handle('get-tab-renderer-script', async () => {
-    try {
-        const scriptToExecute = path.join(__dirname, '../src/renderer/browserview/render-tabview.js');
-        const scriptContent = await fs.readFileSync(scriptToExecute, 'utf-8');
-        return scriptContent;
-    }
-    catch (ex) {
-        console.log(ex);
-    }
-})
-
 function createBrowserviewInTab(url, properties) {
     //Create browser view
-    let browserView = new WebContentsView({
+    browserView = new WebContentsView({
         //https://www.electronjs.org/docs/latest/tutorial/security
         webPreferences: {
             nodeIntegration: false,
@@ -349,104 +443,109 @@ function createBrowserviewInTab(url, properties) {
     //Once the DOM is ready, send a message to initiate some further logic
     browserView.webContents.on('dom-ready', () => {
         // This event fires when the BrowserView is attached
-        // browserView.webContents.send('ipc-main-browserview-loaded');
-        // browserView.webContents.insertCSS(`
-        // html, body { overflow-x: hidden; } 
+        browserView.webContents.send('ipc-main-browserview-loaded', useNavAreas);
+        insertRendererCSS();
 
-        // /* IMP: user-select:none and pointer-events:none rules removed in different selectors */
-
-        // a, input, textarea, button, div { 
-        //     cursor: none !important; 
-        // }
-        // /* width */
-        // ::-webkit-scrollbar {
-        //     width: 5px;
-        // }
-        // /* Track */
-        // ::-webkit-scrollbar-track {
-        //     box-shadow: inset 0 0 5px grey; 
-        //     border-radius: 2px;
-        // }
-
-        // /* Handle */
-        // ::-webkit-scrollbar-thumb {
-        //     background: #10468b; 
-        //     border-radius: 2px;
-        // }
-
-        // /* Handle on hover */
-        // ::-webkit-scrollbar-thumb:hover {
-        //     background: #638eec; 
-        // }
-
-        // /* Quadtree markers */
-        // .cactusElementMark {
-        //     position: relative;
-        //     // background-color: transparent;
-        // }
-
-        // .cactusElementVisualise {
-        //     border-radius: 5px;
-        //     border: 1px solid #10468b;
-        //     transition: background-color 0.5s ease;
-        //     background-color: #e6f1fa !important;
-        //     //color: #e6f1fa !important;
-        //     //border-radius: 5px;
-        // }
-
-        // .cactusElementVisualiseRemoved {
-        // }
-
-        // .cactusNavMarker {
-        //     color: inherit;
-
-        //     &:after {
-        //         content: '';
-        //         position: absolute;
-        //         bottom: 100%;
-        //         left: 0;
-        //         width: 0%;
-        //         height: 3px;
-        //         display: block;
-        //         background: #03644f !important;
-        //         transition: 1.5s ease-in-out;
-        //     }
-        // }
-
-        // .cactusNavMarker:hover {
-        //     color: #2d3d4d;
-        //     background-color: lighten(#03644f, 50%) !important;
-
-        //     &:after {
-        //         width: 100%;
-        //     }
-        // }
-        // `);
         if (isDevelopment) browserView.webContents.openDevTools();
     });
 
-    // //Loading event - update omnibox
-    // browserView.webContents.on('did-start-loading', () => {
-    //     mainWindowContent.webContents.send('browserview-loading-start');
-    // });
+    //Loading event - update omnibox
+    browserView.webContents.on('did-start-loading', () => {
+        mainWindowContent.webContents.send('browserview-loading-start');
+    });
 
-    // browserView.webContents.on('did-stop-loading', () => {
-    //     const url = browserView.webContents.getURL();
-    //     const title = browserView.webContents.getTitle();
-    //     mainWindowContent.webContents.send('browserview-loading-stop', { url: url, title: title });
-    // });
+    browserView.webContents.on('did-stop-loading', () => {
+        const url = browserView.webContents.getURL();
+        const title = browserView.webContents.getTitle();
+        mainWindowContent.webContents.send('browserview-loading-stop', { url: url, title: title });
+    });
 
-    // //React to in-page navigation (e.g. anchor links)
-    // browserView.webContents.on('did-navigate-in-page', (event, url) => {
-    //     const anchorTag = url.split('#')[1];
-    //     if (anchorTag) {
-    //         browserView.webContents.send('ipc-browserview-create-quadtree');
-    //     }
-    // });
+    //React to in-page navigation (e.g. anchor links)
+    browserView.webContents.on('did-navigate-in-page', (event, url) => {
+        const anchorTag = url.split('#')[1];
+        if (anchorTag) {
+            browserView.webContents.send('ipc-browserview-create-quadtree', useNavAreas);
+        }
+    });
 
     browserView.webContents.setWindowOpenHandler(({ url }) => {
         createBrowserviewInTab(url, properties);
     });
+}
+
+function insertRendererCSS() {
+    browserView.webContents.insertCSS(`
+        html, body { overflow-x: hidden; } 
+
+        /* IMP: user-select:none and pointer-events:none rules removed in different selectors */
+
+        a, input, textarea, button, div { 
+            cursor: none !important; 
+        }
+        /* width */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        /* Track */
+        ::-webkit-scrollbar-track {
+            box-shadow: inset 0 0 5px grey; 
+            border-radius: 2px;
+        }
+
+        /* Handle */
+        ::-webkit-scrollbar-thumb {
+            background: #10468b; 
+            border-radius: 2px;
+        }
+
+        /* Handle on hover */
+        ::-webkit-scrollbar-thumb:hover {
+            background: #638eec; 
+        }
+
+        /* Quadtree markers */
+        .cactusElementMark {
+            position: relative;
+            // background-color: transparent;
+        }
+
+        .cactusElementVisualise {
+            border-radius: 5px;
+            border: 1px solid #10468b;
+            transition: background-color 0.5s ease;
+            background-color: #e6f1fa !important;
+            //color: #e6f1fa !important;
+            //border-radius: 5px;
+        }
+
+        .cactusElementVisualiseRemoved {
+        }
+
+        .cactusNavMarker {
+            color: inherit;
+
+            &:after {
+                content: '';
+                position: absolute;
+                bottom: 100%;
+                left: 0;
+                width: 0%;
+                height: 3px;
+                display: block;
+                background: #03644f !important;
+                transition: 1.5s ease-in-out;
+            }
+        }
+
+        .cactusNavMarker:hover {
+            color: #2d3d4d;
+            background-color: lighten(#03644f, 50%) !important;
+
+            &:after {
+                width: 100%;
+            }
+        }
+    `);
 }
 
 function removeMenusOverlay() {
@@ -471,7 +570,7 @@ function createMenuOverlay(overlayAreaToShow) {
         y: mainWindowContentBounds.y,
         transparent: true,
         frame: false,
-        alwaysOnTop: true
+        alwaysOnTop: false
     });
 
     // Load the splash screen HTML file
@@ -491,6 +590,12 @@ function createMenuOverlay(overlayAreaToShow) {
     if (isDevelopment) menusOverlayContent.webContents.openDevTools();
 }
 
+function createHTMLSerializableMenuElement(element) {
+    // Mapping each child element to a serializable menu element
+    element.children = element.children.map(child => createHTMLSerializableMenuElement(child));
+    return new HTMLSerializableMenuElement(element);
+}
+
 // const iconPath = path.join(__dirname, 'logo.png')
 
 // app.on('web-contents-created', (event, contents) => {
@@ -500,7 +605,7 @@ function createMenuOverlay(overlayAreaToShow) {
 // })
 
 // ipcMain.on('ipc-mainwindow-scrolling-complete', () => {
-//   browserView.webContents.send('ipc-browserview-create-quadtree');
+//   browserView.webContents.send('ipc-browserview-create-quadtree', useNavAreas);
 // })
 
 // ipcMain.on('getLinks', (event, message) => {
