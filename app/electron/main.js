@@ -12,7 +12,7 @@ const rangeHeight = config.get('dwelling.rangeHeight');
 const useNavAreas = config.get('dwelling.activateNavAreas');
 
 let mainWindow, splashWindow, menusOverlayWindow
-let mainWindowContent, browserView
+let mainWindowContent
 let currentQt, currentNavAreaTree
 let timeoutCursorHovering
 let defaultUrl = config.get('browser.defaultUrl');
@@ -56,8 +56,10 @@ let count_generateQuadTree = 0;
 ipcMain.on('ipc-browserview-generateQuadTree', (event, contents) => {
     count_generateQuadTree++;
     console.log("Generate Quad Tree Counter:", count_generateQuadTree);
+
+    var tab = tabList.find(tab => tab.isActive === true);
     // Recreate quadtree
-    let bounds = browserView.getBounds();
+    let bounds = tab.webContentsView.getBounds();
     qtOptions = new QtBuilderOptions(bounds.width, bounds.height, 'new', 1);
     qtBuilder = new QuadtreeBuilder(qtOptions);
 
@@ -83,15 +85,16 @@ ipcMain.on('ipc-browserview-generateQuadTree', (event, contents) => {
                 color: '#702963'
             }; 
 
-            browserView.webContents.send('ipc-clear-highlighted-elements');
-            browserView.webContents.send('ipc-highlight-available-elements', contents);
+            tab.webContentsView.webContents.send('ipc-clear-highlighted-elements');
+            tab.webContentsView.webContents.send('ipc-highlight-available-elements', contents);
 		}
 	});
 });
 
 ipcMain.on('ipc-browserview-generateNavAreasTree', (event, contents) => {
-    //Recreate quadtree
-    let bounds = browserView.getBounds();
+    //Recreate quadtree    
+    var tab = tabList.find(tab => tab.isActive === true);
+    let bounds = tab.webContentsView.getBounds();
 	let menuBuilderOptions = new MenuBuilderOptions(bounds.width, bounds.height, 'new');
 	let menuBuilder = new MenuBuilder(menuBuilderOptions);
 
@@ -104,7 +107,6 @@ ipcMain.on('ipc-browserview-generateNavAreasTree', (event, contents) => {
 
     menuBuilder.buildAsync(pageDocument).then((hierarchicalAreas) => {
 		currentNavAreaTree = hierarchicalAreas;
-        // browserView.webContents.send('ipc-set-cactus-id');
 
 		//Only in debug mode - show which points are available for interaction
 		if (isDevelopment) {
@@ -118,7 +120,7 @@ ipcMain.on('ipc-browserview-generateNavAreasTree', (event, contents) => {
                 color: '#E34234'
             }; 
 
-            browserView.webContents.send('ipc-highlight-available-elements', contents);
+            tab.webContentsView.webContents.send('ipc-highlight-available-elements', contents);
 		}
 	});
 });
@@ -409,7 +411,7 @@ function resizeMainWindow() {
 
 function createBrowserviewInTab(url, properties) {
     //Create browser view
-    browserView = new WebContentsView({
+    let browserView = new WebContentsView({
         //https://www.electronjs.org/docs/latest/tutorial/security
         webPreferences: {
             nodeIntegration: false,
@@ -474,7 +476,8 @@ function createBrowserviewInTab(url, properties) {
 }
 
 function insertRendererCSS() {
-    browserView.webContents.insertCSS(`
+    var tab = tabList.find(tab => tab.isActive === true);
+    tab.webContentsView.webContents.insertCSS(`
         html, body { overflow-x: hidden; } 
 
         /* IMP: user-select:none and pointer-events:none rules removed in different selectors */
@@ -605,7 +608,8 @@ function createHTMLSerializableMenuElement(element) {
 // })
 
 // ipcMain.on('ipc-mainwindow-scrolling-complete', () => {
-//   browserView.webContents.send('ipc-browserview-create-quadtree', useNavAreas);
+//   var tab = tabList.find(tab => tab.isActive === true);
+//   tab.webContents.send('ipc-browserview-create-quadtree', useNavAreas);
 // })
 
 // ipcMain.on('getLinks', (event, message) => {
