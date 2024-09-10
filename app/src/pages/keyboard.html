@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
+    <title>CACTUS - Gaze-Native Web Browser</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/webview.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+
+<body>
+    <div class="keyboard" id="keyboard-container">
+        <div class="keyboard__textbox-area">
+            <textarea class="keyboard__textbox use-keyboard-input" readonly></textarea>
+            <!-- <textarea class="keyboard__textbox use-keyboard-input" rows="10" cols="90" readonly></textarea> -->
+            <div class="keyboard__arrow-keys">
+                <button type="button" class="keyboard__key keyboard__key--arrow-left-right">
+                    <i class="material-icons">keyboard_arrow_left</i>
+                </button>
+                <div class="keyboard__arrow-keys keyboard__arrow-keys--vertical">
+                    <button type="button" class="keyboard__key keyboard__key--arrow-up-down">
+                        <i class="material-icons">keyboard_arrow_up</i>
+                    </button>
+                    <button type="button" class="keyboard__key keyboard__key--arrow-up-down">
+                        <i class="material-icons">keyboard_arrow_down</i>
+                    </button>
+                </div>
+                <button type="button" class="keyboard__key keyboard__key--arrow-left-right">
+                    <i class="material-icons">keyboard_arrow_right</i>
+                </button>
+            </div>
+        </div>
+        <!-- <div class="keyboard-keys">        
+            <div class="keyboard-top-row">
+                <div class="keyboard-key">Backspace</div>
+            </div>
+            <div class="keyboard-middle-section"></div>
+            <div class="keyboard-bottom-row">
+                <div class="keyboard-key">Shift ⇧</div>
+                <div class="keyboard-key">?123</div>
+                <div class="keyboard-key">,</div>
+                <div class="keyboard-key" style="flex: 1;">Space</div>
+                <div class="keyboard-key">.</div>
+            </div>
+        </div> -->
+    </div>
+    <!-- <script src="../renderer/keyboard/render-overlay-keyboard.js"></script> -->
+</body>
+
+</html>

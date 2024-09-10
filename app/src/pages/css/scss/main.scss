@@ -4,6 +4,7 @@
 @import '_components.scss';
 @import '_nav.scss';
 @import '_overlays.scss';
+@import '_keyboard.scss';
 
 body {
   height: 100%;
@@ -144,7 +145,7 @@ body {
     font-size: 1.2em;
   }
 }
-
+// why is this here if there is no class in the html?
 .sidebar {
   &_item {
     @extend .dwellBtn;

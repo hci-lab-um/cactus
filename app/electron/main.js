@@ -11,7 +11,7 @@ const rangeWidth = config.get('dwelling.rangeWidth');
 const rangeHeight = config.get('dwelling.rangeHeight');
 const useNavAreas = config.get('dwelling.activateNavAreas');
 
-let mainWindow, splashWindow, menusOverlayWindow
+let mainWindow, splashWindow, menusOverlayWindow, keyboardOverlayWindow
 let mainWindowContent
 let currentQt, currentNavAreaTree
 let timeoutCursorHovering
@@ -221,6 +221,10 @@ ipcMain.on('ipc-mainwindow-highlight-elements-on-page', (event, elements) => {
 
 ipcMain.on('ipc-mainwindow-show-overlay', (event, overlayAreaToShow) => {
     createMenuOverlay(overlayAreaToShow);
+})
+
+ipcMain.on('ipc-mainwindow-show-keyboard', (event) => {
+    createKeyboardOverlay();
 })
 
 ipcMain.on('ipc-overlays-remove', () => {
@@ -576,7 +580,6 @@ function createMenuOverlay(overlayAreaToShow) {
         alwaysOnTop: false
     });
 
-    // Load the splash screen HTML file
     const menusOverlayContent = new WebContentsView({
         //https://www.electronjs.org/docs/latest/tutorial/security
         webPreferences: {
@@ -591,6 +594,44 @@ function createMenuOverlay(overlayAreaToShow) {
 
     menusOverlayContent.webContents.send('ipc-main-overlays-loaded', overlayAreaToShow)
     if (isDevelopment) menusOverlayContent.webContents.openDevTools();
+}
+
+// Perhaps adding if statements specific inside the previous function reduces duplicate code??
+// depends if size of keyboard is the same as menus overlay
+function createKeyboardOverlay() {
+    // Previous overlays are intentionally not removed since closing the keyboard should take
+    // the user back to the previous overlay
+    console.log("creating keyboard overlay");
+
+    let mainWindowContentBounds = mainWindow.getContentBounds();
+
+    keyboardOverlayWindow = new BaseWindow({
+        parent: mainWindow,
+        modal: true,
+        title: "Cactus - Menu",
+        width: mainWindowContentBounds.width,
+        height: mainWindowContentBounds.height,
+        x: mainWindowContentBounds.x,
+        y: mainWindowContentBounds.y,
+        transparent: true,
+        frame: false,
+        alwaysOnTop: false
+    });
+
+    const keyboardOverlayContent = new WebContentsView({
+        webPreferences: {
+            nodeIntegrationInWorker: true,
+            contextIsolation: true,
+            // preload: path.join(__dirname, '../src/renderer/overlays/render-overlay-keyboard.js'),
+            preload: path.join(__dirname, '../src/renderer/overlays/keyboard.js'),
+        }
+    })
+    keyboardOverlayWindow.contentView.addChildView(keyboardOverlayContent)
+    keyboardOverlayContent.setBounds({ x: 0, y: 0, width: mainWindowContentBounds.width, height: mainWindowContentBounds.height })
+    keyboardOverlayContent.webContents.loadURL(path.join(__dirname, '../src/pages/keyboard.html'));
+
+    keyboardOverlayContent.webContents.send('ipc-main-keyboard-loaded')
+    if (isDevelopment) keyboardOverlayContent.webContents.openDevTools();
 }
 
 function createHTMLSerializableMenuElement(element) {
