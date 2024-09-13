@@ -190,6 +190,7 @@
 
     &__textbox {
         flex-grow: 3;
+        resize: none;
     }
 
     &__arrow-keys {
@@ -216,7 +217,7 @@
         border: none;
         background: rgba(255, 255, 255, 0.2);
         color: #ffffff;
-        font-size: 1.05rem;
+        font-size: 1.25rem;
         outline: none;
         display: inline-flex;
         align-items: center;
