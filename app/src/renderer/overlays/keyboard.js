@@ -2,7 +2,7 @@ const { ipcRenderer } = require('electron');
 const config = require('config');
 const fs = require('fs');
 const path = require('path');
-const { dwell } = require('../../tools/utils');
+const { keyboardDwell } = require('../../tools/utils');
 const { createCursor, followCursor } = require('../../tools/cursor')
 const DOMPurify = require('dompurify');
 
@@ -93,7 +93,7 @@ const Keyboard = {
         const fragment = document.createDocumentFragment();
 
         // TOP ROW
-        const topRow = ["mic", "text1", "text2", "text3", "text4", "backspace", "AC"];
+        const topRow = ["mic", "text1", "text2", "text3", "backspace", "delete word", "AC"]; // text would evetually be replaced with auto-suggestions
         const topRowContainer = document.createElement("div");
         topRowContainer.classList.add("keyboard__row");
 
@@ -118,7 +118,8 @@ const Keyboard = {
             rowContainer.classList.add("keyboard__row");
 
             row.forEach(key => {
-                const keyElement = this._createKeyElement(key);
+                const keyElement = this._createKeyElement(key);                
+                if (key != "caps" && key != "enter") keyElement.classList.add("keyboard__key--equal-width"); // this ensures that all keys are of equal width except for "caps" and "enter"
                 rowContainer.appendChild(keyElement);
             });
 
@@ -155,9 +156,9 @@ const Keyboard = {
         switch (key) {
             case "mic":
                 keyElement.classList.add("keyboard__key--darker");
-                keyElement.innerHTML = this._createIconHTML("mic");
+                keyElement.innerHTML = this._createMaterialIcon("mic");
 
-                keyElement.addEventListener("click", () => {
+                keyboardDwell(keyElement, () => {
                     // listen for voice input
                 });
 
@@ -166,11 +167,10 @@ const Keyboard = {
             case "text1":
             case "text2":
             case "text3":
-            case "text4":
                 keyElement.classList.add("keyboard__key--wider", "keyboard__key--dark");
                 keyElement.innerHTML = key;
 
-                keyElement.addEventListener("click", () => {
+                keyboardDwell(keyElement, () => {
                     this.elements.textarea.value += key;
                 });
 
@@ -178,12 +178,20 @@ const Keyboard = {
 
             case "backspace":
                 keyElement.classList.add("keyboard__key--darker");
-                keyElement.innerHTML = this._createIconHTML("backspace");
+                keyElement.innerHTML = this._createMaterialIcon("backspace");
 
-                keyElement.addEventListener("click", () => {
-                    // this.properties.value = this.properties.value.substring(0, this.properties.value.length - 1);
-                    // this._triggerEvent("oninput");
+                keyboardDwell(keyElement, () => {
                     this.elements.textarea.value = this.elements.textarea.value.slice(0, -1);
+                });
+
+                break;
+
+            case "delete word":
+                keyElement.classList.add("keyboard__key--darker");
+                keyElement.innerHTML = this._createMaterialIcon("backspace");
+
+                keyboardDwell(keyElement, () => {
+                    this.elements.textarea.value = this.elements.textarea.value.replace(/\S+\s*$/, '');
                 });
 
                 break;
@@ -192,7 +200,7 @@ const Keyboard = {
                 keyElement.classList.add("keyboard__key--darker");
                 keyElement.innerHTML = "AC";
 
-                keyElement.addEventListener("click", () => {
+                keyboardDwell(keyElement, () => {
                     this.elements.textarea.value = "";
                 });
 
@@ -200,10 +208,15 @@ const Keyboard = {
 
             case "caps":
                 keyElement.classList.add("keyboard__key--wide", "keyboard__key--darker", "keyboard__key--activatable");
-                keyElement.innerHTML = this._createIconHTML("keyboard_capslock");
                 keyElement.classList.toggle("keyboard__key--active", this.properties.capsLock);
 
-                keyElement.addEventListener("click", () => {
+                if (this.properties.specialKeys) {
+                    keyElement.textContent = "=\\<";
+                } else {
+                    keyElement.innerHTML = this._createMaterialIcon("keyboard_capslock");
+                }
+
+                keyboardDwell(keyElement, () => {
                     this._toggleCapsLock();
                 });
 
@@ -211,9 +224,9 @@ const Keyboard = {
 
             case "enter":
                 keyElement.classList.add("keyboard__key--wide", "keyboard__key--darker");
-                keyElement.innerHTML = this._createIconHTML("keyboard_return");
+                keyElement.innerHTML = this._createMaterialIcon("keyboard_return");
 
-                keyElement.addEventListener("click", () => {
+                keyboardDwell(keyElement, () => {
                     this.elements.textarea.value += "\n";
                 });
 
@@ -221,9 +234,9 @@ const Keyboard = {
 
             case "settings":
                 keyElement.classList.add("keyboard__key--darker");
-                keyElement.innerHTML = this._createIconHTML("settings");
+                keyElement.innerHTML = this._createMaterialIcon("settings");
 
-                keyElement.addEventListener("click", () => {
+                keyboardDwell(keyElement, () => {
                     this._openSettingsPopup();
                 });
 
@@ -233,7 +246,7 @@ const Keyboard = {
                 keyElement.classList.add("keyboard__key--darker");
                 keyElement.textContent = this.properties.specialKeys ? "ABC" : "?123";
 
-                keyElement.addEventListener("click", () => {
+                keyboardDwell(keyElement, () => {
                     this._toggleSpecialKeys();
                 });
 
@@ -241,9 +254,9 @@ const Keyboard = {
 
             case "space":
                 keyElement.classList.add("keyboard__key--widest");
-                keyElement.innerHTML = this._createIconHTML("space_bar");
+                keyElement.innerHTML = this._createMaterialIcon("space_bar");
 
-                keyElement.addEventListener("click", () => {
+                keyboardDwell(keyElement, () => {
                     this.elements.textarea.value += " ";
                 });
 
@@ -251,11 +264,10 @@ const Keyboard = {
 
             case "done":
                 keyElement.classList.add("keyboard__key--wider", "keyboard__key--yellow-border", "keyboard__key--darker");
-                keyElement.innerHTML = this._createIconHTML("check_circle");
+                keyElement.innerHTML = this._createMaterialIcon("check_circle");
 
-                keyElement.addEventListener("click", () => {
-                    this.close();
-                    this._triggerEvent("onclose");
+                keyboardDwell(keyElement, () => {
+                // send text to main process
                 });
 
                 break;
@@ -263,7 +275,8 @@ const Keyboard = {
             default:
                 keyElement.textContent = key;
 
-                keyElement.addEventListener("click", () => {
+                //Attaching dwell event listener
+                keyboardDwell(keyElement, () => {
                     this.elements.textarea.value += key;
                     this._triggerEvent("oninput");
                 });
@@ -281,6 +294,10 @@ const Keyboard = {
 
     _toggleSpecialKeys() {
         this.properties.specialKeys = !this.properties.specialKeys;
+
+        // this ensures that the caps lock icon does not remian activated when switching to special keys
+        this.properties.capsLock = this.properties.capsLock ? false : this.properties.capsLock;
+
         this._updateKeys();
     },
 
@@ -327,7 +344,7 @@ const Keyboard = {
         document.body.appendChild(popup);
     },
 
-    _createIconHTML(icon_name) {
+    _createMaterialIcon(icon_name) {
         return `<i class="material-icons">${icon_name}</i>`;
     },
 

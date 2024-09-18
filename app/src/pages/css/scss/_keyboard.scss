@@ -1,223 +1,53 @@
-// .keyboard {
-//     display: flex;
-//     flex-direction: column;
-//     height: calc(100vh - #{$navHeight});
-//     padding: 30px 60px;
-//     background: #023b4f;
-//     user-select: none;
-
-//     &--hidden {
-//         bottom: -100%;
-//     }
-
-//     &__textbox-area {
-//         display: flex;
-//         flex-direction: row;
-//         align-items: stretch;
-//     }
-
-//     &__textbox {
-//         margin-right: 8px;
-//         width: 51%;
-//     }
-
-//     &__arrowKeys {
-//         display: flex;
-//         flex-direction: row;
-//         height: auto;
-//         width: 19%;
-//         justify-content: center;
-//         align-items: flex-end;
-//     }
-
-//     &__keys {
-//         text-align: center;
-//     }
-
-//     &__key {
-//         height: 45px;
-//         width: 6%;
-//         max-width: 90px;
-//         margin: 3px;
-//         border-radius: 4px;
-//         border: none;
-//         background: rgba(255, 255, 255, 0.2);
-//         color: #ffffff;
-//         font-size: 1.05rem;
-//         outline: none;
-//         cursor: pointer;
-//         display: inline-flex;
-//         align-items: center;
-//         justify-content: center;
-//         vertical-align: top;
-//         padding: 0;
-//         -webkit-tap-highlight-color: transparent;
-//         position: relative;
-
-//         &:active {
-//             background: rgba(255, 255, 255, 0.12);
-//         }
-
-//         &--wide {
-//             width: 12.5%;
-//             max-width: 500px;
-//         }
-
-//         &--extra-wide {
-//             width: 32%;
-//             max-width: 500px;
-//         }
-
-//         &--activatable::after {
-//             content: '';
-//             top: 10px;
-//             right: 10px;
-//             position: absolute;
-//             width: 7px;
-//             height: 7px;
-//             background: rgba(255, 255, 255, 0.2);
-//             border-radius: 50%;
-//         }
-
-//         &--active::after {
-//             background: #08ff00;
-//         }
-
-//         &--dark {
-//             background: rgba(0, 0, 0, 0.25);
-//         }
-
-//         &--border {
-//             border: 2px solid rgb(224, 224, 0);
-//         }
-
-//         &--text {
-//             background: rgba(255, 255, 255, 0.12);
-//         }
-
-//         &--arrows {    
-//             display: flex;
-//             flex-direction: row;
-//             height: auto;
-//             width: 19%;
-//             justify-content: space-evenly;
-//             align-items: center;
-
-//             &-middle {
-//                 display: flex;
-//                 flex-direction: column;
-//                 height: -webkit-fill-available;
-//                 width: -webkit-fill-available;
-//                 max-width: 90px;
-//                 justify-content: center;
-//                 align-items: center;
-//             }
-//         }
-
-//         &--arrow {
-//             width: -webkit-fill-available;
-//             height: -webkit-fill-available;
-//         }
-//     }
-// }
-
-
-// // .keyboard-container {
-// //     display: flex;
-// //     flex-direction: column;
-// //     align-items: center;
-// //     justify-content: center;
-// //     padding: 10px;
-// //     background-color: #f0f0f0;
-// //     border: 1px solid #ccc;
-// //     border-radius: 5px;
-// //   }
-
-// //   .keyboard-row {
-// //     display: flex;
-// //     margin-bottom: 5px;
-
-// //     &:last-child {
-// //       margin-bottom: 0;
-// //     }
-// //   }
-
-// //   .keyboard-key {
-// //     display: flex;
-// //     align-items: center;
-// //     justify-content: center;
-// //     width: 40px;
-// //     height: 40px;
-// //     margin: 2px;
-// //     background-color: #fff;
-// //     border: 1px solid #ccc;
-// //     border-radius: 3px;
-// //     cursor: pointer;
-// //     user-select: none;
-
-// //     &:hover {
-// //       background-color: #e0e0e0;
-// //     }
-
-// //     &:active {
-// //       background-color: #d0d0d0;
-// //     }
-// //   }
-
-// // #input-area {
-// //   width: 100%;
-// //   margin-top: 10px;
-// //   padding: 10px;
-// //   border: 1px solid #ccc;
-// //   border-radius: 5px;
-// //   resize: none;
-// // }
-
 .keyboard {
     display: flex;
     flex-direction: column;
     padding: 30px 60px;
     background: #023B4F;
     user-select: none;
+    gap: 10px;
    
     &__textbox-area {
         display: flex;
         flex-direction: row;
         align-items: stretch;
-        gap: 6px;
-        margin: 3px;
+        gap: 10px;
     }
 
     &__textbox {
         flex-grow: 3;
         resize: none;
+        font-size: 2rem;
     }
 
     &__arrow-keys {
         display: flex;
+        flex-direction: column;
         flex-grow: 1;
         gap: 6px;
 
-        &--vertical {
-            flex-direction: column;
-            height: 100%
+        &--row {
+            display: flex;
+            flex-direction: row;
+            height: 100%;
+            gap: 6px;
         }
     }
 
     &__keys {
         display: flex;
         flex-direction: column;
+        align-items: center;
+        gap: 10px;
     }
 
     &__key {
+        @extend .keyboardDwellBtn;
         height: 12vh;
         flex-grow: 1;
-        margin: 3px;
+        background: rgba(255,255,255,0.2);
         border-radius: 4px;
         border: none;
-        background: rgba(255, 255, 255, 0.2);
-        color: #ffffff;
-        font-size: 1.25rem;
+        font-size: 1.6rem;
         outline: none;
         display: inline-flex;
         align-items: center;
@@ -227,24 +57,17 @@
         position: relative;
         -webkit-tap-highlight-color: transparent;
 
-
-        &:active {
-            background: rgba(255, 255, 255, 0.12);
-        }
-
-        &--arrow-left-right {
-            height: auto;
+        &--arrow {
             margin: 0;
         }
 
-        &--arrow-up-down {
-            margin: 0;
+        &--equal-width {
+            flex-basis: 100%;
         }
 
-        &--wide { // shift and enter
-            flex-grow: 1.5;
+        &--wide { // shift and enter keys
+            flex-basis: 150%;
         }
-
 
         &--wider { //  text suggestions and done key
             flex-grow: 2;
@@ -258,11 +81,13 @@
 
         &--dark { // text suggestions
             background: rgba(255, 255, 255, 0.12);
+            font-size: 1.4rem;
         }
 
 
         &--darker {
             background: rgba(0, 0, 0, 0.25);
+            font-size: 1.4rem;
         }
        
         &--yellow-border { // done key
@@ -288,5 +113,10 @@
     &__row {
         display: flex;
         width: 100%;
+        gap: 10px;
     }
+}
+
+.material-icons {
+    font-size: 1.8rem;
 }

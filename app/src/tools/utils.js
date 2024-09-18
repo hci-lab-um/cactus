@@ -2,6 +2,8 @@ const config = require('config');
 const { throttle } = require('lodash')
 
 let dwellTime = config.get('dwelling.dwellTime');
+let keyboardDwellTime = config.get('dwelling.keyboardDwellTime');
+let intervalIds = []; // this is needed because some keys create multiple intervals and hence all of them need to be cleared on mouseout
 
 module.exports = {
   byId: (id) => {
@@ -54,6 +56,35 @@ module.exports = {
     elem.addEventListener('mouseleave', () => {
       throttledFunction.cancel()
     })
+  },
+
+  keyboardDwell: (elem, callback) => {
+    // Bypass dwelling in case a switch is being used
+    elem.addEventListener('click', callback);
+
+    // Start dwelling on mouseover
+    elem.addEventListener('mouseenter', () => {
+      // Clears any existing intervals to avoid multiple intervals running simultaneously
+      if (intervalIds.length !== 0) {
+        intervalIds.forEach(intervalId => {
+          clearInterval(intervalId);
+        });
+      }
+      intervalIds.push(setInterval(() => {
+        callback(); 
+        elem.classList.add('keyboard_key--selected');
+      }, keyboardDwellTime));
+    });
+
+    // Stop dwelling on mouse leave
+    elem.addEventListener('mouseout', () => {
+      if (intervalIds.length !== 0) {
+        intervalIds.forEach(intervalId => {
+          clearInterval(intervalId);
+        });
+        intervalIds = [];
+      }
+    });
   },
 
   genId: () => {
