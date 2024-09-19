@@ -18,3 +18,9 @@ gulp.task('bookmarksCss', () => {
     .pipe(sass({ outputStyle: 'compressed' }))
     .pipe(gulp.dest('app/src/pages/css/'))
 })
+
+gulp.task('keyboardCss', () => {
+  return gulp.src('app/src/pages/css/scss/keyboard.scss')
+    .pipe(sass({ outputStyle: 'compressed' }))
+    .pipe(gulp.dest('app/src/pages/css/'))
+})

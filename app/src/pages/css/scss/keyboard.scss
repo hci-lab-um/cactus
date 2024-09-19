@@ -1,11 +1,25 @@
+@import '_vars.scss';
+@import '_animations.scss';
+@import '_components.scss';
+@import '_icons.scss';
+
+body {
+    height: 100%;
+    display: block;
+    font-family: 'Roboto', sans-serif;
+    cursor: none;
+    margin: 0;
+}
+
 .keyboard {
     display: flex;
     flex-direction: column;
-    padding: 30px 60px;
+    padding: 5.35vh;
+    // padding: 30px 60px;
     background: #023B4F;
     user-select: none;
     gap: 10px;
-   
+
     &__textbox-area {
         display: flex;
         flex-direction: row;
@@ -44,7 +58,7 @@
         @extend .keyboardDwellBtn;
         height: 12vh;
         flex-grow: 1;
-        background: rgba(255,255,255,0.2);
+        background: rgba(255, 255, 255, 0.2);
         border-radius: 4px;
         border: none;
         font-size: 1.6rem;
@@ -65,21 +79,25 @@
             flex-basis: 100%;
         }
 
-        &--wide { // shift and enter keys
+        &--wide {
+            // shift and enter keys
             flex-basis: 150%;
         }
 
-        &--wider { //  text suggestions and done key
+        &--wider {
+            //  text suggestions and done key
             flex-grow: 2;
         }
 
 
-        &--widest { // space bar
+        &--widest {
+            // space bar
             flex-grow: 3;
         }
 
 
-        &--dark { // text suggestions
+        &--dark {
+            // text suggestions
             background: rgba(255, 255, 255, 0.12);
             font-size: 1.4rem;
         }
@@ -89,11 +107,12 @@
             background: rgba(0, 0, 0, 0.25);
             font-size: 1.4rem;
         }
-       
-        &--yellow-border { // done key
+
+        &--yellow-border {
+            // done key
             border: 2px solid rgb(224, 224, 0);
         }
-       
+
         &--activatable::after {
             content: '';
             position: absolute;
@@ -105,10 +124,10 @@
             border-radius: 50%;
         }
 
-        &--active::after{
+        &--active::after {
             background: #08FF00;
         }
-    }  
+    }
 
     &__row {
         display: flex;
