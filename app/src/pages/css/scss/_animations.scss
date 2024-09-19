@@ -69,13 +69,6 @@
   animation-name: fadeOutDown;
 }
 
-.shake {
-  animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
-  transform: translate3d(0, 0, 0);
-  backface-visibility: hidden;
-  perspective: 1000px;
-}
-
 @keyframes shake {
   10%, 90% {
     transform: translate3d(-1px, 0, 0);
@@ -94,6 +87,13 @@
   }
 }
 
+.shake {
+  animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -101,5 +101,39 @@
 
   to {
     opacity: 1;
+  }
+}
+
+@keyframes keydown {
+  0%, 93%{
+    margin: 0px;
+  }
+
+  100% {
+    margin-top: 7px;
+    margin-bottom: -7px;
+  }
+}
+
+@keyframes keyboardDwellAnimation {
+  from {
+      // Any background color that is already set
+  }
+
+  to {
+      background-color: $blue-2;
+  }
+}
+
+
+@keyframes keyboardDwellAnimation-circle {
+  from {
+      opacity: 0;
+      transform: scale(0.8);
+  }
+
+  to {
+      opacity: 0.7;
+      transform: scale(0);
   }
 }

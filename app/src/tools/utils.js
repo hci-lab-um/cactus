@@ -71,8 +71,18 @@ module.exports = {
         });
       }
       intervalIds.push(setInterval(() => {
-        callback(); 
-        elem.classList.add('keyboard_key--selected');
+        callback();  
+
+        // console.log("elem before", elem);
+        // // Add the keydown class to start the animation after dwell time
+        // elem.classList.add('keydown');
+        // console.log("elem after", elem);
+
+        // // Removing the animation after it completes
+        // setTimeout(() => {
+        //   elem.classList.remove('keydown')
+        //   console.log("elem after", elem);
+        // }, 1000);
       }, keyboardDwellTime));
     });
 

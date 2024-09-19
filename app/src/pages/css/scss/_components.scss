@@ -69,37 +69,6 @@
     }
 }
 
-@keyframes dwellAnimation {
-    0% {}
-
-    95% {
-        margin: 0px;
-    }
-
-    98% {
-        margin-top: 3px;
-        margin-bottom: -3px;
-    }
-
-    100% {
-        background-color: $blue-2;
-        margin-top: 7px;
-        margin-bottom: -7px;
-    }
-}
-
-@keyframes dwellAnimation-before {
-    0% {
-        opacity: 0;
-        transform: scale(0.8);
-    }
-
-    100% {
-        opacity: 0.7;
-        transform: scale(0);
-    }
-}
-
 .keyboardDwellBtn {
     // box-shadow: 0px 5px 1px 0 rgba(0, 0, 0, 0.25);
     // background: rgba(255, 255, 255, 0.2);
@@ -116,24 +85,20 @@
         top: 50%;
         left: 50%;
         overflow: hidden;
-
+        border-radius: 50%;
+        opacity: 0;
         margin: {
             left: (5em / -2);
             top: (5em / -2);
         }
-
-        border-radius: 50%;
-        opacity: 0;
-        transform: scale(1);
-        transition: opacity $keyboardDwellTime cubic-bezier(0, 0, .2, 1),
-        transform $keyboardDwellTime cubic-bezier(0, 0, .2, 1);
     }
 
     &:hover {
-        animation: dwellAnimation $keyboardDwellTime ease-in infinite;
+        animation: keyboardDwellAnimation $keyboardDwellTime ease-in infinite,
+                   keydown $keyboardDwellTime cubic-bezier(0, 0, 0.2, 1) infinite;
 
         &:before {
-            animation: dwellAnimation-before $keyboardDwellTime ease-in infinite;
+            animation: keyboardDwellAnimation-circle $keyboardDwellTime ease-in infinite;
         }
     }
 }
