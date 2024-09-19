@@ -177,8 +177,8 @@ const Keyboard = {
                 break;
 
             case "backspace":
-                keyElement.classList.add("keyboard__key--darker");
-                keyElement.innerHTML = this._createMaterialIcon("backspace");
+                keyElement.classList.add("keyboard__key--darker", "custom-icons--delete-letter");
+                keyElement.innerHTML = this._createCustomIcon("delete_letter");
 
                 keyboardDwell(keyElement, () => {
                     this.elements.textarea.value = this.elements.textarea.value.slice(0, -1);
@@ -187,8 +187,8 @@ const Keyboard = {
                 break;
 
             case "delete word":
-                keyElement.classList.add("keyboard__key--darker");
-                keyElement.innerHTML = this._createMaterialIcon("backspace");
+                keyElement.classList.add("keyboard__key--darker", "custom-icons--delete-word");
+                keyElement.innerHTML = this._createCustomIcon("delete_word");
 
                 keyboardDwell(keyElement, () => {
                     this.elements.textarea.value = this.elements.textarea.value.replace(/\S+\s*$/, '');
@@ -346,6 +346,10 @@ const Keyboard = {
 
     _createMaterialIcon(icon_name) {
         return `<i class="material-icons">${icon_name}</i>`;
+    },
+
+    _createCustomIcon(icon_name) {
+        return `<i class="custom-icons">${icon_name}</i>`;
     },
 
     _moveCursor(offset) {
