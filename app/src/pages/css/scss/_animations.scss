@@ -107,29 +107,20 @@
 @keyframes keydown {
   0%, 93%{
     margin: 0px;
+    box-shadow: 0px 5px 0 0 #0000005c;
   }
 
   100% {
-    margin-top: 7px;
-    margin-bottom: -7px;
+    margin-top: 5px;
+    margin-bottom: -5px;
+    box-shadow: none;
   }
 }
-
-@keyframes keyboardDwellAnimation {
-  from {
-      // Any background color that is already set
-  }
-
-  to {
-      background-color: $blue-2;
-  }
-}
-
 
 @keyframes keyboardDwellAnimation-circle {
   from {
       opacity: 0;
-      transform: scale(0.8);
+      transform: scale(0.75);
   }
 
   to {

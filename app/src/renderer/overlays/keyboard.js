@@ -64,6 +64,27 @@ const Keyboard = {
         // Creating initial keys
         await this._updateKeys();
 
+        document.querySelector("#arrow-left").click();
+        // Adding event listeners for arrow keys
+        keyboardDwell(document.querySelector("#arrow-left"), () => {
+            this._moveCursorLeftRight(-1);
+        });
+        keyboardDwell(document.querySelector("#arrow-right"), () => {
+            this._moveCursorLeftRight(1);
+        });
+        keyboardDwell(document.querySelector("#arrow-up"), () => {
+            this._moveCursorUpDown(-1);
+        });
+        keyboardDwell(document.querySelector("#arrow-down"), () => {
+            this._moveCursorUpDown(1);
+        });
+        keyboardDwell(document.querySelector("#arrow-home"), () => {
+            this._moveCursorToLineStart();
+        });
+        keyboardDwell(document.querySelector("#arrow-end"), () => {
+            this._moveCursorToLineEnd();
+        });
+
         // // Automatically use keyboard for elements with .use-keyboard-input
         // document.querySelectorAll(".use-keyboard-input").forEach(element => {
         //     element.addEventListener("focus", () => {
@@ -73,20 +94,6 @@ const Keyboard = {
         //         this.open;
         //     });
         // });
-
-        // Addding event listeners for arrow keys
-        document.querySelector("#arrow-left").parentElement.addEventListener("click", () => {
-            this._moveCursor(-1);
-        });
-        document.querySelector("#arrow-right").parentElement.addEventListener("click", () => {
-            this._moveCursor(1);
-        });
-        document.querySelector("#arrow-up").parentElement.addEventListener("click", () => {
-            this._moveCursorUpDown(-1);
-        });
-        document.querySelector("#arrow-down").parentElement.addEventListener("click", () => {
-            this._moveCursorUpDown(1);
-        });
     },
 
     async _createKeys(layout) {
@@ -171,7 +178,7 @@ const Keyboard = {
                 keyElement.innerHTML = key;
 
                 keyboardDwell(keyElement, () => {
-                    this.elements.textarea.value += key;
+                    this._insertChar(key);
                 });
 
                 break;
@@ -181,7 +188,7 @@ const Keyboard = {
                 keyElement.innerHTML = this._createCustomIcon("delete_letter");
 
                 keyboardDwell(keyElement, () => {
-                    this.elements.textarea.value = this.elements.textarea.value.slice(0, -1);
+                    this._deleteChar();
                 });
 
                 break;
@@ -191,7 +198,7 @@ const Keyboard = {
                 keyElement.innerHTML = this._createCustomIcon("delete_word");
 
                 keyboardDwell(keyElement, () => {
-                    this.elements.textarea.value = this.elements.textarea.value.replace(/\S+\s*$/, '');
+                    this._deleteWord();
                 });
 
                 break;
@@ -227,7 +234,7 @@ const Keyboard = {
                 keyElement.innerHTML = this._createMaterialIcon("keyboard_return");
 
                 keyboardDwell(keyElement, () => {
-                    this.elements.textarea.value += "\n";
+                    this._insertChar("\n");
                 });
 
                 break;
@@ -257,7 +264,7 @@ const Keyboard = {
                 keyElement.innerHTML = this._createMaterialIcon("space_bar");
 
                 keyboardDwell(keyElement, () => {
-                    this.elements.textarea.value += " ";
+                    this._insertChar(" ");
                 });
 
                 break;
@@ -275,16 +282,23 @@ const Keyboard = {
             default:
                 keyElement.textContent = key;
 
-                //Attaching dwell event listener
                 keyboardDwell(keyElement, () => {
-                    this.elements.textarea.value += key;
-                    this._triggerEvent("oninput");
+                    this._insertChar(key);
+                    // this._triggerEvent("oninput");
                 });
 
                 break;
         }
 
         return keyElement;
+    },
+
+    _createMaterialIcon(icon_name) {
+        return `<i class="material-icons">${icon_name}</i>`;
+    },
+
+    _createCustomIcon(icon_name) {
+        return `<i class="custom-icons">${icon_name}</i>`;
     },
 
     _toggleCapsLock() {
@@ -301,66 +315,90 @@ const Keyboard = {
         this._updateKeys();
     },
 
-    async _updateKeys() {
-        let layout;
-        if (this.properties.specialKeys) {
-            layout = this.properties.capsLock ? this.keyboardLayout.special_keys.shift : this.keyboardLayout.special_keys.default;
-        } else {
-            layout = this.properties.capsLock ? this.keyboardLayout.main_keys.shift : this.keyboardLayout.main_keys.default;
+    _insertChar(key) {
+        const textarea = this.elements.textarea;
+        const currentPos = textarea.selectionStart;
+        const value = textarea.value;
+
+        // Insert the letter(s) at the current cursor position
+        const newValue = value.slice(0, currentPos) + key + value.slice(currentPos);
+
+        // Update the textarea value and set the new cursor position
+        textarea.value = newValue;
+        const newCursorPos = currentPos + key.length;
+        textarea.setSelectionRange(newCursorPos, newCursorPos);
+        console.log("newPosition", newCursorPos);
+        textarea.focus();
+    },
+
+    _deleteChar() {
+        const textarea = this.elements.textarea;
+        const currentPos = textarea.selectionStart;
+        const value = textarea.value;
+
+        // If the cursor is at the beginning, do nothing
+        if (currentPos === 0) {
+            return;
         }
 
-        // Clear existing keys
-        this.elements.keysContainer.innerHTML = "";
+        // Delete the character before the current cursor position
+        const newValue = value.slice(0, currentPos - 1) + value.slice(currentPos);
 
-        // Create new keys
-        const keysFragment = await this._createKeys(layout);
-        this.elements.keysContainer.appendChild(keysFragment);
-
-        // Update keys reference
-        this.elements.keys = this.elements.keysContainer.querySelectorAll(".keyboard__key");
+        // Update the textarea value and set the new cursor position
+        textarea.value = newValue;
+        textarea.setSelectionRange(currentPos - 1, currentPos - 1);
+        console.log("newPosition", currentPos - 1);
+        textarea.focus();
     },
 
-    _openSettingsPopup() {
-        // Create and display the settings popup
-        const popup = document.createElement("div");
-        popup.classList.add("settings-popup");
+    /**
+     * This method deletes the word that the cursor is currently touching, excluding whitespace. 
+     * 
+     * If the cursor is at the end of a word, the entire word will be deleted.
+     * E.g. "Hello, World!*cursor here*" -> "Hello, *cursor here*" (whitespace after comma is not deleted)
+     * 
+     * If the cursor is in the middle of the word, the entire word, including letters that come after the cursor, will be deleted.
+     * E.g. "Hello, Wor*cursor here*ld!" -> "Hello, *cursor here*" (whitespace after comma is not deleted)
+     * 
+     * If the cursor is at the beginning of the word, the word will also be deleted.
+     * E.g. "Hello, *cursor here*World!" -> "Hello, *cursor here*" (whitespace after comma is not deleted)
+     */
+    _deleteWord() {
+        const textarea = this.elements.textarea;
+        const currentPos = textarea.selectionStart;
+        const value = textarea.value;
 
-        const languages = ["en", "mt", "it", "fr"];
-        languages.forEach(language => {
-            const button = document.createElement("button");
-            button.textContent = language;
-            button.addEventListener("click", async () => {
-                try {
-                    await this._getKeyboardLayout(language);
-                    await this._updateKeys();
-                } catch (error) {
-                    console.error('Failed to load keyboard layout:', error);
-                }
-                document.body.removeChild(popup);
-            });
-            popup.appendChild(button);
-        });
+        // If the cursor is at the beginning, do nothing
+        if (currentPos === 0) {
+            console.log("Cursor is at the beginning");
+            return;
+        }
 
-        document.body.appendChild(popup);
+        // Find the position of the last word before and including the cursor
+        const beforeCursor = value.slice(0, currentPos);
+        const afterCursor = value.slice(currentPos);
+        const newValue = beforeCursor.replace(/\S*$/, '') + afterCursor.replace(/^\S*/, '');
+
+        // Update the textarea value and set the new cursor position
+        const deletedLength = beforeCursor.length - beforeCursor.replace(/\S*$/, '').length;
+        const newCursorPos = currentPos - deletedLength;
+        textarea.value = newValue;
+        textarea.setSelectionRange(newCursorPos, newCursorPos);
+        console.log("newPosition", newCursorPos);
+        textarea.focus();
     },
 
-    _createMaterialIcon(icon_name) {
-        return `<i class="material-icons">${icon_name}</i>`;
-    },
-
-    _createCustomIcon(icon_name) {
-        return `<i class="custom-icons">${icon_name}</i>`;
-    },
-
-    _moveCursor(offset) {
+    _moveCursorLeftRight(offset) {
         const textarea = this.elements.textarea;
         const start = textarea.selectionStart;
+        console.log("start", start);
 
         // Calculate new cursor position
         const newPosition = Math.max(0, start + offset);
 
         // Set new cursor position
         textarea.setSelectionRange(newPosition, newPosition);
+        console.log("newPosition", newPosition);
         textarea.focus();
     },
 
@@ -388,7 +426,78 @@ const Keyboard = {
 
         // Set new cursor position
         textarea.setSelectionRange(newPosition, newPosition);
+        console.log("newPosition", newPosition);
         textarea.focus();
+    },
+
+    _moveCursorToLineStart() {
+        const textarea = this.elements.textarea;
+        const currentPos = textarea.selectionStart;
+        const value = textarea.value;
+        
+        // Find the start of the current line
+        const lineStart = value.lastIndexOf('\n', currentPos - 1) + 1;
+        
+        // Set the cursor position to the start of the line
+        textarea.setSelectionRange(lineStart, lineStart);
+        textarea.focus();
+    },
+    
+    _moveCursorToLineEnd() {
+        const textarea = this.elements.textarea;
+        const currentPos = textarea.selectionStart;
+        const value = textarea.value;
+        
+        // Find the end of the current line
+        const lineEnd = value.indexOf('\n', currentPos);
+        const newCursorPos = lineEnd === -1 ? value.length : lineEnd;
+        
+        // Set the cursor position to the end of the line
+        textarea.setSelectionRange(newCursorPos, newCursorPos);
+        textarea.focus();
+    },
+
+    _openSettingsPopup() {
+        // Create and display the settings popup
+        const popup = document.createElement("div");
+        popup.classList.add("settings-popup");
+
+        const languages = ["en", "mt", "it", "fr"];
+        languages.forEach(language => {
+            const button = document.createElement("button");
+            button.textContent = language;
+            button.addEventListener("click", async () => {
+                try {
+                    await this._getKeyboardLayout(language);
+                    await this._updateKeys();
+                } catch (error) {
+                    console.error('Failed to load keyboard layout:', error);
+                }
+                document.body.removeChild(popup);
+            });
+            popup.appendChild(button);
+        });
+
+        document.body.appendChild(popup);
+    },
+
+    async _updateKeys() {
+        let layout;
+        if (this.properties.specialKeys) {
+            layout = this.properties.capsLock ? this.keyboardLayout.special_keys.shift : this.keyboardLayout.special_keys.default;
+        } else {
+            layout = this.properties.capsLock ? this.keyboardLayout.main_keys.shift : this.keyboardLayout.main_keys.default;
+        }
+
+        // Clear existing keys
+        this.elements.keysContainer.innerHTML = "";
+
+        // Create new keys
+        const keysFragment = await this._createKeys(layout);
+        this.elements.keysContainer.appendChild(keysFragment);
+
+        // Update keys reference
+        this.elements.keys = this.elements.keysContainer.querySelectorAll(".keyboard__key");
     },
 
     _triggerEvent(handlerName) {

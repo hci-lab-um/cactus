@@ -3,22 +3,28 @@
 @import '_components.scss';
 @import '_icons.scss';
 
+a, input, textarea, button, div { 
+    cursor: none !important; 
+}
+
 body {
-    height: 100%;
+    height: 100vh;
     display: block;
     font-family: 'Roboto', sans-serif;
     cursor: none;
     margin: 0;
+    overflow: hidden;
 }
 
 .keyboard {
+    height: 100%;
     display: flex;
     flex-direction: column;
-    padding: 5.35vh;
-    // padding: 30px 60px;
     background: #023B4F;
     user-select: none;
     gap: 10px;
+    padding-inline: 5vw;
+    justify-content: center;
 
     &__textbox-area {
         display: flex;
@@ -59,6 +65,7 @@ body {
         height: 12vh;
         flex-grow: 1;
         background: rgba(255, 255, 255, 0.2);
+        box-shadow: 0px 5px 0 0 #0000005c;
         border-radius: 4px;
         border: none;
         font-size: 1.6rem;
