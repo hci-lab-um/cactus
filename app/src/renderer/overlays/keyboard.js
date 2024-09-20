@@ -64,7 +64,6 @@ const Keyboard = {
         // Creating initial keys
         await this._updateKeys();
 
-        document.querySelector("#arrow-left").click();
         // Adding event listeners for arrow keys
         keyboardDwell(document.querySelector("#arrow-left"), () => {
             this._moveCursorLeftRight(-1);
@@ -85,15 +84,10 @@ const Keyboard = {
             this._moveCursorToLineEnd();
         });
 
-        // // Automatically use keyboard for elements with .use-keyboard-input
-        // document.querySelectorAll(".use-keyboard-input").forEach(element => {
-        //     element.addEventListener("focus", () => {
-        //         // this.open(element.value, currentValue => {
-        //         //     element.value = currentValue;
-        //         // });
-        //         this.open;
-        //     });
-        // });
+        // Event listener for closing the keyboard
+        keyboardDwell(document.querySelector("#close"), () => {
+            ipcRenderer.send('ipc-keyboard-remove');
+        });
     },
 
     async _createKeys(layout) {
@@ -137,9 +131,9 @@ const Keyboard = {
         let bottomRow = [];
         if (this.properties.specialKeys && this.properties.capsLock) {
             let keys = layout[layout.length - 1];
-            bottomRow = ["settings", "?123", keys[0], "space", keys[1], "done"];
+            bottomRow = ["settings", "?123", keys[0], "space", keys[1], "send"];
         } else {
-            bottomRow = ["settings", "?123", ",", "space", ".", "done"];
+            bottomRow = ["settings", "?123", ",", "space", ".", "send"];
         }
         const bottomRowContainer = document.createElement("div");
         bottomRowContainer.classList.add("keyboard__row");
@@ -269,9 +263,9 @@ const Keyboard = {
 
                 break;
 
-            case "done":
+            case "send":
                 keyElement.classList.add("keyboard__key--wider", "keyboard__key--yellow-border", "keyboard__key--darker");
-                keyElement.innerHTML = this._createMaterialIcon("check_circle");
+                keyElement.innerHTML = this._createMaterialIcon("send");
 
                 keyboardDwell(keyElement, () => {
                 // send text to main process
@@ -458,6 +452,10 @@ const Keyboard = {
     },
 
     _openSettingsPopup() {
+        // Create and display the overlay
+        const overlay = document.createElement("div");
+        overlay.classList.add("keyboard__overlay");
+
         // Create and display the settings popup
         const popup = document.createElement("div");
         popup.classList.add("settings-popup");
@@ -465,19 +463,21 @@ const Keyboard = {
         const languages = ["en", "mt", "it", "fr"];
         languages.forEach(language => {
             const button = document.createElement("button");
-            button.textContent = language;
-            button.addEventListener("click", async () => {
+            button.textContent = language.toUpperCase();
+            keyboardDwell(button, async () => {
                 try {
-                    await this._getKeyboardLayout(language);
+                    this.keyboardLayout = await this._getKeyboardLayout(language);
                     await this._updateKeys();
                 } catch (error) {
                     console.error('Failed to load keyboard layout:', error);
                 }
                 document.body.removeChild(popup);
+                document.body.removeChild(overlay);
             });
             popup.appendChild(button);
         });
 
+        document.body.appendChild(overlay);
         document.body.appendChild(popup);
     },
 

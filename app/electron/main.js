@@ -231,6 +231,10 @@ ipcMain.on('ipc-overlays-remove', () => {
     removeMenusOverlay();
 })
 
+ipcMain.on('ipc-keyboard-remove', () => {
+    removeKeyboardOverlay();
+})
+
 ipcMain.on('ipc-browserview-scroll-up-hide', () => {
     mainWindowContent.webContents.send('ipc-mainwindow-scroll-up-hide')
 })
@@ -594,6 +598,13 @@ function createMenuOverlay(overlayAreaToShow) {
 
     menusOverlayContent.webContents.send('ipc-main-overlays-loaded', overlayAreaToShow)
     if (isDevelopment) menusOverlayContent.webContents.openDevTools();
+}
+
+function removeKeyboardOverlay() {
+    if (keyboardOverlayWindow) {
+        keyboardOverlayWindow.close();
+        keyboardOverlayWindow = null;
+    }
 }
 
 // Perhaps adding if statements specific inside the previous function reduces duplicate code??

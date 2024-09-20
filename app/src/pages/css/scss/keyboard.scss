@@ -65,10 +65,10 @@ body {
         height: 12vh;
         flex-grow: 1;
         background: rgba(255, 255, 255, 0.2);
-        box-shadow: 0px 5px 0 0 #0000005c;
+        // box-shadow: 0px 5px 0 0 #0000005c;
         border-radius: 4px;
         border: none;
-        font-size: 1.6rem;
+        font-size: 1.8rem;
         outline: none;
         display: inline-flex;
         align-items: center;
@@ -115,9 +115,16 @@ body {
             font-size: 1.4rem;
         }
 
+        &--close {
+            flex-grow: 0.35;
+            height: auto;
+            // border: solid 2px #395c69;
+            border: solid 2px rgba(255, 255, 255, 0.2);            
+        }
+
         &--yellow-border {
             // done key
-            border: 2px solid rgb(224, 224, 0);
+            border: 2px solid #ffff6a;
         }
 
         &--activatable::after {
@@ -140,5 +147,33 @@ body {
         display: flex;
         width: 100%;
         gap: 10px;
+    }
+
+    &__overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
+}
+
+.settings-popup {
+    display: flex;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    z-index: 1000;
+
+    button {
+        @extend .dwellBtn;
+        padding: 30px 50px;
     }
 }
