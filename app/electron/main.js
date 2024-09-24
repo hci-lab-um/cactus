@@ -562,7 +562,7 @@ function createOverlay(overlayAreaToShow) {
     removeOverlay();
 
     let mainWindowContentBounds = mainWindow.getContentBounds();
-    let renderer = overlayAreaToShow === 'keyboard' ? 'keyboard.js' : 'render-overlay-menus.js';
+    let renderer = overlayAreaToShow === 'keyboard' ? 'render-overlay-keyboard.js' : 'render-overlay-menus.js';
     let htmlPage = overlayAreaToShow === 'keyboard' ? 'keyboard.html' : 'overlays.html';
 
     overlayWindow = new BaseWindow({
