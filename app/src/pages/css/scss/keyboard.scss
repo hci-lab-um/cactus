@@ -61,7 +61,7 @@ body {
     }
 
     &__key {
-        @extend .keyboardDwellBtn;
+        color: #ffffff;
         height: 12vh;
         flex-grow: 1;
         background: rgba(255, 255, 255, 0.2);
@@ -77,6 +77,14 @@ body {
         padding: 0;
         position: relative;
         -webkit-tap-highlight-color: transparent;
+
+        &--dwell-infinite {
+            @extend .keyboardDwellBtnInfinite;
+        }
+
+        &--dwell-once {
+            @extend .keyboardDwellBtnOnce;
+        }
 
         &--arrow {
             margin: 0;
@@ -96,19 +104,16 @@ body {
             flex-grow: 2;
         }
 
-
         &--widest {
             // space bar
             flex-grow: 3;
         }
-
 
         &--dark {
             // text suggestions
             background: rgba(255, 255, 255, 0.12);
             font-size: 1.4rem;
         }
-
 
         &--darker {
             background: rgba(0, 0, 0, 0.25);

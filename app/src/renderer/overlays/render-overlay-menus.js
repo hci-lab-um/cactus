@@ -55,11 +55,6 @@ function setEventHandlersForOmniMenu() {
 		ipcRenderer.send('ipc-overlays-remove');
 	})
 
-	dwell(searchOmniBtn, () => {
-		console.log("search button pressed");
-		ipcRenderer.send('ipc-mainwindow-show-keyboard');
-	})
-
 	// // =================================
 	// // ======== OMNIBOX OVERLAY ========
 	// // =================================

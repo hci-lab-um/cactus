@@ -2,7 +2,7 @@ const { ipcRenderer } = require('electron');
 const config = require('config');
 const fs = require('fs');
 const path = require('path');
-const { keyboardDwell } = require('../../tools/utils');
+const { dwell, dwellInfinite } = require('../../tools/utils');
 const { createCursor, followCursor } = require('../../tools/cursor')
 const DOMPurify = require('dompurify');
 
@@ -65,31 +65,43 @@ const Keyboard = {
         await this._updateKeys();
 
         // Adding event listeners for arrow keys
-        keyboardDwell(document.querySelector("#arrow-left"), () => {
+        dwellInfinite(document.querySelector("#arrow-left"), () => {
             this._moveCursorLeftRight(-1);
         });
-        keyboardDwell(document.querySelector("#arrow-right"), () => {
+        dwellInfinite(document.querySelector("#arrow-right"), () => {
             this._moveCursorLeftRight(1);
         });
-        keyboardDwell(document.querySelector("#arrow-up"), () => {
+        dwellInfinite(document.querySelector("#arrow-up"), () => {
             this._moveCursorUpDown(-1);
         });
-        keyboardDwell(document.querySelector("#arrow-down"), () => {
+        dwellInfinite(document.querySelector("#arrow-down"), () => {
             this._moveCursorUpDown(1);
         });
-        keyboardDwell(document.querySelector("#arrow-home"), () => {
+        dwellInfinite(document.querySelector("#arrow-home"), () => {
             this._moveCursorToLineStart();
         });
-        keyboardDwell(document.querySelector("#arrow-end"), () => {
+        dwellInfinite(document.querySelector("#arrow-end"), () => {
             this._moveCursorToLineEnd();
         });
 
-        // Event listener for closing the keyboard
-        keyboardDwell(document.querySelector("#close"), () => {
-            ipcRenderer.send('ipc-keyboard-remove');
-        });
+        // Event listener for closing the keyboard. This key must only be dwellable once!
+        dwell(document.querySelector("#close"), () => {
+            ipcRenderer.send('ipc-overlays-remove');
+        }, true);
     },
 
+    /**
+     * Creates a keyboard layout based on the provided layout configuration.
+     * 
+     * This method generates the DOM structure for a virtual keyboard, including
+     * the top row with special keys, middle rows based on the provided layout,
+     * and a bottom row with additional keys. The keys are created using the 
+     * `_createKeyElement` method and are appended to a document fragment.
+     * 
+     * @param {Array<Array<string>>} layout - A 2D array representing the keyboard layout.
+     * @returns {Promise<DocumentFragment>} A promise that resolves to a document fragment containing the keyboard layout.
+     * @private
+     */
     async _createKeys(layout) {
         const fragment = document.createDocumentFragment();
 
@@ -129,12 +141,20 @@ const Keyboard = {
 
         // BOTTOM ROW
         let bottomRow = [];
+
+        /*
+         * If the special keys are displayed (the "?123" button is clicked), and the capslock button is active, 
+         * the keyboard's bottom row changes. Instead of the default comma, fullstop, and ".com" keys, the keys from the last 
+         * row in the special keys layout are displayed. Note that when the special keys are displayed the 
+         * capslock icon changes to "=\<" to signify that more special keys are available.
+         */
         if (this.properties.specialKeys && this.properties.capsLock) {
             let keys = layout[layout.length - 1];
             bottomRow = ["settings", "?123", keys[0], "space", keys[1], "send"];
         } else {
-            bottomRow = ["settings", "?123", ",", "space", ".", "send"];
+            bottomRow = ["settings", "?123", ",", "space", ".", ".com", "send"];
         }
+
         const bottomRowContainer = document.createElement("div");
         bottomRowContainer.classList.add("keyboard__row");
 
@@ -156,127 +176,130 @@ const Keyboard = {
 
         switch (key) {
             case "mic":
-                keyElement.classList.add("keyboard__key--darker");
+                keyElement.classList.add("keyboard__key--darker", "keyboard__key--dwell-once");
                 keyElement.innerHTML = this._createMaterialIcon("mic");
 
-                keyboardDwell(keyElement, () => {
+                dwell(keyElement, () => {
                     // listen for voice input
-                });
+                }, true);
 
                 break;
 
             case "text1":
             case "text2":
             case "text3":
-                keyElement.classList.add("keyboard__key--wider", "keyboard__key--dark");
+                keyElement.classList.add("keyboard__key--wider", "keyboard__key--dark", "keyboard__key--dwell-once");
                 keyElement.innerHTML = key;
 
-                keyboardDwell(keyElement, () => {
+                dwell(keyElement, () => {
                     this._insertChar(key);
-                });
+                }, true);
 
                 break;
 
             case "backspace":
-                keyElement.classList.add("keyboard__key--darker", "custom-icons--delete-letter");
+                keyElement.classList.add("keyboard__key--darker", "custom-icons--delete-letter", "keyboard__key--dwell-infinite");
                 keyElement.innerHTML = this._createCustomIcon("delete_letter");
 
-                keyboardDwell(keyElement, () => {
+                dwellInfinite(keyElement, () => {
                     this._deleteChar();
                 });
 
                 break;
 
             case "delete word":
-                keyElement.classList.add("keyboard__key--darker", "custom-icons--delete-word");
+                keyElement.classList.add("keyboard__key--darker", "custom-icons--delete-word", "keyboard__key--dwell-infinite");
                 keyElement.innerHTML = this._createCustomIcon("delete_word");
 
-                keyboardDwell(keyElement, () => {
+                dwellInfinite(keyElement, () => {
                     this._deleteWord();
                 });
 
                 break;
 
             case "AC":
-                keyElement.classList.add("keyboard__key--darker");
+                keyElement.classList.add("keyboard__key--darker", "keyboard__key--dwell-once");
                 keyElement.innerHTML = "AC";
 
-                keyboardDwell(keyElement, () => {
+                dwell(keyElement, () => {
                     this.elements.textarea.value = "";
-                });
+                }, true);
 
                 break;
 
             case "caps":
-                keyElement.classList.add("keyboard__key--wide", "keyboard__key--darker", "keyboard__key--activatable");
+                keyElement.classList.add("keyboard__key--wide", "keyboard__key--darker", "keyboard__key--activatable", "keyboard__key--dwell-infinite");
                 keyElement.classList.toggle("keyboard__key--active", this.properties.capsLock);
 
+                // This allows the virtual keyboard to dynamically switch between different icons based on the current state of the keyboard.
+                // If the special keys are displayed (the "?123" button is clicked), the capslock icon changes to "=\<" to signify that more special keys are available.
                 if (this.properties.specialKeys) {
                     keyElement.textContent = "=\\<";
                 } else {
                     keyElement.innerHTML = this._createMaterialIcon("keyboard_capslock");
                 }
 
-                keyboardDwell(keyElement, () => {
+                dwellInfinite(keyElement, () => {
                     this._toggleCapsLock();
                 });
 
                 break;
 
             case "enter":
-                keyElement.classList.add("keyboard__key--wide", "keyboard__key--darker");
+                keyElement.classList.add("keyboard__key--wide", "keyboard__key--darker", "keyboard__key--dwell-infinite");
                 keyElement.innerHTML = this._createMaterialIcon("keyboard_return");
 
-                keyboardDwell(keyElement, () => {
+                dwellInfinite(keyElement, () => {
                     this._insertChar("\n");
                 });
 
                 break;
 
             case "settings":
-                keyElement.classList.add("keyboard__key--darker");
+                keyElement.classList.add("keyboard__key--darker", "keyboard__key--dwell-once");
                 keyElement.innerHTML = this._createMaterialIcon("settings");
 
-                keyboardDwell(keyElement, () => {
+                dwell(keyElement, () => {
                     this._openSettingsPopup();
-                });
+                }, true);
 
                 break;
 
             case "?123":
-                keyElement.classList.add("keyboard__key--darker");
+                keyElement.classList.add("keyboard__key--darker", "keyboard__key--dwell-infinite");
                 keyElement.textContent = this.properties.specialKeys ? "ABC" : "?123";
 
-                keyboardDwell(keyElement, () => {
+                dwellInfinite(keyElement, () => {
                     this._toggleSpecialKeys();
                 });
 
                 break;
 
             case "space":
-                keyElement.classList.add("keyboard__key--widest");
+                keyElement.classList.add("keyboard__key--widest", "keyboard__key--dwell-infinite");
                 keyElement.innerHTML = this._createMaterialIcon("space_bar");
 
-                keyboardDwell(keyElement, () => {
+                dwellInfinite(keyElement, () => {
                     this._insertChar(" ");
                 });
 
                 break;
 
             case "send":
-                keyElement.classList.add("keyboard__key--wider", "keyboard__key--yellow-border", "keyboard__key--darker");
+                keyElement.classList.add("keyboard__key--wider", "keyboard__key--yellow-border", "keyboard__key--darker", "keyboard__key--dwell-once");
                 keyElement.innerHTML = this._createMaterialIcon("send");
 
-                keyboardDwell(keyElement, () => {
+                dwell(keyElement, () => {
                 // send text to main process
-                });
+                }, true);
 
                 break;
 
             default:
+                keyElement.classList.add("keyboard__key--dwell-infinite");
                 keyElement.textContent = key;
 
-                keyboardDwell(keyElement, () => {
+                dwellInfinite(keyElement, () => {
                     this._insertChar(key);
                     // this._triggerEvent("oninput");
                 });
@@ -464,7 +487,7 @@ const Keyboard = {
         languages.forEach(language => {
             const button = document.createElement("button");
             button.textContent = language.toUpperCase();
-            keyboardDwell(button, async () => {
+            dwellInfinite(button, async () => {
                 try {
                     this.keyboardLayout = await this._getKeyboardLayout(language);
                     await this._updateKeys();
@@ -535,6 +558,7 @@ const Keyboard = {
     }
 };
 
-ipcRenderer.on('ipc-main-keyboard-loaded', () => {
+ipcRenderer.on('ipc-main-keyboard-loaded', (event) => {
+    console.log('Keyboard loading');
     Keyboard.init();
 });

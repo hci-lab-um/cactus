@@ -11,7 +11,7 @@ const rangeWidth = config.get('dwelling.rangeWidth');
 const rangeHeight = config.get('dwelling.rangeHeight');
 const useNavAreas = config.get('dwelling.activateNavAreas');
 
-let mainWindow, splashWindow, menusOverlayWindow, keyboardOverlayWindow
+let mainWindow, splashWindow, overlayWindow
 let mainWindowContent
 let currentQt, currentNavAreaTree
 let timeoutCursorHovering
@@ -220,19 +220,11 @@ ipcMain.on('ipc-mainwindow-highlight-elements-on-page', (event, elements) => {
 });
 
 ipcMain.on('ipc-mainwindow-show-overlay', (event, overlayAreaToShow) => {
-    createMenuOverlay(overlayAreaToShow);
+    createOverlay(overlayAreaToShow);
 })
 
-ipcMain.on('ipc-mainwindow-show-keyboard', (event) => {
-    createKeyboardOverlay();
-})
-
-ipcMain.on('ipc-overlays-remove', () => {
-    removeMenusOverlay();
-})
-
-ipcMain.on('ipc-keyboard-remove', () => {
-    removeKeyboardOverlay();
+ipcMain.on('ipc-overlays-remove', (event) => {
+    removeOverlay();
 })
 
 ipcMain.on('ipc-browserview-scroll-up-hide', () => {
@@ -260,7 +252,7 @@ ipcMain.on('ipc-overlays-zoom-in', () => {
     var tab = tabList.find(tab => tab.isActive === true);
     var zoomLevel = tab.webContentsView.webContents.getZoomLevel();
     tab.webContentsView.webContents.setZoomLevel(zoomLevel + 1);
-    removeMenusOverlay();
+    removeOverlay();
 })
 
 ipcMain.on('ipc-overlays-zoom-out', () => {
@@ -268,14 +260,14 @@ ipcMain.on('ipc-overlays-zoom-out', () => {
     var tab = tabList.find(tab => tab.isActive === true);
     var zoomLevel = tab.webContentsView.webContents.getZoomLevel();
     tab.webContentsView.webContents.setZoomLevel(zoomLevel - 1);
-    removeMenusOverlay();
+    removeOverlay();
 })
 
 ipcMain.on('ipc-overlays-zoom-reset', () => {
     //Select active browserview
     var tab = tabList.find(tab => tab.isActive === true);
     tab.webContentsView.webContents.setZoomLevel(0);
-    removeMenusOverlay();
+    removeOverlay();
 })
 
 ipcMain.on('log', (event, loggedItem) => {
@@ -559,19 +551,21 @@ function insertRendererCSS() {
     `);
 }
 
-function removeMenusOverlay() {
-    if (menusOverlayWindow) {
-        menusOverlayWindow.close();
-        menusOverlayWindow = null;
+function removeOverlay() {
+    if (overlayWindow) {
+        overlayWindow.close();
+        overlayWindow = null;
     }
 }
 
-function createMenuOverlay(overlayAreaToShow) {
-    removeMenusOverlay();
+function createOverlay(overlayAreaToShow) {
+    removeOverlay();
 
     let mainWindowContentBounds = mainWindow.getContentBounds();
+    let renderer = overlayAreaToShow === 'keyboard' ? 'keyboard.js' : 'render-overlay-menus.js';
+    let htmlPage = overlayAreaToShow === 'keyboard' ? 'keyboard.html' : 'overlays.html';
 
-    menusOverlayWindow = new BaseWindow({
+    overlayWindow = new BaseWindow({
         parent: mainWindow,
         modal: true,
         title: "Cactus - Menu",
@@ -584,65 +578,26 @@ function createMenuOverlay(overlayAreaToShow) {
         alwaysOnTop: false
     });
 
-    const menusOverlayContent = new WebContentsView({
+    const overlayContent = new WebContentsView({
         //https://www.electronjs.org/docs/latest/tutorial/security
         webPreferences: {
             nodeIntegrationInWorker: true,
             contextIsolation: true,
-            preload: path.join(__dirname, '../src/renderer/overlays/render-overlay-menus.js'),
+            preload: path.join(__dirname, '../src/renderer/overlays/', renderer),
         }
     })
-    menusOverlayWindow.contentView.addChildView(menusOverlayContent)
-    menusOverlayContent.setBounds({ x: 0, y: 0, width: mainWindowContentBounds.width, height: mainWindowContentBounds.height })
-    menusOverlayContent.webContents.loadURL(path.join(__dirname, '../src/pages/overlays.html'));
+    overlayWindow.contentView.addChildView(overlayContent)
+    overlayContent.setBounds({ x: 0, y: 0, width: mainWindowContentBounds.width, height: mainWindowContentBounds.height })
+    overlayContent.webContents.loadURL(path.join(__dirname, '../src/pages/', htmlPage));
 
-    menusOverlayContent.webContents.send('ipc-main-overlays-loaded', overlayAreaToShow)
-    if (isDevelopment) menusOverlayContent.webContents.openDevTools();
-}
-
-function removeKeyboardOverlay() {
-    if (keyboardOverlayWindow) {
-        keyboardOverlayWindow.close();
-        keyboardOverlayWindow = null;
+    if (overlayAreaToShow === 'keyboard') {
+        console.log("creating keyboard overlay");
+        overlayContent.webContents.send('ipc-main-keyboard-loaded');
+    } else {
+        console.log("creating menus overlay");
+        overlayContent.webContents.send('ipc-main-overlays-loaded', overlayAreaToShow)
     }
-}
-
-// Perhaps adding if statements specific inside the previous function reduces duplicate code??
-// depends if size of keyboard is the same as menus overlay
-function createKeyboardOverlay() {
-    // Previous overlays are intentionally not removed since closing the keyboard should take
-    // the user back to the previous overlay
-    console.log("creating keyboard overlay");
-
-    let mainWindowContentBounds = mainWindow.getContentBounds();
-
-    keyboardOverlayWindow = new BaseWindow({
-        parent: mainWindow,
-        modal: true,
-        title: "Cactus - Menu",
-        width: mainWindowContentBounds.width,
-        height: mainWindowContentBounds.height,
-        x: mainWindowContentBounds.x,
-        y: mainWindowContentBounds.y,
-        transparent: true,
-        frame: false,
-        alwaysOnTop: false
-    });
-
-    const keyboardOverlayContent = new WebContentsView({
-        webPreferences: {
-            nodeIntegrationInWorker: true,
-            contextIsolation: true,
-            // preload: path.join(__dirname, '../src/renderer/overlays/render-overlay-keyboard.js'),
-            preload: path.join(__dirname, '../src/renderer/overlays/keyboard.js'),
-        }
-    })
-    keyboardOverlayWindow.contentView.addChildView(keyboardOverlayContent)
-    keyboardOverlayContent.setBounds({ x: 0, y: 0, width: mainWindowContentBounds.width, height: mainWindowContentBounds.height })
-    keyboardOverlayContent.webContents.loadURL(path.join(__dirname, '../src/pages/keyboard.html'));
-
-    keyboardOverlayContent.webContents.send('ipc-main-keyboard-loaded')
-    if (isDevelopment) keyboardOverlayContent.webContents.openDevTools();
+    if (isDevelopment) overlayContent.webContents.openDevTools();
 }
 
 function createHTMLSerializableMenuElement(element) {

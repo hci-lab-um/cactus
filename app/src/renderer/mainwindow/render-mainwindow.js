@@ -225,7 +225,8 @@ function setupFunctionality() {
 	omni.addEventListener('keydown', (event) => browserToUrl(event));
 	dwell(omni, () => {
 		// hideAllOverlays()
-		showOverlay('omni');
+		// showOverlay('omni');
+		showOverlay('keyboard');
 	});
 
 	let backOrForward = byId('backOrForwardBtn')

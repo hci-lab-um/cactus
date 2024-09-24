@@ -45,8 +45,10 @@ module.exports = {
   //   }
   // },
 
-  dwell: (elem, callback) => {
-    let throttledFunction = throttle(callback, dwellTime, { leading: false, trailing: true })
+  dwell: (elem, callback, isKeyboardBtn = false) => {
+    // If the dwelling is for a keyboard button, use the keyboard dwell time, otherwise use the default dwell time
+    let dwellTimeToUse = isKeyboardBtn ? keyboardDwellTime : dwellTime;
+    let throttledFunction = throttle(callback, dwellTimeToUse, { leading: false, trailing: true });
 
     //Bypass dwelling in case a switch is being used
     elem.addEventListener('click', callback)
@@ -58,7 +60,7 @@ module.exports = {
     })
   },
 
-  keyboardDwell: (elem, callback) => {
+  dwellInfinite: (elem, callback) => {
     // Bypass dwelling in case a switch is being used
     elem.addEventListener('click', callback);
 

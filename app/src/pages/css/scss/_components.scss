@@ -66,8 +66,7 @@
     }
 }
 
-.keyboardDwellBtn {
-    color: #ffffff;
+@mixin keyboardDwellBtn($animationIteration) {
     transition: $keyboardDwellTime;
 
     &:before {
@@ -91,12 +90,20 @@
     &:hover {
         background-color: #4acee075;
         padding: 20px;
-        animation: keydown $keyboardDwellTime cubic-bezier(0, 0, 0.2, 1) infinite;
+        animation: keydown $keyboardDwellTime cubic-bezier(0, 0, 0.2, 1) $animationIteration;
 
         &:before {
-            animation: keyboardDwellAnimation-circle $keyboardDwellTime ease-in infinite;
+            animation: keyboardDwellAnimation-circle $keyboardDwellTime ease-in $animationIteration;
         }
     }
+}
+
+.keyboardDwellBtnInfinite {
+    @include keyboardDwellBtn(infinite);
+}
+
+.keyboardDwellBtnOnce {
+    @include keyboardDwellBtn(1);
 }
 
 #dialog {
