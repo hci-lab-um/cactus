@@ -18,84 +18,166 @@ window.addEventListener('DOMContentLoaded', () => {
     followCursor('cactus_cursor');
 });
 
+ipcRenderer.on('ipc-main-keyboard-loaded', async (event, inputType) => {
+    // const NUMPAD_REQUIRED_ELEMENTS = [
+    //     'number', 'tel', 'date', 'datetime-local', 'month', 'time', 'week' // revise these
+    // ];
+
+    // const NUMPAD_REQUIRED_ELEMENTS = ['number', 'tel'];
+    console.log("inputType", inputType);
+    const NUMPAD_REQUIRED_ELEMENTS = ['search']; // <-- to remove
+    let needsNumpad = NUMPAD_REQUIRED_ELEMENTS.indexOf(inputType) !== -1;
+    let fileName = needsNumpad ? "numeric" : config.get('keyboard.defaultLayout');
+
+    let keyboardLayout = await getKeyboardLayout(fileName);
+    Keyboard.init(keyboardLayout);
+});
+
+function getKeyboardLayout(defaultLayout = "en") {
+    return new Promise((resolve, reject) => {
+        const layoutPath = path.join(__dirname, '../../pages/json/keyboard/', `${defaultLayout}.json`);
+        fs.readFile(layoutPath, 'utf8', (err, data) => {
+            if (err) {
+                console.error('Error loading keyboard layout:', err);
+                reject(err);
+                return;
+            }
+            resolve(JSON.parse(data));
+        });
+    });
+}
+
 const Keyboard = {
     elements: {
         main: null,
         keysContainer: null,
         keys: [],
-        textarea: null
-    },
-
-    eventHandlers: {
-        oninput: null,
-        onclose: null
+        textarea: null,
     },
 
     properties: {
         capsLock: false,
-        specialKeys: false
+        specialKeys: false,
+        numpad_leftColumn: ["+", "-", ".", "space"],
+        numpad_rightColumn: ["mic", "backspace", "AC", "send"],
     },
 
-    async init() {
-    // Setting up main elements
-        this.elements.main = document.getElementById("keyboard-container");
-        this.elements.main.classList.add("keyboard");
+    async init(layout) {
+        console.log("Keyboard initialized with layout:", layout);
+        this.keyboardLayout = layout;
 
-        this.elements.keysContainer = document.createElement("div");
-        this.elements.keysContainer.classList.add("keyboard__keys");
+        // Setting up main elements
+        this.elements.main = document.getElementById("keyboard-container");     
 
-        this.elements.main.appendChild(this.elements.keysContainer);
-        this.elements.textarea = document.querySelector(".keyboard__textbox");
+        this._createTextboxArea();
+
+        if (this.keyboardLayout.layout === "numeric") {
+            this.elements.main.style.padding = " 0 12vw 0 12vw";
+            this._createNumpadArea();
+        } else {
+            this.elements.keysContainer = document.createElement("div");
+            this.elements.keysContainer.classList.add("keyboard__keys");
+            this.elements.main.appendChild(this.elements.keysContainer);
+
+            // Creating initial main area keys
+            await this._updateKeys();
+        }
+    },
+
+    _createTextboxArea() {
+        const textboxArea = document.createElement("div");
+        textboxArea.classList.add("keyboard__textbox-area");
+
+        const textarea = document.createElement("textarea");
+        textarea.classList.add("keyboard__textbox");
+        textboxArea.appendChild(textarea);
+
+        const arrowKeys = this._createArrowKeys();
+        textboxArea.appendChild(arrowKeys);
+
+        const closeButton = this._createKeyElement("close");
+        textboxArea.appendChild(closeButton);
+
+        this.elements.main.appendChild(textboxArea);
+        this.elements.textarea = textarea;
         this.elements.textarea.focus();
-
         // Ensuring textarea stays focused by refocusing it if focus is lost
         this.elements.textarea.addEventListener("focusout", (event) => {
             setTimeout(() => this.elements.textarea.focus(), 0);
         });
+    },
 
-        // Load keyboard layout
-        try {
-            let defaultLayout = config.get('keyboard.defaultLayout');
-            this.keyboardLayout = await this._getKeyboardLayout(defaultLayout);
-        } catch (error) {
-            console.error('Failed to load keyboard layout:', error);
+    _createArrowKeys() {
+        // If a numeric keyboard layout is used, the up and down arrow keys are not displayed
+        let arrowKeysLayout = this.keyboardLayout.layout === "numeric" ?
+            {
+                row1: ["arrow-home", "arrow-end"],
+                row2: ["arrow-left", "arrow-right"]
+            } :
+            {
+                row1: ["arrow-home", "arrow-up", "arrow-end"],
+                row2: ["arrow-left", "arrow-down", "arrow-right"]
+            };
+
+        const arrowKeysContainer = document.createElement("div");
+        arrowKeysContainer.classList.add("keyboard__arrow-keys");
+
+        // Creating first row of arrow keys
+        const arrowKeysRow1 = document.createElement("div");
+        arrowKeysRow1.classList.add("keyboard__arrow-keys--row");
+
+        arrowKeysLayout.row1.forEach(key => {
+            const keyElement = this._createKeyElement(key);
+            arrowKeysRow1.appendChild(keyElement);
+        });
+        arrowKeysContainer.appendChild(arrowKeysRow1);
+
+        // Creating second row of arrow keys
+        const arrowKeysRow2 = document.createElement("div");
+        arrowKeysRow2.classList.add("keyboard__arrow-keys--row");
+
+        arrowKeysLayout.row2.forEach(key => {
+            const keyElement = this._createKeyElement(key);
+            arrowKeysRow2.appendChild(keyElement);
+        });
+        arrowKeysContainer.appendChild(arrowKeysRow2);
+
+        return arrowKeysContainer;
+    },
+
+    _createNumpadArea() {
+        const addKeyElement = (key, container, ...classes) => {
+            const keyElement = this._createKeyElement(key);
+            keyElement.classList.add(...classes);
+            container.appendChild(keyElement);
+        };
+
+        for (let i = 0; i < this.keyboardLayout.keys.length; i++) {
+            const row = this.keyboardLayout.keys[i];
+            const rowContainer = document.createElement("div");
+            rowContainer.classList.add("keyboard__row");
+
+            // Adding key before each row
+            addKeyElement(this.properties.numpad_leftColumn[i], rowContainer, "keyboard__key--equal-width", "keyboard__key--darker");
+
+            row.forEach(key => {
+                addKeyElement(key, rowContainer, "keyboard__key--equal-width");
+            });
+
+            // Adding key after each row
+            addKeyElement(this.properties.numpad_rightColumn[i], rowContainer, "keyboard__key--equal-width");
+
+            this.elements.main.appendChild(rowContainer);
         }
-
-        // Creating initial keys
-        await this._updateKeys();
-
-        // Adding event listeners for arrow keys
-        dwellInfinite(document.querySelector("#arrow-left"), () => {
-            this._moveCursorLeftRight(-1);
-        });
-        dwellInfinite(document.querySelector("#arrow-right"), () => {
-            this._moveCursorLeftRight(1);
-        });
-        dwellInfinite(document.querySelector("#arrow-up"), () => {
-            this._moveCursorUpDown(-1);
-        });
-        dwellInfinite(document.querySelector("#arrow-down"), () => {
-            this._moveCursorUpDown(1);
-        });
-        dwellInfinite(document.querySelector("#arrow-home"), () => {
-            this._moveCursorToLineStart();
-        });
-        dwellInfinite(document.querySelector("#arrow-end"), () => {
-            this._moveCursorToLineEnd();
-        });
-
-        // Event listener for closing the keyboard. This key must only be dwellable once!
-        dwell(document.querySelector("#close"), () => {
-            ipcRenderer.send('ipc-overlays-remove');
-        }, true);
     },
 
     /**
-     * Creates a keyboard layout based on the provided layout configuration.
+     * Creates a keyboard layout based on the provided layout configuration that is not numerical.
+     * This function does not create a numerical keyboard layout.
      * 
      * This method generates the DOM structure for a virtual keyboard, including
-     * the top row with special keys, middle rows based on the provided layout,
-     * and a bottom row with additional keys. The keys are created using the 
+     * the top and bottom rows with additional necessary keys and middle rows that
+     *  are based on the provided layout. The keys are created using the 
      * `_createKeyElement` method and are appended to a document fragment.
      * 
      * @param {Array<Array<string>>} layout - A 2D array representing the keyboard layout.
@@ -106,7 +188,7 @@ const Keyboard = {
         const fragment = document.createDocumentFragment();
 
         // TOP ROW
-        const topRow = ["mic", "text1", "text2", "text3", "backspace", "delete word", "AC"]; // text would evetually be replaced with auto-suggestions
+        const topRow = ["mic", "text1", "text2", "text3", "delete letter", "delete word", "AC"]; // text would eventually be replaced with auto-complete suggestions
         const topRowContainer = document.createElement("div");
         topRowContainer.classList.add("keyboard__row");
 
@@ -117,7 +199,7 @@ const Keyboard = {
         fragment.appendChild(topRowContainer);
 
         // MIDDLE ROWS
-        let layoutCopy = layout.map(row => row.slice()); // creating deep copy of the layout
+        let layoutCopy = layout.map(row => row.slice()); // creating deep copy of the layout to prevent repeatedly adding "caps" and "enter" to the original layout
         if (this.properties.specialKeys && this.properties.capsLock) {
             layoutCopy = layoutCopy.slice(0, -1);
         }
@@ -175,6 +257,77 @@ const Keyboard = {
         keyElement.classList.add("keyboard__key");
 
         switch (key) {
+            case "arrow-home":
+                keyElement.classList.add("keyboard__key--arrow", "keyboard__key--dwell-once");
+                keyElement.innerHTML = this._createMaterialIcon("first_page");
+
+                dwell(keyElement, () => {
+                    this._moveCursorToLineStart();
+                }, true);
+
+                break;
+
+            case "arrow-end":
+                keyElement.classList.add("keyboard__key--arrow", "keyboard__key--dwell-once");
+                keyElement.innerHTML = this._createMaterialIcon("last_page");
+
+                dwell(keyElement, () => {
+                    this._moveCursorToLineEnd();
+                }, true);
+
+                break;
+
+            case "arrow-up":
+                keyElement.classList.add("keyboard__key--arrow", "keyboard__key--dwell-infinite");
+                keyElement.innerHTML = this._createMaterialIcon("keyboard_arrow_up");
+
+                dwellInfinite(keyElement, () => {
+                    this._moveCursorUpDown(-1);
+                });
+
+                break;
+
+            case "arrow-down":
+                keyElement.classList.add("keyboard__key--arrow", "keyboard__key--dwell-infinite");
+                keyElement.innerHTML = this._createMaterialIcon("keyboard_arrow_down");
+
+                dwellInfinite(keyElement, () => {
+                    this._moveCursorUpDown(1);
+                });
+
+                break;
+
+            case "arrow-left":
+                keyElement.classList.add("keyboard__key--arrow", "keyboard__key--dwell-infinite");
+                keyElement.innerHTML = this._createMaterialIcon("keyboard_arrow_left");
+
+                dwellInfinite(keyElement, () => {
+                    this._moveCursorLeftRight(-1);
+                });
+
+                break;
+
+            case "arrow-right":
+                keyElement.classList.add("keyboard__key--arrow", "keyboard__key--dwell-infinite");
+                keyElement.innerHTML = this._createMaterialIcon("keyboard_arrow_right");
+
+                dwellInfinite(keyElement, () => {
+                    this._moveCursorLeftRight(1);
+                });
+
+                break;
+
+            case "close":
+                keyElement.classList.add("keyboard__key--darker", "keyboard__key--close", "keyboard__key--dwell-once");
+                keyElement.innerHTML = this._createMaterialIcon("close");
+
+                // This key must only be dwellable once!
+                dwell(keyElement, () => {
+                    ipcRenderer.send('ipc-overlays-remove');
+                }, true);
+
+                break;
+
             case "mic":
                 keyElement.classList.add("keyboard__key--darker", "keyboard__key--dwell-once");
                 keyElement.innerHTML = this._createMaterialIcon("mic");
@@ -198,7 +351,17 @@ const Keyboard = {
                 break;
 
             case "backspace":
-                keyElement.classList.add("keyboard__key--darker", "custom-icons--delete-letter", "keyboard__key--dwell-infinite");
+                keyElement.classList.add("keyboard__key--darker", "keyboard__key--dwell-infinite");
+                keyElement.innerHTML = this._createMaterialIcon("backspace");
+
+                dwellInfinite(keyElement, () => {
+                    this._deleteChar();
+                });
+
+                break;
+
+            case "delete letter":
+                keyElement.classList.add("keyboard__key--darker", "keyboard__key--dwell-infinite");
                 keyElement.innerHTML = this._createCustomIcon("delete_letter");
 
                 dwellInfinite(keyElement, () => {
@@ -208,7 +371,7 @@ const Keyboard = {
                 break;
 
             case "delete word":
-                keyElement.classList.add("keyboard__key--darker", "custom-icons--delete-word", "keyboard__key--dwell-infinite");
+                keyElement.classList.add("keyboard__key--darker", "keyboard__key--dwell-infinite");
                 keyElement.innerHTML = this._createCustomIcon("delete_word");
 
                 dwellInfinite(keyElement, () => {
@@ -228,7 +391,8 @@ const Keyboard = {
                 break;
 
             case "caps":
-                keyElement.classList.add("keyboard__key--wide", "keyboard__key--darker", "keyboard__key--activatable", "keyboard__key--dwell-infinite");
+                keyElement.classList.add("keyboard__key--darker", "keyboard__key--activatable", "keyboard__key--dwell-infinite");
+                if (this.keyboardLayout.layout !== "numeric") keyElement.classList.add("keyboard__key--wide");
                 keyElement.classList.toggle("keyboard__key--active", this.properties.capsLock);
 
                 // This allows the virtual keyboard to dynamically switch between different icons based on the current state of the keyboard.
@@ -246,7 +410,8 @@ const Keyboard = {
                 break;
 
             case "enter":
-                keyElement.classList.add("keyboard__key--wide", "keyboard__key--darker", "keyboard__key--dwell-infinite");
+                keyElement.classList.add("keyboard__key--darker", "keyboard__key--dwell-infinite");
+                if (this.keyboardLayout.layout !== "numeric") keyElement.classList.add("keyboard__key--wide");
                 keyElement.innerHTML = this._createMaterialIcon("keyboard_return");
 
                 dwellInfinite(keyElement, () => {
@@ -260,7 +425,7 @@ const Keyboard = {
                 keyElement.innerHTML = this._createMaterialIcon("settings");
 
                 dwell(keyElement, () => {
-                    this._openSettingsPopup();
+                    this._openSettingsOverlay();
                 }, true);
 
                 break;
@@ -276,7 +441,8 @@ const Keyboard = {
                 break;
 
             case "space":
-                keyElement.classList.add("keyboard__key--widest", "keyboard__key--dwell-infinite");
+                keyElement.classList.add("keyboard__key--dwell-infinite");
+                if (this.keyboardLayout.layout !== "numeric") keyElement.classList.add("keyboard__key--widest");
                 keyElement.innerHTML = this._createMaterialIcon("space_bar");
 
                 dwellInfinite(keyElement, () => {
@@ -301,7 +467,6 @@ const Keyboard = {
 
                 dwellInfinite(keyElement, () => {
                     this._insertChar(key);
-                    // this._triggerEvent("oninput");
                 });
 
                 break;
@@ -332,6 +497,7 @@ const Keyboard = {
         this._updateKeys();
     },
 
+    // Inserts the selected key into the textarea at the current cursor position and updates the cursor position
     _insertChar(key) {
         const textarea = this.elements.textarea;
         const currentPos = textarea.selectionStart;
@@ -348,6 +514,7 @@ const Keyboard = {
         textarea.focus();
     },
 
+    // Deletes the character from the textarea at the current cursor position and updates the cursor position
     _deleteChar() {
         const textarea = this.elements.textarea;
         const currentPos = textarea.selectionStart;
@@ -474,7 +641,7 @@ const Keyboard = {
         textarea.focus();
     },
 
-    _openSettingsPopup() {
+    _openSettingsOverlay() {
         // Create and display the overlay
         const overlay = document.createElement("div");
         overlay.classList.add("keyboard__overlay");
@@ -521,44 +688,5 @@ const Keyboard = {
 
         // Update keys reference
         this.elements.keys = this.elements.keysContainer.querySelectorAll(".keyboard__key");
-    },
-
-    _triggerEvent(handlerName) {
-        if (typeof this.eventHandlers[handlerName] == "function") {
-            this.eventHandlers[handlerName](this.properties.value);
-        }
-    },
-
-    open(initialValue, oninput, onclose) {
-        this.properties.value = initialValue || "";
-        this.eventHandlers.oninput = oninput;
-        this.eventHandlers.onclose = onclose;
-        this.elements.main.classList.remove("keyboard--hidden");
-    },
-
-    close() {
-        this.properties.value = "";
-        this.eventHandlers.oninput = oninput;
-        this.eventHandlers.onclose = onclose;
-        this.elements.main.classList.add("keyboard--hidden");
-    },
-
-    _getKeyboardLayout(defaultLayout = "en") {
-        return new Promise((resolve, reject) => {
-            const layoutPath = path.join(__dirname, '../../pages/json/keyboard/', `${defaultLayout}.json`);
-            fs.readFile(layoutPath, 'utf8', (err, data) => {
-                if (err) {
-                    console.error('Error loading keyboard layout:', err);
-                    reject(err);
-                    return;
-                }
-                resolve(JSON.parse(data));
-            });
-        });
     }
 };
-
-ipcRenderer.on('ipc-main-keyboard-loaded', (event) => {
-    console.log('Keyboard loading');
-    Keyboard.init();
-});

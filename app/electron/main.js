@@ -219,8 +219,8 @@ ipcMain.on('ipc-mainwindow-highlight-elements-on-page', (event, elements) => {
     tab.webContentsView.webContents.send('ipc-browserview-highlight-elements', elements);
 });
 
-ipcMain.on('ipc-mainwindow-show-overlay', (event, overlayAreaToShow) => {
-    createOverlay(overlayAreaToShow);
+ipcMain.on('ipc-mainwindow-show-overlay', (event, overlayAreaToShow, inputType = null) => {
+    createOverlay(overlayAreaToShow, inputType);
 })
 
 ipcMain.on('ipc-overlays-remove', (event) => {
@@ -558,7 +558,7 @@ function removeOverlay() {
     }
 }
 
-function createOverlay(overlayAreaToShow) {
+function createOverlay(overlayAreaToShow, inputType = null) {
     removeOverlay();
 
     let mainWindowContentBounds = mainWindow.getContentBounds();
@@ -592,7 +592,7 @@ function createOverlay(overlayAreaToShow) {
 
     if (overlayAreaToShow === 'keyboard') {
         console.log("creating keyboard overlay");
-        overlayContent.webContents.send('ipc-main-keyboard-loaded');
+        overlayContent.webContents.send('ipc-main-keyboard-loaded', inputType);
     } else {
         console.log("creating menus overlay");
         overlayContent.webContents.send('ipc-main-overlays-loaded', overlayAreaToShow)

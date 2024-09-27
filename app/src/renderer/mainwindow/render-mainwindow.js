@@ -333,15 +333,22 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
 						const elementId = sidebarItems[i].getAttribute('id');
 						const elementToClick = elements.filter(e => e.id == elementId);
 						if (elementToClick) {
-							ipcRenderer.send('ipc-mainwindow-click-sidebar-element', elementToClick[0]);
-
 							//Show click event animation and clear sidebar
 							sidebarItems[i].classList.add('fadeOutDown');
-							setTimeout(() => {
-								sidebarItemArea.innerHTML = "";
-							}, 300);
 
-							resetNavigationSidebar();
+							setTimeout(() => {
+								// sidebarItemArea.innerHTML = "";
+								resetNavigationSidebar();
+								const inputType = shouldDisplayKeyboard(elementToClick[0], false);
+								console.log("inputType", inputType);
+								if (inputType) {
+									console.log("input element identified2");
+									ipcRenderer.send('ipc-mainwindow-show-overlay', 'keyboard', inputType);
+								} else {
+									console.log("input element not identified");
+									ipcRenderer.send('ipc-mainwindow-click-sidebar-element', elementToClick[0]);
+								}
+							}, 300);
 						}
 					})
 				})(i)
@@ -402,18 +409,27 @@ function renderNavItemInSidebar(navItems) {
 	if (sidebarItems.length) {
 		for (let i = 0; i < sidebarItems.length; i++) {
 			(function (i) {
-				dwell(sidebarItems[i], () => {
+				dwell(sidebarItems[i], () => {					
 					const elementId = sidebarItems[i].getAttribute('id');
 					const elementToClick = Array.isArray(navItems) ? navItems.filter(e => e.id == elementId) : [navItems];
 					if (elementToClick) {
 						if (!elementToClick[0].children || elementToClick[0].children.length == 0) {
 							//Show click event animation and clear sidebar
 							sidebarItems[i].classList.add('fadeOutDown');
+
 							setTimeout(() => {
 								sidebarItemArea.innerHTML = "";
+								const inputType = shouldDisplayKeyboard(elementToClick[0], true);
+
+								if (inputType) {
+									console.log("input element identified2");
+									ipcRenderer.send('ipc-mainwindow-show-overlay', 'keyboard', inputType);
+								} else {
+									console.log("input element not identified2");
+									ipcRenderer.send('browse-to-url', elementToClick[0].href);
+								}
 							}, 300);
 
-							ipcRenderer.send('browse-to-url', elementToClick[0].href);
 							resetNavigationSidebar();
 						}
 						else {
@@ -432,7 +448,7 @@ function renderNavItemInSidebar(navItems) {
 							renderNavItemInSidebar(elementToClick[0].children);
 						}
 					}
-				})
+				}, false)
 			})(i)
 		}
 	}
@@ -444,6 +460,26 @@ function renderNavItemInSidebar(navItems) {
 		menuNavLevelup.style.display = 'flex';
 	else
 		menuNavLevelup.style.display = 'none'
+}
+
+// Determines if a keyboard should be displayed based on the element type and returns the element type if a keyboard is required, otherwise false.
+function shouldDisplayKeyboard(element, isNavItem = false) {
+	console.log("Function called");
+	const KEYBOARD_REQUIRED_ELEMENTS = [
+        'textarea', 'search', 'password', 'email', 'number', 'tel', 'url', 'date', 'datetime-local', 'month', 'time', 'week'
+    ];
+	let type = isNavItem ? element.tag.toLowerCase() : element.type.toLowerCase();
+
+	if (isNavItem) {
+		type = element.tag.toLowerCase();
+	} else {
+		type = element.type.toLowerCase();
+		if (type === 'input') {
+			type = element.accessibleName.toLowerCase();
+		}
+	}
+
+	return KEYBOARD_REQUIRED_ELEMENTS.indexOf(type) !== -1 ? type : false;
 }
 
 // Resets the navigation sidebar to its initial state
