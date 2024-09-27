@@ -18,19 +18,18 @@ window.addEventListener('DOMContentLoaded', () => {
     followCursor('cactus_cursor');
 });
 
-ipcRenderer.on('ipc-main-keyboard-loaded', async (event, inputType) => {
+ipcRenderer.on('ipc-main-keyboard-loaded', async (event, inputType, inputElementID, previousValue) => {
     // const NUMPAD_REQUIRED_ELEMENTS = [
     //     'number', 'tel', 'date', 'datetime-local', 'month', 'time', 'week' // revise these
     // ];
 
-    // const NUMPAD_REQUIRED_ELEMENTS = ['number', 'tel'];
     console.log("inputType", inputType);
-    const NUMPAD_REQUIRED_ELEMENTS = ['search']; // <-- to remove
+    const NUMPAD_REQUIRED_ELEMENTS = ['number, tel']; 
     let needsNumpad = NUMPAD_REQUIRED_ELEMENTS.indexOf(inputType) !== -1;
     let fileName = needsNumpad ? "numeric" : config.get('keyboard.defaultLayout');
 
     let keyboardLayout = await getKeyboardLayout(fileName);
-    Keyboard.init(keyboardLayout);
+    Keyboard.init(keyboardLayout, inputElementID, previousValue);
 });
 
 function getKeyboardLayout(defaultLayout = "en") {
@@ -62,17 +61,18 @@ const Keyboard = {
         numpad_rightColumn: ["mic", "backspace", "AC", "send"],
     },
 
-    async init(layout) {
+    async init(layout, inputElementID, previousValue) {
         console.log("Keyboard initialized with layout:", layout);
+        console.log("Keyboard initialized from element with ID:", inputElementID);
         this.keyboardLayout = layout;
+        this.inputElementID = inputElementID;
 
         // Setting up main elements
         this.elements.main = document.getElementById("keyboard-container");     
 
-        this._createTextboxArea();
+        this._createTextboxArea(previousValue);
 
         if (this.keyboardLayout.layout === "numeric") {
-            this.elements.main.style.padding = " 0 12vw 0 12vw";
             this._createNumpadArea();
         } else {
             this.elements.keysContainer = document.createElement("div");
@@ -84,12 +84,13 @@ const Keyboard = {
         }
     },
 
-    _createTextboxArea() {
+    _createTextboxArea(previousValue) {
         const textboxArea = document.createElement("div");
         textboxArea.classList.add("keyboard__textbox-area");
 
         const textarea = document.createElement("textarea");
         textarea.classList.add("keyboard__textbox");
+        textarea.value = previousValue;
         textboxArea.appendChild(textarea);
 
         const arrowKeys = this._createArrowKeys();
@@ -188,7 +189,7 @@ const Keyboard = {
         const fragment = document.createDocumentFragment();
 
         // TOP ROW
-        const topRow = ["mic", "text1", "text2", "text3", "delete letter", "delete word", "AC"]; // text would eventually be replaced with auto-complete suggestions
+        const topRow = ["mic", "papergames.io", "koalastothemax.com", "bbc.com", "delete letter", "delete word", "AC"]; // text would eventually be replaced with auto-complete suggestions
         const topRowContainer = document.createElement("div");
         topRowContainer.classList.add("keyboard__row");
 
@@ -456,7 +457,11 @@ const Keyboard = {
                 keyElement.innerHTML = this._createMaterialIcon("send");
 
                 dwell(keyElement, () => {
-                // send text to main process
+                    if (this.inputElementID) {
+                        // sending the keyboard value to render-mainwindow.js
+                        console.log("send button pressed");
+                        ipcRenderer.send('ipc-keyboard-input', this.elements.textarea.value, this.inputElementID);
+                    }
                 }, true);
 
                 break;

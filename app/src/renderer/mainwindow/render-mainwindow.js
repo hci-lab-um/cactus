@@ -222,23 +222,32 @@ function setupNavigationSideBar() {
 
 function setupFunctionality() {
 	omni = byId('url')
-	omni.addEventListener('keydown', (event) => browserToUrl(event));
+	omni.addEventListener('keydown', (event) => browseToUrl(event));
 	dwell(omni, () => {
 		// hideAllOverlays()
 		// showOverlay('omni');
-		showOverlay('keyboard');
+		// showOverlay('keyboard', omni.type, "url");
+		ipcRenderer.send('ipc-mainwindow-omni-show-overlay', 'keyboard', omni.type, "url");
 	});
 
 	let backOrForward = byId('backOrForwardBtn')
 	dwell(backOrForward, () => {
-		showOverlay('navigation')
+		// showOverlay('navigation')
+		ipcRenderer.send('ipc-mainwindow-show-overlay', 'navigation');
 	})
 
 	let accessibility = byId('accessibilityBtn')
 	dwell(accessibility, () => {
-		showOverlay('accessibility')
+		// showOverlay('accessibility')
+		ipcRenderer.send('ipc-mainwindow-show-overlay', 'accessibility');
 	})
 }
+
+ipcRenderer.on('ipc-mainwindow-keyboard-input', (event, input) => {
+	omni = byId('url')
+	omni.value = input;
+	browseToUrl({ keyCode: 13 });
+});
 
 
 // =================================
@@ -337,13 +346,13 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
 							sidebarItems[i].classList.add('fadeOutDown');
 
 							setTimeout(() => {
-								// sidebarItemArea.innerHTML = "";
+								sidebarItemArea.innerHTML = "";
 								resetNavigationSidebar();
 								const inputType = shouldDisplayKeyboard(elementToClick[0], false);
 								console.log("inputType", inputType);
 								if (inputType) {
-									console.log("input element identified2");
-									ipcRenderer.send('ipc-mainwindow-show-overlay', 'keyboard', inputType);
+									console.log("input element identified2. Element: ", elementToClick[0]);
+									ipcRenderer.send('ipc-mainwindow-show-overlay', 'keyboard', inputType, elementToClick[0].id, elementToClick[0].value);
 								} else {
 									console.log("input element not identified");
 									ipcRenderer.send('ipc-mainwindow-click-sidebar-element', elementToClick[0]);
@@ -423,7 +432,7 @@ function renderNavItemInSidebar(navItems) {
 
 								if (inputType) {
 									console.log("input element identified2");
-									ipcRenderer.send('ipc-mainwindow-show-overlay', 'keyboard', inputType);
+									ipcRenderer.send('ipc-mainwindow-show-overlay', 'keyboard', inputType, elementToClick[0].id, elementToClick[0].value);
 								} else {
 									console.log("input element not identified2");
 									ipcRenderer.send('browse-to-url', elementToClick[0].href);
@@ -464,7 +473,7 @@ function renderNavItemInSidebar(navItems) {
 
 // Determines if a keyboard should be displayed based on the element type and returns the element type if a keyboard is required, otherwise false.
 function shouldDisplayKeyboard(element, isNavItem = false) {
-	console.log("Function called");
+	console.log("should display keyboard function called");
 	const KEYBOARD_REQUIRED_ELEMENTS = [
         'textarea', 'search', 'password', 'email', 'number', 'tel', 'url', 'date', 'datetime-local', 'month', 'time', 'week'
     ];
@@ -505,13 +514,32 @@ function resetNavigationSidebar(options = {}) {
 	selectedNavItemTitle.style.display = 'none'
 }
 
-function browserToUrl(event) {
+function browseToUrl(event) {
 	let omni = byId('url')
 	if (event.keyCode === 13) {
 		omni.blur();
 		let val = omni.value;
+
+		// Check if the URL contains a period
+		if (val.includes('.')) {
+			// Extract the part after the last period
+			const domainPart = val.substring(val.lastIndexOf('.') + 1);
+
+			// List of common domain extensions
+			const validDomains = ['com', 'net', 'org', 'edu', 'gov', 'mil', 'int'];
+
+			// Check if the extracted part is a valid domain extension
+			if (!validDomains.includes(domainPart)) {
+				// Treat as a search query
+				val = `https://www.google.com/search?q=${encodeURIComponent(val)}`;
+			}
+		} else {
+			val = `https://www.google.com/search?q=${encodeURIComponent(val)}`;
+		}
+
 		let https = val.slice(0, 8).toLowerCase();
 		let http = val.slice(0, 7).toLowerCase();
+
 		if (https === 'https://') {
 			ipcRenderer.send('browse-to-url', val);
 		} else if (http === 'http://') {
@@ -560,6 +588,6 @@ function displayOmni(value) {
 // ============ Overlays ===========
 // =================================
 
-function showOverlay(overlayAreaToShow) {
-	ipcRenderer.send('ipc-mainwindow-show-overlay', overlayAreaToShow);
+function showOverlay(overlayAreaToShow, elementType = null, elementID = null) {
+	
 }

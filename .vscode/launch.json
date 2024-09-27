@@ -2,7 +2,24 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "Debug Main Process",
+			"name": "Debug - Prod",
+			"type": "node",
+			"env": {
+				"NODE_ENV": "production"
+			},
+			"request": "launch",
+			"cwd": "${workspaceFolder}",
+			"runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
+			"windows": {
+				"runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron.cmd"
+			},
+			"args": [
+				"."
+			],
+			"outputCapture": "std"
+		},
+		{
+			"name": "Debug - Dev",
 			"type": "node",
 			"env": {
 				"NODE_ENV": "development"

@@ -170,8 +170,7 @@ ipcMain.on('browse-to-url', (event, url) => {
         //Handle URLs without protocol (e.g. //www.google.com)
         if (url.startsWith('//')) {
             fullUrl = protocol + url;
-        }
-        else {
+        } else {
             //Handle relative path URLs (e.g. /path/to/resource)
             if (url.startsWith('/')) {
                 fullUrl = protocol + '//' + host + url;
@@ -219,13 +218,33 @@ ipcMain.on('ipc-mainwindow-highlight-elements-on-page', (event, elements) => {
     tab.webContentsView.webContents.send('ipc-browserview-highlight-elements', elements);
 });
 
-ipcMain.on('ipc-mainwindow-show-overlay', (event, overlayAreaToShow, inputType = null) => {
-    createOverlay(overlayAreaToShow, inputType);
+ipcMain.on('ipc-mainwindow-show-overlay', (event, overlayAreaToShow, inputType = null, inputElementID = null, previousValue = "") => {
+    createOverlay(overlayAreaToShow, inputType, inputElementID, previousValue);
+})
+
+ipcMain.on('ipc-mainwindow-omni-show-overlay', (event, overlayAreaToShow, inputType = null, inputElementID = null) => {
+    let pageURL = tabList.find(tab => tab.isActive === true).webContentsView.webContents.getURL();
+    // if the url contains a / at the end, it is removed
+    if (pageURL[pageURL.length - 1] === '/') {
+        pageURL = pageURL.slice(0, -1);
+    }
+    createOverlay(overlayAreaToShow, inputType, inputElementID, pageURL);
 })
 
 ipcMain.on('ipc-overlays-remove', (event) => {
     removeOverlay();
 })
+
+ipcMain.on('ipc-keyboard-input', (event, input, inputElementID) => {
+    console.log("Keyboard input: ", input, inputElementID);
+    if (inputElementID === "url") { // "url" is the id of the omni box 
+        mainWindowContent.webContents.send('ipc-mainwindow-keyboard-input', input);
+    } else {
+        var tab = tabList.find(tab => tab.isActive === true);
+        tab.webContentsView.webContents.send('ipc-browserview-keyboard-input', input, inputElementID);
+    }
+    removeOverlay();
+});
 
 ipcMain.on('ipc-browserview-scroll-up-hide', () => {
     mainWindowContent.webContents.send('ipc-mainwindow-scroll-up-hide')
@@ -558,7 +577,7 @@ function removeOverlay() {
     }
 }
 
-function createOverlay(overlayAreaToShow, inputType = null) {
+function createOverlay(overlayAreaToShow, inputType = null, inputElementID = null, previousValue = "") {
     removeOverlay();
 
     let mainWindowContentBounds = mainWindow.getContentBounds();
@@ -592,7 +611,7 @@ function createOverlay(overlayAreaToShow, inputType = null) {
 
     if (overlayAreaToShow === 'keyboard') {
         console.log("creating keyboard overlay");
-        overlayContent.webContents.send('ipc-main-keyboard-loaded', inputType);
+        overlayContent.webContents.send('ipc-main-keyboard-loaded', inputType, inputElementID, previousValue);
     } else {
         console.log("creating menus overlay");
         overlayContent.webContents.send('ipc-main-overlays-loaded', overlayAreaToShow)

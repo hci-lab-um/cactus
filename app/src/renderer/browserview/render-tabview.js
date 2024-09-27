@@ -90,6 +90,16 @@ window.cactusAPI.on('ipc-highlight-available-elements', (contents) => {
     });
 });
 
+window.cactusAPI.on('ipc-browserview-keyboard-input', (input, inputElementID) => {
+	const element = document.querySelector('[data-cactus-id="' + inputElementID + '"]');
+	console.log("element", element);
+	if (element) {
+		element.focus();
+		element.value = input;
+		element.dispatchEvent(new Event('input', { key: 'Enter', bubbles: true, cancelable: false }));
+	}
+});
+
 window.cactusAPI.on('ipc-browserview-scrolldown', (configData) => {
 	let { scrollDistance, useNavAreas } = configData;
 
