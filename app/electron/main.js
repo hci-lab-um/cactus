@@ -218,30 +218,32 @@ ipcMain.on('ipc-mainwindow-highlight-elements-on-page', (event, elements) => {
     tab.webContentsView.webContents.send('ipc-browserview-highlight-elements', elements);
 });
 
-ipcMain.on('ipc-mainwindow-show-overlay', (event, overlayAreaToShow, inputType = null, inputElementID = null, previousValue = "") => {
-    createOverlay(overlayAreaToShow, inputType, inputElementID, previousValue);
-})
-
-ipcMain.on('ipc-mainwindow-omni-show-overlay', (event, overlayAreaToShow, inputType = null, inputElementID = null) => {
-    let pageURL = tabList.find(tab => tab.isActive === true).webContentsView.webContents.getURL();
-    // if the url contains a / at the end, it is removed
-    if (pageURL[pageURL.length - 1] === '/') {
-        pageURL = pageURL.slice(0, -1);
+ipcMain.on('ipc-mainwindow-show-overlay', (event, overlayAreaToShow, elementProperties) => {
+    // If the element is the omnibox, get the current active tab's url and set it as the value
+    if (elementProperties.id === "url") {
+        let pageURL = tabList.find(tab => tab.isActive === true).webContentsView.webContents.getURL();
+        // if the url contains a / at the end, it is removed (This is a temporary workaround for the search function that checks for TLDs)
+        if (pageURL[pageURL.length - 1] === '/') {
+            pageURL = pageURL.slice(0, -1);
+        }
+        elementProperties.value = pageURL;
     }
-    createOverlay(overlayAreaToShow, inputType, inputElementID, pageURL);
+    
+    createOverlay(overlayAreaToShow, elementProperties);
 })
 
 ipcMain.on('ipc-overlays-remove', (event) => {
     removeOverlay();
 })
 
-ipcMain.on('ipc-keyboard-input', (event, input, inputElementID) => {
-    console.log("Keyboard input: ", input, inputElementID);
-    if (inputElementID === "url") { // "url" is the id of the omni box 
-        mainWindowContent.webContents.send('ipc-mainwindow-keyboard-input', input);
+ipcMain.on('ipc-keyboard-input', (event, value, element) => {
+    console.log("Keyboard value: ", value, element);
+    // If the input is for the omnibox, send it to the main window, else send it to the active tab
+    if (element.id === "url") { // "url" is the id of the omni box 
+        mainWindowContent.webContents.send('ipc-mainwindow-keyboard-input', value);
     } else {
         var tab = tabList.find(tab => tab.isActive === true);
-        tab.webContentsView.webContents.send('ipc-browserview-keyboard-input', input, inputElementID);
+        tab.webContentsView.webContents.send('ipc-browserview-keyboard-input', value, element);
     }
     removeOverlay();
 });
@@ -577,7 +579,7 @@ function removeOverlay() {
     }
 }
 
-function createOverlay(overlayAreaToShow, inputType = null, inputElementID = null, previousValue = "") {
+function createOverlay(overlayAreaToShow, elementProperties) {
     removeOverlay();
 
     let mainWindowContentBounds = mainWindow.getContentBounds();
@@ -611,7 +613,7 @@ function createOverlay(overlayAreaToShow, inputType = null, inputElementID = nul
 
     if (overlayAreaToShow === 'keyboard') {
         console.log("creating keyboard overlay");
-        overlayContent.webContents.send('ipc-main-keyboard-loaded', inputType, inputElementID, previousValue);
+        overlayContent.webContents.send('ipc-main-keyboard-loaded', elementProperties);
     } else {
         console.log("creating menus overlay");
         overlayContent.webContents.send('ipc-main-overlays-loaded', overlayAreaToShow)

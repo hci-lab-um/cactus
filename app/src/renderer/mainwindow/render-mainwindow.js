@@ -227,23 +227,29 @@ function setupFunctionality() {
 		// hideAllOverlays()
 		// showOverlay('omni');
 		// showOverlay('keyboard', omni.type, "url");
-		ipcRenderer.send('ipc-mainwindow-omni-show-overlay', 'keyboard', omni.type, "url");
+		let elementProperties = {
+			id: 'url',
+			value: omni.value,
+			type: omni.type,
+		}
+		showOverlay('keyboard', elementProperties);
 	});
 
 	let backOrForward = byId('backOrForwardBtn')
 	dwell(backOrForward, () => {
 		// showOverlay('navigation')
-		ipcRenderer.send('ipc-mainwindow-show-overlay', 'navigation');
+		showOverlay('navigation');
 	})
 
 	let accessibility = byId('accessibilityBtn')
 	dwell(accessibility, () => {
 		// showOverlay('accessibility')
-		ipcRenderer.send('ipc-mainwindow-show-overlay', 'accessibility');
+		showOverlay('accessibility');
 	})
 }
 
 ipcRenderer.on('ipc-mainwindow-keyboard-input', (event, input) => {
+	debugger;
 	omni = byId('url')
 	omni.value = input;
 	browseToUrl({ keyCode: 13 });
@@ -346,15 +352,15 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
 							sidebarItems[i].classList.add('fadeOutDown');
 
 							setTimeout(() => {
-								sidebarItemArea.innerHTML = "";
-								resetNavigationSidebar();
 								const inputType = shouldDisplayKeyboard(elementToClick[0], false);
 								console.log("inputType", inputType);
 								if (inputType) {
-									console.log("input element identified2. Element: ", elementToClick[0]);
-									ipcRenderer.send('ipc-mainwindow-show-overlay', 'keyboard', inputType, elementToClick[0].id, elementToClick[0].value);
+									elementToClick[0].type = inputType;
+									elementToClick[0].value = elementToClick[0].value ? elementToClick[0].value : ""; // This prevents the value from being undefined
+									console.log("Identidied an input element: ", elementToClick[0]);
+									showOverlay('keyboard', elementToClick[0]);
 								} else {
-									console.log("input element not identified");
+									console.log("Not an input element");
 									ipcRenderer.send('ipc-mainwindow-click-sidebar-element', elementToClick[0]);
 								}
 							}, 300);
@@ -417,7 +423,7 @@ function renderNavItemInSidebar(navItems) {
 	let sidebarItems = document.querySelectorAll('.sidebar_item')
 	if (sidebarItems.length) {
 		for (let i = 0; i < sidebarItems.length; i++) {
-			(function (i) {
+			(function (i) { // I think this is unnecessary since let i is being used
 				dwell(sidebarItems[i], () => {					
 					const elementId = sidebarItems[i].getAttribute('id');
 					const elementToClick = Array.isArray(navItems) ? navItems.filter(e => e.id == elementId) : [navItems];
@@ -431,10 +437,12 @@ function renderNavItemInSidebar(navItems) {
 								const inputType = shouldDisplayKeyboard(elementToClick[0], true);
 
 								if (inputType) {
-									console.log("input element identified2");
-									ipcRenderer.send('ipc-mainwindow-show-overlay', 'keyboard', inputType, elementToClick[0].id, elementToClick[0].value);
+									elementToClick[0].type = inputType;
+									elementToClick[0].value = elementToClick[0].value ? elementToClick[0].value : ""; // This prevents the value from being undefined
+									console.log("Identified input navitem: ", elementToClick[0]);
+									showOverlay('keyboard', elementToClick[0]);
 								} else {
-									console.log("input element not identified2");
+									console.log("Not an input navitem");
 									ipcRenderer.send('browse-to-url', elementToClick[0].href);
 								}
 							}, 300);
@@ -473,22 +481,27 @@ function renderNavItemInSidebar(navItems) {
 
 // Determines if a keyboard should be displayed based on the element type and returns the element type if a keyboard is required, otherwise false.
 function shouldDisplayKeyboard(element, isNavItem = false) {
-	console.log("should display keyboard function called");
-	const KEYBOARD_REQUIRED_ELEMENTS = [
-        'textarea', 'search', 'password', 'email', 'number', 'tel', 'url', 'date', 'datetime-local', 'month', 'time', 'week'
-    ];
-	let type = isNavItem ? element.tag.toLowerCase() : element.type.toLowerCase();
+	console.log("should display keyboard function called with element: ", element);
+	if (element) {
+		const KEYBOARD_REQUIRED_ELEMENTS = [
+			'textarea', 'text', 'search', 'password', 'email', 'number', 'tel', 'url', 'date', 'datetime-local', 'month', 'time', 'week'
+		];
+		let type = isNavItem ? element.tag.toLowerCase() : element.type.toLowerCase();
 
-	if (isNavItem) {
-		type = element.tag.toLowerCase();
-	} else {
-		type = element.type.toLowerCase();
+		/**
+		 * The current implementation of the
+		 */
+
+		// There are instances where the element with an input tag is given the type of input instead of the scpecific type of the input tag.
+		// In these cases, the accessible name is telling of the type of input.
+		// Only the following input types do not set the type attribute as input: checkbox, radio, submit, reset, text, password
 		if (type === 'input') {
 			type = element.accessibleName.toLowerCase();
 		}
-	}
 
-	return KEYBOARD_REQUIRED_ELEMENTS.indexOf(type) !== -1 ? type : false;
+		return KEYBOARD_REQUIRED_ELEMENTS.indexOf(type) !== -1 ? type : false;
+	}
+	return false;
 }
 
 // Resets the navigation sidebar to its initial state
@@ -526,7 +539,7 @@ function browseToUrl(event) {
 			const domainPart = val.substring(val.lastIndexOf('.') + 1);
 
 			// List of common domain extensions
-			const validDomains = ['com', 'net', 'org', 'edu', 'gov', 'mil', 'int'];
+			const validDomains = ['com', 'net', 'org', 'edu', 'gov', 'mil', 'int', 'html', 'io'];
 
 			// Check if the extracted part is a valid domain extension
 			if (!validDomains.includes(domainPart)) {
@@ -540,6 +553,7 @@ function browseToUrl(event) {
 		let https = val.slice(0, 8).toLowerCase();
 		let http = val.slice(0, 7).toLowerCase();
 
+		//NOTE: This could prevent the browser from loading local files
 		if (https === 'https://') {
 			ipcRenderer.send('browse-to-url', val);
 		} else if (http === 'http://') {
@@ -547,6 +561,8 @@ function browseToUrl(event) {
 		} else {
 			ipcRenderer.send('browse-to-url', 'https://' + val);
 		}
+
+		// ipcRenderer.send('browse-to-url', val); // this has been added temporarily to test out different elements for loading the keyboard
 	}
 }
 
@@ -588,6 +604,6 @@ function displayOmni(value) {
 // ============ Overlays ===========
 // =================================
 
-function showOverlay(overlayAreaToShow, elementType = null, elementID = null) {
-	
+function showOverlay(overlayAreaToShow, elementProperties = null) {
+	ipcRenderer.send('ipc-mainwindow-show-overlay', overlayAreaToShow, elementProperties);
 }

@@ -90,16 +90,6 @@ window.cactusAPI.on('ipc-highlight-available-elements', (contents) => {
     });
 });
 
-window.cactusAPI.on('ipc-browserview-keyboard-input', (input, inputElementID) => {
-	const element = document.querySelector('[data-cactus-id="' + inputElementID + '"]');
-	console.log("element", element);
-	if (element) {
-		element.focus();
-		element.value = input;
-		element.dispatchEvent(new Event('input', { key: 'Enter', bubbles: true, cancelable: false }));
-	}
-});
-
 window.cactusAPI.on('ipc-browserview-scrolldown', (configData) => {
 	let { scrollDistance, useNavAreas } = configData;
 
@@ -136,6 +126,7 @@ window.cactusAPI.on('ipc-browserview-forward', () => {
 	window.history.forward();
 });
 
+
 // function checkScrollers()
 // {
 //    //Hide scrollbar when at the very top
@@ -145,6 +136,25 @@ window.cactusAPI.on('ipc-browserview-forward', () => {
 //     ipcRenderer.send('ipc-browserview-scroll-up-show')
 //   }
 // }
+
+
+// This IPC event is triggered when the user submits the value inside the overlay keyboard.
+// It attempts to find the element to update and sets the value to the submitted value.
+window.cactusAPI.on('ipc-browserview-keyboard-input', (value, elementToUpdate) => {
+	let element = document.querySelector('[data-cactus-id="' + elementToUpdate.id + '"]');
+
+	// Since the ID of the element may change at times, the element may instead be found using the x,y coordinates
+	if (!element) {
+		element = document.elementFromPoint(elementToUpdate.insertionPointX, elementToUpdate.insertionPointY);
+	}
+	
+	if (element) {
+		element.focus();
+		element.value = value;
+	} else {
+        console.error("Element not found for update:", elementToUpdate);
+    }
+});
 
 window.cactusAPI.onAsync('ipc-browserview-click-element', (elementToClick) => {
 	// Find the element at the specified x,y coordinates
