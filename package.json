@@ -9,7 +9,7 @@
 		"dist": "build"
 	},
 	"author": "HCI Lab - Faculty of ICT, University of Malta",
-	"license": "ISC",
+	"license": "GPL3",
 	"build": {
 		"appId": "cactus",
 		"asar": false,
