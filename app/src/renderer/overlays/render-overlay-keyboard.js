@@ -19,32 +19,14 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 ipcRenderer.on('ipc-main-keyboard-loaded', async (event, elementToUpdate) => {
-    // const NUMPAD_REQUIRED_ELEMENTS = [
-    //     'number', 'tel', 'date', 'datetime-local', 'month', 'time', 'week' // revise these
-    // ];
-    const NUMPAD_REQUIRED_ELEMENTS = ['number, tel']; 
-
-    console.log("inputType", elementToUpdate.type);
+    // const NUMPAD_REQUIRED_ELEMENTS = [ 'number', 'tel', 'date', 'datetime-local', 'month', 'time', 'week' ]; // revise these
+    const NUMPAD_REQUIRED_ELEMENTS = ['number', 'tel']; 
     let needsNumpad = NUMPAD_REQUIRED_ELEMENTS.indexOf(elementToUpdate.type) !== -1;
     let fileName = needsNumpad ? "numeric" : config.get('keyboard.defaultLayout');
+    let pathToLayouts = path.join(__dirname, '../../pages/json/keyboard/');
 
-    let keyboardLayout = await getKeyboardLayout(fileName);
-    Keyboard.init(keyboardLayout, elementToUpdate);
+    Keyboard.init(pathToLayouts, fileName, elementToUpdate);
 });
-
-function getKeyboardLayout(defaultLayout = "en") {
-    return new Promise((resolve, reject) => {
-        const layoutPath = path.join(__dirname, '../../pages/json/keyboard/', `${defaultLayout}.json`);
-        fs.readFile(layoutPath, 'utf8', (err, data) => {
-            if (err) {
-                console.error('Error loading keyboard layout:', err);
-                reject(err);
-                return;
-            }
-            resolve(JSON.parse(data));
-        });
-    });
-}
 
 const Keyboard = {
     elements: {
@@ -61,10 +43,9 @@ const Keyboard = {
         numpad_rightColumn: ["mic", "backspace", "AC", "send"],
     },
 
-    async init(layout, elementToUpdate) {
-        console.log("Keyboard initialized with layout:", layout);
-        console.log("Keyboard initialized from element with ID:", elementToUpdate.id);
-        this.keyboardLayout = layout;
+    async init(pathToLayouts, fileName, elementToUpdate) {
+        this.pathToLayouts = pathToLayouts;
+        this.keyboardLayout = await this._getKeyboardLayout(fileName);
         this.elementToUpdate = elementToUpdate;
 
         // Setting up main elements
@@ -82,6 +63,20 @@ const Keyboard = {
             // Creating initial main area keys
             await this._updateKeys();
         }
+    },
+
+    _getKeyboardLayout(fileName) {
+        let layoutPath = path.join(this.pathToLayouts, fileName + ".json");
+        return new Promise((resolve, reject) => {
+            fs.readFile(layoutPath, 'utf8', (err, data) => {
+                if (err) {
+                    console.error('Error loading keyboard layout:', err);
+                    reject(err);
+                    return;
+                }
+                resolve(JSON.parse(data));
+            });
+        });
     },
 
     _createTextboxArea(previousValue) {

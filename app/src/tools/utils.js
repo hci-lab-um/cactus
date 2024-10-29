@@ -54,7 +54,7 @@ module.exports = {
     elem.addEventListener('click', callback)
 
     //Dwelling
-    elem.addEventListener('mouseover', throttledFunction)
+    elem.addEventListener('mouseenter', throttledFunction)
     elem.addEventListener('mouseleave', () => {
       throttledFunction.cancel()
     })
@@ -78,7 +78,7 @@ module.exports = {
     });
 
     // Stop dwelling on mouse leave
-    elem.addEventListener('mouseout', () => {
+    elem.addEventListener('mouseleave', () => {
       if (intervalIds.length !== 0) {
         intervalIds.forEach(intervalId => {
           clearInterval(intervalId);

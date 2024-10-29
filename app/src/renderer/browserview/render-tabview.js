@@ -157,19 +157,39 @@ window.cactusAPI.on('ipc-browserview-keyboard-input', (value, elementToUpdate) =
 });
 
 window.cactusAPI.onAsync('ipc-browserview-click-element', (elementToClick) => {
-	// Find the element at the specified x,y coordinates
-	let element = document.elementFromPoint(elementToClick.insertionPointX, elementToClick.insertionPointY);
+	// // Find the element at the specified x,y coordinates
+	// let element;
+	// try{
+	// 	element = document.elementFromPoint(elementToClick.insertionPointX, elementToClick.insertionPointY);
+	// }catch(e){
+	// 	console.error("Element not found for click using insertion point:", elementToClick);
+	// }
+	// if (element) {
+	// 	element.focus();
+	// 	element.click();
+	// }
+	// else {
+	// 	//In case element has been hidden or has changed location, try finding it using the unique cactus-id
+	// 	element = document.querySelector('[data-cactus-id="' + elementToClick.id + '"]');
+	// 	if (element) {
+	// 		//If it's a link - go to its href rather than relying on focusing/clicking (works nicely when anchor is hidden in some collapsable component)
+	// 		if (element.nodeName == 'A' && (element.getAttribute('href') && element.getAttribute('href') != '#'))
+	// 			window.cactusAPI.send('browse-to-url', element.getAttribute('href'));
+	// 	}
+	// }
+
+	element = document.querySelector('[data-cactus-id="' + elementToClick.id + '"]');
 	if (element) {
-		element.focus();
-		element.click();
-	}
-	else {
-		//In case element has been hidden or has changed location, try finding it using the unique cactus-id
-		element = document.querySelector('[data-cactus-id="' + elementToClick.id + '"]');
+		console.log("Founf element to click by cactus id");
+		//If it's a link - go to its href rather than relying on focusing/clicking (works nicely when anchor is hidden in some collapsable component)
+		if (element.nodeName == 'A' && (element.getAttribute('href') && element.getAttribute('href') != '#'))
+			window.cactusAPI.send('browse-to-url', element.getAttribute('href'));
+	} else {
+		element = document.elementFromPoint(elementToClick.insertionPointX, elementToClick.insertionPointY);
 		if (element) {
-			//If it's a link - go to its href rather than relying on focusing/clicking (works nicely when anchor is hidden in some collapsable component)
-			if (element.nodeName == 'A' && (element.getAttribute('href') && element.getAttribute('href') != '#'))
-				window.cactusAPI.send('browse-to-url', element.getAttribute('href'));
+			console.log("Found element to click by cactus id");
+			element.focus();
+			element.click();
 		}
 	}
 });
@@ -268,9 +288,13 @@ function generateQuadTree() {
     ];
     const clickableElements = Array.from(document.querySelectorAll(clickableSelectors.join(', ')));
     const visibleElements = filterVisibleElements(clickableElements).map(e => {
-		e.dataset.cactusId = generateUUID();
+		if (!e.dataset.cactusId) {
+			console.log("Cactus Id of element", e, ", is empty");
+			e.dataset.cactusId = generateUUID();
+		}
 		return e;
 	});
+	console.log("Visible elements", visibleElements);
     const serializedElements = visibleElements.map(serializeElement); //creating an element object for each element in the array
 
     const quadTreeContents = {
@@ -314,6 +338,7 @@ function serializeElement(element) {
 		rectHeight: element.getBoundingClientRect().height,
 		textContent: element.textContent,
 		innerText: element.innerText,
+		value: element.value,
 		title: element.title,
 		type: element.type,
 		checked: element.checked,

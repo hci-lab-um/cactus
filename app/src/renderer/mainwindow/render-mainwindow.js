@@ -249,7 +249,6 @@ function setupFunctionality() {
 }
 
 ipcRenderer.on('ipc-mainwindow-keyboard-input', (event, input) => {
-	debugger;
 	omni = byId('url')
 	omni.value = input;
 	browseToUrl({ keyCode: 13 });
@@ -350,16 +349,19 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
 						if (elementToClick) {
 							//Show click event animation and clear sidebar
 							sidebarItems[i].classList.add('fadeOutDown');
+							console.log("element to click: ", elementToClick);
 
 							setTimeout(() => {
+								debugger;
 								const inputType = shouldDisplayKeyboard(elementToClick[0], false);
 								console.log("inputType", inputType);
 								if (inputType) {
 									elementToClick[0].type = inputType;
-									elementToClick[0].value = elementToClick[0].value ? elementToClick[0].value : ""; // This prevents the value from being undefined
-									console.log("Identidied an input element: ", elementToClick[0]);
+									elementToClick[0].value = elementToClick[0].value ? elementToClick[0].value : ""; // DOESN'T WORK // This prevents the value from being undefined
+									console.log("Identified an input element: ", elementToClick[0]);
+									console.log("It has the value of: ", elementToClick[0].value);
 									showOverlay('keyboard', elementToClick[0]);
-								} else {
+								} else if (elementToClick[0]) {
 									console.log("Not an input element");
 									ipcRenderer.send('ipc-mainwindow-click-sidebar-element', elementToClick[0]);
 								}
@@ -488,17 +490,6 @@ function shouldDisplayKeyboard(element, isNavItem = false) {
 		];
 		let type = isNavItem ? element.tag.toLowerCase() : element.type.toLowerCase();
 
-		/**
-		 * The current implementation of the
-		 */
-
-		// There are instances where the element with an input tag is given the type of input instead of the scpecific type of the input tag.
-		// In these cases, the accessible name is telling of the type of input.
-		// Only the following input types do not set the type attribute as input: checkbox, radio, submit, reset, text, password
-		if (type === 'input') {
-			type = element.accessibleName.toLowerCase();
-		}
-
 		return KEYBOARD_REQUIRED_ELEMENTS.indexOf(type) !== -1 ? type : false;
 	}
 	return false;
@@ -553,7 +544,7 @@ function browseToUrl(event) {
 		let https = val.slice(0, 8).toLowerCase();
 		let http = val.slice(0, 7).toLowerCase();
 
-		//NOTE: This could prevent the browser from loading local files
+		//NOTE: This prevents the browser from loading local files
 		if (https === 'https://') {
 			ipcRenderer.send('browse-to-url', val);
 		} else if (http === 'http://') {
