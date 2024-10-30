@@ -22,7 +22,7 @@
 			"name": "Debug - Dev",
 			"type": "node",
 			"env": {
-				"NODE_ENV": "development"
+				"NODE_ENV": "production"
 			},
 			"request": "launch",
 			"cwd": "${workspaceFolder}",
