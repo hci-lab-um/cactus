@@ -20,6 +20,7 @@
   },
   "dwelling": {
     "dwellTime": 1500,
+    "keyboardDwellTime": 1000,
     "rangeWidth": 150,
     "rangeHeight": 50,
     "browserAreaScrollDistance": 300,
@@ -30,5 +31,8 @@
   },
   "browser": {
     "defaultUrl": "https://www.euronews.com"
+  },
+  "keyboard": {
+    "defaultLayout": "en"
   }
 }

@@ -4,12 +4,12 @@
 	"description": "Gaze Interaction Browser",
 	"main": "app/electron/main.js",
 	"scripts": {
-		"start": "gulp mainCss && gulp webviewCss && gulp bookmarksCss && electron .",
-		"build": "gulp mainCss && gulp webviewCss && gulp bookmarksCss",
+		"start": "gulp mainCss && gulp webviewCss && gulp bookmarksCss && gulp keyboardCss && electron .",
+		"build": "gulp mainCss && gulp webviewCss && gulp bookmarksCss && gulp keyboardCss",
 		"dist": "build"
 	},
 	"author": "HCI Lab - Faculty of ICT, University of Malta",
-	"license": "ISC",
+	"license": "GPL3",
 	"build": {
 		"appId": "cactus",
 		"asar": false,

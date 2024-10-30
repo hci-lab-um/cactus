@@ -1,0 +1,184 @@
+@import '_vars.scss';
+@import '_animations.scss';
+@import '_components.scss';
+@import '_icons.scss';
+
+a, input, textarea, button, div { 
+    cursor: none !important; 
+}
+
+body {
+    height: 100vh;
+    display: block;
+    font-family: 'Roboto', sans-serif;
+    cursor: none;
+    margin: 0;
+    overflow: hidden;
+}
+
+.keyboard {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: #023B4F;
+    user-select: none;
+    gap: 10px;
+    padding-inline: 5vw;
+    justify-content: center;
+
+    &__textbox-area {
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    &__textbox {
+        flex-grow: 3;
+        resize: none;
+        font-size: 2rem;
+    }
+
+    &__arrow-keys {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        gap: 6px;
+
+        &--row {
+            display: flex;
+            flex-direction: row;
+            height: 100%;
+            gap: 6px;
+        }
+    }
+
+    &__keys {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    &__key {
+        color: #ffffff;
+        height: 12vh;
+        flex-grow: 1;
+        background: rgba(255, 255, 255, 0.2);
+        // box-shadow: 0px 5px 0 0 #0000005c;
+        border-radius: 4px;
+        border: none;
+        font-size: 1.8rem;
+        outline: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        vertical-align: top;
+        padding: 0;
+        position: relative;
+        -webkit-tap-highlight-color: transparent;
+
+        &--dwell-infinite {
+            @extend .keyboardDwellBtnInfinite;
+        }
+
+        &--dwell-once {
+            @extend .keyboardDwellBtnOnce;
+        }
+
+        &--arrow {
+            margin: 0;
+        }
+
+        &--equal-width {
+            flex-basis: 100%;
+        }
+
+        &--wide {
+            // shift and enter keys
+            flex-basis: 150%;
+        }
+
+        &--wider {
+            //  text suggestions and done key
+            flex-grow: 2;
+        }
+
+        &--widest {
+            // space bar
+            flex-grow: 3;
+        }
+
+        &--dark {
+            // text suggestions
+            background: rgba(255, 255, 255, 0.12);
+            font-size: 1.8rem;
+        }
+
+        &--darker {
+            background: rgba(0, 0, 0, 0.25);
+            font-size: 2rem;
+        }
+
+        &--close {
+            flex-grow: 0.35;
+            height: auto;
+            // border: solid 2px #395c69;
+            border: solid 2px rgba(255, 255, 255, 0.2);            
+        }
+
+        &--yellow-border {
+            // done key
+            border: 2px solid #ffff6a;
+        }
+
+        &--activatable::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 7px;
+            height: 7px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+        }
+
+        &--active::after {
+            background: #08FF00;
+        }
+    }
+
+    &__row {
+        display: flex;
+        width: 100%;
+        gap: 10px;
+    }
+
+    &__overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
+}
+
+.settings-popup {
+    display: flex;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    z-index: 1000;
+
+    button {
+        @extend .dwellBtn;
+        padding: 30px 50px;
+    }
+}

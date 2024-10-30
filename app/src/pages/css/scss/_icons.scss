@@ -1,0 +1,45 @@
+@font-face {
+    font-family: 'Material Symbols Outlined Filled';
+    font-style: normal;
+    font-weight: 400;
+    src: url('icons/MaterialSymbolsOutlined_Filled-Regular.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Custom Symbols Outlined Filled';
+    font-style: normal;
+    font-weight: 400;
+    src: url('icons/CustomIcons.woff') format('woff');
+}
+
+.material-icons {
+    font-family: 'Material Symbols Outlined Filled';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 2.3rem;
+    display: inline-block;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+}
+
+.custom-icons {
+    font-family: 'Custom Symbols Outlined Filled';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 1.8rem;
+    display: inline-block;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+}

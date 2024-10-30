@@ -11,7 +11,7 @@ const rangeWidth = config.get('dwelling.rangeWidth');
 const rangeHeight = config.get('dwelling.rangeHeight');
 const useNavAreas = config.get('dwelling.activateNavAreas');
 
-let mainWindow, splashWindow, menusOverlayWindow
+let mainWindow, splashWindow, overlayWindow
 let mainWindowContent
 let currentQt, currentNavAreaTree
 let timeoutCursorHovering
@@ -170,8 +170,7 @@ ipcMain.on('browse-to-url', (event, url) => {
         //Handle URLs without protocol (e.g. //www.google.com)
         if (url.startsWith('//')) {
             fullUrl = protocol + url;
-        }
-        else {
+        } else {
             //Handle relative path URLs (e.g. /path/to/resource)
             if (url.startsWith('/')) {
                 fullUrl = protocol + '//' + host + url;
@@ -219,13 +218,37 @@ ipcMain.on('ipc-mainwindow-highlight-elements-on-page', (event, elements) => {
     tab.webContentsView.webContents.send('ipc-browserview-highlight-elements', elements);
 });
 
-ipcMain.on('ipc-mainwindow-show-overlay', (event, overlayAreaToShow) => {
-    createMenuOverlay(overlayAreaToShow);
+ipcMain.on('ipc-mainwindow-show-overlay', (event, overlayAreaToShow, elementProperties) => {
+    if (elementProperties) {
+        // If the element is the omnibox, get the current active tab's url and set it as the value
+        if (elementProperties.id === "url") {
+            let pageURL = tabList.find(tab => tab.isActive === true).webContentsView.webContents.getURL();
+            // if the url contains a / at the end, it is removed (This is a temporary workaround for the search function that checks for TLDs)
+            if (pageURL[pageURL.length - 1] === '/') {
+                pageURL = pageURL.slice(0, -1);
+            }
+            elementProperties.value = pageURL;
+        }
+    }
+
+    createOverlay(overlayAreaToShow, elementProperties);
 })
 
-ipcMain.on('ipc-overlays-remove', () => {
-    removeMenusOverlay();
+ipcMain.on('ipc-overlays-remove', (event) => {
+    removeOverlay();
 })
+
+ipcMain.on('ipc-keyboard-input', (event, value, element) => {
+    console.log("Keyboard value: ", value, element);
+    // If the input is for the omnibox, send it to the main window, else send it to the active tab
+    if (element.id === "url") { // "url" is the id of the omni box 
+        mainWindowContent.webContents.send('ipc-mainwindow-keyboard-input', value);
+    } else {
+        var tab = tabList.find(tab => tab.isActive === true);
+        tab.webContentsView.webContents.send('ipc-browserview-keyboard-input', value, element);
+    }
+    removeOverlay();
+});
 
 ipcMain.on('ipc-browserview-scroll-up-hide', () => {
     mainWindowContent.webContents.send('ipc-mainwindow-scroll-up-hide')
@@ -252,7 +275,7 @@ ipcMain.on('ipc-overlays-zoom-in', () => {
     var tab = tabList.find(tab => tab.isActive === true);
     var zoomLevel = tab.webContentsView.webContents.getZoomLevel();
     tab.webContentsView.webContents.setZoomLevel(zoomLevel + 1);
-    removeMenusOverlay();
+    removeOverlay();
 })
 
 ipcMain.on('ipc-overlays-zoom-out', () => {
@@ -260,14 +283,14 @@ ipcMain.on('ipc-overlays-zoom-out', () => {
     var tab = tabList.find(tab => tab.isActive === true);
     var zoomLevel = tab.webContentsView.webContents.getZoomLevel();
     tab.webContentsView.webContents.setZoomLevel(zoomLevel - 1);
-    removeMenusOverlay();
+    removeOverlay();
 })
 
 ipcMain.on('ipc-overlays-zoom-reset', () => {
     //Select active browserview
     var tab = tabList.find(tab => tab.isActive === true);
     tab.webContentsView.webContents.setZoomLevel(0);
-    removeMenusOverlay();
+    removeOverlay();
 })
 
 ipcMain.on('log', (event, loggedItem) => {
@@ -551,19 +574,21 @@ function insertRendererCSS() {
     `);
 }
 
-function removeMenusOverlay() {
-    if (menusOverlayWindow) {
-        menusOverlayWindow.close();
-        menusOverlayWindow = null;
+function removeOverlay() {
+    if (overlayWindow) {
+        overlayWindow.close();
+        overlayWindow = null;
     }
 }
 
-function createMenuOverlay(overlayAreaToShow) {
-    removeMenusOverlay();
+function createOverlay(overlayAreaToShow, elementProperties) {
+    removeOverlay();
 
     let mainWindowContentBounds = mainWindow.getContentBounds();
+    let renderer = overlayAreaToShow === 'keyboard' ? 'render-overlay-keyboard.js' : 'render-overlay-menus.js';
+    let htmlPage = overlayAreaToShow === 'keyboard' ? 'keyboard.html' : 'overlays.html';
 
-    menusOverlayWindow = new BaseWindow({
+    overlayWindow = new BaseWindow({
         parent: mainWindow,
         modal: true,
         title: "Cactus - Menu",
@@ -576,21 +601,26 @@ function createMenuOverlay(overlayAreaToShow) {
         alwaysOnTop: false
     });
 
-    // Load the splash screen HTML file
-    const menusOverlayContent = new WebContentsView({
+    const overlayContent = new WebContentsView({
         //https://www.electronjs.org/docs/latest/tutorial/security
         webPreferences: {
             nodeIntegrationInWorker: true,
             contextIsolation: true,
-            preload: path.join(__dirname, '../src/renderer/overlays/render-overlay-menus.js'),
+            preload: path.join(__dirname, '../src/renderer/overlays/', renderer),
         }
     })
-    menusOverlayWindow.contentView.addChildView(menusOverlayContent)
-    menusOverlayContent.setBounds({ x: 0, y: 0, width: mainWindowContentBounds.width, height: mainWindowContentBounds.height })
-    menusOverlayContent.webContents.loadURL(path.join(__dirname, '../src/pages/overlays.html'));
+    overlayWindow.contentView.addChildView(overlayContent)
+    overlayContent.setBounds({ x: 0, y: 0, width: mainWindowContentBounds.width, height: mainWindowContentBounds.height })
+    overlayContent.webContents.loadURL(path.join(__dirname, '../src/pages/', htmlPage));
 
-    menusOverlayContent.webContents.send('ipc-main-overlays-loaded', overlayAreaToShow)
-    if (isDevelopment) menusOverlayContent.webContents.openDevTools();
+    if (overlayAreaToShow === 'keyboard') {
+        console.log("creating keyboard overlay");
+        overlayContent.webContents.send('ipc-main-keyboard-loaded', elementProperties);
+    } else {
+        console.log("creating menus overlay");
+        overlayContent.webContents.send('ipc-main-overlays-loaded', overlayAreaToShow)
+    }
+    if (isDevelopment) overlayContent.webContents.openDevTools();
 }
 
 function createHTMLSerializableMenuElement(element) {

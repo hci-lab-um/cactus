@@ -2,6 +2,8 @@ const config = require('config');
 const { throttle } = require('lodash')
 
 let dwellTime = config.get('dwelling.dwellTime');
+let keyboardDwellTime = config.get('dwelling.keyboardDwellTime');
+let intervalIds = []; // this is needed because some keys create multiple intervals and hence all of them need to be cleared on mouseout
 
 module.exports = {
   byId: (id) => {
@@ -43,17 +45,47 @@ module.exports = {
   //   }
   // },
 
-  dwell: (elem, callback) => {
-    let throttledFunction = throttle(callback, dwellTime, { leading: false, trailing: true })
+  dwell: (elem, callback, isKeyboardBtn = false) => {
+    // If the dwelling is for a keyboard button, use the keyboard dwell time, otherwise use the default dwell time
+    let dwellTimeToUse = isKeyboardBtn ? keyboardDwellTime : dwellTime;
+    let throttledFunction = throttle(callback, dwellTimeToUse, { leading: false, trailing: true });
 
     //Bypass dwelling in case a switch is being used
     elem.addEventListener('click', callback)
 
     //Dwelling
-    elem.addEventListener('mouseover', throttledFunction)
+    elem.addEventListener('mouseenter', throttledFunction)
     elem.addEventListener('mouseleave', () => {
       throttledFunction.cancel()
     })
+  },
+
+  dwellInfinite: (elem, callback) => {
+    // Bypass dwelling in case a switch is being used
+    elem.addEventListener('click', callback);
+
+    // Start dwelling on mouseover
+    elem.addEventListener('mouseenter', () => {
+      // Clears any existing intervals to avoid multiple intervals running simultaneously
+      if (intervalIds.length !== 0) {
+        intervalIds.forEach(intervalId => {
+          clearInterval(intervalId);
+        });
+      }
+      intervalIds.push(setInterval(() => {
+        callback();  
+      }, keyboardDwellTime));
+    });
+
+    // Stop dwelling on mouse leave
+    elem.addEventListener('mouseleave', () => {
+      if (intervalIds.length !== 0) {
+        intervalIds.forEach(intervalId => {
+          clearInterval(intervalId);
+        });
+        intervalIds = [];
+      }
+    });
   },
 
   genId: () => {

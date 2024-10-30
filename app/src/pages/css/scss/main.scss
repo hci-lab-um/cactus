@@ -144,7 +144,7 @@ body {
     font-size: 1.2em;
   }
 }
-
+// why is this here if there is no class in the html?
 .sidebar {
   &_item {
     @extend .dwellBtn;
@@ -201,22 +201,13 @@ body {
 
 // *********** SCROLLBAR **************
 #scrollbar {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
   flex: 10%;
-  top: 0;
-  right: 0;
   height: calc(100vh - #{$navHeight});
   background-color: $white;
   border-right: 1px solid $lightgrey;
   overflow: hidden;
   text-align: left;
-}
-
-#scroll-up {
-  position: fixed;
-  top: 150px;
-}
-
-#scroll-down {
-  position: fixed;
-  bottom: 70px;
 }
