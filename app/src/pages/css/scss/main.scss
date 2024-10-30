@@ -77,7 +77,7 @@ body {
   height: calc(100vh - #{$navHeight});
   // width: 99%;
   background-color: $white;
-  border-right: 1px solid $lightgrey;
+  border-right: 1.5px solid $lightgrey;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;

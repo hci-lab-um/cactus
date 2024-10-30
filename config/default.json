@@ -37,7 +37,13 @@
   },
   "shortcuts": {
     "click": "CommandOrControl+Alt+C",
-    "loadOmniBox": "CommandOrControl+Alt+O",
-    "pauseDwelling": "CommandOrControl+Alt+D"
+    "toggleOmniBox": "CommandOrControl+Alt+O",
+    "toggleDwelling": "CommandOrControl+Alt+D",
+    "zoomIn": "CommandOrControl++",
+    "zoomOut": "CommandOrControl+-",
+    "tabScrollUp": "CommandOrControl+Up",
+    "tabSrollDown": "CommandOrControl+Down",
+    "sidebarScrollUp": "CommandOrControl+Alt+Up",
+    "sidebarScrollDown": "CommandOrControl+Alt+Down"
   }
 }

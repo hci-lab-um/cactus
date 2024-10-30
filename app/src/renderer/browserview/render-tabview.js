@@ -161,6 +161,8 @@ window.cactusAPI.on('ipc-trigger-click-under-cursor', () => {
 	const element = document.elementFromPoint(mouse.x, mouse.y);
 	if (element) {
 		element.click();
+	} else {
+		console.error("Element to click under cursor has not been found");
 	}
 });
 

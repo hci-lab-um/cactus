@@ -12,7 +12,7 @@ const rangeHeight = config.get('dwelling.rangeHeight');
 const useNavAreas = config.get('dwelling.activateNavAreas');
 
 let mainWindow, splashWindow
-let mainWindowContent, overlayContent
+let mainWindowContent, overlayContent, isKeyboardOverlay
 let currentQt, currentNavAreaTree
 let timeoutCursorHovering
 let defaultUrl = config.get('browser.defaultUrl');
@@ -26,7 +26,7 @@ app.whenReady().then(() => {
         createMainWindow();
     }, 2000);
 
-    registerCommands();
+    registerSwitchShortcutCommands();
 });
 
 app.on('window-all-closed', () => {
@@ -581,6 +581,7 @@ function removeOverlay() {
     if (overlayContent) {
         mainWindow.contentView.removeChildView(overlayContent);
         overlayContent = null;
+        isKeyboardOverlay = null;
     }
 }
 
@@ -605,19 +606,22 @@ function createOverlay(overlayAreaToShow, elementProperties) {
     overlayContent.webContents.loadURL(path.join(__dirname, '../src/pages/', htmlPage));
 
     if (overlayAreaToShow === 'keyboard') {
+        isKeyboardOverlay = true;
         console.log("creating keyboard overlay");
         overlayContent.webContents.send('ipc-main-keyboard-loaded', elementProperties);
     } else {
+        isKeyboardOverlay = false;
         console.log("creating menus overlay");
         overlayContent.webContents.send('ipc-main-overlays-loaded', overlayAreaToShow)
     }
     if (isDevelopment) overlayContent.webContents.openDevTools();
 }
 
-function registerCommands() {
+function registerSwitchShortcutCommands() {
     const shortcuts = config.get('shortcuts');
 
     globalShortcut.register(shortcuts.click, () => {
+        console.log("Clicking shortcut triggered");
         const cursorPosition = screen.getCursorScreenPoint();
     
         // Function to check if the cursor is within the bounds of a view
@@ -641,6 +645,7 @@ function registerCommands() {
     
         if (activeTab && isCursorWithinBounds(activeTab.webContentsView.getBounds())) {
             activeTab.webContentsView.webContents.send('ipc-trigger-click-under-cursor');
+            console.log("Clicking on active tab");
             return;
         }
     
@@ -650,8 +655,12 @@ function registerCommands() {
         }
     });
 
-    globalShortcut.register(shortcuts.loadOmniBox, () => {
-        mainWindowContent.webContents.send('ipc-mainwindow-load-omnibox');
+    globalShortcut.register(shortcuts.toggleOmniBox, () => {
+        if (overlayContent && isKeyboardOverlay) {
+            removeOverlay();
+        } else {
+            mainWindowContent.webContents.send('ipc-mainwindow-load-omnibox');
+        }
     });
 }
 
