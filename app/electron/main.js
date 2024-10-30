@@ -649,6 +649,10 @@ function registerCommands() {
             mainWindowContent.webContents.send('ipc-trigger-click-under-cursor');
         }
     });
+
+    globalShortcut.register(shortcuts.loadOmniBox, () => {
+        mainWindowContent.webContents.send('ipc-mainwindow-load-omnibox');
+    });
 }
 
 function createHTMLSerializableMenuElement(element) {

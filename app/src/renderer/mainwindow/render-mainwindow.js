@@ -266,6 +266,16 @@ function displayOmni(value) {
 	}, 200);
 }
 
+ipcRenderer.on('ipc-mainwindow-load-omnibox', (event) => {
+	omni = byId('url')
+	let elementProperties = {
+		id: 'url',
+		value: omni.value,
+		type: omni.type,
+	}
+	showOverlay('keyboard', elementProperties);
+});
+
 ipcRenderer.on('ipc-trigger-click-under-cursor', (event) => {
 	const mouse = getMouse();
 	const element = document.elementFromPoint(mouse.x, mouse.y);
