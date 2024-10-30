@@ -11,8 +11,8 @@ const rangeWidth = config.get('dwelling.rangeWidth');
 const rangeHeight = config.get('dwelling.rangeHeight');
 const useNavAreas = config.get('dwelling.activateNavAreas');
 
-let mainWindow, splashWindow, overlayWindow
-let mainWindowContent
+let mainWindow, splashWindow
+let mainWindowContent, overlayContent
 let currentQt, currentNavAreaTree
 let timeoutCursorHovering
 let defaultUrl = config.get('browser.defaultUrl');
@@ -398,6 +398,7 @@ function createMainWindow() {
 
 function resizeMainWindow() {
     mainWindowContent.setBounds({ x: 0, y: 0, width: mainWindow.getContentBounds().width, height: mainWindow.getContentBounds().height })
+    overlayContent.setBounds({ x: 0, y: 0, width: mainWindow.getContentBounds().width, height: mainWindow.getContentBounds().height });
 
     mainWindowContent.webContents.executeJavaScript(`
             (() => {
@@ -416,6 +417,7 @@ function resizeMainWindow() {
             })()
             `)
         .then(properties => {
+            // Update the bounds of all tabs
             tabList.forEach(tab => {
                 tab.webContentsView.setBounds({
                     x: Math.floor(properties.x),
@@ -424,7 +426,6 @@ function resizeMainWindow() {
                     height: Math.floor(properties.height)
                 });
             });
-
         })
         .catch(err => {
             log.error(err);
@@ -575,9 +576,8 @@ function insertRendererCSS() {
 }
 
 function removeOverlay() {
-    if (overlayWindow) {
-        overlayWindow.close();
-        overlayWindow = null;
+    if (overlayContent) {
+        mainWindow.contentView.removeChildView(overlayContent);
     }
 }
 
@@ -588,20 +588,7 @@ function createOverlay(overlayAreaToShow, elementProperties) {
     let renderer = overlayAreaToShow === 'keyboard' ? 'render-overlay-keyboard.js' : 'render-overlay-menus.js';
     let htmlPage = overlayAreaToShow === 'keyboard' ? 'keyboard.html' : 'overlays.html';
 
-    overlayWindow = new BaseWindow({
-        parent: mainWindow,
-        modal: true,
-        title: "Cactus - Menu",
-        width: mainWindowContentBounds.width,
-        height: mainWindowContentBounds.height,
-        x: mainWindowContentBounds.x,
-        y: mainWindowContentBounds.y,
-        transparent: true,
-        frame: false,
-        alwaysOnTop: false
-    });
-
-    const overlayContent = new WebContentsView({
+    overlayContent = new WebContentsView({
         //https://www.electronjs.org/docs/latest/tutorial/security
         webPreferences: {
             nodeIntegrationInWorker: true,
@@ -609,7 +596,8 @@ function createOverlay(overlayAreaToShow, elementProperties) {
             preload: path.join(__dirname, '../src/renderer/overlays/', renderer),
         }
     })
-    overlayWindow.contentView.addChildView(overlayContent)
+    
+    mainWindow.contentView.addChildView(overlayContent)
     overlayContent.setBounds({ x: 0, y: 0, width: mainWindowContentBounds.width, height: mainWindowContentBounds.height })
     overlayContent.webContents.loadURL(path.join(__dirname, '../src/pages/', htmlPage));
 
