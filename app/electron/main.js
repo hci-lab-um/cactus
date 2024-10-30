@@ -615,8 +615,9 @@ function createOverlay(overlayAreaToShow, elementProperties) {
 }
 
 function registerCommands() {
-    globalShortcut.register('CommandOrControl+Alt+C', () => {
-        console.log('CommandOrControl+Alt+C is pressed');
+    const shortcuts = config.get('shortcuts');
+
+    globalShortcut.register(shortcuts.click, () => {
         const cursorPosition = screen.getCursorScreenPoint();
     
         // Function to check if the cursor is within the bounds of a view

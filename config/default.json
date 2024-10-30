@@ -34,5 +34,10 @@
   },
   "keyboard": {
     "defaultLayout": "en"
+  },
+  "shortcuts": {
+    "click": "CommandOrControl+Alt+C",
+    "loadOmniBox": "CommandOrControl+Alt+O",
+    "pauseDwelling": "CommandOrControl+Alt+D"
   }
 }
