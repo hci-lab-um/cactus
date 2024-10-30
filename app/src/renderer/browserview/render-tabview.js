@@ -71,6 +71,7 @@ window.cactusAPI.on('ipc-main-browserview-loaded', (useNavAreas) => {
 	});
 
 	browserView.addEventListener('mouseout', () => {
+		// Hide the cursor when the mouse leaves the element
 		cursor.style.visibility = 'hidden'
 		// Clear the interval when the mouse leaves the element
 		window.cactusAPI.send('ipc-browserview-cursor-mouseout');
@@ -156,6 +157,13 @@ window.cactusAPI.on('ipc-browserview-keyboard-input', (value, elementToUpdate) =
     }
 });
 
+window.cactusAPI.on('ipc-trigger-click-under-cursor', () => {
+	const element = document.elementFromPoint(mouse.x, mouse.y);
+	if (element) {
+		element.click();
+	}
+});
+
 window.cactusAPI.onAsync('ipc-browserview-click-element', (elementToClick) => {
 	// // Find the element at the specified x,y coordinates
 	// let element;
@@ -180,14 +188,14 @@ window.cactusAPI.onAsync('ipc-browserview-click-element', (elementToClick) => {
 
 	element = document.querySelector('[data-cactus-id="' + elementToClick.id + '"]');
 	if (element) {
-		console.log("Founf element to click by cactus id");
+		console.log("Found element to click by cactus id");
 		//If it's a link - go to its href rather than relying on focusing/clicking (works nicely when anchor is hidden in some collapsable component)
 		if (element.nodeName == 'A' && (element.getAttribute('href') && element.getAttribute('href') != '#'))
 			window.cactusAPI.send('browse-to-url', element.getAttribute('href'));
 	} else {
 		element = document.elementFromPoint(elementToClick.insertionPointX, elementToClick.insertionPointY);
 		if (element) {
-			console.log("Found element to click by cactus id");
+			console.log("Found element to click from Point");
 			element.focus();
 			element.click();
 		}
@@ -217,7 +225,7 @@ window.cactusAPI.on('ipc-browserview-create-quadtree', (useNavAreas) => {
 	if (useNavAreas) generateNavAreasTree();
 });
 
-function getMouseXY(e) {
+function setMouseXY(e) {
     mouse.x = (window.Event) ? e.pageX : window.Event.clientX + (document.documentElement.scrollLeft ? document.documentElement.scrollLeft : document.body.scrollLeft);
     mouse.y = (window.Event) ? e.pageY : window.Event.clientY + (document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop);
 }
@@ -251,7 +259,7 @@ function createCursor(id) {
 
 function followCursor(id) {
     var cursor = document.getElementById(id)
-    document.addEventListener('mousemove', getMouseXY, true)
+	document.addEventListener('mousemove', setMouseXY, true)
 
     var cursorPos = { x: 0, y: 0 }
 

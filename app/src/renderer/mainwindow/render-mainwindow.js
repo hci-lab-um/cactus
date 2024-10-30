@@ -6,7 +6,7 @@ const config = require('config');
 // const { byId, readFile, dwell } = require('./js/utils')
 // const { drop, isEqual }         = require('lodash')
 // const Config                    = require('./js/config')
-const { createCursor, followCursor } = require('../../tools/cursor')
+const { createCursor, followCursor, getMouse } = require('../../tools/cursor')
 const DOMPurify = require('dompurify');
 
 // let backOrForward, browserviewContainer
@@ -160,6 +160,125 @@ function setupScrollers() {
 // ==== Browser Functionality ======
 // =================================
 
+function setupFunctionality() {
+	omni = byId('url')
+	omni.addEventListener('keydown', (event) => browseToUrl(event));
+	dwell(omni, () => {
+		// hideAllOverlays()
+		// showOverlay('omni');
+		// showOverlay('keyboard', omni.type, "url");
+		let elementProperties = {
+			id: 'url',
+			value: omni.value,
+			type: omni.type,
+		}
+		showOverlay('keyboard', elementProperties);
+	});
+
+	let backOrForward = byId('backOrForwardBtn')
+	dwell(backOrForward, () => {
+		// showOverlay('navigation')
+		showOverlay('navigation');
+	})
+
+	let accessibility = byId('accessibilityBtn')
+	dwell(accessibility, () => {
+		// showOverlay('accessibility')
+		showOverlay('accessibility');
+	})
+}
+
+ipcRenderer.on('ipc-mainwindow-keyboard-input', (event, input) => {
+	omni = byId('url')
+	omni.value = input;
+	browseToUrl({ keyCode: 13 });
+});
+
+ipcRenderer.on('browserview-loading-start', () => {
+	let loader = byId('loader');
+	let favicon = byId('favicon');
+	let omni = byId('url')
+
+	favicon.style.display = "none";
+	loader.style.display = "block";
+	omni.value = 'Loading..';
+});
+
+function browseToUrl(event) {
+	let omni = byId('url')
+	if (event.keyCode === 13) {
+		omni.blur();
+		let val = omni.value;
+
+		// Check if the URL contains a period
+		if (val.includes('.')) {
+			// Extract the part after the last period
+			const domainPart = val.substring(val.lastIndexOf('.') + 1);
+
+			// List of common domain extensions
+			const validDomains = ['com', 'net', 'org', 'edu', 'gov', 'mil', 'int', 'html', 'io'];
+
+			// Check if the extracted part is a valid domain extension
+			if (!validDomains.includes(domainPart)) {
+				// Treat as a search query
+				val = `https://www.google.com/search?q=${encodeURIComponent(val)}`;
+			}
+		} else {
+			val = `https://www.google.com/search?q=${encodeURIComponent(val)}`;
+		}
+
+		let https = val.slice(0, 8).toLowerCase();
+		let http = val.slice(0, 7).toLowerCase();
+
+		//NOTE: This prevents the browser from loading local files
+		if (https === 'https://') {
+			ipcRenderer.send('browse-to-url', val);
+		} else if (http === 'http://') {
+			ipcRenderer.send('browse-to-url', 'https://' + val);
+		} else {
+			ipcRenderer.send('browse-to-url', 'https://' + val);
+		}
+
+		// ipcRenderer.send('browse-to-url', val); // this has been added temporarily to test out different elements for loading the keyboard
+	}
+}
+
+ipcRenderer.on('browserview-loading-stop', (event, pageDetails) => {
+	let loader = byId('loader');
+	let favicon = byId('favicon');
+	let omni = byId('url')
+
+	favicon.style.display = "block"
+	loader.style.display = "none"
+	omni.value = pageDetails.title;
+
+	omni.addEventListener('click', () => displayOmni(pageDetails.url), { once: true });
+	omni.addEventListener('blur', () => displayOmni(pageDetails.title), { once: true });
+});
+
+function displayOmni(value) {
+	let omni = byId('url')
+	omni.classList.add('fadeOutDown')
+	setTimeout(() => {
+		omni.classList.remove('fadeOutDown')
+		omni.value = value;
+		omni.classList.add('fadeInUp')
+	}, 200);
+}
+
+ipcRenderer.on('ipc-trigger-click-under-cursor', (event) => {
+	const mouse = getMouse();
+	const element = document.elementFromPoint(mouse.x, mouse.y);
+    if (element) {
+        element.click();
+    }
+});
+
+
+// =================================
+// == Sidebar element management ===
+// =================================
+
 function setupNavigationSideBar() {
 	resetNavigationSidebar();
 
@@ -220,44 +339,6 @@ function setupNavigationSideBar() {
 	}
 }
 
-function setupFunctionality() {
-	omni = byId('url')
-	omni.addEventListener('keydown', (event) => browseToUrl(event));
-	dwell(omni, () => {
-		// hideAllOverlays()
-		// showOverlay('omni');
-		// showOverlay('keyboard', omni.type, "url");
-		let elementProperties = {
-			id: 'url',
-			value: omni.value,
-			type: omni.type,
-		}
-		showOverlay('keyboard', elementProperties);
-	});
-
-	let backOrForward = byId('backOrForwardBtn')
-	dwell(backOrForward, () => {
-		// showOverlay('navigation')
-		showOverlay('navigation');
-	})
-
-	let accessibility = byId('accessibilityBtn')
-	dwell(accessibility, () => {
-		// showOverlay('accessibility')
-		showOverlay('accessibility');
-	})
-}
-
-ipcRenderer.on('ipc-mainwindow-keyboard-input', (event, input) => {
-	omni = byId('url')
-	omni.value = input;
-	browseToUrl({ keyCode: 13 });
-});
-
-
-// =================================
-// == Sidebar element management ===
-// =================================
 ipcRenderer.on('ipc-mainwindow-sidebar-render-navareas', (event, navAreas) => {
 	if (navAreas.length) {
 		//Clear sidebar
@@ -377,14 +458,6 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
 	}
 });
 
-ipcRenderer.on('browserview-loading-start', () => {
-	omniboxLoadStart();
-});
-
-ipcRenderer.on('browserview-loading-stop', (event, pageDetails) => {
-	omniboxLoadStop(pageDetails);
-});
-
 function getNavItemMarkup(navItem) {
 	return `<div class='sidebar_item fadeInDown' id='${navItem.id}'>
 				<div>
@@ -481,20 +554,6 @@ function renderNavItemInSidebar(navItems) {
 		menuNavLevelup.style.display = 'none'
 }
 
-// Determines if a keyboard should be displayed based on the element type and returns the element type if a keyboard is required, otherwise false.
-function shouldDisplayKeyboard(element, isNavItem = false) {
-	console.log("should display keyboard function called with element: ", element);
-	if (element) {
-		const KEYBOARD_REQUIRED_ELEMENTS = [
-			'textarea', 'text', 'search', 'password', 'email', 'number', 'tel', 'url', 'date', 'datetime-local', 'month', 'time', 'week'
-		];
-		let type = isNavItem ? element.tag.toLowerCase() : element.type.toLowerCase();
-
-		return KEYBOARD_REQUIRED_ELEMENTS.indexOf(type) !== -1 ? type : false;
-	}
-	return false;
-}
-
 // Resets the navigation sidebar to its initial state
 function resetNavigationSidebar(options = {}) {
 	const { clearItems = true } = options;
@@ -518,82 +577,24 @@ function resetNavigationSidebar(options = {}) {
 	selectedNavItemTitle.style.display = 'none'
 }
 
-function browseToUrl(event) {
-	let omni = byId('url')
-	if (event.keyCode === 13) {
-		omni.blur();
-		let val = omni.value;
-
-		// Check if the URL contains a period
-		if (val.includes('.')) {
-			// Extract the part after the last period
-			const domainPart = val.substring(val.lastIndexOf('.') + 1);
-
-			// List of common domain extensions
-			const validDomains = ['com', 'net', 'org', 'edu', 'gov', 'mil', 'int', 'html', 'io'];
-
-			// Check if the extracted part is a valid domain extension
-			if (!validDomains.includes(domainPart)) {
-				// Treat as a search query
-				val = `https://www.google.com/search?q=${encodeURIComponent(val)}`;
-			}
-		} else {
-			val = `https://www.google.com/search?q=${encodeURIComponent(val)}`;
-		}
-
-		let https = val.slice(0, 8).toLowerCase();
-		let http = val.slice(0, 7).toLowerCase();
-
-		//NOTE: This prevents the browser from loading local files
-		if (https === 'https://') {
-			ipcRenderer.send('browse-to-url', val);
-		} else if (http === 'http://') {
-			ipcRenderer.send('browse-to-url', 'https://' + val);
-		} else {
-			ipcRenderer.send('browse-to-url', 'https://' + val);
-		}
-
-		// ipcRenderer.send('browse-to-url', val); // this has been added temporarily to test out different elements for loading the keyboard
-	}
-}
-
-const omniboxLoadStart = () => {
-	let loader = byId('loader');
-	let favicon = byId('favicon');
-	let omni = byId('url')
-
-	favicon.style.display = "none";
-	loader.style.display = "block";
-	omni.value = 'Loading..';
-}
-
-const omniboxLoadStop = (pageDetails) => {
-	let loader = byId('loader');
-	let favicon = byId('favicon');
-	let omni = byId('url')
-
-	favicon.style.display = "block"
-	loader.style.display = "none"
-	omni.value = pageDetails.title;
-
-	omni.addEventListener('click', () => displayOmni(pageDetails.url), { once: true });
-	omni.addEventListener('blur', () => displayOmni(pageDetails.title), { once: true });
-}
-
-function displayOmni(value) {
-	let omni = byId('url')
-	omni.classList.add('fadeOutDown')
-	setTimeout(() => {
-		omni.classList.remove('fadeOutDown')
-		omni.value = value;
-		omni.classList.add('fadeInUp')
-	}, 200);
-}
-
 
 // =================================
 // ============ Overlays ===========
 // =================================
+
+// Determines if a keyboard should be displayed based on the element type and returns the element type if a keyboard is required, otherwise false.
+function shouldDisplayKeyboard(element, isNavItem = false) {
+	console.log("should display keyboard function called with element: ", element);
+	if (element) {
+		const KEYBOARD_REQUIRED_ELEMENTS = [
+			'textarea', 'text', 'search', 'password', 'email', 'number', 'tel', 'url', 'date', 'datetime-local', 'month', 'time', 'week'
+		];
+		let type = isNavItem ? element.tag.toLowerCase() : element.type.toLowerCase();
+
+		return KEYBOARD_REQUIRED_ELEMENTS.indexOf(type) !== -1 ? type : false;
+	}
+	return false;
+}
 
 function showOverlay(overlayAreaToShow, elementProperties = null) {
 	ipcRenderer.send('ipc-mainwindow-show-overlay', overlayAreaToShow, elementProperties);

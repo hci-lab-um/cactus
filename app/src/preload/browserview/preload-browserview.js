@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld('cactusAPI', {
             'ipc-clear-highlighted-elements',
             'ipc-highlight-available-elements',
             'ipc-browserview-keyboard-input',
+            'ipc-trigger-click-under-cursor',
             'ipc-browserview-scrolldown',
             'ipc-browserview-scrollup',
             'ipc-browserview-create-quadtree',

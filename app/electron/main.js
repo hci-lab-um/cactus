@@ -1,4 +1,4 @@
-const { app, BaseWindow, WebContentsView, ipcMain } = require('electron')
+const { app, BaseWindow, WebContentsView, ipcMain, globalShortcut, screen } = require('electron')
 const config = require('config');
 const path = require('path')
 const fs = require('fs')
@@ -25,6 +25,8 @@ app.whenReady().then(() => {
     setTimeout(() => {
         createMainWindow();
     }, 2000);
+
+    registerCommands();
 });
 
 app.on('window-all-closed', () => {
@@ -578,6 +580,7 @@ function insertRendererCSS() {
 function removeOverlay() {
     if (overlayContent) {
         mainWindow.contentView.removeChildView(overlayContent);
+        overlayContent = null;
     }
 }
 
@@ -609,6 +612,42 @@ function createOverlay(overlayAreaToShow, elementProperties) {
         overlayContent.webContents.send('ipc-main-overlays-loaded', overlayAreaToShow)
     }
     if (isDevelopment) overlayContent.webContents.openDevTools();
+}
+
+function registerCommands() {
+    globalShortcut.register('CommandOrControl+Alt+C', () => {
+        console.log('CommandOrControl+Alt+C is pressed');
+        const cursorPosition = screen.getCursorScreenPoint();
+    
+        // Function to check if the cursor is within the bounds of a view
+        const isCursorWithinBounds = (bounds) => {
+            return (
+                cursorPosition.x >= bounds.x &&
+                cursorPosition.x <= bounds.x + bounds.width &&
+                cursorPosition.y >= bounds.y &&
+                cursorPosition.y <= bounds.y + bounds.height
+            );
+        };
+    
+        // Check if there is an overlay and if the cursor is over it
+        if (overlayContent && isCursorWithinBounds(overlayContent.getBounds())) {
+            overlayContent.webContents.send('ipc-trigger-click-under-cursor');
+            return;
+        }
+    
+        // Find the active tab in the tabList
+        const activeTab = tabList.find(tab => tab.isActive);
+    
+        if (activeTab && isCursorWithinBounds(activeTab.webContentsView.getBounds())) {
+            activeTab.webContentsView.webContents.send('ipc-trigger-click-under-cursor');
+            return;
+        }
+    
+        // Check if the cursor is over the mainWindowContent
+        if (isCursorWithinBounds(mainWindowContent.getBounds())) {
+            mainWindowContent.webContents.send('ipc-trigger-click-under-cursor');
+        }
+    });
 }
 
 function createHTMLSerializableMenuElement(element) {
