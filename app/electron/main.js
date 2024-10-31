@@ -1,5 +1,6 @@
 const { app, BaseWindow, WebContentsView, ipcMain, globalShortcut, screen } = require('electron')
 const config = require('config');
+const { toggleDwelling, getIsDwellingActive } = require('../src/tools/utils');
 const path = require('path')
 const fs = require('fs')
 const { QuadtreeBuilder, InteractiveElement, HTMLSerializableElement, QtPageDocument, QtBuilderOptions, QtRange } = require('cactus-quadtree-builder');
@@ -10,6 +11,8 @@ const isDevelopment = process.env.NODE_ENV === "development";
 const rangeWidth = config.get('dwelling.rangeWidth');
 const rangeHeight = config.get('dwelling.rangeHeight');
 const useNavAreas = config.get('dwelling.activateNavAreas');
+const zoomInLevels = [1, 1.5, 2, 2.5, 3]; // Correspond to 100%, 150%, 200%, 250%, 300%
+const zoomOutLevels = [1, 0.9, 0.75, 0.5, 0.25]; // Correspond to 100%, 90%, 75%, 50%, 25%
 
 let mainWindow, splashWindow
 let mainWindowContent, overlayContent, isKeyboardOverlay
@@ -53,12 +56,9 @@ ipcMain.handle('get-tab-renderer-script', async () => {
         console.log(ex);
     }
 })
-let count_generateQuadTree = 0;
+
 // This creates a quadtree using serialisable HTML elements passed on from the renderer
 ipcMain.on('ipc-browserview-generateQuadTree', (event, contents) => {
-    count_generateQuadTree++;
-    console.log("Generate Quad Tree Counter:", count_generateQuadTree);
-
     var tab = tabList.find(tab => tab.isActive === true);
     // Recreate quadtree
     let bounds = tab.webContentsView.getBounds();
@@ -400,7 +400,7 @@ function createMainWindow() {
 
 function resizeMainWindow() {
     mainWindowContent.setBounds({ x: 0, y: 0, width: mainWindow.getContentBounds().width, height: mainWindow.getContentBounds().height })
-    overlayContent.setBounds({ x: 0, y: 0, width: mainWindow.getContentBounds().width, height: mainWindow.getContentBounds().height });
+    if (overlayContent) overlayContent.setBounds({ x: 0, y: 0, width: mainWindow.getContentBounds().width, height: mainWindow.getContentBounds().height });
 
     mainWindowContent.webContents.executeJavaScript(`
             (() => {
@@ -450,7 +450,7 @@ function createBrowserviewInTab(url, properties) {
     tabList.forEach(tab => {
         tab.isActive = false
     });
-    tabList.push({ tabId: tabList.length + 1, webContentsView: browserView, isActive: true });
+    tabList.push({ tabId: tabList.length + 1, webContentsView: browserView, isActive: true, zoomIndex: 0 });
 
 
     //Attach the browser view to the parent window
@@ -620,6 +620,11 @@ function createOverlay(overlayAreaToShow, elementProperties) {
 function registerSwitchShortcutCommands() {
     const shortcuts = config.get('shortcuts');
 
+    let configData = {
+        scrollDistance: config.get('dwelling.browserAreaScrollDistance'),
+        useNavAreas: config.get('dwelling.activateNavAreas')
+    };
+
     globalShortcut.register(shortcuts.click, () => {
         console.log("Clicking shortcut triggered");
         const cursorPosition = screen.getCursorScreenPoint();
@@ -661,6 +666,69 @@ function registerSwitchShortcutCommands() {
         } else {
             mainWindowContent.webContents.send('ipc-mainwindow-load-omnibox');
         }
+    });
+
+    globalShortcut.register(shortcuts.toggleDwelling, () => {
+        toggleDwelling(); // NOT WORKING YET
+
+        // Send the state of isDwellingActive to the renderer process
+        const isDwellingActive = getIsDwellingActive();
+        console.log("is dwelling active from main: ", isDwellingActive);
+        mainWindowContent.webContents.send('update-dwelling-state', isDwellingActive);
+    });
+
+    globalShortcut.register(shortcuts.zoomIn, () => {
+        console.log("Zoom in shortcut triggered");
+        var tab = tabList.find(tab => tab.isActive === true);
+        if (tab) {
+            tab.zoomIndex = (tab.zoomIndex + 1) % zoomInLevels.length; // Cycles through the zoom levels
+            var zoomLevel = zoomInLevels[tab.zoomIndex];
+            tab.webContentsView.webContents.setZoomFactor(zoomLevel);
+            console.log(`Zoom level set to ${zoomLevel * 100}% for the current tab`);
+        }
+    });
+
+    globalShortcut.register(shortcuts.zoomOut, () => {
+        console.log("Zoom out shortcut triggered");
+        var tab = tabList.find(tab => tab.isActive === true);
+        if (tab) {
+            tab.zoomIndex = (tab.zoomIndex + 1) % zoomOutLevels.length; // Cycles through the zoom levels
+            var zoomLevel = zoomOutLevels[tab.zoomIndex];
+            tab.webContentsView.webContents.setZoomFactor(zoomLevel);
+            console.log(`Zoom level set to ${zoomLevel * 100}% for the current tab`);
+        }
+    });
+
+    globalShortcut.register(shortcuts.tabScrollUp, () => {
+        console.log("Tab Scroll up shortcut triggered");
+        var tab = tabList.find(tab => tab.isActive === true);
+        tab.webContentsView.webContents.send('ipc-browserview-scrollup', configData);
+    });
+
+    globalShortcut.register(shortcuts.tabScrollDown, () => {
+        console.log("Tab Scroll down shortcut triggered");
+        var tab = tabList.find(tab => tab.isActive === true);
+        tab.webContentsView.webContents.send('ipc-browserview-scrolldown', configData);
+    });
+
+    globalShortcut.register(shortcuts.sidebarScrollUp, () => {
+        mainWindowContent.webContents.send('ipc-main-sidebar-scrollup');
+    });
+
+    globalShortcut.register(shortcuts.sidebarScrollDown, () => {
+        mainWindowContent.webContents.send('ipc-main-sidebar-scrolldown');
+    });
+
+    globalShortcut.register(shortcuts.navigateForward, () => {
+        console.log("Navigate forward shortcut triggered");
+        var tab = tabList.find(tab => tab.isActive === true);
+        tab.webContentsView.webContents.send('ipc-browserview-forward');
+    });
+
+    globalShortcut.register(shortcuts.navigateBack, () => {
+        console.log("Navigate back shortcut triggered");
+        var tab = tabList.find(tab => tab.isActive === true);
+        tab.webContentsView.webContents.send('ipc-browserview-back');
     });
 }
 

@@ -23,6 +23,7 @@ let cursor
 let scrollUpBtn, scrollDownBtn
 let timeoutScroll
 let navAreaStack = [];
+let isDwellingActive = true;
 
 // Exposes an HTML sanitizer to allow for innerHtml assignments when TrustedHTML policies are set ('This document requires 'TrustedHTML' assignment')
 window.addEventListener('DOMContentLoaded', () => {
@@ -43,6 +44,11 @@ ipcRenderer.on('mainWindowLoaded', () => {
 	//Setup navigation sidebar
 	setupNavigationSideBar();
 })
+
+ipcRenderer.on('update-dwelling-state', (event, state) => {
+	isDwellingActive = state;
+	console.log('Dwelling is now ' + (isDwellingActive ? 'active' : 'inactive'));
+});
 
 // =================================
 // ==== Cursor management ====
@@ -152,7 +158,6 @@ function setupScrollers() {
 		// Clear the interval when the mouse leaves the element
 		clearInterval(timeoutScroll);
 	}
-
 }
 
 
@@ -173,19 +178,19 @@ function setupFunctionality() {
 			type: omni.type,
 		}
 		showOverlay('keyboard', elementProperties);
-	});
+	}, isDwellingActive);
 
 	let backOrForward = byId('backOrForwardBtn')
 	dwell(backOrForward, () => {
 		// showOverlay('navigation')
 		showOverlay('navigation');
-	})
+	}, isDwellingActive)
 
 	let accessibility = byId('accessibilityBtn')
 	dwell(accessibility, () => {
 		// showOverlay('accessibility')
 		showOverlay('accessibility');
-	})
+	}, isDwellingActive)
 }
 
 ipcRenderer.on('ipc-mainwindow-keyboard-input', (event, input) => {
@@ -304,7 +309,7 @@ function setupNavigationSideBar() {
 			if (selectedNavItemTitle.textContent == "") selectedNavItemTitle.style.display = 'none';
 			renderNavItemInSidebar(previousLevel.items);
 		}
-	});
+	}, isDwellingActive);
 
 	const scrollDistance = config.get('dwelling.menuAreaScrollDistance');
 	const scrollInterval = config.get('dwelling.menuAreaScrollIntervalInMs');
@@ -314,13 +319,15 @@ function setupNavigationSideBar() {
 		clearInterval(timeoutScroll);
 
 		// Start a new interval to execute the code every x ms
-		timeoutScroll = setInterval(function () {
-			sidebarItemArea.scrollBy({
-				top: (scrollDistance * -1),
-				left: 0,
-				behavior: "smooth"
-			});
-		}, scrollInterval);
+		timeoutScroll = setInterval(sidebarScrollUp(), scrollInterval);
+	}
+
+	function sidebarScrollUp() {
+		sidebarItemArea.scrollBy({
+			top: (scrollDistance * -1),
+			left: 0,
+			behavior: "smooth"
+		});
 	}
 
 	menuScrollDown.onmouseover = () => {
@@ -328,13 +335,15 @@ function setupNavigationSideBar() {
 		clearInterval(timeoutScroll);
 
 		// Start a new interval to execute the code every x ms
-		timeoutScroll = setInterval(function () {
-			sidebarItemArea.scrollBy({
-				top: scrollDistance,
-				left: 0,
-				behavior: "smooth"
-			});
-		}, scrollInterval);
+		timeoutScroll = setInterval(sidebarScrollDown(), scrollInterval);
+	}
+
+	function sidebarScrollDown() {
+		sidebarItemArea.scrollBy({
+			top: scrollDistance,
+			left: 0,
+			behavior: "smooth"
+		});
 	}
 
 	//Clear timeouts
@@ -347,6 +356,14 @@ function setupNavigationSideBar() {
 		// Clear the interval when the mouse leaves the element
 		clearInterval(timeoutScroll);
 	}
+
+	ipcRenderer.on('ipc-main-sidebar-scrollup', () => {
+		sidebarScrollUp();
+	});
+
+	ipcRenderer.on('ipc-main-sidebar-scrolldown', () => {
+		sidebarScrollDown();
+	});
 }
 
 ipcRenderer.on('ipc-mainwindow-sidebar-render-navareas', (event, navAreas) => {
@@ -367,6 +384,7 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-navareas', (event, navAreas) => {
 })
 
 ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
+	console.log("Get is dwelling active: ", isDwellingActive);
 	resetNavigationSidebar({ clearItems: false });
 
 	sidebarItemArea = byId('sidebar_items');
@@ -458,7 +476,7 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
 								}
 							}, 300);
 						}
-					})
+					}, isDwellingActive)
 				})(i)
 			}
 		}
@@ -550,7 +568,7 @@ function renderNavItemInSidebar(navItems) {
 							renderNavItemInSidebar(elementToClick[0].children);
 						}
 					}
-				}, false)
+				}, isDwellingActive, false)
 			})(i)
 		}
 	}

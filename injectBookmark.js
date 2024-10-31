@@ -1,6 +1,6 @@
-const { ipcRenderer }               = require('electron')
-const { byId, dwell }               = require('./js/utils')
-const { createCursor, followCursor } = require('./js/cursor')
+const { ipcRenderer }                       = require('electron')
+const { byId, dwell, getIsDwellingActive }  = require('./js/utils')
+const { createCursor, followCursor }        = require('./js/cursor')
 
 let c
 
@@ -37,7 +37,7 @@ ipcRenderer.on('getBookmarks', (event, message) => {
       (function(i) {
         dwell(bookmarks[i], () => {
           ipcRenderer.send('loadBookmark', bookmarks[i].lastElementChild.innerHTML)
-        })
+        }, getIsDwellingActive())
       })(i)
     }
   }
@@ -45,11 +45,11 @@ ipcRenderer.on('getBookmarks', (event, message) => {
   // function loadLink() {
   //   dwell(this, () => {
   //     ipcRenderer.send('loadBookmark', this.lastElementChild.innerHTML)
-  //   })
+  //   }, getIsDwellingActive())
   // }
 
   let closeBtn = byId('bookmarksClose')
   dwell(closeBtn, () => {
     ipcRenderer.send('closeBookmarks')
-  })
+  }, getIsDwellingActive())
 })

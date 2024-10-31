@@ -4,6 +4,7 @@ const { throttle } = require('lodash')
 let dwellTime = config.get('dwelling.dwellTime');
 let keyboardDwellTime = config.get('dwelling.keyboardDwellTime');
 let intervalIds = []; // this is needed because some keys create multiple intervals and hence all of them need to be cleared on mouseout
+let isDwellingActive = true;
 
 module.exports = {
   byId: (id) => {
@@ -45,7 +46,16 @@ module.exports = {
   //   }
   // },
 
-  dwell: (elem, callback, isKeyboardBtn = false) => {
+  getIsDwellingActive: () => {
+    return isDwellingActive;
+  },
+
+  toggleDwelling: () => {
+    isDwellingActive = !isDwellingActive;
+    console.log('Dwelling is now ' + (isDwellingActive ? 'active' : 'inactive'));
+  },
+
+  dwell: (elem, callback, isActive, isKeyboardBtn = false) => {
     // If the dwelling is for a keyboard button, use the keyboard dwell time, otherwise use the default dwell time
     let dwellTimeToUse = isKeyboardBtn ? keyboardDwellTime : dwellTime;
     let throttledFunction = throttle(callback, dwellTimeToUse, { leading: false, trailing: true });
@@ -54,27 +64,33 @@ module.exports = {
     elem.addEventListener('click', callback)
 
     //Dwelling
-    elem.addEventListener('mouseenter', throttledFunction)
+    elem.addEventListener('mouseenter', () => {
+      console.log("isActive: ", isActive);
+      if (isActive) throttledFunction();
+    });
     elem.addEventListener('mouseleave', () => {
       throttledFunction.cancel()
     })
   },
 
-  dwellInfinite: (elem, callback) => {
+  dwellInfinite: (elem, callback, isActive) => {
     // Bypass dwelling in case a switch is being used
     elem.addEventListener('click', callback);
 
     // Start dwelling on mouseover
     elem.addEventListener('mouseenter', () => {
-      // Clears any existing intervals to avoid multiple intervals running simultaneously
-      if (intervalIds.length !== 0) {
-        intervalIds.forEach(intervalId => {
-          clearInterval(intervalId);
-        });
+      console.log("isActive: ", isActive);
+      if (isActive) {
+        // Clears any existing intervals to avoid multiple intervals running simultaneously
+        if (intervalIds.length !== 0) {
+          intervalIds.forEach(intervalId => {
+            clearInterval(intervalId);
+          });
+        }
+        intervalIds.push(setInterval(() => {
+          if (isActive) callback();
+        }, keyboardDwellTime));
       }
-      intervalIds.push(setInterval(() => {
-        callback();  
-      }, keyboardDwellTime));
     });
 
     // Stop dwelling on mouse leave

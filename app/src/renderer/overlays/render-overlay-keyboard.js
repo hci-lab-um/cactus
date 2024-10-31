@@ -2,7 +2,7 @@ const { ipcRenderer } = require('electron');
 const config = require('config');
 const fs = require('fs');
 const path = require('path');
-const { dwell, dwellInfinite } = require('../../tools/utils');
+const { dwell, dwellInfinite, getIsDwellingActive } = require('../../tools/utils');
 const { createCursor, followCursor, getMouse } = require('../../tools/cursor')
 const DOMPurify = require('dompurify');
 
@@ -267,7 +267,7 @@ const Keyboard = {
 
                 dwell(keyElement, () => {
                     this._moveCursorToLineStart();
-                }, true);
+                }, getIsDwellingActive(), true);
 
                 break;
 
@@ -277,7 +277,7 @@ const Keyboard = {
 
                 dwell(keyElement, () => {
                     this._moveCursorToLineEnd();
-                }, true);
+                }, getIsDwellingActive(), true);
 
                 break;
 
@@ -287,7 +287,7 @@ const Keyboard = {
 
                 dwellInfinite(keyElement, () => {
                     this._moveCursorUpDown(-1);
-                });
+                }, getIsDwellingActive());
 
                 break;
 
@@ -297,7 +297,7 @@ const Keyboard = {
 
                 dwellInfinite(keyElement, () => {
                     this._moveCursorUpDown(1);
-                });
+                }, getIsDwellingActive());
 
                 break;
 
@@ -307,7 +307,7 @@ const Keyboard = {
 
                 dwellInfinite(keyElement, () => {
                     this._moveCursorLeftRight(-1);
-                });
+                }, getIsDwellingActive());
 
                 break;
 
@@ -317,7 +317,7 @@ const Keyboard = {
 
                 dwellInfinite(keyElement, () => {
                     this._moveCursorLeftRight(1);
-                });
+                }, getIsDwellingActive());
 
                 break;
 
@@ -328,7 +328,7 @@ const Keyboard = {
                 // This key must only be dwellable once!
                 dwell(keyElement, () => {
                     ipcRenderer.send('ipc-overlays-remove');
-                }, true);
+                }, getIsDwellingActive(), true);
 
                 break;
 
@@ -338,7 +338,7 @@ const Keyboard = {
 
                 dwell(keyElement, () => {
                     // listen for voice input
-                }, true);
+                }, getIsDwellingActive(), true);
 
                 break;
 
@@ -350,7 +350,7 @@ const Keyboard = {
 
                 dwell(keyElement, () => {
                     this._insertChar(key);
-                }, true);
+                }, getIsDwellingActive(), true);
 
                 break;
 
@@ -360,7 +360,7 @@ const Keyboard = {
 
                 dwellInfinite(keyElement, () => {
                     this._deleteChar();
-                });
+                }, getIsDwellingActive());
 
                 break;
 
@@ -370,7 +370,7 @@ const Keyboard = {
 
                 dwellInfinite(keyElement, () => {
                     this._deleteChar();
-                });
+                }, getIsDwellingActive());
 
                 break;
 
@@ -380,7 +380,7 @@ const Keyboard = {
 
                 dwellInfinite(keyElement, () => {
                     this._deleteWord();
-                });
+                }, getIsDwellingActive());
 
                 break;
 
@@ -390,7 +390,7 @@ const Keyboard = {
 
                 dwell(keyElement, () => {
                     this.elements.textarea.value = "";
-                }, true);
+                }, getIsDwellingActive(), true);
 
                 break;
 
@@ -409,7 +409,7 @@ const Keyboard = {
 
                 dwellInfinite(keyElement, () => {
                     this._toggleCapsLock();
-                });
+                }, getIsDwellingActive());
 
                 break;
 
@@ -420,7 +420,7 @@ const Keyboard = {
 
                 dwellInfinite(keyElement, () => {
                     this._insertChar("\n");
-                });
+                }, getIsDwellingActive());
 
                 break;
 
@@ -430,7 +430,7 @@ const Keyboard = {
 
                 dwell(keyElement, () => {
                     this._openSettingsOverlay();
-                }, true);
+                }, getIsDwellingActive(), true);
 
                 break;
 
@@ -440,7 +440,7 @@ const Keyboard = {
 
                 dwellInfinite(keyElement, () => {
                     this._toggleSpecialKeys();
-                });
+                }, getIsDwellingActive());
 
                 break;
 
@@ -451,7 +451,7 @@ const Keyboard = {
 
                 dwellInfinite(keyElement, () => {
                     this._insertChar(" ");
-                });
+                }, getIsDwellingActive());
 
                 break;
 
@@ -466,7 +466,7 @@ const Keyboard = {
                         console.log("elementToUpdate", this.elementToUpdate);
                         ipcRenderer.send('ipc-keyboard-input', this.elements.textarea.value, this.elementToUpdate);
                     }
-                }, true);
+                }, getIsDwellingActive(), true);
 
                 break;
 
@@ -476,7 +476,7 @@ const Keyboard = {
 
                 dwellInfinite(keyElement, () => {
                     this._insertChar(key);
-                });
+                }, getIsDwellingActive());
 
                 break;
         }
@@ -672,7 +672,7 @@ const Keyboard = {
                 }
                 document.body.removeChild(popup);
                 document.body.removeChild(overlay);
-            });
+            }, getIsDwellingActive());
             popup.appendChild(button);
         });
 

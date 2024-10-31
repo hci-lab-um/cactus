@@ -39,11 +39,13 @@
     "click": "CommandOrControl+Alt+C",
     "toggleOmniBox": "CommandOrControl+Alt+O",
     "toggleDwelling": "CommandOrControl+Alt+D",
-    "zoomIn": "CommandOrControl++",
-    "zoomOut": "CommandOrControl+-",
-    "tabScrollUp": "CommandOrControl+Up",
-    "tabSrollDown": "CommandOrControl+Down",
-    "sidebarScrollUp": "CommandOrControl+Alt+Up",
-    "sidebarScrollDown": "CommandOrControl+Alt+Down"
+    "zoomIn": "CommandOrControl+Alt+Plus",
+    "zoomOut": "CommandOrControl+Alt+-",
+    "tabScrollUp": "CommandOrControl+Alt+Up",
+    "tabScrollDown": "CommandOrControl+Alt+Down",
+    "sidebarScrollUp": "CommandOrControl+Alt+W",
+    "sidebarScrollDown": "CommandOrControl+Alt+S",
+    "navigateForward": "CommandOrControl+Alt+Right",
+    "navigateBack": "CommandOrControl+Alt+Left"
   }
 }
