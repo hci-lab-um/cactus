@@ -62,7 +62,10 @@ ipcMain.on('ipc-browserview-generateQuadTree', (event, contents) => {
     var tab = tabList.find(tab => tab.isActive === true);
     // Recreate quadtree
     let bounds = tab.webContentsView.getBounds();
-    qtOptions = new QtBuilderOptions(bounds.width, bounds.height, 'new', 1);
+    //Taking zoom factor into account
+    let adjustedWidth = bounds.width / tab.webContentsView.webContents.zoomFactor
+    let adjustedHeight = bounds.height / tab.webContentsView.webContents.zoomFactor
+    qtOptions = new QtBuilderOptions(adjustedWidth, adjustedHeight, 'new', 1);
     qtBuilder = new QuadtreeBuilder(qtOptions);
 
     const visibleElements = contents.serializedVisibleElements.map(e => {
@@ -70,35 +73,35 @@ ipcMain.on('ipc-browserview-generateQuadTree', (event, contents) => {
         return InteractiveElement.fromHTMLElement(htmlSerializableElement);
     });
 
-    let pageDocument = new QtPageDocument(contents.docTitle, contents.docURL, visibleElements, bounds.width, bounds.height, null);
+    let pageDocument = new QtPageDocument(contents.docTitle, contents.docURL, visibleElements, adjustedWidth, adjustedHeight, null);
 
     qtBuilder.buildAsync(pageDocument).then((qt) => {
-		currentQt = qt;
+        currentQt = qt;
 
         //Only in debug mode - show which points are available for interaction
-		if (isDevelopment) {
+        if (isDevelopment) {
             const viewRange = new QtRange(0, 0, pageDocument.documentWidth, pageDocument.documentHeight);
-			const elementsInView = qt.queryRange(viewRange);
-            
-            contents = { 
-                elementsInView: elementsInView, 
-                rangeWidth: rangeWidth, 
+            const elementsInView = qt.queryRange(viewRange);
+
+            contents = {
+                elementsInView: elementsInView,
+                rangeWidth: rangeWidth,
                 rangeHeight: rangeHeight,
                 color: '#702963'
-            }; 
+            };
 
             tab.webContentsView.webContents.send('ipc-clear-highlighted-elements');
             tab.webContentsView.webContents.send('ipc-highlight-available-elements', contents);
-		}
-	});
+        }
+    });
 });
 
 ipcMain.on('ipc-browserview-generateNavAreasTree', (event, contents) => {
     //Recreate quadtree    
     var tab = tabList.find(tab => tab.isActive === true);
     let bounds = tab.webContentsView.getBounds();
-	let menuBuilderOptions = new MenuBuilderOptions(bounds.width, bounds.height, 'new');
-	let menuBuilder = new MenuBuilder(menuBuilderOptions);
+    let menuBuilderOptions = new MenuBuilderOptions(bounds.width, bounds.height, 'new');
+    let menuBuilder = new MenuBuilder(menuBuilderOptions);
 
     const visibleElements = contents.serializedVisibleMenus.map(e => {
         let htmlSerializableMenuElement = createHTMLSerializableMenuElement(e);
@@ -108,23 +111,23 @@ ipcMain.on('ipc-browserview-generateNavAreasTree', (event, contents) => {
     let pageDocument = new MenuPageDocument(contents.docTitle, contents.docURL, visibleElements, bounds.width, bounds.height, null);
 
     menuBuilder.buildAsync(pageDocument).then((hierarchicalAreas) => {
-		currentNavAreaTree = hierarchicalAreas;
+        currentNavAreaTree = hierarchicalAreas;
 
-		//Only in debug mode - show which points are available for interaction
-		if (isDevelopment) {
-			const viewRange = new MenuRange(0, 0, pageDocument.documentWidth, pageDocument.documentHeight);
-			const elementsInView = currentNavAreaTree.queryRange(viewRange, true);
-            
-            contents = { 
-                elementsInView: elementsInView, 
-                rangeWidth: rangeWidth, 
+        //Only in debug mode - show which points are available for interaction
+        if (isDevelopment) {
+            const viewRange = new MenuRange(0, 0, pageDocument.documentWidth, pageDocument.documentHeight);
+            const elementsInView = currentNavAreaTree.queryRange(viewRange, true);
+
+            contents = {
+                elementsInView: elementsInView,
+                rangeWidth: rangeWidth,
                 rangeHeight: rangeHeight,
                 color: '#E34234'
-            }; 
+            };
 
             tab.webContentsView.webContents.send('ipc-highlight-available-elements', contents);
-		}
-	});
+        }
+    });
 });
 
 ipcMain.on('ipc-browserview-cursor-mouseover', (event, mouseData) => {
@@ -600,7 +603,7 @@ function createOverlay(overlayAreaToShow, elementProperties) {
             preload: path.join(__dirname, '../src/renderer/overlays/', renderer),
         }
     })
-    
+
     mainWindow.contentView.addChildView(overlayContent)
     overlayContent.setBounds({ x: 0, y: 0, width: mainWindowContentBounds.width, height: mainWindowContentBounds.height })
     overlayContent.webContents.loadURL(path.join(__dirname, '../src/pages/', htmlPage));
@@ -628,7 +631,7 @@ function registerSwitchShortcutCommands() {
     globalShortcut.register(shortcuts.click, () => {
         console.log("Clicking shortcut triggered");
         const cursorPosition = screen.getCursorScreenPoint();
-    
+
         // Function to check if the cursor is within the bounds of a view
         const isCursorWithinBounds = (bounds) => {
             return (
@@ -638,22 +641,22 @@ function registerSwitchShortcutCommands() {
                 cursorPosition.y <= bounds.y + bounds.height
             );
         };
-    
+
         // Check if there is an overlay and if the cursor is over it
         if (overlayContent && isCursorWithinBounds(overlayContent.getBounds())) {
             overlayContent.webContents.send('ipc-trigger-click-under-cursor');
             return;
         }
-    
+
         // Find the active tab in the tabList
         const activeTab = tabList.find(tab => tab.isActive);
-    
+
         if (activeTab && isCursorWithinBounds(activeTab.webContentsView.getBounds())) {
             activeTab.webContentsView.webContents.send('ipc-trigger-click-under-cursor');
             console.log("Clicking on active tab");
             return;
         }
-    
+
         // Check if the cursor is over the mainWindowContent
         if (isCursorWithinBounds(mainWindowContent.getBounds())) {
             mainWindowContent.webContents.send('ipc-trigger-click-under-cursor');
@@ -701,7 +704,7 @@ function registerSwitchShortcutCommands() {
             var zoomLevel = zoomOutLevels[tab.zoomIndex];
             tab.webContentsView.webContents.setZoomFactor(zoomLevel);
             console.log(`Zoom level set to ${zoomLevel * 100}% for the current tab`);
-            
+
             // Update the quadtree
             tab.webContentsView.webContents.send('ipc-browserview-create-quadtree', useNavAreas);
         }
