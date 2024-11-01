@@ -12,7 +12,7 @@ const rangeWidth = config.get('dwelling.rangeWidth');
 const rangeHeight = config.get('dwelling.rangeHeight');
 const useNavAreas = config.get('dwelling.activateNavAreas');
 const zoomInLevels = [1, 1.5, 2, 2.5, 3]; // Correspond to 100%, 150%, 200%, 250%, 300%
-const zoomOutLevels = [1, 0.9, 0.75, 0.5, 0.25]; // Correspond to 100%, 90%, 75%, 50%, 25%
+const zoomOutLevels = [1, 0.9, 0.75, 0.65, 0.5]; // Correspond to 100%, 90%, 75%, 65%, 50%
 
 let mainWindow, splashWindow
 let mainWindowContent, overlayContent, isKeyboardOverlay
@@ -669,7 +669,7 @@ function registerSwitchShortcutCommands() {
     });
 
     globalShortcut.register(shortcuts.toggleDwelling, () => {
-        toggleDwelling(); // NOT WORKING YET
+        toggleDwelling(); // NOT WORKING YET - parked
 
         // Send the state of isDwellingActive to the renderer process
         const isDwellingActive = getIsDwellingActive();
@@ -681,10 +681,14 @@ function registerSwitchShortcutCommands() {
         console.log("Zoom in shortcut triggered");
         var tab = tabList.find(tab => tab.isActive === true);
         if (tab) {
+            // Setting zoom level
             tab.zoomIndex = (tab.zoomIndex + 1) % zoomInLevels.length; // Cycles through the zoom levels
             var zoomLevel = zoomInLevels[tab.zoomIndex];
             tab.webContentsView.webContents.setZoomFactor(zoomLevel);
             console.log(`Zoom level set to ${zoomLevel * 100}% for the current tab`);
+
+            // Update the quadtree
+            tab.webContentsView.webContents.send('ipc-browserview-create-quadtree', useNavAreas);
         }
     });
 
@@ -692,10 +696,14 @@ function registerSwitchShortcutCommands() {
         console.log("Zoom out shortcut triggered");
         var tab = tabList.find(tab => tab.isActive === true);
         if (tab) {
+            // Setting zoom level
             tab.zoomIndex = (tab.zoomIndex + 1) % zoomOutLevels.length; // Cycles through the zoom levels
             var zoomLevel = zoomOutLevels[tab.zoomIndex];
             tab.webContentsView.webContents.setZoomFactor(zoomLevel);
             console.log(`Zoom level set to ${zoomLevel * 100}% for the current tab`);
+            
+            // Update the quadtree
+            tab.webContentsView.webContents.send('ipc-browserview-create-quadtree', useNavAreas);
         }
     });
 

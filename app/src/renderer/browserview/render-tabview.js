@@ -222,7 +222,7 @@ window.cactusAPI.onAsync('ipc-browserview-highlight-elements', (elementsToHighli
 window.cactusAPI.on('ipc-browserview-create-quadtree', (useNavAreas) => {
 	// //ISSUES: Node-Config is required by Cactus, and the config/default.json file would need to be recreated on cactus itself, rather than just the builder code. Which might not be a bad idea. Think about it.
 	// let useNavAreas = config.get('dwelling.activateNavAreas');
-
+	console.log("Creating QuadTree and NavAreasTree");
 	generateQuadTree();
 	if (useNavAreas) generateNavAreasTree();
 });
@@ -304,7 +304,7 @@ function generateQuadTree() {
 		}
 		return e;
 	});
-	console.log("Visible elements", visibleElements);
+	// console.log("Visible elements", visibleElements);
     const serializedElements = visibleElements.map(serializeElement); //creating an element object for each element in the array
 
     const quadTreeContents = {
