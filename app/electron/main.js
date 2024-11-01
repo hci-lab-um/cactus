@@ -672,12 +672,13 @@ function registerSwitchShortcutCommands() {
     });
 
     globalShortcut.register(shortcuts.toggleDwelling, () => {
-        toggleDwelling(); // NOT WORKING YET - parked
+        //toggleDwelling(); // NOT WORKING YET - parked
 
-        // Send the state of isDwellingActive to the renderer process
-        const isDwellingActive = getIsDwellingActive();
+        config.dwelling.isDwellingActive = (!config.dwelling.isDwellingActive) ? true : false
+        // // Send the state of isDwellingActive to the renderer process
+        // const isDwellingActive = getIsDwellingActive();
         console.log("is dwelling active from main: ", isDwellingActive);
-        mainWindowContent.webContents.send('update-dwelling-state', isDwellingActive);
+        //mainWindowContent.webContents.send('update-dwelling-state', isDwellingActive);
     });
 
     globalShortcut.register(shortcuts.zoomIn, () => {

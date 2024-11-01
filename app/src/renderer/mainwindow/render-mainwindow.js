@@ -45,10 +45,10 @@ ipcRenderer.on('mainWindowLoaded', () => {
 	setupNavigationSideBar();
 })
 
-ipcRenderer.on('update-dwelling-state', (event, state) => {
-	isDwellingActive = state;
-	console.log('Dwelling is now ' + (isDwellingActive ? 'active' : 'inactive'));
-});
+// ipcRenderer.on('update-dwelling-state', (event, state) => {
+// 	isDwellingActive = state;
+// 	console.log('Dwelling is now ' + (isDwellingActive ? 'active' : 'inactive'));
+// });
 
 // =================================
 // ==== Cursor management ====
@@ -123,8 +123,8 @@ function setupScrollers() {
 
 		// Start a new interval to execute the code every x ms
 		timeoutScroll = setInterval(function () {
-			let configData =  {
-				scrollDistance: config.get('dwelling.browserAreaScrollDistance'), 
+			let configData = {
+				scrollDistance: config.get('dwelling.browserAreaScrollDistance'),
 				useNavAreas: config.get('dwelling.activateNavAreas')
 			};
 			ipcRenderer.send('ipc-mainwindow-scrollup', configData);
@@ -145,8 +145,8 @@ function setupScrollers() {
 
 		// Start a new interval to execute the code every x ms
 		timeoutScroll = setInterval(function () {
-			let configData =  {
-				scrollDistance: config.get('dwelling.browserAreaScrollDistance'), 
+			let configData = {
+				scrollDistance: config.get('dwelling.browserAreaScrollDistance'),
 				useNavAreas: config.get('dwelling.activateNavAreas')
 			};
 			ipcRenderer.send('ipc-mainwindow-scrolldown', configData);
@@ -284,9 +284,9 @@ ipcRenderer.on('ipc-mainwindow-load-omnibox', (event) => {
 ipcRenderer.on('ipc-trigger-click-under-cursor', (event) => {
 	const mouse = getMouse();
 	const element = document.elementFromPoint(mouse.x, mouse.y);
-    if (element) {
-        element.click();
-    }
+	if (element) {
+		element.click();
+	}
 });
 
 
@@ -527,7 +527,7 @@ function renderNavItemInSidebar(navItems) {
 	if (sidebarItems.length) {
 		for (let i = 0; i < sidebarItems.length; i++) {
 			(function (i) { // I think this is unnecessary since let i is being used
-				dwell(sidebarItems[i], () => {					
+				dwell(sidebarItems[i], () => {
 					const elementId = sidebarItems[i].getAttribute('id');
 					const elementToClick = Array.isArray(navItems) ? navItems.filter(e => e.id == elementId) : [navItems];
 					if (elementToClick) {
@@ -554,7 +554,7 @@ function renderNavItemInSidebar(navItems) {
 						}
 						else {
 							//Set current level in stack
-							navAreaStack.push({ 
+							navAreaStack.push({
 								title: selectedNavItemTitle.textContent,
 								items: navItems
 							});
@@ -591,7 +591,7 @@ function resetNavigationSidebar(options = {}) {
 		sidebarItemArea = byId('sidebar_items');
 		sidebarItemArea.innerHTML = "";
 	}
-	
+
 	//Clear the selection history from stack
 	navAreaStack = [];
 

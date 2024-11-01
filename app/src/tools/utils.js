@@ -50,12 +50,13 @@ module.exports = {
     return isDwellingActive;
   },
 
-  toggleDwelling: () => {
-    isDwellingActive = !isDwellingActive;
-    console.log('Dwelling is now ' + (isDwellingActive ? 'active' : 'inactive'));
-  },
+  // toggleDwelling: () => {
+  //   isDwellingActive = !isDwellingActive;
+  //   config.dwelling.isDwellingActive = isDwellingActive
+  //   console.log('Dwelling is now ' + (isDwellingActive ? 'active' : 'inactive'));
+  // },
 
-  dwell: (elem, callback, isActive, isKeyboardBtn = false) => {
+  dwell: (elem, callback, isKeyboardBtn = false) => {
     // If the dwelling is for a keyboard button, use the keyboard dwell time, otherwise use the default dwell time
     let dwellTimeToUse = isKeyboardBtn ? keyboardDwellTime : dwellTime;
     let throttledFunction = throttle(callback, dwellTimeToUse, { leading: false, trailing: true });
@@ -65,8 +66,8 @@ module.exports = {
 
     //Dwelling
     elem.addEventListener('mouseenter', () => {
-      console.log("isActive: ", isActive);
-      if (isActive) throttledFunction();
+      console.log("isActive: ", config.dwelling.isDwellingActive);
+      if (config.dwelling.isDwellingActive) throttledFunction();
     });
     elem.addEventListener('mouseleave', () => {
       throttledFunction.cancel()
@@ -79,8 +80,8 @@ module.exports = {
 
     // Start dwelling on mouseover
     elem.addEventListener('mouseenter', () => {
-      console.log("isActive: ", isActive);
-      if (isActive) {
+      // console.log("isActive: ", isActive);
+      if (config.dwelling.isDwellingActive) {
         // Clears any existing intervals to avoid multiple intervals running simultaneously
         if (intervalIds.length !== 0) {
           intervalIds.forEach(intervalId => {
@@ -88,7 +89,7 @@ module.exports = {
           });
         }
         intervalIds.push(setInterval(() => {
-          if (isActive) callback();
+          if (config.dwelling.isDwellingActive) callback();
         }, keyboardDwellTime));
       }
     });
