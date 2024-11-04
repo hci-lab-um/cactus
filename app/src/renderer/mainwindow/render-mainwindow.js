@@ -60,7 +60,7 @@ function setupCursor() {
 	cursor = document.getElementById('cactus_cursor');
 	followCursor('cactus_cursor');
 
-	//Get reference to browserViewContainer
+	//Get reference to webContentsViewContainer
 	navbar = byId('navbar')
 	sidebar = byId('sidebar')
 	scrollbar = byId('scrollbar')
@@ -199,7 +199,7 @@ ipcRenderer.on('ipc-mainwindow-keyboard-input', (event, input) => {
 	browseToUrl({ keyCode: 13 });
 });
 
-ipcRenderer.on('browserview-loading-start', () => {
+ipcRenderer.on('tabview-loading-start', () => {
 	let loader = byId('loader');
 	let favicon = byId('favicon');
 	let omni = byId('url')
@@ -248,7 +248,7 @@ function browseToUrl(event) {
 	}
 }
 
-ipcRenderer.on('browserview-loading-stop', (event, pageDetails) => {
+ipcRenderer.on('tabview-loading-stop', (event, pageDetails) => {
 	let loader = byId('loader');
 	let favicon = byId('favicon');
 	let omni = byId('url')

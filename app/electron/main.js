@@ -48,7 +48,7 @@ app.on('activate', () => {
 
 ipcMain.handle('get-tab-renderer-script', async () => {
     try {
-        const scriptToExecute = path.join(__dirname, '../src/renderer/browserview/render-tabview.js');
+        const scriptToExecute = path.join(__dirname, '../src/renderer/tabview/render-tabview.js');
         const scriptContent = await fs.readFileSync(scriptToExecute, 'utf-8');
         return scriptContent;
     }
@@ -58,7 +58,7 @@ ipcMain.handle('get-tab-renderer-script', async () => {
 })
 
 // This creates a quadtree using serialisable HTML elements passed on from the renderer
-ipcMain.on('ipc-browserview-generateQuadTree', (event, contents) => {
+ipcMain.on('ipc-tabview-generateQuadTree', (event, contents) => {
     var tab = tabList.find(tab => tab.isActive === true);
     // Recreate quadtree
     let bounds = tab.webContentsView.getBounds();
@@ -96,7 +96,7 @@ ipcMain.on('ipc-browserview-generateQuadTree', (event, contents) => {
     });
 });
 
-ipcMain.on('ipc-browserview-generateNavAreasTree', (event, contents) => {
+ipcMain.on('ipc-tabview-generateNavAreasTree', (event, contents) => {
     //Recreate quadtree    
     var tab = tabList.find(tab => tab.isActive === true);
     let bounds = tab.webContentsView.getBounds();
@@ -130,7 +130,7 @@ ipcMain.on('ipc-browserview-generateNavAreasTree', (event, contents) => {
     });
 });
 
-ipcMain.on('ipc-browserview-cursor-mouseover', (event, mouseData) => {
+ipcMain.on('ipc-tabview-cursor-mouseover', (event, mouseData) => {
     clearInterval(timeoutCursorHovering);
 
     timeoutCursorHovering = setInterval(() => {
@@ -159,7 +159,7 @@ ipcMain.on('ipc-browserview-cursor-mouseover', (event, mouseData) => {
     }, 500);
 });
 
-ipcMain.on('ipc-browserview-cursor-mouseout', (event) => {
+ipcMain.on('ipc-tabview-cursor-mouseout', (event) => {
     clearInterval(timeoutCursorHovering);
 });
 
@@ -203,24 +203,24 @@ ipcMain.on('browse-to-url', (event, url) => {
 
 ipcMain.on('ipc-mainwindow-scrolldown', (event, configData) => {
     var tab = tabList.find(tab => tab.isActive === true);
-    tab.webContentsView.webContents.send('ipc-browserview-scrolldown', configData);
+    tab.webContentsView.webContents.send('ipc-tabview-scrolldown', configData);
 });
 
 ipcMain.on('ipc-mainwindow-scrollup', (event, configData) => {
     var tab = tabList.find(tab => tab.isActive === true);
-    tab.webContentsView.webContents.send('ipc-browserview-scrollup', configData);
+    tab.webContentsView.webContents.send('ipc-tabview-scrollup', configData);
 });
 
 ipcMain.on('ipc-mainwindow-click-sidebar-element', (event, elementToClick) => {
     var tab = tabList.find(tab => tab.isActive === true);
-    //Once the main page is loaded, create inner browserview and place it in the right position by getting the x,y,width,height of a positioned element in index.html
-    tab.webContentsView.webContents.send('ipc-browserview-click-element', elementToClick);
+    //Once the main page is loaded, create inner tabview and place it in the right position by getting the x,y,width,height of a positioned element in index.html
+    tab.webContentsView.webContents.send('ipc-tabview-click-element', elementToClick);
 })
 
 ipcMain.on('ipc-mainwindow-highlight-elements-on-page', (event, elements) => {
     //Highlight elements on page
     var tab = tabList.find(tab => tab.isActive === true);
-    tab.webContentsView.webContents.send('ipc-browserview-highlight-elements', elements);
+    tab.webContentsView.webContents.send('ipc-tabview-highlight-elements', elements);
 });
 
 ipcMain.on('ipc-mainwindow-show-overlay', (event, overlayAreaToShow, elementProperties) => {
@@ -250,33 +250,33 @@ ipcMain.on('ipc-keyboard-input', (event, value, element) => {
         mainWindowContent.webContents.send('ipc-mainwindow-keyboard-input', value);
     } else {
         var tab = tabList.find(tab => tab.isActive === true);
-        tab.webContentsView.webContents.send('ipc-browserview-keyboard-input', value, element);
+        tab.webContentsView.webContents.send('ipc-tabview-keyboard-input', value, element);
     }
     removeOverlay();
 });
 
-ipcMain.on('ipc-browserview-scroll-up-hide', () => {
+ipcMain.on('ipc-tabview-scroll-up-hide', () => {
     mainWindowContent.webContents.send('ipc-mainwindow-scroll-up-hide')
 })
 
-ipcMain.on('ipc-browserview-scroll-up-show', () => {
+ipcMain.on('ipc-tabview-scroll-up-show', () => {
     mainWindowContent.webContents.send('ipc-mainwindow-scroll-up-show')
 })
 
 ipcMain.on('ipc-overlays-back', () => {
-    //Select active browserview
+    //Select active tabview
     var tab = tabList.find(tab => tab.isActive === true);
-    tab.webContentsView.webContents.send('ipc-browserview-back');
+    tab.webContentsView.webContents.send('ipc-tabview-back');
 })
 
 ipcMain.on('ipc-overlays-forward', () => {
-    //Select active browserview
+    //Select active tabview
     var tab = tabList.find(tab => tab.isActive === true);
-    tab.webContentsView.webContents.send('ipc-browserview-forward');
+    tab.webContentsView.webContents.send('ipc-tabview-forward');
 })
 
 ipcMain.on('ipc-overlays-zoom-in', () => {
-    //Select active browserview
+    //Select active tabview
     var tab = tabList.find(tab => tab.isActive === true);
     var zoomLevel = tab.webContentsView.webContents.getZoomLevel();
     tab.webContentsView.webContents.setZoomLevel(zoomLevel + 1);
@@ -284,7 +284,7 @@ ipcMain.on('ipc-overlays-zoom-in', () => {
 })
 
 ipcMain.on('ipc-overlays-zoom-out', () => {
-    //Select active browserview
+    //Select active tabview
     var tab = tabList.find(tab => tab.isActive === true);
     var zoomLevel = tab.webContentsView.webContents.getZoomLevel();
     tab.webContentsView.webContents.setZoomLevel(zoomLevel - 1);
@@ -292,7 +292,7 @@ ipcMain.on('ipc-overlays-zoom-out', () => {
 })
 
 ipcMain.on('ipc-overlays-zoom-reset', () => {
-    //Select active browserview
+    //Select active tabview
     var tab = tabList.find(tab => tab.isActive === true);
     tab.webContentsView.webContents.setZoomLevel(0);
     removeOverlay();
@@ -346,7 +346,7 @@ function createMainWindow() {
             mainWindowContent.webContents.send('mainWindowLoaded');
             if (isDevelopment) mainWindowContent.webContents.openDevTools();
 
-            //Once the main page is loaded, create inner browserview and place it in the right position by getting the x,y,width,height of a positioned element in index.html
+            //Once the main page is loaded, create inner tabview and place it in the right position by getting the x,y,width,height of a positioned element in index.html
             mainWindowContent.webContents.executeJavaScript(`
             (() => {
                 const element = document.querySelector('#webpage');
@@ -364,7 +364,7 @@ function createMainWindow() {
             })()
             `)
                 .then(properties => {
-                    createBrowserviewInTab(defaultUrl, properties);
+                    createTabview(defaultUrl, properties);
                 })
                 .catch(err => {
                     log.error(err);
@@ -438,14 +438,14 @@ function resizeMainWindow() {
 
 }
 
-function createBrowserviewInTab(url, properties) {
+function createTabview(url, properties) {
     //Create browser view
-    let browserView = new WebContentsView({
+    let tabView = new WebContentsView({
         //https://www.electronjs.org/docs/latest/tutorial/security
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
-            preload: path.join(__dirname, '../src/preload/browserview/preload-browserview.js'),
+            preload: path.join(__dirname, '../src/preload/tabview/preload-tabview.js'),
         }
     });
 
@@ -453,14 +453,14 @@ function createBrowserviewInTab(url, properties) {
     tabList.forEach(tab => {
         tab.isActive = false
     });
-    tabList.push({ tabId: tabList.length + 1, webContentsView: browserView, isActive: true, zoomIndex: 0 });
+    tabList.push({ tabId: tabList.length + 1, webContentsView: tabView, isActive: true, zoomIndex: 0 });
 
 
     //Attach the browser view to the parent window
-    mainWindow.contentView.addChildView(browserView);
+    mainWindow.contentView.addChildView(tabView);
 
     //Set its location/dimensions as per the returned properties
-    browserView.setBounds({
+    tabView.setBounds({
         x: Math.floor(properties.x),
         y: Math.floor(properties.y),
         width: Math.floor(properties.width),
@@ -468,39 +468,38 @@ function createBrowserviewInTab(url, properties) {
     });
 
     //Load the default home page
-    browserView.webContents.loadURL(url);
-    //mainWindow.setTopBrowserView(browserView)
+    tabView.webContents.loadURL(url);
 
     //Once the DOM is ready, send a message to initiate some further logic
-    browserView.webContents.on('dom-ready', () => {
-        // This event fires when the BrowserView is attached
-        browserView.webContents.send('ipc-main-browserview-loaded', useNavAreas);
+    tabView.webContents.on('dom-ready', () => {
+        // This event fires when the tabView is attached
+        tabView.webContents.send('ipc-main-tabview-loaded', useNavAreas);
         insertRendererCSS();
 
-        if (isDevelopment) browserView.webContents.openDevTools();
+        if (isDevelopment) tabView.webContents.openDevTools();
     });
 
     //Loading event - update omnibox
-    browserView.webContents.on('did-start-loading', () => {
-        mainWindowContent.webContents.send('browserview-loading-start');
+    tabView.webContents.on('did-start-loading', () => {
+        mainWindowContent.webContents.send('tabview-loading-start');
     });
 
-    browserView.webContents.on('did-stop-loading', () => {
-        const url = browserView.webContents.getURL();
-        const title = browserView.webContents.getTitle();
-        mainWindowContent.webContents.send('browserview-loading-stop', { url: url, title: title });
+    tabView.webContents.on('did-stop-loading', () => {
+        const url = tabView.webContents.getURL();
+        const title = tabView.webContents.getTitle();
+        mainWindowContent.webContents.send('tabview-loading-stop', { url: url, title: title });
     });
 
     //React to in-page navigation (e.g. anchor links)
-    browserView.webContents.on('did-navigate-in-page', (event, url) => {
+    tabView.webContents.on('did-navigate-in-page', (event, url) => {
         const anchorTag = url.split('#')[1];
         if (anchorTag) {
-            browserView.webContents.send('ipc-browserview-create-quadtree', useNavAreas);
+            tabView.webContents.send('ipc-tabview-create-quadtree', useNavAreas);
         }
     });
 
-    browserView.webContents.setWindowOpenHandler(({ url }) => {
-        createBrowserviewInTab(url, properties);
+    tabView.webContents.setWindowOpenHandler(({ url }) => {
+        createTabview(url, properties);
     });
 }
 
@@ -692,7 +691,7 @@ function registerSwitchShortcutCommands() {
             console.log(`Zoom level set to ${zoomLevel * 100}% for the current tab`);
 
             // Update the quadtree
-            tab.webContentsView.webContents.send('ipc-browserview-create-quadtree', useNavAreas);
+            tab.webContentsView.webContents.send('ipc-tabview-create-quadtree', useNavAreas);
         }
     });
 
@@ -707,20 +706,20 @@ function registerSwitchShortcutCommands() {
             console.log(`Zoom level set to ${zoomLevel * 100}% for the current tab`);
 
             // Update the quadtree
-            tab.webContentsView.webContents.send('ipc-browserview-create-quadtree', useNavAreas);
+            tab.webContentsView.webContents.send('ipc-tabview-create-quadtree', useNavAreas);
         }
     });
 
     globalShortcut.register(shortcuts.tabScrollUp, () => {
         console.log("Tab Scroll up shortcut triggered");
         var tab = tabList.find(tab => tab.isActive === true);
-        tab.webContentsView.webContents.send('ipc-browserview-scrollup', configData);
+        tab.webContentsView.webContents.send('ipc-tabview-scrollup', configData);
     });
 
     globalShortcut.register(shortcuts.tabScrollDown, () => {
         console.log("Tab Scroll down shortcut triggered");
         var tab = tabList.find(tab => tab.isActive === true);
-        tab.webContentsView.webContents.send('ipc-browserview-scrolldown', configData);
+        tab.webContentsView.webContents.send('ipc-tabview-scrolldown', configData);
     });
 
     globalShortcut.register(shortcuts.sidebarScrollUp, () => {
@@ -734,13 +733,13 @@ function registerSwitchShortcutCommands() {
     globalShortcut.register(shortcuts.navigateForward, () => {
         console.log("Navigate forward shortcut triggered");
         var tab = tabList.find(tab => tab.isActive === true);
-        tab.webContentsView.webContents.send('ipc-browserview-forward');
+        tab.webContentsView.webContents.send('ipc-tabview-forward');
     });
 
     globalShortcut.register(shortcuts.navigateBack, () => {
         console.log("Navigate back shortcut triggered");
         var tab = tabList.find(tab => tab.isActive === true);
-        tab.webContentsView.webContents.send('ipc-browserview-back');
+        tab.webContentsView.webContents.send('ipc-tabview-back');
     });
 }
 
@@ -760,7 +759,7 @@ function createHTMLSerializableMenuElement(element) {
 
 // ipcMain.on('ipc-mainwindow-scrolling-complete', () => {
 //   var tab = tabList.find(tab => tab.isActive === true);
-//   tab.webContents.send('ipc-browserview-create-quadtree', useNavAreas);
+//   tab.webContents.send('ipc-tabview-create-quadtree', useNavAreas);
 // })
 
 // ipcMain.on('getLinks', (event, message) => {

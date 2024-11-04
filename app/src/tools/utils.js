@@ -125,7 +125,7 @@ module.exports = {
     return (parentNav || parentRoleNav) ? true : false
   },
 
-  // This function is only used in the render-browserview, hence it can be removed from here as it is now placed in render-tabview
+  // This function was only used in the render-browserview, hence it can be removed from here as it is now placed in render-tabview
   // scrollBy: (amountX, amountY) => {
 
   //   //This is an ugly solution to a problem whereby on certain pages, document.body.scrollBy works (e.g. wikipedia) and in others document.documentElement.scrollby does (e.g. times)
