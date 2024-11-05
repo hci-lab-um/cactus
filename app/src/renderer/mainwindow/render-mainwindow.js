@@ -23,7 +23,6 @@ let cursor
 let scrollUpBtn, scrollDownBtn
 let timeoutScroll
 let navAreaStack = [];
-let isDwellingActive = true;
 
 // Exposes an HTML sanitizer to allow for innerHtml assignments when TrustedHTML policies are set ('This document requires 'TrustedHTML' assignment')
 window.addEventListener('DOMContentLoaded', () => {
@@ -45,10 +44,12 @@ ipcRenderer.on('mainWindowLoaded', () => {
 	setupNavigationSideBar();
 })
 
-// ipcRenderer.on('update-dwelling-state', (event, state) => {
-// 	isDwellingActive = state;
-// 	console.log('Dwelling is now ' + (isDwellingActive ? 'active' : 'inactive'));
-// });
+ipcRenderer.on('ipc-mainwindow-handle-dwell-events', (event, isDwellingActive) => {
+	// When dwelling is off, the sidebar is not populated with elements, but if there are still elements in the sidebar, they are removed. 
+	// Therefore, resetNavigationSidebar() is called to clear the sidebar either from the previous elements, or from the dwelling message.
+	resetNavigationSidebar();
+	if (!isDwellingActive) showDwellingPausedMessage();
+});
 
 // =================================
 // ==== Cursor management ====
@@ -178,19 +179,19 @@ function setupFunctionality() {
 			type: omni.type,
 		}
 		showOverlay('keyboard', elementProperties);
-	}, isDwellingActive);
+	});
 
 	let backOrForward = byId('backOrForwardBtn')
 	dwell(backOrForward, () => {
 		// showOverlay('navigation')
 		showOverlay('navigation');
-	}, isDwellingActive)
+	})
 
 	let accessibility = byId('accessibilityBtn')
 	dwell(accessibility, () => {
 		// showOverlay('accessibility')
 		showOverlay('accessibility');
-	}, isDwellingActive)
+	})
 }
 
 ipcRenderer.on('ipc-mainwindow-keyboard-input', (event, input) => {
@@ -309,7 +310,7 @@ function setupNavigationSideBar() {
 			if (selectedNavItemTitle.textContent == "") selectedNavItemTitle.style.display = 'none';
 			renderNavItemInSidebar(previousLevel.items);
 		}
-	}, isDwellingActive);
+	});
 
 	const scrollDistance = config.get('dwelling.menuAreaScrollDistance');
 	const scrollInterval = config.get('dwelling.menuAreaScrollIntervalInMs');
@@ -384,7 +385,6 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-navareas', (event, navAreas) => {
 })
 
 ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
-	console.log("Get is dwelling active: ", isDwellingActive);
 	resetNavigationSidebar({ clearItems: false });
 
 	sidebarItemArea = byId('sidebar_items');
@@ -449,37 +449,32 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
 
 		//Attach dwell
 		sidebarItems = document.querySelectorAll('.sidebar_item')
-		if (sidebarItems.length) {
-			for (let i = 0; i < sidebarItems.length; i++) {
-				(function (i) {
-					dwell(sidebarItems[i], () => {
-						const elementId = sidebarItems[i].getAttribute('id');
-						const elementToClick = elements.filter(e => e.id == elementId);
-						if (elementToClick) {
-							//Show click event animation and clear sidebar
-							sidebarItems[i].classList.add('fadeOutDown');
-							console.log("element to click: ", elementToClick);
+		sidebarItems.forEach(item => {
+			dwell(item, () => {
+				const elementId = item.getAttribute('id');
+				const elementToClick = elements.filter(e => e.id == elementId);
+				if (elementToClick) {
+					// Show click event animation and clear sidebar
+					item.classList.add('fadeOutDown');
+					console.log("element to click: ", elementToClick);
 
-							setTimeout(() => {
-								debugger;
-								const inputType = shouldDisplayKeyboard(elementToClick[0], false);
-								console.log("inputType", inputType);
-								if (inputType) {
-									elementToClick[0].type = inputType;
-									elementToClick[0].value = elementToClick[0].value ? elementToClick[0].value : ""; // DOESN'T WORK // This prevents the value from being undefined
-									console.log("Identified an input element: ", elementToClick[0]);
-									console.log("It has the value of: ", elementToClick[0].value);
-									showOverlay('keyboard', elementToClick[0]);
-								} else if (elementToClick[0]) {
-									console.log("Not an input element");
-									ipcRenderer.send('ipc-mainwindow-click-sidebar-element', elementToClick[0]);
-								}
-							}, 300);
+					setTimeout(() => {
+						const inputType = shouldDisplayKeyboard(elementToClick[0], false);
+						console.log("inputType", inputType);
+						if (inputType) {
+							elementToClick[0].type = inputType;
+							elementToClick[0].value = elementToClick[0].value ? elementToClick[0].value : ""; // DOESN'T WORK // This prevents the value from being undefined
+							console.log("Identified an input element: ", elementToClick[0]);
+							console.log("It has the value of: ", elementToClick[0].value);
+							showOverlay('keyboard', elementToClick[0]);
+						} else if (elementToClick[0]) {
+							console.log("Not an input element");
+							ipcRenderer.send('ipc-mainwindow-click-sidebar-element', elementToClick[0]);
 						}
-					}, isDwellingActive)
-				})(i)
-			}
-		}
+					}, 300);
+				}
+			});
+		});
 	}
 	else {
 		sidebarItemArea.innerHTML = "";
@@ -524,54 +519,48 @@ function renderNavItemInSidebar(navItems) {
 
 	//Attach dwell
 	let sidebarItems = document.querySelectorAll('.sidebar_item')
-	if (sidebarItems.length) {
-		for (let i = 0; i < sidebarItems.length; i++) {
-			(function (i) { // I think this is unnecessary since let i is being used
-				dwell(sidebarItems[i], () => {
-					const elementId = sidebarItems[i].getAttribute('id');
-					const elementToClick = Array.isArray(navItems) ? navItems.filter(e => e.id == elementId) : [navItems];
-					if (elementToClick) {
-						if (!elementToClick[0].children || elementToClick[0].children.length == 0) {
-							//Show click event animation and clear sidebar
-							sidebarItems[i].classList.add('fadeOutDown');
+	sidebarItems.forEach(item => {
+		dwell(item, () => {
+			const elementId = item.getAttribute('id');
+			const elementToClick = Array.isArray(navItems) ? navItems.filter(e => e.id == elementId) : [navItems];
+			if (elementToClick) {
+				if (!elementToClick[0].children || elementToClick[0].children.length == 0) {
+					// Show click event animation and clear sidebar
+					item.classList.add('fadeOutDown');
+					setTimeout(() => {
+						sidebarItemArea.innerHTML = "";
+						const inputType = shouldDisplayKeyboard(elementToClick[0], true);
 
-							setTimeout(() => {
-								sidebarItemArea.innerHTML = "";
-								const inputType = shouldDisplayKeyboard(elementToClick[0], true);
-
-								if (inputType) {
-									elementToClick[0].type = inputType;
-									elementToClick[0].value = elementToClick[0].value ? elementToClick[0].value : ""; // This prevents the value from being undefined
-									console.log("Identified input navitem: ", elementToClick[0]);
-									showOverlay('keyboard', elementToClick[0]);
-								} else {
-									console.log("Not an input navitem");
-									ipcRenderer.send('browse-to-url', elementToClick[0].href);
-								}
-							}, 300);
-
-							resetNavigationSidebar();
+						if (inputType) {
+							elementToClick[0].type = inputType;
+							elementToClick[0].value = elementToClick[0].value ? elementToClick[0].value : ""; // This prevents the value from being undefined
+							console.log("Identified input navitem: ", elementToClick[0]);
+							showOverlay('keyboard', elementToClick[0]);
+						} else {
+							console.log("Not an input navitem");
+							ipcRenderer.send('browse-to-url', elementToClick[0].href);
 						}
-						else {
-							//Set current level in stack
-							navAreaStack.push({
-								title: selectedNavItemTitle.textContent,
-								items: navItems
-							});
+					}, 300);
 
-							// Update the title to the clicked nav item
-							selectedNavItemTitle = byId('sidebar_selected_navitem_title');
-							selectedNavItemTitle.style.display = 'block';
-							selectedNavItemTitle.textContent = elementToClick[0].label;
+					resetNavigationSidebar();
+				} else {
+					//Set current level in stack
+					navAreaStack.push({
+						title: selectedNavItemTitle.textContent,
+						items: navItems
+					});
 
-							//Go down one level
-							renderNavItemInSidebar(elementToClick[0].children);
-						}
-					}
-				}, isDwellingActive, false)
-			})(i)
-		}
-	}
+					// Update the title to the clicked nav item
+					selectedNavItemTitle = byId('sidebar_selected-navitem-title');
+					selectedNavItemTitle.style.display = 'block';
+					selectedNavItemTitle.textContent = elementToClick[0].label;
+
+					//Go down one level
+					renderNavItemInSidebar(elementToClick[0].children);
+				}
+			}
+		}, false)
+	});
 	// });
 
 	//Set up hierarchical navigation controls in sidebar
@@ -600,9 +589,19 @@ function resetNavigationSidebar(options = {}) {
 	menuNavLevelup.style.display = 'none'
 
 	//Clear the submenu showing the selection history
-	selectedNavItemTitle = byId('sidebar_selected_navitem_title');
+	selectedNavItemTitle = byId('sidebar_selected-navitem-title');
 	selectedNavItemTitle.textContent = ""
 	selectedNavItemTitle.style.display = 'none'
+}
+
+function showDwellingPausedMessage() {
+	sidebarItemArea = byId('sidebar_items');
+
+	const messageDiv = document.createElement('div');
+	messageDiv.textContent = "Dwelling Paused";
+	messageDiv.id = "sidebar_dwelling-message";
+
+	sidebarItemArea.appendChild(messageDiv);
 }
 
 

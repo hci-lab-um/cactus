@@ -1,6 +1,5 @@
 const { app, BaseWindow, WebContentsView, ipcMain, globalShortcut, screen } = require('electron')
 const config = require('config');
-const { toggleDwelling, getIsDwellingActive } = require('../src/tools/utils');
 const path = require('path')
 const fs = require('fs')
 const { QuadtreeBuilder, InteractiveElement, HTMLSerializableElement, QtPageDocument, QtBuilderOptions, QtRange } = require('cactus-quadtree-builder');
@@ -20,6 +19,7 @@ let currentQt, currentNavAreaTree
 let timeoutCursorHovering
 let defaultUrl = config.get('browser.defaultUrl');
 let tabList = [];
+let isDwellingActive = true;
 
 app.whenReady().then(() => {
     // This method is called when Electron has finished initializing
@@ -134,27 +134,30 @@ ipcMain.on('ipc-tabview-cursor-mouseover', (event, mouseData) => {
     clearInterval(timeoutCursorHovering);
 
     timeoutCursorHovering = setInterval(() => {
-        const { x, y } = mouseData;
+        // New sidebar elements are only rendered if dwelling is active. This prevents the sidebar from being populated when the user has paused dwelling
+        if (isDwellingActive) {
+            const { x, y } = mouseData;
 
-        const qtRangeToQuery = new QtRange(x - (rangeWidth / 2), y - (rangeHeight / 2), rangeWidth, rangeHeight);
-        const menuRangeToQuery = new MenuRange(x - (rangeWidth / 2), y - (rangeHeight / 2), rangeWidth, rangeHeight);
+            const qtRangeToQuery = new QtRange(x - (rangeWidth / 2), y - (rangeHeight / 2), rangeWidth, rangeHeight);
+            const menuRangeToQuery = new MenuRange(x - (rangeWidth / 2), y - (rangeHeight / 2), rangeWidth, rangeHeight);
 
-        const elementsInQueryRange = currentQt ? currentQt.queryRange(qtRangeToQuery) : [];
-        const navAreasInQueryRange = useNavAreas ? (currentNavAreaTree ? currentNavAreaTree.queryRange(menuRangeToQuery, true) : []) : [];
+            const elementsInQueryRange = currentQt ? currentQt.queryRange(qtRangeToQuery) : [];
+            const navAreasInQueryRange = useNavAreas ? (currentNavAreaTree ? currentNavAreaTree.queryRange(menuRangeToQuery, true) : []) : [];
 
-        if (useNavAreas && navAreasInQueryRange.length > 0) {
-            mainWindowContent.webContents.send('ipc-mainwindow-sidebar-render-navareas', navAreasInQueryRange)
-            clearInterval(timeoutCursorHovering);
-        } else {
-            const uniqueInteractiveElementsInQueryRange = [];
-            const seenElements = new Set();
-            elementsInQueryRange.forEach(el => {
-                if (!seenElements.has(el.id)) {
-                    seenElements.add(el.id);
-                    uniqueInteractiveElementsInQueryRange.push(el);
-                }
-            });
-            mainWindowContent.webContents.send('ipc-mainwindow-sidebar-render-elements', uniqueInteractiveElementsInQueryRange)
+            if (useNavAreas && navAreasInQueryRange.length > 0) {
+                mainWindowContent.webContents.send('ipc-mainwindow-sidebar-render-navareas', navAreasInQueryRange)
+                clearInterval(timeoutCursorHovering);
+            } else {
+                const uniqueInteractiveElementsInQueryRange = [];
+                const seenElements = new Set();
+                elementsInQueryRange.forEach(el => {
+                    if (!seenElements.has(el.id)) {
+                        seenElements.add(el.id);
+                        uniqueInteractiveElementsInQueryRange.push(el);
+                    }
+                });
+                mainWindowContent.webContents.send('ipc-mainwindow-sidebar-render-elements', uniqueInteractiveElementsInQueryRange)
+            }
         }
     }, 500);
 });
@@ -671,13 +674,8 @@ function registerSwitchShortcutCommands() {
     });
 
     globalShortcut.register(shortcuts.toggleDwelling, () => {
-        //toggleDwelling(); // NOT WORKING YET - parked
-
-        config.dwelling.isDwellingActive = (!config.dwelling.isDwellingActive) ? true : false
-        // // Send the state of isDwellingActive to the renderer process
-        // const isDwellingActive = getIsDwellingActive();
-        console.log("is dwelling active from main: ", isDwellingActive);
-        //mainWindowContent.webContents.send('update-dwelling-state', isDwellingActive);
+        isDwellingActive = !isDwellingActive
+        mainWindowContent.webContents.send('ipc-mainwindow-handle-dwell-events', isDwellingActive);
     });
 
     globalShortcut.register(shortcuts.zoomIn, () => {

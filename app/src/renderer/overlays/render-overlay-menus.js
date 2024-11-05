@@ -1,5 +1,5 @@
 const { ipcRenderer } = require('electron')
-const { byId, dwell, getIsDwellingActive } = require('../../../src/tools/utils')
+const { byId, dwell } = require('../../../src/tools/utils')
 const { createCursor, followCursor, getMouse } = require('../../../src/tools/cursor')
 const DOMPurify = require('dompurify');
 
@@ -61,7 +61,7 @@ function setEventHandlersForOmniMenu() {
 
 	dwell(cancelOmniBtn, () => {
 		ipcRenderer.send('ipc-overlays-remove');
-	}, getIsDwellingActive())
+	})
 
 	// // =================================
 	// // ======== OMNIBOX OVERLAY ========
@@ -89,19 +89,19 @@ function setEventHandlersForOmniMenu() {
 	// dwell(omnibox, () => {
 	//   hideAllOverlays()
 	//   overlayOmnibox.style.display = 'grid'
-	// }, getIsDwellingActive())
+	// })
 
 	// dwell(cancelOmniBtn, () => {
 	//   overlayOmnibox.style.display = 'none'
-	// }, getIsDwellingActive())
+	// })
 
-	// dwell(refreshOmniBtn, reload, getIsDwellingActive())
+	// dwell(refreshOmniBtn, reload)
 
 	// dwell(searchOmniBtn, () => {
 	//   hideAllOverlays()
 	//   overlaySearchBox.style.display="grid"
 	//   inputSearchBox.focus();
-	// }, getIsDwellingActive())
+	// })
 
 	// dwell(submitSearchBtn, () => {
 	//   hideAllOverlays()
@@ -112,11 +112,11 @@ function setEventHandlersForOmniMenu() {
 	//     {
 	//       console.debug(ex);
 	//     });
-	// }, getIsDwellingActive())
+	// })
 
 	// dwell(cancelSearchBtn, () => {
 	//   overlaySearchBox.style.display = 'none'
-	// }, getIsDwellingActive())
+	// })
 
 	// // BOOKMARKS
 	// dwell(bookmarkOmniBtn, () => {
@@ -152,7 +152,7 @@ function setEventHandlersForOmniMenu() {
 	//         dialogErrorIcon.style.display = 'block'
 	//       }
 	//     }
-	//   }, getIsDwellingActive())
+	//   })
 
 	//   hideAllOverlays()
 	//   dialog.style.display = 'flex'
@@ -203,7 +203,7 @@ function setEventHandlersForOmniMenu() {
 	//     bookmarksWebview.style.display = 'none'
 	//     document.getElementById("bookmarkview").remove();
 	//   })
-	// }, getIsDwellingActive())
+	// })
 
 	// ipcRenderer.on('closeBookmarks', () => {
 	//   webview.style.display = 'flex'
@@ -239,19 +239,19 @@ function setEventHandlersForAccessibilityMenu() {
 
 	dwell(zoomInBtn, () => {
 		ipcRenderer.send('ipc-overlays-zoom-in');
-	}, getIsDwellingActive())
+	})
 
 	dwell(zoomOutBtn, () => {
 		ipcRenderer.send('ipc-overlays-zoom-out');
-	}, getIsDwellingActive())
+	})
 
 	dwell(resetZoomBtn, () => {
 		ipcRenderer.send('ipc-overlays-zoom-reset');
-	}, getIsDwellingActive())
+	})
 
 	dwell(cancelOptionsBtn, () => {
 		ipcRenderer.send('ipc-overlays-remove');
-	}, getIsDwellingActive())
+	})
 }
 
 function setEventHandlersForNavigationMenu() {
@@ -291,21 +291,21 @@ function setEventHandlersForNavigationMenu() {
 
 	//     overlayNav.style.display = 'none'
 	//   }
-	// }, getIsDwellingActive())
+	// })
 
 	dwell(cancelNavBtn, () => {
 		ipcRenderer.send('ipc-overlays-remove');
-	}, getIsDwellingActive())
+	})
 
 	dwell(backNavBtn, () => {
 		ipcRenderer.send('ipc-overlays-back');
 		ipcRenderer.send('ipc-overlays-remove');
-	}, getIsDwellingActive());
+	});
 
 	dwell(forwardNavBtn, () => {
 		ipcRenderer.send('ipc-overlays-forward');
 		ipcRenderer.send('ipc-overlays-remove');
-	}, getIsDwellingActive());
+	});
 
 	ipcRenderer.on('ipc-overlays-back-check', (event, canGoBack) => {
 		backNavBtn.style.display = canGoBack ? 'flex' : 'none';
