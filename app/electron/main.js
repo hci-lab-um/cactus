@@ -279,26 +279,15 @@ ipcMain.on('ipc-overlays-forward', () => {
 })
 
 ipcMain.on('ipc-overlays-zoom-in', () => {
-    //Select active tabview
-    var tab = tabList.find(tab => tab.isActive === true);
-    var zoomLevel = tab.webContentsView.webContents.getZoomLevel();
-    tab.webContentsView.webContents.setZoomLevel(zoomLevel + 1);
-    removeOverlay();
-})
+    handleZoom("in");
+});
 
 ipcMain.on('ipc-overlays-zoom-out', () => {
-    //Select active tabview
-    var tab = tabList.find(tab => tab.isActive === true);
-    var zoomLevel = tab.webContentsView.webContents.getZoomLevel();
-    tab.webContentsView.webContents.setZoomLevel(zoomLevel - 1);
-    removeOverlay();
-})
+    handleZoom("out");
+});
 
 ipcMain.on('ipc-overlays-zoom-reset', () => {
-    //Select active tabview
-    var tab = tabList.find(tab => tab.isActive === true);
-    tab.webContentsView.webContents.setZoomLevel(0);
-    removeOverlay();
+    handleZoom("reset");
 })
 
 ipcMain.on('log', (event, loggedItem) => {
@@ -650,7 +639,7 @@ function registerSwitchShortcutCommands() {
             return;
         }
 
-        // Find the active tab in the tabList
+        // Find the active tab in the tabList and check if the cursor is over it
         const activeTab = tabList.find(tab => tab.isActive);
 
         if (activeTab && isCursorWithinBounds(activeTab.webContentsView.getBounds())) {
@@ -679,33 +668,11 @@ function registerSwitchShortcutCommands() {
     });
 
     globalShortcut.register(shortcuts.zoomIn, () => {
-        console.log("Zoom in shortcut triggered");
-        var tab = tabList.find(tab => tab.isActive === true);
-        if (tab) {
-            // Setting zoom level
-            tab.zoomIndex = (tab.zoomIndex + 1) % zoomInLevels.length; // Cycles through the zoom levels
-            var zoomLevel = zoomInLevels[tab.zoomIndex];
-            tab.webContentsView.webContents.setZoomFactor(zoomLevel);
-            console.log(`Zoom level set to ${zoomLevel * 100}% for the current tab`);
-
-            // Update the quadtree
-            tab.webContentsView.webContents.send('ipc-tabview-create-quadtree', useNavAreas);
-        }
+        handleZoom("in", true);
     });
 
     globalShortcut.register(shortcuts.zoomOut, () => {
-        console.log("Zoom out shortcut triggered");
-        var tab = tabList.find(tab => tab.isActive === true);
-        if (tab) {
-            // Setting zoom level
-            tab.zoomIndex = (tab.zoomIndex + 1) % zoomOutLevels.length; // Cycles through the zoom levels
-            var zoomLevel = zoomOutLevels[tab.zoomIndex];
-            tab.webContentsView.webContents.setZoomFactor(zoomLevel);
-            console.log(`Zoom level set to ${zoomLevel * 100}% for the current tab`);
-
-            // Update the quadtree
-            tab.webContentsView.webContents.send('ipc-tabview-create-quadtree', useNavAreas);
-        }
+        handleZoom("out", true);
     });
 
     globalShortcut.register(shortcuts.tabScrollUp, () => {
@@ -739,6 +706,32 @@ function registerSwitchShortcutCommands() {
         var tab = tabList.find(tab => tab.isActive === true);
         tab.webContentsView.webContents.send('ipc-tabview-back');
     });
+}
+
+function handleZoom(direction, usedShortcut = false) {
+    const MIN_ZOOM_LEVEL = -7;
+    const MAX_ZOOM_LEVEL = 7;
+
+    const tab = tabList.find(tab => tab.isActive === true);
+    let zoomLevel = tab.webContentsView.webContents.getZoomLevel();
+
+    // When the shortcut is used to zoom in/out, then any time the zoom factor reaches the min/max value, it will reset to 1.0.
+    // This creates a loop of zooming in/out when the user keeps pressing the shortcut.
+    switch (direction) {
+        case "in":
+            zoomLevel = ((zoomLevel >= MAX_ZOOM_LEVEL) && usedShortcut) ? 0 : zoomLevel + 1;
+            break;
+        case "out":
+            zoomLevel = ((zoomLevel <= MIN_ZOOM_LEVEL) && usedShortcut) ? 0 : zoomLevel - 1;
+            break;
+        case "reset":
+            zoomLevel = 0;
+            break;
+    }
+
+    tab.webContentsView.webContents.setZoomLevel(zoomLevel);
+    tab.webContentsView.webContents.send('ipc-tabview-create-quadtree', useNavAreas); // Updating the quadtree after zooming
+    if (!usedShortcut) removeOverlay();
 }
 
 function createHTMLSerializableMenuElement(element) {
