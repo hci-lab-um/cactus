@@ -232,10 +232,20 @@ function setEventHandlersForAccessibilityMenu() {
 	// =================================
 
 	// ZOOMING
+	const settingsBtn = byId('settingsBtn')
+	const toggleDwellBtn = byId('toggleDwellBtn')
 	const zoomInBtn = byId('zoomInBtn')
 	const zoomOutBtn = byId('zoomOutBtn')
 	const resetZoomBtn = byId('resetZoomBtn')
 	const cancelOptionsBtn = byId('cancel-options')
+
+	dwell(settingsBtn, () => {
+		ipcRenderer.send('ipc-overlays-settings');
+	})
+
+	dwell(toggleDwellBtn, () => {
+		ipcRenderer.send('ipc-overlays-toggle-dwell');
+	})
 
 	dwell(zoomInBtn, () => {
 		ipcRenderer.send('ipc-overlays-zoom-in');

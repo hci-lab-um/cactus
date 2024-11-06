@@ -276,6 +276,14 @@ ipcMain.on('ipc-overlays-forward', () => {
     tab.webContentsView.webContents.send('ipc-tabview-forward');
 })
 
+ipcMain.on('ipc-overlays-settings', () => {
+    //To be implemented
+});
+
+ipcMain.on('ipc-overlays-toggle-dwell', () => {
+    toggleDwelling();
+});
+
 ipcMain.on('ipc-overlays-zoom-in', () => {
     handleZoom("in");
 });
@@ -661,8 +669,7 @@ function registerSwitchShortcutCommands() {
     });
 
     globalShortcut.register(shortcuts.toggleDwelling, () => {
-        isDwellingActive = !isDwellingActive
-        mainWindowContent.webContents.send('ipc-mainwindow-handle-dwell-events', isDwellingActive);
+        toggleDwelling();
     });
 
     globalShortcut.register(shortcuts.zoomIn, () => {
@@ -704,6 +711,12 @@ function registerSwitchShortcutCommands() {
         var tab = tabList.find(tab => tab.isActive === true);
         tab.webContentsView.webContents.send('ipc-tabview-back');
     });
+}
+
+function toggleDwelling() {
+    isDwellingActive = !isDwellingActive
+    mainWindowContent.webContents.send('ipc-mainwindow-handle-dwell-events', isDwellingActive);
+    removeOverlay();    
 }
 
 function handleZoom(direction, usedShortcut = false) {
