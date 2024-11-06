@@ -9,6 +9,7 @@
 }
 
 #overlay-nav {
+  height: 100%;
   grid-template-columns: repeat(2, 1fr);
   grid-template-areas:
   'back forward'

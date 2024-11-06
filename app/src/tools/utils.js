@@ -54,9 +54,7 @@ module.exports = {
     elem.addEventListener('click', callback)
 
     //Dwelling
-    elem.addEventListener('mouseenter', () => {
-      throttledFunction();
-    });
+    elem.addEventListener('mouseenter', throttledFunction)
     elem.addEventListener('mouseleave', () => {
       throttledFunction.cancel()
     })
@@ -74,7 +72,9 @@ module.exports = {
           clearInterval(intervalId);
         });
       }
-      intervalIds.push(setInterval(callback(), keyboardDwellTime));
+      intervalIds.push(setInterval(() => {
+        callback();  
+      }, keyboardDwellTime));
     });
 
     // Stop dwelling on mouse leave
