@@ -10,8 +10,6 @@ const isDevelopment = process.env.NODE_ENV === "development";
 const rangeWidth = config.get('dwelling.rangeWidth');
 const rangeHeight = config.get('dwelling.rangeHeight');
 const useNavAreas = config.get('dwelling.activateNavAreas');
-const zoomInLevels = [1, 1.5, 2, 2.5, 3]; // Correspond to 100%, 150%, 200%, 250%, 300%
-const zoomOutLevels = [1, 0.9, 0.75, 0.65, 0.5]; // Correspond to 100%, 90%, 75%, 65%, 50%
 
 let mainWindow, splashWindow
 let mainWindowContent, overlayContent, isKeyboardOverlay
@@ -445,7 +443,7 @@ function createTabview(url, properties) {
     tabList.forEach(tab => {
         tab.isActive = false
     });
-    tabList.push({ tabId: tabList.length + 1, webContentsView: tabView, isActive: true, zoomIndex: 0 });
+    tabList.push({ tabId: tabList.length + 1, webContentsView: tabView, isActive: true });
 
 
     //Attach the browser view to the parent window
