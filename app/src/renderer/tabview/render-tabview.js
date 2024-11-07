@@ -189,18 +189,22 @@ window.cactusAPI.onAsync('ipc-tabview-click-element', (elementToClick) => {
 	// }
 
 	element = document.querySelector('[data-cactus-id="' + elementToClick.id + '"]');
+
+	if (!element){
+		console.log("Element to click not found by cactus id");
+		element = document.elementFromPoint(elementToClick.insertionPointX, elementToClick.insertionPointY);
+	}
+
 	if (element) {
-		console.log("Found element to click by cactus id");
 		//If it's a link - go to its href rather than relying on focusing/clicking (works nicely when anchor is hidden in some collapsable component)
 		if (element.nodeName == 'A' && (element.getAttribute('href') && element.getAttribute('href') != '#'))
 			window.cactusAPI.send('browse-to-url', element.getAttribute('href'));
-	} else {
-		element = document.elementFromPoint(elementToClick.insertionPointX, elementToClick.insertionPointY);
-		if (element) {
-			console.log("Found element to click from Point");
+		else {
 			element.focus();
 			element.click();
 		}
+	} else {
+		console.error("Element to click not found by cactus id");
 	}
 });
 
