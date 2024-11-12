@@ -192,7 +192,7 @@ const Keyboard = {
         const fragment = document.createDocumentFragment();
 
         // TOP ROW
-        const topRow = ["mic", "papergames.io", "koalastothemax.com", "google.com", "delete letter", "delete word", "AC"]; // text would eventually be replaced with auto-complete suggestions
+        const topRow = ["mic", "facebook.com", "booking.com", "google.com", "delete letter", "delete word", "AC"]; // text would eventually be replaced with auto-complete suggestions
         const topRowContainer = document.createElement("div");
         topRowContainer.classList.add("keyboard__row");
 
@@ -485,7 +485,7 @@ const Keyboard = {
     },
 
     _createMaterialIcon(icon_name) {
-        return `<i class="material-icons">${icon_name}</i>`;
+        return `<i class="material-icons-filled">${icon_name}</i>`;
     },
 
     _createCustomIcon(icon_name) {

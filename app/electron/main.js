@@ -342,7 +342,8 @@ function createMainWindow() {
 
         mainWindowContent.webContents.loadURL(path.join(__dirname, '../src/pages/index.html')).then(() => {
             mainWindowContent.webContents.send('mainWindowLoaded');
-            if (isDevelopment) mainWindowContent.webContents.openDevTools();
+            // if (isDevelopment) mainWindowContent.webContents.openDevTools(); to uncomment
+            mainWindowContent.webContents.openDevTools(); // to remove
 
             //Once the main page is loaded, create inner tabview and place it in the right position by getting the x,y,width,height of a positioned element in index.html
             mainWindowContent.webContents.executeJavaScript(`
@@ -387,7 +388,8 @@ function createMainWindow() {
             if (splashWindow) {
                 splashWindow.close();
             }
-            if (isDevelopment) mainWindowContent.webContents.openDevTools()
+            mainWindowContent.webContents.openDevTools() // to remove
+            // if (isDevelopment) mainWindowContent.webContents.openDevTools(); to uncomment
         });
 
         mainWindow.on('closed', () => {
@@ -474,7 +476,8 @@ function createTabview(url, properties) {
         tabView.webContents.send('ipc-main-tabview-loaded', useNavAreas);
         insertRendererCSS();
 
-        if (isDevelopment) tabView.webContents.openDevTools();
+        tabView.webContents.openDevTools(); // to remove
+        // if (isDevelopment) tabView.webContents.openDevTools(); to uncomment
     });
 
     //Loading event - update omnibox

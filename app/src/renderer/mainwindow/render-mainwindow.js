@@ -413,36 +413,11 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
 				element.remove();
 			}
 		});
-
-		//Add elements to sidebar
-		const markup = `${elements.map(e =>
-			`<div class='sidebar_item fadeInDown' id='${e.id}'>
-			<div>
-			<div class='sidebar_item_title'>
-				${e.accessibleName}
-			</div>
-			<div class='sidebar_item_link'>
-				${e.type}
-			</div>
-			</div>
-			<div class='sidebar_item_icon'>
-				<i class="${e.children ? 'fas fa-bars' :
-				e.type == 'a' ? 'fas fa-link' :
-					(e.type == 'button' || e.type == 'submit') ? 'fas fa-computer-mouse' :
-						(e.type == 'textarea' || e.type == 'text') ? 'fas fa-font' :
-							e.type == 'password' ? 'fas fa-user-secret' :
-								e.type == 'checkbox' ? 'fas fa-square-check' :
-									e.type == 'radio' ? 'fas fa-toggle-on' :
-										e.type == 'option' ? 'fas fa-list' :
-											e.type == 'date' ? 'fas fa-calendar-days' :
-												e.type == 'select' ? 'fas fa-caret-down' : 'fas fa-angle-right'
-			}"></i>
-			</div>
-			</div>
-			`).join('')
-			}`
-
-		sidebarItemArea.insertAdjacentHTML('afterbegin', markup);
+		
+		elements.forEach(e => {
+			const sidebarItem = createSidebarItemElement(e, false);
+			sidebarItemArea.appendChild(sidebarItem);
+		});
 
 		//Highlight newly added elements on page
 		ipcRenderer.send('ipc-mainwindow-highlight-elements-on-page', elements);
@@ -481,38 +456,22 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
 	}
 });
 
-function getNavItemMarkup(navItem) {
-	return `<div class='sidebar_item fadeInDown' id='${navItem.id}'>
-				<div>
-				<div class='sidebar_item_title'>
-					${navItem.label}
-				</div>
-				<div class='sidebar_item_link'>
-					${navItem.isLeaf}
-				</div>
-				</div>
-				<div class='sidebar_item_icon'>
-					<i class="${navItem.children.length > 0 ? 'fas fa-bars' : 'fas fa-angle-right'}"></i>
-				</div>
-				</div>`;
-}
-
 //Accepts an array of NavItems [x] => [...NavItem]
 function renderNavItemInSidebar(navItems) {
 	//Clear sidebar
 	sidebarItemArea = byId('sidebar_items');
 	sidebarItemArea.innerHTML = "";
 
-	//Add elements to sidebar
-	// navItemArray.forEach((navItems) => {
-	const markup = Array.isArray(navItems) ?
-		navItems.map(e =>
-			getNavItemMarkup(e)
-		).join('')
-		:
-		getNavItemMarkup(navItems);
-
-	sidebarItemArea.insertAdjacentHTML('beforeend', markup);
+	// Add elements to sidebar
+    if (Array.isArray(navItems)) {
+        navItems.forEach(navItem => {
+            const sidebarItem = createSidebarItemElement(navItem, true);
+            sidebarItemArea.appendChild(sidebarItem);
+        });
+    } else {
+        const sidebarItem = createSidebarItemElement(navItems, true);
+        sidebarItemArea.appendChild(sidebarItem);
+    }
 
 	//Scroll to top (in case already mid-way)
 	sidebarItemArea.scrollTo(0, 0);
@@ -592,6 +551,70 @@ function resetNavigationSidebar(options = {}) {
 	selectedNavItemTitle = byId('sidebar_selected-navitem-title');
 	selectedNavItemTitle.textContent = ""
 	selectedNavItemTitle.style.display = 'none'
+}
+
+function createSidebarItemElement(element, isNavItem) {
+	const sidebarItem = document.createElement('div');
+	sidebarItem.className = 'sidebar_item fadeInDown';
+	sidebarItem.id = element.id;
+
+	const itemContent = document.createElement('div');
+
+	const itemTitle = document.createElement('div');
+	itemTitle.className = 'sidebar_item_title';
+	itemTitle.textContent = isNavItem ? element.label : element.accessibleName;
+
+	const itemLink = document.createElement('div');
+	itemLink.className = 'sidebar_item_link';
+	itemLink.textContent = isNavItem ? element.isLeaf : element.type;
+
+	itemContent.appendChild(itemTitle);
+	itemContent.appendChild(itemLink);
+
+	const itemIcon = document.createElement('div');
+	itemIcon.className = 'sidebar_item_icon';
+	let iconHTML;
+
+	if (isNavItem) {
+		iconHTML = element.children.length > 0 ? createMaterialIcon('menu') : createMaterialIcon('chevron_right');
+	} else {
+		switch (element.type) {
+			case 'a':
+				iconHTML = createMaterialIcon('link'); break;
+			case 'button':
+			case 'submit':
+				iconHTML = createMaterialIcon('left_click'); break;
+			case 'textarea':
+			case 'text':
+				iconHTML = createMaterialIcon('text_fields'); break;
+			case 'password':
+				iconHTML = createMaterialIcon('password'); break;
+			case 'checkbox':
+				iconHTML = createMaterialIcon('check_box'); break;
+			case 'radio':
+				iconHTML = createMaterialIcon('radio_button_checked'); break;
+			case 'option':
+				iconHTML = createMaterialIcon('list'); break;
+			case 'date':
+				iconHTML = createMaterialIcon('calendar_month'); break;
+			case 'select':
+				iconHTML = createMaterialIcon('arrow_drop_down'); break;
+			default:
+				iconHTML = element.children ? createMaterialIcon('menu') : createMaterialIcon('chevron_right'); break;
+		}
+	}
+
+	itemIcon.innerHTML = iconHTML;
+
+	sidebarItem.appendChild(itemContent);
+	sidebarItem.appendChild(itemIcon);
+
+	return sidebarItem;
+}
+
+// Function to create Material Icons
+function createMaterialIcon(icon_name) {
+	return `<i class="material-icons--small">${icon_name}</i>`;
 }
 
 function showDwellingPausedMessage() {

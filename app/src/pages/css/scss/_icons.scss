@@ -6,6 +6,13 @@
 }
 
 @font-face {
+    font-family: 'Material Symbols Rounded';
+    font-style: normal;
+    font-weight: 400;
+    src: url('icons/MaterialSymbolsRounded-Regular.ttf') format('truetype');
+}
+
+@font-face {
     font-family: 'Custom Symbols Outlined Filled';
     font-style: normal;
     font-weight: 400;
@@ -13,7 +20,7 @@
 }
 
 .material-icons {
-    font-family: 'Material Symbols Outlined Filled';
+    font-family: 'Material Symbols Rounded';
     font-weight: normal;
     font-style: normal;
     font-size: 2.3rem;
@@ -26,6 +33,35 @@
     direction: ltr;
     font-feature-settings: 'liga';
     -webkit-font-smoothing: antialiased;
+
+    &-outlined-filled { // used for the keyboard. Sharper edges match the text font better
+        @extend .material-icons;
+        font-family: 'Material Symbols Outlined Filled';
+    }
+
+    &--small {
+        @extend .material-icons;
+        font-size: 1.7rem;
+    }
+
+    &--medium {
+        @extend .material-icons;
+        font-size: 4.3rem;
+    }
+
+    &--large {
+        @extend .material-icons;
+        font-size: 8rem;
+    }
+
+    &--dark-round-background {
+        @extend .material-icons;
+        background-color: $blue-2;
+        color: $white;
+        border-radius: 50%;
+        padding: 25%;
+        font-size: 1.3rem;
+    }
 }
 
 .custom-icons {
