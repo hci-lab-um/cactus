@@ -617,7 +617,8 @@ function createOverlay(overlayAreaToShow, elementProperties) {
         console.log("creating menus overlay");
         overlayContent.webContents.send('ipc-main-overlays-loaded', overlayAreaToShow)
     }
-    if (isDevelopment) overlayContent.webContents.openDevTools();
+    // if (isDevelopment) overlayContent.webContents.openDevTools(); // to uncomment
+    overlayContent.webContents.openDevTools(); // to remove
 }
 
 function registerSwitchShortcutCommands() {

@@ -205,6 +205,11 @@
     margin-left: 1.5em;
     font-size: 1.8em;
   }
+
+  &--left-align {
+    justify-content: flex-start;
+    padding-left: 10%;
+  }
 }
 
 div .cancelBtn {
