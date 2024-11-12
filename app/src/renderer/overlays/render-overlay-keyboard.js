@@ -485,7 +485,7 @@ const Keyboard = {
     },
 
     _createMaterialIcon(icon_name) {
-        return `<i class="material-icons-filled">${icon_name}</i>`;
+        return `<i class="material-icons--outlined-filled">${icon_name}</i>`;
     },
 
     _createCustomIcon(icon_name) {

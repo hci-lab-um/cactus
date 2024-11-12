@@ -34,7 +34,7 @@
     font-feature-settings: 'liga';
     -webkit-font-smoothing: antialiased;
 
-    &-outlined-filled { // used for the keyboard. Sharper edges match the text font better
+    &--outlined-filled { // used for the keyboard. Sharper edges match the text font better
         @extend .material-icons;
         font-family: 'Material Symbols Outlined Filled';
     }
