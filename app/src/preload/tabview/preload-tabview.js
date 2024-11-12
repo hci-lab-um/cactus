@@ -4,15 +4,16 @@ const isDevelopment = process.env.NODE_ENV === "development";
 contextBridge.exposeInMainWorld('cactusAPI', {  
     on: (channel, func) => {
         const validChannels = [
-            'ipc-main-browserview-loaded',
+            'ipc-main-tabview-loaded',
             'ipc-clear-highlighted-elements',
             'ipc-highlight-available-elements',
-            'ipc-browserview-keyboard-input',
-            'ipc-browserview-scrolldown',
-            'ipc-browserview-scrollup',
-            'ipc-browserview-create-quadtree',
-            'ipc-browserview-forward',
-            'ipc-browserview-back',
+            'ipc-tabview-keyboard-input',
+            'ipc-trigger-click-under-cursor',
+            'ipc-tabview-scrolldown',
+            'ipc-tabview-scrollup',
+            'ipc-tabview-create-quadtree',
+            'ipc-tabview-forward',
+            'ipc-tabview-back',
         ];
 
         if (validChannels.includes(channel)) {
@@ -22,8 +23,8 @@ contextBridge.exposeInMainWorld('cactusAPI', {
 
     onAsync: (channel, func) => {
         const validChannels = [
-            'ipc-browserview-click-element',
-            'ipc-browserview-highlight-elements'
+            'ipc-tabview-click-element',
+            'ipc-tabview-highlight-elements'
         ];
 
         if (validChannels.includes(channel)) {
@@ -33,12 +34,12 @@ contextBridge.exposeInMainWorld('cactusAPI', {
 
     send: (channel, data) => {
         const validChannels = [
-            'ipc-browserview-generateQuadTree',
-            'ipc-browserview-generateNavAreasTree',
-            'ipc-browserview-cursor-mouseover',
-            'ipc-browserview-cursor-mouseout',
-            'ipc-browserview-visible-clickable-elements',
-            'ipc-browserview-document-info',
+            'ipc-tabview-generateQuadTree',
+            'ipc-tabview-generateNavAreasTree',
+            'ipc-tabview-cursor-mouseover',
+            'ipc-tabview-cursor-mouseout',
+            'ipc-tabview-visible-clickable-elements',
+            'ipc-tabview-document-info',
             'browse-to-url'
         ];
 
@@ -64,6 +65,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.head.appendChild(script);
     })
     .catch((error) => {
-        console.error('preload-browserview.js: Error invoking get-tab-renderer-script', error);
+        console.error('preload-tabview.js: Error invoking get-tab-renderer-script', error);
     });
 });

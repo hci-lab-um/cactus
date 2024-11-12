@@ -13,7 +13,7 @@ createCursor('cactus_cursor');
 cursor = document.getElementById('cactus_cursor');
 followCursor('cactus_cursor');
 
-window.cactusAPI.on('ipc-main-browserview-loaded', (useNavAreas) => {
+window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas) => {
 	// Setup the QuadTree and NavAreasTree
 	generateQuadTree();
 	if (useNavAreas) generateNavAreasTree();
@@ -60,20 +60,21 @@ window.cactusAPI.on('ipc-main-browserview-loaded', (useNavAreas) => {
 	// Start observing the target node for configured mutations
 	observer.observe(document.body, observerOptions);
 
-	// Handle mouse behaviour on browserview
-	browserView = document.getRootNode();
+	// Handle mouse behaviour on tabview
+	tabView = document.getRootNode();
 
-	browserView.addEventListener('mouseover', (event) => {
+	tabView.addEventListener('mouseover', (event) => {
 		cursor.style.visibility = 'visible'
 		// Clear any existing interval to avoid multiple intervals running simultaneously for mouse cursor hovering activity
 		// clearInterval(timeoutCursorHovering);
-		window.cactusAPI.send('ipc-browserview-cursor-mouseover', { x: event.clientX, y: event.clientY });
+		window.cactusAPI.send('ipc-tabview-cursor-mouseover', { x: event.clientX, y: event.clientY });
 	});
 
-	browserView.addEventListener('mouseout', () => {
+	tabView.addEventListener('mouseout', () => {
+		// Hide the cursor when the mouse leaves the element
 		cursor.style.visibility = 'hidden'
 		// Clear the interval when the mouse leaves the element
-		window.cactusAPI.send('ipc-browserview-cursor-mouseout');
+		window.cactusAPI.send('ipc-tabview-cursor-mouseout');
 	})
 });
 
@@ -84,45 +85,45 @@ window.cactusAPI.on('ipc-clear-highlighted-elements', () => {
 });
 
 window.cactusAPI.on('ipc-highlight-available-elements', (contents) => {
-	const { elementsInView, rangeWidth , rangeHeight, color } = contents;
+	const { elementsInView, rangeWidth, rangeHeight, color } = contents;
 	elementsInView.forEach(ve => {
-        highlightAvailableElements(ve.x, ve.y, ve.width, ve.height, color, rangeWidth, rangeHeight);
-    });
+		highlightAvailableElements(ve.x, ve.y, ve.width, ve.height, color, rangeWidth, rangeHeight);
+	});
 });
 
-window.cactusAPI.on('ipc-browserview-scrolldown', (configData) => {
+window.cactusAPI.on('ipc-tabview-scrolldown', (configData) => {
 	let { scrollDistance, useNavAreas } = configData;
 
 	scrollBy({
 		top: scrollDistance,
 		left: 0,
 		behavior: "smooth"
-	  });
+	});
 	setTimeout(function () {
 		generateQuadTree();
 		if (useNavAreas) generateNavAreasTree();
 	}, 500);
 })
 
-window.cactusAPI.on('ipc-browserview-scrollup', (configData) => {
+window.cactusAPI.on('ipc-tabview-scrollup', (configData) => {
 	let { scrollDistance, useNavAreas } = configData;
 
 	scrollBy({
 		top: scrollDistance * -1,
 		left: 0,
 		behavior: "smooth"
-	  });
+	});
 	setTimeout(function () {
 		generateQuadTree();
 		if (useNavAreas) generateNavAreasTree();
 	}, 500);
 })
 
-window.cactusAPI.on('ipc-browserview-back', () => {
+window.cactusAPI.on('ipc-tabview-back', () => {
 	window.history.back();
 });
 
-window.cactusAPI.on('ipc-browserview-forward', () => {
+window.cactusAPI.on('ipc-tabview-forward', () => {
 	window.history.forward();
 });
 
@@ -131,32 +132,41 @@ window.cactusAPI.on('ipc-browserview-forward', () => {
 // {
 //    //Hide scrollbar when at the very top
 //    if (!window.scrollY) {
-//     ipcRenderer.send('ipc-browserview-scroll-up-hide')
+//     ipcRenderer.send('ipc-tabview-scroll-up-hide')
 //   } else {
-//     ipcRenderer.send('ipc-browserview-scroll-up-show')
+//     ipcRenderer.send('ipc-tabview-scroll-up-show')
 //   }
 // }
 
 
 // This IPC event is triggered when the user submits the value inside the overlay keyboard.
 // It attempts to find the element to update and sets the value to the submitted value.
-window.cactusAPI.on('ipc-browserview-keyboard-input', (value, elementToUpdate) => {
+window.cactusAPI.on('ipc-tabview-keyboard-input', (value, elementToUpdate) => {
 	let element = document.querySelector('[data-cactus-id="' + elementToUpdate.id + '"]');
 
 	// Since the ID of the element may change at times, the element may instead be found using the x,y coordinates
 	if (!element) {
 		element = document.elementFromPoint(elementToUpdate.insertionPointX, elementToUpdate.insertionPointY);
 	}
-	
+
 	if (element) {
 		element.focus();
 		element.value = value;
 	} else {
-        console.error("Element not found for update:", elementToUpdate);
-    }
+		console.error("Element not found for update:", elementToUpdate);
+	}
 });
 
-window.cactusAPI.onAsync('ipc-browserview-click-element', (elementToClick) => {
+window.cactusAPI.on('ipc-trigger-click-under-cursor', () => {
+	const element = document.elementFromPoint(mouse.x, mouse.y);
+	if (element) {
+		element.click();
+	} else {
+		console.error("Element to click under cursor has not been found");
+	}
+});
+
+window.cactusAPI.onAsync('ipc-tabview-click-element', (elementToClick) => {
 	// // Find the element at the specified x,y coordinates
 	// let element;
 	// try{
@@ -179,22 +189,26 @@ window.cactusAPI.onAsync('ipc-browserview-click-element', (elementToClick) => {
 	// }
 
 	element = document.querySelector('[data-cactus-id="' + elementToClick.id + '"]');
+
+	if (!element){
+		console.log("Element to click not found by cactus id");
+		element = document.elementFromPoint(elementToClick.insertionPointX, elementToClick.insertionPointY);
+	}
+
 	if (element) {
-		console.log("Founf element to click by cactus id");
 		//If it's a link - go to its href rather than relying on focusing/clicking (works nicely when anchor is hidden in some collapsable component)
 		if (element.nodeName == 'A' && (element.getAttribute('href') && element.getAttribute('href') != '#'))
 			window.cactusAPI.send('browse-to-url', element.getAttribute('href'));
-	} else {
-		element = document.elementFromPoint(elementToClick.insertionPointX, elementToClick.insertionPointY);
-		if (element) {
-			console.log("Found element to click by cactus id");
+		else {
 			element.focus();
 			element.click();
 		}
+	} else {
+		console.error("Element to click not found by cactus id");
 	}
 });
 
-window.cactusAPI.onAsync('ipc-browserview-highlight-elements', (elementsToHighlight) => {
+window.cactusAPI.onAsync('ipc-tabview-highlight-elements', (elementsToHighlight) => {
 	elementsToHighlight.forEach(el => {
 		// Each element is of type InteractiveElement whose id is set to the cactusId, hence we use el.id not el.dataset.cactusId
 		var elementToMark = document.querySelector('[data-cactus-id="' + el.id + '"]');
@@ -209,120 +223,120 @@ window.cactusAPI.onAsync('ipc-browserview-highlight-elements', (elementsToHighli
 	});
 });
 
-window.cactusAPI.on('ipc-browserview-create-quadtree', (useNavAreas) => {
+window.cactusAPI.on('ipc-tabview-create-quadtree', (useNavAreas) => {
 	// //ISSUES: Node-Config is required by Cactus, and the config/default.json file would need to be recreated on cactus itself, rather than just the builder code. Which might not be a bad idea. Think about it.
 	// let useNavAreas = config.get('dwelling.activateNavAreas');
-
+	console.log("Creating QuadTree and NavAreasTree");
 	generateQuadTree();
 	if (useNavAreas) generateNavAreasTree();
 });
 
-function getMouseXY(e) {
-    mouse.x = (window.Event) ? e.pageX : window.Event.clientX + (document.documentElement.scrollLeft ? document.documentElement.scrollLeft : document.body.scrollLeft);
-    mouse.y = (window.Event) ? e.pageY : window.Event.clientY + (document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop);
+function setMouseXY(e) {
+	mouse.x = (window.Event) ? e.pageX : window.Event.clientX + (document.documentElement.scrollLeft ? document.documentElement.scrollLeft : document.body.scrollLeft);
+	mouse.y = (window.Event) ? e.pageY : window.Event.clientY + (document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop);
 }
 
 function createCursor(id) {
-    var cursor = document.createElement('div')
+	var cursor = document.createElement('div')
 	var cursorHTML = `<svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="eye" class="fa-eye fa-w-18" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path fill="currentColor" d="M288 144a110.94 110.94 0 0 0-31.24 5 55.4 55.4 0 0 1 7.24 27 56 56 0 0 1-56 56 55.4 55.4 0 0 1-27-7.24A111.71 111.71 0 1 0 288 144zm284.52 97.4C518.29 135.59 410.93 64 288 64S57.68 135.64 3.48 241.41a32.35 32.35 0 0 0 0 29.19C57.71 376.41 165.07 448 288 448s230.32-71.64 284.52-177.41a32.35 32.35 0 0 0 0-29.19zM288 400c-98.65 0-189.09-55-237.93-144C98.91 167 189.34 112 288 112s189.09 55 237.93 144C477.1 345 386.66 400 288 400z"></path></svg>`;
 	console.log(cursorHTML); // raw cursor HTML
 
 	// The following step is needed due to the 'This document requires 'TrustedHTML' assignment' warning
 	var trustedHTML = policy.createHTML(cursorHTML);
-	
+
 	console.log(trustedHTML); // trusted cursor HTML
-    cursor.innerHTML = trustedHTML;
-    cursor.setAttribute('id', id)
-    cursor.style.width = '50px'
-    cursor.style.height = '50px'
-    cursor.style.color = "#a091eb"
-    cursor.style.opacity = '0.4'
-    cursor.style.zIndex = '9999999999'
-    cursor.style.position = 'absolute'
-    cursor.style.margin = '-20px 0 0 -20px'
-    cursor.style['pointer-events'] = 'none'
+	cursor.innerHTML = trustedHTML;
+	cursor.setAttribute('id', id)
+	cursor.style.width = '50px'
+	cursor.style.height = '50px'
+	cursor.style.color = "#a091eb"
+	cursor.style.opacity = '0.4'
+	cursor.style.zIndex = '9999999999'
+	cursor.style.position = 'absolute'
+	cursor.style.margin = '-20px 0 0 -20px'
+	cursor.style['pointer-events'] = 'none'
 
-    // if (!id.localeCompare('hiddenCursor')) {
-    //   cursor.style.opacity = 0
-    // }
+	// if (!id.localeCompare('hiddenCursor')) {
+	//   cursor.style.opacity = 0
+	// }
 
-    document.body.appendChild(cursor);
+	document.body.appendChild(cursor);
 }
 
 function followCursor(id) {
-    var cursor = document.getElementById(id)
-    document.addEventListener('mousemove', getMouseXY, true)
+	var cursor = document.getElementById(id)
+	document.addEventListener('mousemove', setMouseXY, true)
 
-    var cursorPos = { x: 0, y: 0 }
+	var cursorPos = { x: 0, y: 0 }
 
-    // Increase interval to make it slower
-    setInterval(followMouse, 20)
+	// Increase interval to make it slower
+	setInterval(followMouse, 20)
 
-    function followMouse() {
-        var distX = mouse.x - cursorPos.x
-        var distY = mouse.y - cursorPos.y
+	function followMouse() {
+		var distX = mouse.x - cursorPos.x
+		var distY = mouse.y - cursorPos.y
 
-        cursorPos.x += distX / 10
-        cursorPos.y += distY / 10
+		cursorPos.x += distX / 10
+		cursorPos.y += distY / 10
 
-        cursor.style.left = cursorPos.x + 'px'
-        cursor.style.top = cursorPos.y + 'px'
-    }
+		cursor.style.left = cursorPos.x + 'px'
+		cursor.style.top = cursorPos.y + 'px'
+	}
 }
 
 function generateUUID() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-      const r = Math.random() * 16 | 0;
-      const v = c === 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-    });
+	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+		const r = Math.random() * 16 | 0;
+		const v = c === 'x' ? r : (r & 0x3 | 0x8);
+		return v.toString(16);
+	});
 }
 
 // Gets the contents needed from the renderer process and sends them to the main process for generating the QuadTree
 function generateQuadTree() {
-    const clickableSelectors = [
-        'button', 'a', 'textarea', 'input', 'select', 'date',
-        'div[role="button"]', 'span[role="button"]', 'div[role="link"]', 'span[role="link"]',
-        '[role="checkbox"]', '[role="radio"]', '[role="option"]', '[role="tab"]',
-        '[role="menu"]', '[role="switch"]', '[role="slider"]', '[role="combobox"]'
-    ];
-    const clickableElements = Array.from(document.querySelectorAll(clickableSelectors.join(', ')));
-    const visibleElements = filterVisibleElements(clickableElements).map(e => {
+	const clickableSelectors = [
+		'button', 'a', 'textarea', 'input', 'select', 'date',
+		'div[role="button"]', 'span[role="button"]', 'div[role="link"]', 'span[role="link"]',
+		'[role="checkbox"]', '[role="radio"]', '[role="option"]', '[role="tab"]',
+		'[role="menu"]', '[role="switch"]', '[role="slider"]', '[role="combobox"]'
+	];
+	const clickableElements = Array.from(document.querySelectorAll(clickableSelectors.join(', ')));
+	const visibleElements = filterVisibleElements(clickableElements).map(e => {
 		if (!e.dataset.cactusId) {
 			console.log("Cactus Id of element", e, ", is empty");
 			e.dataset.cactusId = generateUUID();
 		}
 		return e;
 	});
-	console.log("Visible elements", visibleElements);
-    const serializedElements = visibleElements.map(serializeElement); //creating an element object for each element in the array
+	// console.log("Visible elements", visibleElements);
+	const serializedElements = visibleElements.map(serializeElement); //creating an element object for each element in the array
 
-    const quadTreeContents = {
-        serializedVisibleElements: serializedElements,
-        docTitle: document.title,
-        docURL: document.URL
-    };
-	window.cactusAPI.send('ipc-browserview-generateQuadTree', quadTreeContents);
+	const quadTreeContents = {
+		serializedVisibleElements: serializedElements,
+		docTitle: document.title,
+		docURL: document.URL
+	};
+	window.cactusAPI.send('ipc-tabview-generateQuadTree', quadTreeContents);
 }
 
 // Gets the contents needed from the renderer process and sends them to the main process to generate the NavAreasTree
 function generateNavAreasTree() {
-    const menuSelectors = [
-        '[role="navigation"]', 'nav', '[role="menubar"]', '[class="nav-wrapper"]'
-    ];
-    const interactiveMenus = Array.from(document.querySelectorAll(menuSelectors.join(', ')));
-    const visibleMenus = filterVisibleElements(interactiveMenus).map(e => {
+	const menuSelectors = [
+		'[role="navigation"]', 'nav', '[role="menubar"]', '[class="nav-wrapper"]'
+	];
+	const interactiveMenus = Array.from(document.querySelectorAll(menuSelectors.join(', ')));
+	const visibleMenus = filterVisibleElements(interactiveMenus).map(e => {
 		e.dataset.cactusId = generateUUID();
 		return e;
 	});
-    const serializedMenus = visibleMenus.map(serializeMenuElement);
+	const serializedMenus = visibleMenus.map(serializeMenuElement);
 
-    const navAreasTreeContents = {
-        serializedVisibleMenus: serializedMenus,
-        docTitle: document.title,
-        docURL: document.URL
-    };
-	window.cactusAPI.send('ipc-browserview-generateNavAreasTree', navAreasTreeContents);
+	const navAreasTreeContents = {
+		serializedVisibleMenus: serializedMenus,
+		docTitle: document.title,
+		docURL: document.URL
+	};
+	window.cactusAPI.send('ipc-tabview-generateNavAreasTree', navAreasTreeContents);
 }
 
 // This serializes relevant properties of the elements
@@ -330,7 +344,7 @@ function serializeElement(element) {
 	return {
 		id: element.id,
 		cactusId: element.dataset.cactusId,
-		className: element.className, 
+		className: element.className,
 		tagName: element.tagName,
 		rectX: element.getBoundingClientRect().x,
 		rectY: element.getBoundingClientRect().y,
@@ -343,8 +357,8 @@ function serializeElement(element) {
 		type: element.type,
 		checked: element.checked,
 		state: element.state,
-		selectedIndex: element.selectedIndex,		
-		role: element.getAttribute('role'),		
+		selectedIndex: element.selectedIndex,
+		role: element.getAttribute('role'),
 		ariaLabel: element.getAttribute('aria-label'),
 		ariaLabelledByElement: (() => {
 			const labelledByElement = document.getElementById(element.getAttribute('aria-labelledby'));
@@ -378,7 +392,7 @@ function serializeChildNode(node) {
 	};
 }
 
-function serializeMenuElement(element){
+function serializeMenuElement(element) {
 	return {
 		id: element.id,
 		cactusId: element.dataset.cactusId,

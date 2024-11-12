@@ -9,6 +9,7 @@
 }
 
 #overlay-nav {
+  height: 100%;
   grid-template-columns: repeat(2, 1fr);
   grid-template-areas:
   'back forward'
@@ -81,11 +82,21 @@
 
 
 #overlay-options {
+  height: 100%;
   grid-template-columns: repeat(2, 1fr);
-  grid-template-areas:
+  grid-template-areas:  
+  'settings toggleDwell'
   'zoomIn zoomOut'
   'reset about'
   'cancel cancel';
+
+  #settingsBtn {
+    grid-area: settings;
+  }
+
+  #toggleDwellBtn {
+    grid-area: toggleDwell;
+  }
 
   #resetZoomBtn {
     grid-area: reset;

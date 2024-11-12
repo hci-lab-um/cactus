@@ -5,12 +5,16 @@ var mouse = { x: 0, y: 0 }
 //   // if (window.Event) {
 //   // document.addEventListener(Event.MOUSEMOVE);
 //   // }
-//   document.onmousemove = getMouseXY;
+//   document.onmousemove = setMouseXY;
 // }
 
-function getMouseXY(e) {
+function setMouseXY(e) {
   mouse.x = (window.Event) ? e.pageX : window.Event.clientX + (document.documentElement.scrollLeft ? document.documentElement.scrollLeft : document.body.scrollLeft);
   mouse.y = (window.Event) ? e.pageY : window.Event.clientY + (document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop);
+}
+
+exports.getMouse = () => {
+  return mouse;
 }
 
 exports.createCursor = (id) => {
@@ -37,7 +41,7 @@ exports.createCursor = (id) => {
 
 exports.followCursor = (id) => {
   var cursor = document.getElementById(id)
-  document.addEventListener('mousemove', getMouseXY, true)
+  document.addEventListener('mousemove', setMouseXY, true)
 
   var cursorPos = { x: 0, y: 0 }
 

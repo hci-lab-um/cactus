@@ -34,5 +34,18 @@
   },
   "keyboard": {
     "defaultLayout": "en"
+  },
+  "shortcuts": {
+    "click": "CommandOrControl+Alt+C",
+    "toggleOmniBox": "CommandOrControl+Alt+O",
+    "toggleDwelling": "CommandOrControl+Alt+D",
+    "zoomIn": "CommandOrControl+Alt+Plus",
+    "zoomOut": "CommandOrControl+Alt+-",
+    "tabScrollUp": "CommandOrControl+Alt+Up",
+    "tabScrollDown": "CommandOrControl+Alt+Down",
+    "sidebarScrollUp": "CommandOrControl+Alt+W",
+    "sidebarScrollDown": "CommandOrControl+Alt+S",
+    "navigateForward": "CommandOrControl+Alt+Right",
+    "navigateBack": "CommandOrControl+Alt+Left"
   }
 }

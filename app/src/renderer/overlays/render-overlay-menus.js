@@ -1,6 +1,6 @@
 const { ipcRenderer } = require('electron')
 const { byId, dwell } = require('../../../src/tools/utils')
-const { createCursor, followCursor } = require('../../../src/tools/cursor')
+const { createCursor, followCursor, getMouse } = require('../../../src/tools/cursor')
 const DOMPurify = require('dompurify');
 
 // Exposes an HTML sanitizer to allow for innerHtml assignments when TrustedHTML policies are set ('This document requires 'TrustedHTML' assignment')
@@ -34,6 +34,14 @@ ipcRenderer.on('ipc-main-overlays-loaded', (event, overlayToShow) => {
 		}
 	}
 
+});
+
+ipcRenderer.on('ipc-trigger-click-under-cursor', (event) => {
+	const mouse = getMouse();
+	const element = document.elementFromPoint(mouse.x, mouse.y);
+    if (element) {
+        element.click();
+    }
 });
 
 function setEventHandlersForOmniMenu() {
@@ -224,10 +232,20 @@ function setEventHandlersForAccessibilityMenu() {
 	// =================================
 
 	// ZOOMING
+	const settingsBtn = byId('settingsBtn')
+	const toggleDwellBtn = byId('toggleDwellBtn')
 	const zoomInBtn = byId('zoomInBtn')
 	const zoomOutBtn = byId('zoomOutBtn')
 	const resetZoomBtn = byId('resetZoomBtn')
 	const cancelOptionsBtn = byId('cancel-options')
+
+	dwell(settingsBtn, () => {
+		ipcRenderer.send('ipc-overlays-settings');
+	})
+
+	dwell(toggleDwellBtn, () => {
+		ipcRenderer.send('ipc-overlays-toggle-dwell');
+	})
 
 	dwell(zoomInBtn, () => {
 		ipcRenderer.send('ipc-overlays-zoom-in');

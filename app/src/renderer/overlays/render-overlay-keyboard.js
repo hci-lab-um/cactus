@@ -3,7 +3,7 @@ const config = require('config');
 const fs = require('fs');
 const path = require('path');
 const { dwell, dwellInfinite } = require('../../tools/utils');
-const { createCursor, followCursor } = require('../../tools/cursor')
+const { createCursor, followCursor, getMouse } = require('../../tools/cursor')
 const DOMPurify = require('dompurify');
 
 // Exposes an HTML sanitizer to allow for innerHtml assignments when TrustedHTML policies are set ('This document requires 'TrustedHTML' assignment')
@@ -26,6 +26,14 @@ ipcRenderer.on('ipc-main-keyboard-loaded', async (event, elementToUpdate) => {
     let pathToLayouts = path.join(__dirname, '../../pages/json/keyboard/');
 
     Keyboard.init(pathToLayouts, fileName, elementToUpdate);
+});
+
+ipcRenderer.on('ipc-trigger-click-under-cursor', (event) => {
+	const mouse = getMouse();
+	const element = document.elementFromPoint(mouse.x, mouse.y);
+    if (element) {
+        element.click();
+    }
 });
 
 const Keyboard = {

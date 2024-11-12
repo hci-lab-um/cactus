@@ -1,6 +1,6 @@
-const { ipcRenderer }               = require('electron')
-const { byId, dwell }               = require('./js/utils')
-const { createCursor, followCursor } = require('./js/cursor')
+const { ipcRenderer }                       = require('electron')
+const { byId, dwell }  = require('./js/utils')
+const { createCursor, followCursor }        = require('./js/cursor')
 
 let c
 
