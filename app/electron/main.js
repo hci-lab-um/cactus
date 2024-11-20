@@ -44,17 +44,6 @@ app.on('activate', () => {
     }
 })
 
-ipcMain.handle('get-tab-renderer-script', async () => {
-    try {
-        const scriptToExecute = path.join(__dirname, '../src/renderer/tabview/render-tabview.js');
-        const scriptContent = await fs.readFileSync(scriptToExecute, 'utf-8');
-        return scriptContent;
-    }
-    catch (ex) {
-        console.log(ex);
-    }
-})
-
 // This creates a quadtree using serialisable HTML elements passed on from the renderer
 ipcMain.on('ipc-tabview-generateQuadTree', (event, contents) => {
     var tab = tabList.find(tab => tab.isActive === true);
@@ -439,6 +428,7 @@ function resizeMainWindow() {
 }
 
 function createTabview(url, properties) {
+
     //Create browser view
     let tabView = new WebContentsView({
         //https://www.electronjs.org/docs/latest/tutorial/security
@@ -472,9 +462,15 @@ function createTabview(url, properties) {
 
     //Once the DOM is ready, send a message to initiate some further logic
     tabView.webContents.on('dom-ready', () => {
-        // This event fires when the tabView is attached
-        tabView.webContents.send('ipc-main-tabview-loaded', useNavAreas);
         insertRendererCSS();
+
+
+        const scriptToExecute = path.join(__dirname, '../src/renderer/tabview/render-tabview.js');
+        const scriptContent = fs.readFileSync(scriptToExecute, 'utf-8');
+        tabView.webContents.executeJavaScript(scriptContent).then(() => {
+            // This event fires when the tabView is attached
+            tabView.webContents.send('ipc-main-tabview-loaded', useNavAreas);
+        });
 
         tabView.webContents.openDevTools(); // to remove
         // if (isDevelopment) tabView.webContents.openDevTools(); to uncomment

@@ -1,5 +1,4 @@
 const { contextBridge, ipcRenderer } = require('electron');
-const isDevelopment = process.env.NODE_ENV === "development";
 
 contextBridge.exposeInMainWorld('cactusAPI', {  
     on: (channel, func) => {
@@ -47,24 +46,4 @@ contextBridge.exposeInMainWorld('cactusAPI', {
             ipcRenderer.send(channel, data);
         }
     }
-});
-
-document.addEventListener('DOMContentLoaded', () => {    
-    ipcRenderer.invoke('get-tab-renderer-script').then((rendererScript) => {
-        const policy = window.trustedTypes.createPolicy('default', {
-            // The following method simply returns the input as is, without any  
-            // sanitization but creates a TrustedScript wrapper around the content.
-            createScript: (input) => input,
-            // createScriptURL: (input) => input //<- neeeded when logging into gmail
-        });
-
-        const script = document.createElement('script');
-        script.type = 'text/javascript';
-        // Set the script content using the trusted script created by the policy
-        script.textContent = policy.createScript(rendererScript);
-        document.head.appendChild(script);
-    })
-    .catch((error) => {
-        console.error('preload-tabview.js: Error invoking get-tab-renderer-script', error);
-    });
 });
