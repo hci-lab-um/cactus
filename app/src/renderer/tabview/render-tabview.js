@@ -1,6 +1,5 @@
 var mouse = { x: 0, y: 0 }
 
-
 // Create a Trusted Types policy for innerHtml assignments when TrustedHTML policies are set ('This document requires 'TrustedHTML' assignment')
 const policy = window.trustedTypes.createPolicy('default', {
 	// This method returns the input as is, without any sanitization
@@ -14,6 +13,9 @@ cursor = document.getElementById('cactus_cursor');
 followCursor('cactus_cursor');
 
 window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas) => {
+
+	findScrollableElements(useNavAreas);
+
 	// Setup the QuadTree and NavAreasTree
 	generateQuadTree();
 	if (useNavAreas) generateNavAreasTree();
@@ -35,6 +37,10 @@ window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas) => {
 				&& !mutation.target.classList.contains('cactusElementVisualise')
 				&& !mutation.target.classList.contains('cactusElementVisualiseRemoved')
 				&& !mutation.target.classList.contains('cactus-element-highlight')
+				&& !mutation.target.classList.contains('cactus-scrollUp')
+				&& !mutation.target.classList.contains('cactus-scrollDown')
+				&& !mutation.target.classList.contains('cactus-scrollUp_outerDiv')
+				&& !mutation.target.classList.contains('cactus-scrollDown_outerDiv')
 			) {
 				//Indicate callback execution
 				mutationObserverCallbackExecuting = true;
@@ -42,6 +48,9 @@ window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas) => {
 				//Execute quadtree generation
 				generateQuadTree();
 				if (useNavAreas) generateNavAreasTree();
+
+				//Find scrollable elements and add scroll buttons
+				findScrollableElements(useNavAreas);
 
 				//Reset flag to allow next callback execution on x ms
 				setTimeout(() => {
@@ -92,31 +101,11 @@ window.cactusAPI.on('ipc-highlight-available-elements', (contents) => {
 });
 
 window.cactusAPI.on('ipc-tabview-scrolldown', (configData) => {
-	let { scrollDistance, useNavAreas } = configData;
-
-	scrollBy({
-		top: scrollDistance,
-		left: 0,
-		behavior: "smooth"
-	});
-	setTimeout(function () {
-		generateQuadTree();
-		if (useNavAreas) generateNavAreasTree();
-	}, 500);
+	scroll(configData, 'down');
 })
 
 window.cactusAPI.on('ipc-tabview-scrollup', (configData) => {
-	let { scrollDistance, useNavAreas } = configData;
-
-	scrollBy({
-		top: scrollDistance * -1,
-		left: 0,
-		behavior: "smooth"
-	});
-	setTimeout(function () {
-		generateQuadTree();
-		if (useNavAreas) generateNavAreasTree();
-	}, 500);
+	scroll(configData, 'up');
 })
 
 window.cactusAPI.on('ipc-tabview-back', () => {
@@ -239,12 +228,10 @@ function setMouseXY(e) {
 function createCursor(id) {
 	var cursor = document.createElement('div')
 	var cursorHTML = `<svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="eye" class="fa-eye fa-w-18" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path fill="currentColor" d="M288 144a110.94 110.94 0 0 0-31.24 5 55.4 55.4 0 0 1 7.24 27 56 56 0 0 1-56 56 55.4 55.4 0 0 1-27-7.24A111.71 111.71 0 1 0 288 144zm284.52 97.4C518.29 135.59 410.93 64 288 64S57.68 135.64 3.48 241.41a32.35 32.35 0 0 0 0 29.19C57.71 376.41 165.07 448 288 448s230.32-71.64 284.52-177.41a32.35 32.35 0 0 0 0-29.19zM288 400c-98.65 0-189.09-55-237.93-144C98.91 167 189.34 112 288 112s189.09 55 237.93 144C477.1 345 386.66 400 288 400z"></path></svg>`;
-	console.log(cursorHTML); // raw cursor HTML
 
 	// The following step is needed due to the 'This document requires 'TrustedHTML' assignment' warning
 	var trustedHTML = policy.createHTML(cursorHTML);
 
-	console.log(trustedHTML); // trusted cursor HTML
 	cursor.innerHTML = trustedHTML;
 	cursor.setAttribute('id', id)
 	cursor.style.width = '50px'
@@ -292,6 +279,136 @@ function generateUUID() {
 	});
 }
 
+function findScrollableElements(useNavAreas) {
+	removeExistingScrollButtons();
+
+	const scrollableElements = Array.from(document.querySelectorAll('*')).filter(element => {
+		const style = window.getComputedStyle(element);
+		const rect = element.getBoundingClientRect();
+		return (style.overflowY === 'scroll' || style.overflowY === 'auto') && element.scrollHeight > element.clientHeight;
+	});
+
+	console.log("Scrollable elements", scrollableElements);
+
+	scrollableElements.forEach(element => {
+		const rect = element.getBoundingClientRect();
+		const targetZIndex = getZIndex(element);
+
+		const scrollUpButton_outerDiv = document.createElement('div');
+		scrollUpButton_outerDiv.id = element.id + '_cactus-scrollUp_outerDiv';
+
+		const scrollUpButton = document.createElement('div');
+		const keyboard_arrow_up = `<svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 -960 960 960" width="48px" fill="#203a90"><path d="M480-554 304-378q-9 9-21 8.5t-21-9.5q-9-9-9-21.5t9-21.5l197-197q9-9 21-9t21 9l198 198q9 9 9 21t-9 21q-9 9-21.5 9t-21.5-9L480-554Z"/></svg>`;
+		var trustedHTML = policy.createHTML(keyboard_arrow_up);
+		scrollUpButton.id = element.id + '_cactus-scrollUp';
+		scrollUpButton.innerHTML = trustedHTML;
+
+		Object.assign(scrollUpButton_outerDiv.style, {
+			position: 'absolute',
+			zIndex: `${targetZIndex + 1}`,
+			top: '0px',
+			padding: '14px',
+			width: '100%',
+		});
+
+		Object.assign(scrollUpButton.style, {
+			display: 'flex',
+			alignItems: 'center',
+			justifyContent: 'center',
+			padding: '10px',
+			fontSize: '20px',
+			boxSizing: 'border-box',
+			// border: '1px solid #aaacbb',
+			borderRadius: '4px',
+			backgroundColor: '#d7e3edbf',
+			transition: 'all 1.5s ease 0s',
+		});
+
+		const scrollDownButton_outerDiv = document.createElement('div');
+		scrollDownButton_outerDiv.id = element.id + '_cactus-scrollDown_outerDiv';
+
+		const scrollDownButton = document.createElement('div');
+		const keyboard_arrow_down = `<svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 -960 960 960" width="48px" fill="#203a90"><path d="M480-356q-6 0-11-2t-10-7L261-563q-9-9-8.5-21.5T262-606q9-9 21.5-9t21.5 9l175 176 176-176q9-9 21-8.5t21 9.5q9 9 9 21.5t-9 21.5L501-365q-5 5-10 7t-11 2Z"/></svg>`;
+		var trustedHTML = policy.createHTML(keyboard_arrow_down);
+		scrollDownButton.id = element.id + '_cactus-scrollDown';
+		scrollDownButton.innerHTML = trustedHTML;
+
+		Object.assign(scrollDownButton_outerDiv.style, {
+			position: 'sticky',
+			zIndex: `${targetZIndex + 1}`,
+			bottom: '0px',
+			padding: '14px',
+			width: '100%',
+		});
+
+		Object.assign(scrollDownButton.style, {
+			display: 'flex',
+			alignItems: 'center',
+			justifyContent: 'center',
+			padding: '10px',
+			fontSize: '20px',
+			// border: '1px solid #aaacbb',
+			borderRadius: '4px',
+			backgroundColor: '#d7e3edbf',
+			transition: 'all 1.5s ease 0s',
+		});
+
+		scrollUpButton.addEventListener('mouseenter', () => {
+			scroll({ scrollDistance: 10, useNavAreas }, 'up', element);
+			scrollUpButton.style.backgroundColor = '#003b77ad';
+		});
+		scrollUpButton.addEventListener('mouseenter', () => {
+			scroll({ scrollDistance: 10, useNavAreas }, 'up', element);
+			scrollDownButton.style.backgroundColor = '#003b776b';
+		});
+
+		scrollUpButton.addEventListener('mouseout', () => { scrollUpButton.style.backgroundColor = '#d7e3edbf' });
+		scrollDownButton.addEventListener('mouseout', () => { scrollDownButton.style.backgroundColor = '#d7e3edbf' });
+
+		// element.style.position = 'relative';
+		scrollUpButton_outerDiv.appendChild(scrollUpButton);
+		element.appendChild(scrollUpButton_outerDiv);
+		scrollDownButton_outerDiv.appendChild(scrollDownButton);
+		element.appendChild(scrollDownButton_outerDiv);
+	});
+}
+
+function getZIndex(element) {
+	return parseInt(window.getComputedStyle(element).zIndex, 10) || 99999997; // Default to 99999997 if no z-index is set
+}
+
+function removeExistingScrollButtons() {
+	const existingScrollButtons = Array.from(
+		document.querySelectorAll('div[id$="_cactus-scrollUp"], div[id$="_cactus-scrollDown"], div[id$="_cactus-scrollDown_outerDiv"], div[id$="_cactus-scrollUp_outerDiv"]')
+	);
+	existingScrollButtons.forEach(button => button.remove());
+}
+
+function scroll(configData, direction, element = null) {
+	let { scrollDistance, useNavAreas } = configData;
+
+	// The scroll distance is multiplied by -1 if the direction is up
+	scrollDistance = direction === 'down' ? scrollDistance : scrollDistance * -1;
+	scrollOptions = {
+		top: scrollDistance,
+		left: 0,
+		behavior: "smooth"
+	}
+
+	// if the element is provided, scroll the element ONLY, otherwise scroll the entire window
+	if (element) {
+		element.scrollBy(scrollOptions);
+	} else {
+		scrollBy(scrollOptions);
+	}
+
+	// After scrolling, regenerate the QuadTree and NavAreasTree (after every 500ms) to reflect the new state of the page
+	setTimeout(function () {
+		generateQuadTree();
+		if (useNavAreas) generateNavAreasTree();
+	}, 500);
+}
+
 // Gets the contents needed from the renderer process and sends them to the main process for generating the QuadTree
 function generateQuadTree() {
 	const clickableSelectors = [
@@ -303,7 +420,7 @@ function generateQuadTree() {
 	const clickableElements = Array.from(document.querySelectorAll(clickableSelectors.join(', ')));
 	const visibleElements = filterVisibleElements(clickableElements).map(e => {
 		if (!e.dataset.cactusId) {
-			console.log("Cactus Id of element", e, ", is empty");
+			// console.log("Cactus Id of element", e, ", is empty");
 			e.dataset.cactusId = generateUUID();
 		}
 		return e;

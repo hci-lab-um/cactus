@@ -464,7 +464,6 @@ function createTabview(url, properties) {
     tabView.webContents.on('dom-ready', () => {
         insertRendererCSS();
 
-
         const scriptToExecute = path.join(__dirname, '../src/renderer/tabview/render-tabview.js');
         const scriptContent = fs.readFileSync(scriptToExecute, 'utf-8');
         tabView.webContents.executeJavaScript(scriptContent).then(() => {
