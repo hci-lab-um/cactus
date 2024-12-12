@@ -3,8 +3,6 @@ var cursorPos = { x: 0, y: 0 }
 let cursor;
 let cursorInterval;
 let scrollDistance;
-let timeoutScrollUp;
-let timeoutScrollDown;
 let isScrolling = false;
 let iterator = 0;
 
@@ -300,9 +298,10 @@ function findScrollableElements(useNavAreas) {
 	});
 
 	// The list of scrollable elements is filtered so that only the <html> tag is considered if the <body> tag is also present, preventing overlapping scrolling buttons
-	const constainsHtmlTag = scrollableElements.some(element => element.tagName === 'HTML');
+	const containsHtmlTag = scrollableElements.some(element => element.tagName === 'HTML');
+	const containsBodyTag = scrollableElements.some(element => element.tagName === 'BODY');
 	const filteredElements = scrollableElements.filter(element => {
-	    return !(constainsHtmlTag && element.tagName === 'BODY');
+	    return !(containsHtmlTag && element.tagName === 'BODY');
 	});
 
 	console.log("Scrollable elements", filteredElements);
@@ -336,7 +335,6 @@ function findScrollableElements(useNavAreas) {
 			padding: '10px',
 			fontSize: '20px',
 			boxSizing: 'border-box',
-			// border: '1px solid #aaacbb',
 			borderRadius: '4px',
 			backgroundColor: '#d7e3edbf',
 			transition: 'all 0.5s ease 0s',
@@ -373,7 +371,6 @@ function findScrollableElements(useNavAreas) {
 			justifyContent: 'center',
 			padding: '10px',
 			fontSize: '20px',
-			// border: '1px solid #aaacbb',
 			borderRadius: '4px',
 			backgroundColor: '#d7e3edbf',
 			transition: 'all 0.5s ease 0s',
@@ -382,8 +379,8 @@ function findScrollableElements(useNavAreas) {
 		// The same reasons for checking if element is at the top applies for checking if an element is at the bottom
 		checkIfElementIsAtBottom(element, scrollDownButton_outerDiv, scrollDownButton);
 
-		// When the scrollable element is the main body or html, the buttons are centred and positioned to the top and bottom of the viewport,
-		// taking only 1/3 of the screen width - all other elements take up the whole width of the parent element (the scrollable element)
+		// When the scrollable element is the main body or the html tag, the buttons are centred and positioned to the top and bottom of the viewport,
+		// taking only 1/3 of the screen width - all other elements take up the whole width of the parent element (the scrollable element).
 		if (element.tagName === "HTML" || element.tagName === "BODY") {
 			// Centering the scroll buttons and taking up 1/3 of the screen width
 			scrollDownButton.style.width = 'calc((100% - 28px)/3)',
@@ -435,13 +432,13 @@ function findScrollableElements(useNavAreas) {
 				}
 
 				checkIfElementIsAtTop(element, scrollUpButton_outerDiv, scrollUpButton);
-				if (element.tagName !== "BODY") checkIfElementIsAtBottom(element, scrollDownButton_outerDiv, scrollDownButton);
+				checkIfElementIsAtBottom(element, scrollDownButton_outerDiv, scrollDownButton);
 
 				// When both the body and the html tag have been identified as scrollable elements, then they are scrolled simulatenously,
 				// even if only the html tag remains in the filtered list of scrollable elements
-				if (element.tagName === "BODY" && constainsHtmlTag) {
-					const htmlElement = document.querySelector('html');
-					htmlElement.scrollBy({
+				if (element.tagName === "HTML" && containsBodyTag) {
+					const bodyElement = document.querySelector('body');
+					bodyElement.scrollBy({
 						top: updatedScrollDistance,
 						left: 0,
 						behavior: "auto"
@@ -484,7 +481,6 @@ function findScrollableElements(useNavAreas) {
 		}
 	}
 
-	// THIS DOES NOT ALWAYS WORK AS EXPECTED - NEEDS TO BE REVISITED
 	function checkIfElementIsAtBottom(element, scrollDownButton_outerDiv, scrollDownButton) {
 		// if element is at the bottom, hide the scroll down button
 		if (Math.floor(element.scrollHeight - element.scrollTop) === element.clientHeight) {
