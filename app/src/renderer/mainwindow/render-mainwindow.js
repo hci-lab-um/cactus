@@ -18,9 +18,8 @@ const DOMPurify = require('dompurify');
 //Omnibox - combined location and search field 
 // let omni = byId('url')
 
-let omni, navbar, sidebar, sidebarItemArea, selectedNavItemTitle, scrollbar, menuNavLevelup, menuScrollUp, menuScrollDown
+let omni, navbar, sidebar, sidebarItemArea, selectedNavItemTitle, menuNavLevelup, menuScrollUp, menuScrollDown
 let cursor
-let scrollUpBtn, scrollDownBtn
 let timeoutScroll
 let navAreaStack = [];
 
@@ -36,8 +35,6 @@ ipcRenderer.on('mainWindowLoaded', () => {
 
 	//Setup cursors
 	setupCursor();
-	//Setup scrollers
-	setupScrollers();
 	//Setup browser functionality events 
 	setupFunctionality();
 	//Setup navigation sidebar
@@ -64,7 +61,6 @@ function setupCursor() {
 	//Get reference to webContentsViewContainer
 	navbar = byId('navbar')
 	sidebar = byId('sidebar')
-	scrollbar = byId('scrollbar')
 
 	navbar.addEventListener('mouseout', () => {
 		cursor.style.visibility = 'hidden'
@@ -81,84 +77,6 @@ function setupCursor() {
 	sidebar.addEventListener('mouseover', () => {
 		cursor.style.visibility = 'visible'
 	})
-
-	scrollbar.addEventListener('mouseout', () => {
-		cursor.style.visibility = 'hidden'
-	})
-
-	scrollbar.addEventListener('mouseover', () => {
-		cursor.style.visibility = 'visible'
-	})
-}
-
-
-// =================================
-// ==== Scrolling Functionality ====
-// =================================
-
-function setupScrollers() {
-	scrollUpBtn = byId('scroll-up')
-	scrollDownBtn = byId('scroll-down')
-
-	ipcRenderer.on('ipc-mainwindow-scroll-up-hide', () => {
-		scrollUpBtn.style.display = 'none'
-	})
-
-	ipcRenderer.on('ipc-mainwindow-scroll-up-show', () => {
-		scrollUpBtn.style.display = 'flex'
-	})
-
-	ipcRenderer.on('ipc-mainwindow-scroll-down-hide', () => {
-		scrollDownBtn.style.display = 'none'
-	})
-
-	ipcRenderer.on('ipc-mainwindow-scroll-down-show', () => {
-		scrollDownBtn.style.display = 'flex'
-	})
-
-	scrollUpBtn.onmouseover = () => {
-		let scrollInterval = config.get('dwelling.browserAreaScrollIntervalInMs');
-
-		// Clear any existing interval to avoid multiple intervals running simultaneously
-		clearInterval(timeoutScroll);
-
-		// Start a new interval to execute the code every x ms
-		timeoutScroll = setInterval(function () {
-			let configData = {
-				scrollDistance: config.get('dwelling.browserAreaScrollDistance'),
-				useNavAreas: config.get('dwelling.activateNavAreas')
-			};
-			ipcRenderer.send('ipc-mainwindow-scrollup', configData);
-		}, scrollInterval);
-
-	}
-
-	scrollUpBtn.onmouseout = () => {
-		// Clear the interval when the mouse leaves the element
-		clearInterval(timeoutScroll);
-	}
-
-	scrollDownBtn.onmouseover = () => {
-		let scrollInterval = config.get('dwelling.browserAreaScrollIntervalInMs');
-
-		// Clear any existing interval to avoid multiple intervals running simultaneously
-		clearInterval(timeoutScroll);
-
-		// Start a new interval to execute the code every x ms
-		timeoutScroll = setInterval(function () {
-			let configData = {
-				scrollDistance: config.get('dwelling.browserAreaScrollDistance'),
-				useNavAreas: config.get('dwelling.activateNavAreas')
-			};
-			ipcRenderer.send('ipc-mainwindow-scrolldown', configData);
-		}, scrollInterval);
-
-	}
-
-	scrollDownBtn.onmouseout = () => {
-		// Clear the interval when the mouse leaves the element
-		clearInterval(timeoutScroll);
-	}
 }
 
 

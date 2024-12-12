@@ -23,8 +23,7 @@
     "keyboardDwellTime": 1000,
     "rangeWidth": 150,
     "rangeHeight": 50,
-    "browserAreaScrollDistance": 300,
-    "browserAreaScrollIntervalInMs": 300,
+    "tabViewScrollDistance": 10,
     "menuAreaScrollDistance": 200,
     "menuAreaScrollIntervalInMs": 300,
     "activateNavAreas": true

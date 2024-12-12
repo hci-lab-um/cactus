@@ -429,6 +429,8 @@ function resizeMainWindow() {
 
 function createTabview(url, properties) {
 
+    let scrollDistance = config.get('dwelling.tabViewScrollDistance');
+
     //Create browser view
     let tabView = new WebContentsView({
         //https://www.electronjs.org/docs/latest/tutorial/security
@@ -468,7 +470,7 @@ function createTabview(url, properties) {
         const scriptContent = fs.readFileSync(scriptToExecute, 'utf-8');
         tabView.webContents.executeJavaScript(scriptContent).then(() => {
             // This event fires when the tabView is attached
-            tabView.webContents.send('ipc-main-tabview-loaded', useNavAreas);
+            tabView.webContents.send('ipc-main-tabview-loaded', useNavAreas, scrollDistance);
         });
 
         tabView.webContents.openDevTools(); // to remove
@@ -509,6 +511,7 @@ function insertRendererCSS() {
         a, input, textarea, button, div { 
             cursor: none !important; 
         }
+
         /* width */
         ::-webkit-scrollbar {
             width: 5px;
