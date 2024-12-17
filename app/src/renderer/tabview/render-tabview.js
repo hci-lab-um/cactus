@@ -456,16 +456,16 @@ function findScrollableElements(useNavAreas) {
 				checkIfElementIsAtTop(element, scrollUpButton_outerDiv, scrollUpButton);
 				checkIfElementIsAtBottom(element, scrollDownButton_outerDiv, scrollDownButton);
 
-				// When both the body and the html tag have been identified as scrollable elements, then they are scrolled simulatenously,
-				// even if only the html tag remains in the filtered list of scrollable elements
-				if (element.tagName === "HTML" && containsScrollableBodyTag) {
-					const bodyElement = document.querySelector('body');
-					bodyElement.scrollBy({
-						top: updatedScrollDistance,
-						left: 0,
-						behavior: "auto"
-					});
-				}
+				// // When both the body and the html tag have been identified as scrollable elements, then they are scrolled simulatenously,
+				// // even if only the html tag remains in the filtered list of scrollable elements
+				// if (element.tagName === "HTML" && containsScrollableBodyTag) {
+				// 	const bodyElement = document.querySelector('body');
+				// 	bodyElement.scrollBy({
+				// 		top: updatedScrollDistance,
+				// 		left: 0,
+				// 		behavior: "auto"
+				// 	});
+				// }
 
 				element.scrollBy({
 					top: updatedScrollDistance,
