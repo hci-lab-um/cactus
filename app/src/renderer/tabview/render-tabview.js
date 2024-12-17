@@ -192,7 +192,7 @@ window.cactusAPI.onAsync('ipc-tabview-click-element', (elementToClick) => {
 
 	element = document.querySelector('[data-cactus-id="' + elementToClick.id + '"]');
 
-	if (!element){
+	if (!element) {
 		console.log("Element to click not found by cactus id");
 		element = document.elementFromPoint(elementToClick.insertionPointX, elementToClick.insertionPointY);
 	}
@@ -279,7 +279,7 @@ function followMouse() {
 
 	// Increase interval to make it slower
 	cursorInterval = setInterval(updateCursorPos, 20);
-}	
+}
 
 function generateUUID() {
 	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -292,17 +292,39 @@ function generateUUID() {
 function findScrollableElements(useNavAreas) {
 	removeExistingScrollButtons();
 
+	// The list of scrollable elements is filtered so that only the <html> tag is considered if the <body> tag is also present, preventing overlapping scrolling buttons
 	const scrollableElements = Array.from(document.querySelectorAll('*')).filter(element => {
 		const style = window.getComputedStyle(element);
-		return (style.overflowY === 'scroll' || style.overflowY === 'auto') && element.scrollHeight > element.clientHeight && style.overflowY !== 'visible';
+		return (
+			(style.overflowY === 'scroll' || style.overflowY === 'auto') &&
+			element.scrollHeight > element.clientHeight &&
+			style.overflowY !== 'visible'
+		);
 	});
 
-	// The list of scrollable elements is filtered so that only the <html> tag is considered if the <body> tag is also present, preventing overlapping scrolling buttons
-	const containsHtmlTag = scrollableElements.some(element => element.tagName === 'HTML');
-	const containsBodyTag = scrollableElements.some(element => element.tagName === 'BODY');
+	const containsScrollableHtmlTag = scrollableElements.some(element => element.tagName === 'HTML');
+	const containsScrollableBodyTag = scrollableElements.some(element => element.tagName === 'BODY');
+
+	// Determine the scrollable heights of HTML and BODY, and keep either one, not both.
+	const htmlElement = document.documentElement;
+	const bodyElement = document.body;
+
+	const htmlScrollableHeight = htmlElement.scrollHeight - htmlElement.clientHeight;
+	const bodyScrollableHeight = bodyElement.scrollHeight - bodyElement.clientHeight;
+
+	// Filter out either HTML or BODY based on scrollable height, keeping the rest
 	const filteredElements = scrollableElements.filter(element => {
-	    return !(containsHtmlTag && element.tagName === 'BODY');
+		if (element === htmlElement && bodyScrollableHeight > htmlScrollableHeight + 1) {
+			// Keep BODY
+			return false;
+		}
+		if (element === bodyElement && htmlScrollableHeight > bodyScrollableHeight + 1) {
+			// Keep HTML
+			return false;
+		}
+		return true; // Keep all other elements
 	});
+
 
 	console.log("Scrollable elements", filteredElements);
 
@@ -384,12 +406,12 @@ function findScrollableElements(useNavAreas) {
 		if (element.tagName === "HTML" || element.tagName === "BODY") {
 			// Centering the scroll buttons and taking up 1/3 of the screen width
 			scrollDownButton.style.width = 'calc((100% - 28px)/3)',
-			scrollDownButton.style.left = '50%', // This positions the element's left edge at the center of the container
-			scrollDownButton.style.transform = 'translateX(-50%)', // this moves the element back by half of its own width - combined with left: 50% the element is centered
+				scrollDownButton.style.left = '50%', // This positions the element's left edge at the center of the container
+				scrollDownButton.style.transform = 'translateX(-50%)', // this moves the element back by half of its own width - combined with left: 50% the element is centered
 
-			scrollUpButton.style.width = 'calc((100% - 28px)/3)',
-			scrollUpButton.style.left = '50%',
-			scrollUpButton.style.transform = 'translateX(-50%)'
+				scrollUpButton.style.width = 'calc((100% - 28px)/3)',
+				scrollUpButton.style.left = '50%',
+				scrollUpButton.style.transform = 'translateX(-50%)'
 
 			// Fixing the position to appear at the top and bottom of the viewport
 			scrollUpButton_outerDiv.style.position = 'fixed';
@@ -436,7 +458,7 @@ function findScrollableElements(useNavAreas) {
 
 				// When both the body and the html tag have been identified as scrollable elements, then they are scrolled simulatenously,
 				// even if only the html tag remains in the filtered list of scrollable elements
-				if (element.tagName === "HTML" && containsBodyTag) {
+				if (element.tagName === "HTML" && containsScrollableBodyTag) {
 					const bodyElement = document.querySelector('body');
 					bodyElement.scrollBy({
 						top: updatedScrollDistance,
