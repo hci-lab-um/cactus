@@ -294,33 +294,9 @@ function initScrollableElements(useNavAreas) {
 		);
 	});
 
-	const containsScrollableHtmlTag = scrollableElements.some(element => element.tagName === 'HTML');
-	const containsScrollableBodyTag = scrollableElements.some(element => element.tagName === 'BODY');
+	console.log("Scrollable elements", scrollableElements);
 
-	// Determine the scrollable heights of HTML and BODY, and keep either one, not both.
-	const htmlElement = document.documentElement;
-	const bodyElement = document.body;
-
-	const htmlScrollableHeight = htmlElement.scrollHeight - htmlElement.clientHeight;
-	const bodyScrollableHeight = bodyElement.scrollHeight - bodyElement.clientHeight;
-
-	// Filter out either HTML or BODY based on scrollable height, keeping the rest
-	const filteredElements = scrollableElements.filter(element => {
-		if (element === htmlElement && bodyScrollableHeight > htmlScrollableHeight + 1) {
-			// Keep BODY
-			return false;
-		}
-		if (element === bodyElement && htmlScrollableHeight > bodyScrollableHeight + 1) {
-			// Keep HTML
-			return false;
-		}
-		return true; // Keep all other elements
-	});
-
-
-	console.log("Scrollable elements", filteredElements);
-
-	filteredElements.forEach(element => {
+	scrollableElements.forEach(element => {
 		const targetZIndex = getZIndex(element);
 		let quadtreeGeneratorTimer = null;
 
@@ -353,7 +329,7 @@ function initScrollableElements(useNavAreas) {
 		scrollDownButton.style.display = 'flex';
 
 		const keyboard_arrow_down = `<svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 -960 960 960" width="48px" fill="#203a90"><path d="M480-356q-6 0-11-2t-10-7L261-563q-9-9-8.5-21.5T262-606q9-9 21.5-9t21.5 9l175 176 176-176q9-9 21-8.5t21 9.5q9 9 9 21.5t-9 21.5L501-365q-5 5-10 7t-11 2Z"/></svg>`;
-		var trustedHTML = policy.createHTML(keyboard_arrow_down);
+		trustedHTML = policy.createHTML(keyboard_arrow_down);
 		scrollDownButton.innerHTML = trustedHTML;
 
 		// The same reasons for checking if element is at the top applies for checking if an element is at the bottom
@@ -424,17 +400,6 @@ function initScrollableElements(useNavAreas) {
 
 				checkIfElementIsAtTop(element, scrollUpButton_outerDiv, scrollUpButton);
 				checkIfElementIsAtBottom(element, scrollDownButton_outerDiv, scrollDownButton);
-
-				// When both the body and the html tag have been identified as scrollable elements, then they are scrolled simulatenously,
-				// even if only the html tag remains in the filtered list of scrollable elements
-				if (element.tagName === "HTML" && containsScrollableBodyTag) {
-					const bodyElement = document.querySelector('body');
-					bodyElement.scrollBy({
-						top: updatedScrollDistance,
-						left: 0,
-						behavior: "auto"
-					});
-				}
 
 				element.scrollBy({
 					top: updatedScrollDistance,
