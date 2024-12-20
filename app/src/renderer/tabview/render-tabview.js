@@ -45,8 +45,7 @@ window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist) => {
 				&& !mutation.target.classList.contains('cactus-element-highlight')
 
 				// this prevents the insertion of the scrolling buttons from being registered as a mutation
-				&& !mutation.target.classList.contains('cactus-scrollUp')
-				&& !mutation.target.classList.contains('cactus-scrollDown')
+				&& !mutation.target.classList.contains('cactus-scrollButton')
 				&& !mutation.target.classList.contains('cactus-scrollUp_outerDiv')
 				&& !mutation.target.classList.contains('cactus-scrollDown_outerDiv')
 			) {
@@ -242,14 +241,7 @@ function createCursor(id) {
 
 	cursor.innerHTML = trustedHTML;
 	cursor.setAttribute('id', id)
-	cursor.style.width = '50px'
-	cursor.style.height = '50px'
-	cursor.style.color = "#a091eb"
-	cursor.style.opacity = '0.4'
-	cursor.style.zIndex = '9999999999'
-	cursor.style.position = 'absolute'
-	cursor.style.margin = '-20px 0 0 -20px'
-	cursor.style['pointer-events'] = 'none'
+	cursor.classList.add('cactus-cursor');
 
 	// if (!id.localeCompare('hiddenCursor')) {
 	//   cursor.style.opacity = 0
@@ -309,72 +301,37 @@ function findScrollableElements(useNavAreas) {
 	filteredElements.forEach(element => {
 		const targetZIndex = getZIndex(element);
 
+		// Scroll up button
 		let scrollUpButton_outerDiv = document.createElement('div');
 		scrollUpButton_outerDiv.classList.add('cactus-scrollUp_outerDiv');
+		scrollUpButton_outerDiv.style.zIndex = `${targetZIndex + 1}`;
 
 		let scrollUpButton = document.createElement('div');
-		scrollUpButton.classList.add('cactus-scrollUp');
+		scrollUpButton.classList.add('cactus-scrollButton');
+		scrollUpButton.style.top = '0';
+
 		const keyboard_arrow_up = `<svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 -960 960 960" width="48px" fill="#203a90"><path d="M480-554 304-378q-9 9-21 8.5t-21-9.5q-9-9-9-21.5t9-21.5l197-197q9-9 21-9t21 9l198 198q9 9 9 21t-9 21q-9 9-21.5 9t-21.5-9L480-554Z"/></svg>`;
 		var trustedHTML = policy.createHTML(keyboard_arrow_up);
 		scrollUpButton.innerHTML = trustedHTML;
-
-		Object.assign(scrollUpButton_outerDiv.style, {
-			position: 'sticky',
-			zIndex: `${targetZIndex + 1}`,
-			top: '0px',
-			width: '100%',
-		});
-
-		Object.assign(scrollUpButton.style, {
-			position: 'absolute',
-			top: '0px',
-			margin: '14px',
-			width: 'calc(100% - 28px)',
-			alignItems: 'center',
-			justifyContent: 'center',
-			padding: '10px',
-			fontSize: '20px',
-			boxSizing: 'border-box',
-			borderRadius: '4px',
-			backgroundColor: '#d7e3edbf',
-			transition: 'all 0.5s ease 0s',
-		});
 
 		// When a mutation is observed and a new button is created to replace the previous button, then a check is made to see
 		// whether the element has been previously scrolled or not. This is important because elements scrolled to the top should not have 
 		// a scroll up button displayed.
 		checkIfElementIsAtTop(element, scrollUpButton_outerDiv, scrollUpButton);
 
+		// Scroll down button
 		let scrollDownButton_outerDiv = document.createElement('div');
 		scrollDownButton_outerDiv.classList.add('cactus-scrollDown_outerDiv'); // the classes are needed by the mutation observer
+		scrollDownButton_outerDiv.style.zIndex = `${targetZIndex + 1}`;
 
 		let scrollDownButton = document.createElement('div');
-		scrollDownButton.classList.add('cactus-scrollDown');
+		scrollDownButton.classList.add('cactus-scrollButton');
+		scrollDownButton.style.bottom = '0';
+		scrollDownButton.style.display = 'flex';
+
 		const keyboard_arrow_down = `<svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 -960 960 960" width="48px" fill="#203a90"><path d="M480-356q-6 0-11-2t-10-7L261-563q-9-9-8.5-21.5T262-606q9-9 21.5-9t21.5 9l175 176 176-176q9-9 21-8.5t21 9.5q9 9 9 21.5t-9 21.5L501-365q-5 5-10 7t-11 2Z"/></svg>`;
 		var trustedHTML = policy.createHTML(keyboard_arrow_down);
 		scrollDownButton.innerHTML = trustedHTML;
-
-		Object.assign(scrollDownButton_outerDiv.style, {
-			position: 'sticky',
-			zIndex: `${targetZIndex + 1}`,
-			bottom: '0px',
-			width: '100%',
-		});
-
-		Object.assign(scrollDownButton.style, {
-			position: 'absolute',
-			bottom: '0px',
-			margin: '14px',
-			width: 'calc(100% - 28px)',
-			display: 'flex',
-			alignItems: 'center',
-			justifyContent: 'center',
-			padding: '10px',
-			fontSize: '20px',
-			borderRadius: '4px',
-			backgroundColor: '#d7e3edbf',
-			transition: 'all 0.5s ease 0s',
-		});
 
 		// The same reasons for checking if element is at the top applies for checking if an element is at the bottom
 		checkIfElementIsAtBottom(element, scrollDownButton_outerDiv, scrollDownButton);
@@ -500,7 +457,7 @@ function getZIndex(element) {
 
 function removeExistingScrollButtons() {
 	const existingScrollButtons = Array.from(
-		document.querySelectorAll('.cactus-scrollUp, .cactus-scrollDown, .cactus-scrollDown_outerDiv, .cactus-scrollUp_outerDiv')
+		document.querySelectorAll('.cactus-scrollButton, .cactus-scrollDown_outerDiv, .cactus-scrollUp_outerDiv')
 	);
 	console.log("Existing scroll buttons", existingScrollButtons);
 	existingScrollButtons.forEach(button => button.remove());

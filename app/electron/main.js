@@ -532,6 +532,43 @@ function insertRendererCSS() {
         ::-webkit-scrollbar-thumb:hover {
             background: #638eec; 
         }
+            
+        .cactus-cursor {
+            width: 50px;
+            height: 50px;
+            color: #a091eb;
+            opacity: 0.4;
+            z-index: 9999999999;
+            position: absolute;
+            margin: -20px 0 0 -20px;
+            pointer-events: none;
+        }
+
+        /* Scrolling buttons */
+        .cactus-scrollButton {
+            position: absolute;
+            margin: 14px;
+            width: calc(100% - 28px);
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            font-size: 20px;
+            border-radius: 4px;
+            background-color: #d7e3edbf;
+            transition: all 0.5s ease 0s;
+        }
+
+        .cactus-scrollUp_outerDiv {
+            position: sticky;
+			top: 0px;
+			width: 100%;
+        }
+
+        .cactus-scrollDown_outerDiv {
+            position: sticky;
+			bottom: 0px;
+			width: 100%;
+        }
 
         /* Quadtree markers */
         .cactusElementMark {
