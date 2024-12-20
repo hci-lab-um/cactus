@@ -20,7 +20,7 @@ followMouse('cactus_cursor');
 
 window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist) => {
 	scrollDistance = scrollDist;
-	findScrollableElements(useNavAreas);
+	initScrollableElements(useNavAreas);
 
 	// Setup the QuadTree and NavAreasTree
 	generateQuadTree();
@@ -60,7 +60,7 @@ window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist) => {
 
 				// If the mutation is a simple data-cactus-id attribute change, then scroll buttons are not updated
 				if (mutation.type !== "attributes" || mutation.attributeName !== "data-cactus-id") {
-					findScrollableElements(useNavAreas);
+					initScrollableElements(useNavAreas);
 				} else {
 					console.log("Mutation is data-cactus-id attribute change, skipping scrollable elements check");
 				}
@@ -289,7 +289,7 @@ function generateUUID() {
 	});
 }
 
-function findScrollableElements(useNavAreas) {
+function initScrollableElements(useNavAreas) {
 	removeExistingScrollButtons();
 
 	// The list of scrollable elements is filtered so that only the <html> tag is considered if the <body> tag is also present, preventing overlapping scrolling buttons
@@ -330,7 +330,7 @@ function findScrollableElements(useNavAreas) {
 
 	filteredElements.forEach(element => {
 		const targetZIndex = getZIndex(element);
-
+		let quadtreeGeneratorTimer = null;
 		let scrollUpButton_outerDiv = document.createElement('div');
 		scrollUpButton_outerDiv.classList.add('cactus-scrollUp_outerDiv');
 
@@ -347,6 +347,7 @@ function findScrollableElements(useNavAreas) {
 			width: '100%',
 		});
 
+		//TO DISCUSS - CSS
 		Object.assign(scrollUpButton.style, {
 			position: 'absolute',
 			top: '0px',
@@ -449,23 +450,34 @@ function findScrollableElements(useNavAreas) {
 
 			function step() {
 				if (!isScrolling) {
-					clearInterval(quadtreeInterval);
+					// clearInterval(quadtreeInterval);
 					return; // Stop if scrolling is interrupted
+				}
+				else {
+					// Start the timer to generate quadtree and navareas
+					if (!quadtreeGeneratorTimer) {
+						quadtreeGeneratorTimer = setTimeout(function () {
+							generateQuadTree();
+							if (useNavAreas) generateNavAreasTree();
+							window.clearTimeout(quadtreeGeneratorTimer);
+							quadtreeGeneratorTimer = null;
+						}, 1000);
+					}
 				}
 
 				checkIfElementIsAtTop(element, scrollUpButton_outerDiv, scrollUpButton);
 				checkIfElementIsAtBottom(element, scrollDownButton_outerDiv, scrollDownButton);
 
-				// // When both the body and the html tag have been identified as scrollable elements, then they are scrolled simulatenously,
-				// // even if only the html tag remains in the filtered list of scrollable elements
-				// if (element.tagName === "HTML" && containsScrollableBodyTag) {
-				// 	const bodyElement = document.querySelector('body');
-				// 	bodyElement.scrollBy({
-				// 		top: updatedScrollDistance,
-				// 		left: 0,
-				// 		behavior: "auto"
-				// 	});
-				// }
+				// When both the body and the html tag have been identified as scrollable elements, then they are scrolled simulatenously,
+				// even if only the html tag remains in the filtered list of scrollable elements
+				if (element.tagName === "HTML" && containsScrollableBodyTag) {
+					const bodyElement = document.querySelector('body');
+					bodyElement.scrollBy({
+						top: updatedScrollDistance,
+						left: 0,
+						behavior: "auto"
+					});
+				}
 
 				element.scrollBy({
 					top: updatedScrollDistance,
@@ -476,13 +488,8 @@ function findScrollableElements(useNavAreas) {
 				requestAnimationFrame(step); // Keep scrolling while `isScrolling` is true
 			}
 
-			// Start the interval to generate quadtree and navareas tree every 500ms
-			quadtreeInterval = setInterval(() => {
-				generateQuadTree();
-				if (useNavAreas) generateNavAreasTree();
-			}, 500);
-
-			step(); // starts the scrolling animation
+			// Starts the scrolling animation
+			step();
 		}
 
 		// The outer divs are parents of the actual button. They help with the positioning of the buttons on the screen.
@@ -580,6 +587,7 @@ function generateQuadTree() {
 		docTitle: document.title,
 		docURL: document.URL
 	};
+	console.log("Gen quadtrees");
 	window.cactusAPI.send('ipc-tabview-generateQuadTree', quadTreeContents);
 }
 
