@@ -1,11 +1,13 @@
 #navbar {
   display: flex;
+  gap: 15px;
   width: 100%;
   height: $navHeight;
   background: $white;
   top: 0;
   left: 0;
   border-bottom: 1px solid $lightgrey;
+  padding: 15px; // 15px is chosen to match the gap between the buttons
   box-sizing: border-box;
 
   #backOrForwardBtn {
@@ -13,7 +15,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 19%;
+    width: calc(20% - 30px); // 20% is the same as the sidebar width and 30px is the gap between the buttons (15px * 2)
 
     #backBtn {
       margin-right: 10px;
@@ -29,10 +31,15 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 19%;
+    width: 10%;
+  }
+  
+  #tabsBtn  {
+    @extend #accessibilityBtn;
   }
 
   #omnibox  {
+    width: fit-content;
     flex: 1;
     display: flex;
     align-content: space-between;
@@ -41,8 +48,8 @@
     color: $blue-2;
     background-color: $blue-light;
     box-sizing: border-box;
-    border: 15px solid $white;    
-    border-radius: 20px;
+    border: 2px solid $white;    
+    border-radius: 5px;
     // cursor: pointer;
     transition: $dwellTime;
     outline: none;

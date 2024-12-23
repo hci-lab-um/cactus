@@ -71,14 +71,13 @@ body {
 }
 
 #sidebar {
-  flex: 20%;
+  flex: calc(20% - 2px);
   // grid-column-start: 1;
   top: 0;
   left: 0;
   height: calc(100vh - #{$navHeight});
-  // width: 99%;
   background-color: $white;
-  border-right: 1.5px solid $lightgrey;
+  border-right: 1px solid $lightgrey;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -90,7 +89,7 @@ body {
     display: flex;
     align-items: center;
     border-bottom: 1px solid $lightgrey;
-    width: 80%;
+    width: 100%;
     padding: 20px 30px;
 
     &_icon {
@@ -112,6 +111,9 @@ body {
     justify-content: center;
     width: 100%;
     padding: 20px;
+    border: 15px solid white;
+    border-radius: 20px;
+    border-bottom: 0px;
   }
 
   &_scrollup {
@@ -121,6 +123,8 @@ body {
     justify-content: center;
     width: 100%;
     padding: 20px;
+    border: 15px solid white;
+    border-radius: 20px;
   }
 
   &_scrolldown {
@@ -131,6 +135,8 @@ body {
     justify-content: center;
     width: 100%;
     padding: 20px;
+    border: 15px solid white;
+    border-radius: 20px;
   }
 
   &_items {

@@ -553,7 +553,7 @@ function insertRendererCSS() {
             justify-content: center;
             padding: 10px;
             font-size: 20px;
-            border-radius: 4px;
+            border-radius: 6px;
             background-color: #d7e3edbf;
             transition: all 0.5s ease 0s;
         }
