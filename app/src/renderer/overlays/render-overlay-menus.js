@@ -15,8 +15,8 @@ window.addEventListener('DOMContentLoaded', () => {
 	followCursor('cactus_cursor');
 });
 
-ipcRenderer.on('ipc-main-overlays-loaded', (event, overlayToShow) => {
-	switch (overlayToShow) {
+ipcRenderer.on('ipc-main-overlays-loaded', (event, overlayAreaToShow, tabList ) => {
+	switch (overlayAreaToShow) {
 		case 'omni': {
 			byId('overlay-omnibox').style.display = 'grid'
 			setEventHandlersForOmniMenu()
@@ -25,6 +25,11 @@ ipcRenderer.on('ipc-main-overlays-loaded', (event, overlayToShow) => {
 		case 'navigation': {
 			byId('overlay-nav').style.display = 'grid'
 			setEventHandlersForNavigationMenu();
+			break;
+		}
+		case 'tabs': {
+			byId('overlay-tabs').style.display = 'grid'
+			setEventHandlersForTabsMenu(tabList);
 			break;
 		}
 		case 'accessibility': {
@@ -324,4 +329,47 @@ function setEventHandlersForNavigationMenu() {
 	ipcRenderer.on('ipc-overlays-forward-check', (event, canGoForward) => {
 		forwardNavBtn.style.display = canGoForward ? 'flex' : 'none';
 	})
+}
+
+function setEventHandlersForTabsMenu(tabList) {
+	// =================================
+	// ======== TABS OVERLAY ===========
+	// =================================
+
+	let cancelTabsBtn = byId('cancel-tabs')
+	let tabsContainer = byId('tabsContainer');
+	tabsContainer.innerHTML = ''; // Clear existing tabs
+
+	dwell(cancelTabsBtn, () => {
+		ipcRenderer.send('ipc-overlays-remove');
+	})
+
+	// Addind a tab in the tabs overlay for each tab found in the tablist.
+	tabList.forEach((tab) => {
+		const tabElement = document.createElement('div');
+		tabElement.classList.add('tab');
+		tab.isActive === true ? tabElement.classList.add('tab--active') : null;
+
+		const tabImage = document.createElement('div');
+		tabImage.classList.add('tabImage');
+		tabImage.style.backgroundImage = `url(${tab.snapshot})`; // Set the background image to the tab snapshot
+
+		const tabBookmarkBtn = document.createElement('div');
+		tabBookmarkBtn.classList.add('tabBottomBtn', 'tabBottomBtn--left');
+		tabBookmarkBtn.innerHTML = createMaterialIcon('star');
+
+		const tabCloseBtn = document.createElement('div');
+		tabCloseBtn.classList.add('tabBottomBtn', 'tabBottomBtn--right');
+		tabCloseBtn.innerHTML = createMaterialIcon('close');
+
+		tabElement.appendChild(tabImage);
+		tabElement.appendChild(tabBookmarkBtn);
+		tabElement.appendChild(tabCloseBtn);
+
+		tabsContainer.appendChild(tabElement);
+	});
+
+	function createMaterialIcon(icon_name) {
+		return `<i class="material-icons--small">${icon_name}</i>`;
+	}
 }

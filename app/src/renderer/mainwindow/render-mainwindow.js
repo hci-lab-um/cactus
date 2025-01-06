@@ -101,13 +101,16 @@ function setupFunctionality() {
 
 	let backOrForward = byId('backOrForwardBtn')
 	dwell(backOrForward, () => {
-		// showOverlay('navigation')
 		showOverlay('navigation');
+	})
+
+	let tabs = byId('tabsBtn')
+	dwell(tabs, () => {
+		showOverlay('tabs');
 	})
 
 	let accessibility = byId('accessibilityBtn')
 	dwell(accessibility, () => {
-		// showOverlay('accessibility')
 		showOverlay('accessibility');
 	})
 }
@@ -532,7 +535,7 @@ function createSidebarItemElement(element, isNavItem) {
 
 // Function to create Material Icons
 function createMaterialIcon(icon_name) {
-	return `<i class="material-icons--small">${icon_name}</i>`;
+	return `<i class="material-icons--smaller">${icon_name}</i>`;
 }
 
 function showDwellingPausedMessage() {

@@ -226,6 +226,9 @@ ipcMain.on('ipc-mainwindow-show-overlay', (event, overlayAreaToShow, elementProp
         }
     }
 
+    // Right before the tabs overlay is shown, capture the snapshot of the active tab to get the current state of the page
+    if (overlayAreaToShow === 'tabs') captureSnapshot();
+    
     createOverlay(overlayAreaToShow, elementProperties);
 })
 
@@ -441,6 +444,9 @@ function createTabview(url, properties) {
         }
     });
 
+    // Capture the snapshot of the previous tab before the new tab is set to active
+    // if (tabList) captureSnapshot();
+
     //Set new tab as active (if any)
     tabList.forEach(tab => {
         tab.isActive = false
@@ -479,13 +485,18 @@ function createTabview(url, properties) {
 
     //Loading event - update omnibox
     tabView.webContents.on('did-start-loading', () => {
-        mainWindowContent.webContents.send('tabview-loading-start');
+        mainWindowContent.webContents.send('tabview-loading-start'); // Updates omnibox
     });
 
     tabView.webContents.on('did-stop-loading', () => {
         const url = tabView.webContents.getURL();
         const title = tabView.webContents.getTitle();
-        mainWindowContent.webContents.send('tabview-loading-stop', { url: url, title: title });
+        mainWindowContent.webContents.send('tabview-loading-stop', { url: url, title: title }); // Updates omnibox
+    });
+
+    // When the page finished loading, a snapshot of the page is taken
+    tabView.webContents.on('did-finish-load', () => {
+        captureSnapshot();
     });
 
     //React to in-page navigation (e.g. anchor links)
@@ -615,6 +626,13 @@ function insertRendererCSS() {
     `);
 }
 
+function captureSnapshot() {
+    var tab = tabList.find(tab => tab.isActive === true);
+    tab.webContentsView.webContents.capturePage().then(snapshot => {
+        tab.snapshot = snapshot.toDataURL();
+    });
+}
+
 function removeOverlay() {
     if (overlayContent) {
         mainWindow.contentView.removeChildView(overlayContent);
@@ -645,12 +663,16 @@ function createOverlay(overlayAreaToShow, elementProperties) {
 
     if (overlayAreaToShow === 'keyboard') {
         isKeyboardOverlay = true;
-        console.log("creating keyboard overlay");
         overlayContent.webContents.send('ipc-main-keyboard-loaded', elementProperties);
     } else {
         isKeyboardOverlay = false;
-        console.log("creating menus overlay");
-        overlayContent.webContents.send('ipc-main-overlays-loaded', overlayAreaToShow)
+        // Extract serializable properties from tabList
+        const serializableTabList = tabList.map(tab => ({
+            tabId: tab.tabId,
+            isActive: tab.isActive,
+            snapshot: tab.snapshot // Assuming you have a snapshot property
+        }));
+        overlayContent.webContents.send('ipc-main-overlays-loaded', overlayAreaToShow, overlayAreaToShow === 'tabs' ? serializableTabList : null );
     }
     // if (isDevelopment) overlayContent.webContents.openDevTools(); // to uncomment
     overlayContent.webContents.openDevTools(); // to remove
