@@ -236,6 +236,10 @@ ipcMain.on('ipc-overlays-remove', (event) => {
     removeOverlay();
 })
 
+ipcMain.on('ipc-overlays-newTab', (event) => {
+    // to fill
+})
+
 ipcMain.on('ipc-keyboard-input', (event, value, element) => {
     console.log("Keyboard value: ", value, element);
     // If the input is for the omnibox, send it to the main window, else send it to the active tab

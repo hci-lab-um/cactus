@@ -1,5 +1,5 @@
 const { ipcRenderer } = require('electron')
-const { byId, dwell } = require('../../../src/tools/utils')
+const { byId, dwell, dwellInfinite } = require('../../../src/tools/utils')
 const { createCursor, followCursor, getMouse } = require('../../../src/tools/cursor')
 const DOMPurify = require('dompurify');
 
@@ -337,17 +337,36 @@ function setEventHandlersForTabsMenu(tabList) {
 	// =================================
 
 	let cancelTabsBtn = byId('cancel-tabs')
+	let newTabBtn =  byId('newTabBtn')
+	let scrollUpBtn = byId('scrollUpBtn')
+	let scrollDownBtn = byId('scrollDownBtn')
+
 	let tabsContainer = byId('tabsContainer');
 	tabsContainer.innerHTML = ''; // Clear existing tabs
+
+	let tabCounter = byId('tabCounter');
+	tabCounter.innerHTML = tabList.length + ((tabList.length == 1) ? ' Tab' : ' Tabs');
 
 	dwell(cancelTabsBtn, () => {
 		ipcRenderer.send('ipc-overlays-remove');
 	})
 
+	dwell(newTabBtn, () => {
+		ipcRenderer.send('ipc-overlays-newTab');
+	})
+
+	dwellInfinite(scrollUpBtn, () => {
+		scrollByOneRow(-1);
+	})
+
+	dwellInfinite(scrollDownBtn, () => {
+		scrollByOneRow(1);
+	})
+
 	// Addind a tab in the tabs overlay for each tab found in the tablist.
 	tabList.forEach((tab) => {
 		const tabElement = document.createElement('div');
-		tabElement.classList.add('tab');
+		tabElement.classList.add('tab', 'fadeInUp');
 		tab.isActive === true ? tabElement.classList.add('tab--active') : null;
 
 		const tabImage = document.createElement('div');
@@ -372,4 +391,12 @@ function setEventHandlersForTabsMenu(tabList) {
 	function createMaterialIcon(icon_name) {
 		return `<i class="material-icons--small">${icon_name}</i>`;
 	}
+
+	function scrollByOneRow(direction) {
+        const rowHeight = 315 + 40; // Height of a tab + gap 
+        tabsContainer.scrollBy({
+            top: direction * rowHeight,
+            behavior: 'smooth'
+        });
+    }
 }
