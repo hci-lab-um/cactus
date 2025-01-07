@@ -799,6 +799,7 @@ function createOverlay(overlayAreaToShow, elementProperties) {
             tabId: tab.tabId,
             isActive: tab.isActive,
             snapshot: tab.snapshot,
+            title: tab.webContentsView.webContents.getTitle(), 
             url: tab.webContentsView.webContents.getURL(),
         }));
         let tabData = { tabList: serializableTabList, bookmarks };

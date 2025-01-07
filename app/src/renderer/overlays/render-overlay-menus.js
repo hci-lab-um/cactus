@@ -377,6 +377,10 @@ function setEventHandlersForTabsMenu(tabList, bookmarks) {
 		tabImage.classList.add('overlayBtn', 'tabImage');
 		tabImage.style.backgroundImage = `url(${tab.snapshot})`; // Set the background image to the tab snapshot
 
+		const tabImageOverlay = document.createElement('div');
+		tabImageOverlay.classList.add('overlayBtn', 'tabImage', 'tabImage--overlay');
+		tabImageOverlay.innerHTML = tab.title;
+
 		const tabBookmarkBtn = document.createElement('div');
 		tabBookmarkBtn.classList.add('overlayBtn', 'tabBottomBtn', 'tabBottomBtn--left');
 		tabBookmarkBtn.innerHTML = bookmarks.includes(tab.url) ? roundedBookmarkFilled : roundedBookmark;
@@ -385,7 +389,7 @@ function setEventHandlersForTabsMenu(tabList, bookmarks) {
 		tabCloseBtn.classList.add('overlayBtn', 'tabBottomBtn', 'tabBottomBtn--right');
 		tabCloseBtn.innerHTML = '<i class="material-icons">close</i>';
 
-		dwell(tabImage, () => {
+		dwell(tabImageOverlay, () => {
 			// Remove the active class from all tabs
 			const tabList = tabsContainer.querySelectorAll('.tab');
 			tabList.forEach(tab => tab.classList.remove('tab--active'));
@@ -452,6 +456,7 @@ function setEventHandlersForTabsMenu(tabList, bookmarks) {
 		});
 
 		tabElement.appendChild(tabImage);
+		tabElement.appendChild(tabImageOverlay);
 		tabElement.appendChild(tabBookmarkBtn);
 		tabElement.appendChild(tabCloseBtn);
 

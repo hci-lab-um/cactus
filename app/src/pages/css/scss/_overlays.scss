@@ -214,6 +214,16 @@
         border-top-left-radius: 15px;
         border-top-right-radius: 15px;
         grid-area: 1 / 1 / 4 / 3;
+
+        &--overlay {
+          background: linear-gradient(to top, transparent, #000000c7);
+          display: flex;
+          justify-content: flex-start;
+          align-items: flex-start;
+          color: white;
+          font-size: 20px;
+          text-shadow: -2px 2px 6px black;
+        }
       }
 
       .tabBottomBtn {
