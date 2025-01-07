@@ -18,6 +18,7 @@ let currentQt, currentNavAreaTree
 let timeoutCursorHovering
 let defaultUrl = config.get('browser.defaultUrl');
 let tabList = [];
+let bookmarks = [];
 let isDwellingActive = true;
 
 app.whenReady().then(() => {
@@ -258,6 +259,10 @@ ipcMain.on('ipc-tabs-updated', (event, indexOfDeletedTab) => {
 
     // Updating the active tab
     tabList[tabList.length - 1].isActive = true;
+})
+
+ipcMain.on('ipc-bookmarks-updated', (event, updatedBookmarks) => {
+    bookmarks = updatedBookmarks;
 })
 
 ipcMain.on('ipc-keyboard-input', (event, value, element) => {
@@ -774,15 +779,21 @@ function createOverlay(overlayAreaToShow, elementProperties) {
     if (overlayAreaToShow === 'keyboard') {
         isKeyboardOverlay = true;
         overlayContent.webContents.send('ipc-main-keyboard-loaded', elementProperties);
-    } else {
+    } else if (overlayAreaToShow === 'tabs') {
         isKeyboardOverlay = false;
-        // Extract serializable properties from tabList
+
+        // Extracting serializable properties from tabList
         const serializableTabList = tabList.map(tab => ({
             tabId: tab.tabId,
             isActive: tab.isActive,
-            snapshot: tab.snapshot // Assuming you have a snapshot property
+            snapshot: tab.snapshot,
+            url: tab.webContentsView.webContents.getURL(),
         }));
-        overlayContent.webContents.send('ipc-main-overlays-loaded', overlayAreaToShow, overlayAreaToShow === 'tabs' ? serializableTabList : null );
+        let tabData = { tabList: serializableTabList, bookmarks };
+        overlayContent.webContents.send('ipc-main-overlays-loaded', overlayAreaToShow, tabData);
+    } else {
+        isKeyboardOverlay = false;
+        overlayContent.webContents.send('ipc-main-overlays-loaded', overlayAreaToShow);
     }
     // if (isDevelopment) overlayContent.webContents.openDevTools(); // to uncomment
     overlayContent.webContents.openDevTools(); // to remove
