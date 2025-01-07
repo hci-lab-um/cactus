@@ -373,7 +373,7 @@ function setEventHandlersForTabsMenu(tabList, bookmarks) {
 		tab.isActive === true ? tabElement.classList.add('tab--active') : null;
 
 		const tabImage = document.createElement('div');
-		tabImage.classList.add('tabImage');
+		tabImage.classList.add('overlayBtn', 'tabImage');
 		tabImage.style.backgroundImage = `url(${tab.snapshot})`; // Set the background image to the tab snapshot
 
 		const tabBookmarkBtn = document.createElement('div');
@@ -383,6 +383,18 @@ function setEventHandlersForTabsMenu(tabList, bookmarks) {
 		const tabCloseBtn = document.createElement('div');
 		tabCloseBtn.classList.add('overlayBtn', 'tabBottomBtn', 'tabBottomBtn--right');
 		tabCloseBtn.innerHTML = '<i class="material-icons">close</i>';
+
+		dwell(tabImage, () => {
+			// Remove the active class from all tabs
+			const tabList = tabsContainer.querySelectorAll('.tab');
+			tabList.forEach(tab => tab.classList.remove('tab--active'));
+
+			// Add the active class to the clicked tab
+			tabElement.classList.add('tab--active');
+
+			// Update the main process with the new active tab
+			ipcRenderer.send('ipc-overlays-tab-selected', index);
+		});
 
 		dwell(tabCloseBtn, () => {
             // Remove the tab from the tabList
@@ -404,8 +416,13 @@ function setEventHandlersForTabsMenu(tabList, bookmarks) {
                 }
             }
 
+			// If there are no tabs left, a new tab is created with the default URL
+			if (tabList.length === 0) {
+				ipcRenderer.send('ipc-overlays-newTab');
+			}
+
             // Notify the main process to update the tabs
-            ipcRenderer.send('ipc-tabs-updated', index);
+            ipcRenderer.send('ipc-overlays-tab-deleted', index);
         });
 
 		dwell(tabBookmarkBtn, () => {

@@ -249,7 +249,19 @@ ipcMain.on('ipc-overlays-newTab', (event) => {
     createTabview(defaultUrl, newTab = true);
 })
 
-ipcMain.on('ipc-tabs-updated', (event, indexOfDeletedTab) => {
+ipcMain.on('ipc-overlays-tab-selected', (event, indexOfSelectedTab) => {
+    // Set the selected tab as active and the rest as inactive
+    tabList.forEach(tab => tab.isActive = false);
+    const selectedTab = tabList[indexOfSelectedTab];
+    selectedTab.isActive = true;
+
+    // Moving the selected tab to the front by removing and re-adding the tabView to the main window child views
+    mainWindow.contentView.removeChildView(selectedTab.webContentsView);
+    mainWindow.contentView.addChildView(selectedTab.webContentsView);
+    removeOverlay();
+})
+
+ipcMain.on('ipc-overlays-tab-deleted', (event, indexOfDeletedTab) => {
     // Removing the tabView from the main window child views
     deletedTabView = tabList[indexOfDeletedTab].webContentsView;
     mainWindow.contentView.removeChildView(deletedTabView);

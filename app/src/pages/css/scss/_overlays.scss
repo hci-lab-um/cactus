@@ -205,6 +205,9 @@
       }
 
       .tabImage {
+        margin: 0;
+        box-shadow: none;        
+        border-radius: 0;
         background-size: cover;
         border-bottom: 1.5px solid #e3e0e0;
         box-sizing: border-box;
