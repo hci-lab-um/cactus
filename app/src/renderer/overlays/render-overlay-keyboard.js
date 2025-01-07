@@ -65,7 +65,7 @@ const Keyboard = {
             this._createNumpadArea();
         } else {
             this.elements.keysContainer = document.createElement("div");
-            this.elements.keysContainer.classList.add("keyboard__keys");
+            this.elements.keysContainer.classList.add("keyboard__keys", "fadeInUp");
             this.elements.main.appendChild(this.elements.keysContainer);
 
             // Creating initial main area keys
@@ -89,7 +89,7 @@ const Keyboard = {
 
     _createTextboxArea(previousValue) {
         const textboxArea = document.createElement("div");
-        textboxArea.classList.add("keyboard__textbox-area");
+        textboxArea.classList.add("keyboard__textbox-area", "fadeInDown");
 
         const textarea = document.createElement("textarea");
         textarea.classList.add("keyboard__textbox");
