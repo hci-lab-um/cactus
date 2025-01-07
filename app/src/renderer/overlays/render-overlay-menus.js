@@ -364,7 +364,7 @@ function setEventHandlersForTabsMenu(tabList) {
 	})
 
 	// Addind a tab in the tabs overlay for each tab found in the tablist.
-	tabList.forEach((tab) => {
+	tabList.forEach((tab, index) => {
 		const tabElement = document.createElement('div');
 		tabElement.classList.add('tab', 'fadeInDown');
 		tab.isActive === true ? tabElement.classList.add('tab--active') : null;
@@ -380,6 +380,30 @@ function setEventHandlersForTabsMenu(tabList) {
 		const tabCloseBtn = document.createElement('div');
 		tabCloseBtn.classList.add('overlayBtn', 'tabBottomBtn', 'tabBottomBtn--right');
 		tabCloseBtn.innerHTML = createMaterialIcon('close');
+
+		dwell(tabCloseBtn, () => {
+            // Remove the tab from the tabList
+            tabList.splice(index, 1);
+
+            // Remove the tab element from the DOM
+            tabElement.remove();
+
+            // Update the tab counter
+            tabCounter.innerHTML = tabList.length + ((tabList.length == 1) ? ' Tab' : ' Tabs');
+
+            // If the closed tab was active, set the last tab as active
+            if (tab.isActive && tabList.length > 0) {
+                tabList[tabList.length - 1].isActive = true;
+                // Update the UI to reflect the new active tab
+                const lastTabElement = tabsContainer.querySelector('.tab:last-child'); 
+                if (lastTabElement) {
+                    lastTabElement.classList.add('tab--active');
+                }
+            }
+
+            // Notify the main process to update the tabs
+            ipcRenderer.send('ipc-tabs-updated', index);
+        });
 
 		tabElement.appendChild(tabImage);
 		tabElement.appendChild(tabBookmarkBtn);

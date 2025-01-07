@@ -214,7 +214,7 @@ ipcMain.on('ipc-mainwindow-highlight-elements-on-page', (event, elements) => {
     tab.webContentsView.webContents.send('ipc-tabview-highlight-elements', elements);
 });
 
-ipcMain.on('ipc-mainwindow-show-overlay', (event, overlayAreaToShow, elementProperties) => {
+ipcMain.on('ipc-mainwindow-show-overlay', async (event, overlayAreaToShow, elementProperties) => {
     if (elementProperties) {
         // If the element is the omnibox, get the current active tab's url and set it as the value
         if (elementProperties.id === "url") {
@@ -228,7 +228,13 @@ ipcMain.on('ipc-mainwindow-show-overlay', (event, overlayAreaToShow, elementProp
     }
 
     // Right before the tabs overlay is shown, capture the snapshot of the active tab to get the current state of the page
-    if (overlayAreaToShow === 'tabs') captureSnapshot();
+    if (overlayAreaToShow === 'tabs') {
+        try {
+            await captureSnapshot();
+        } catch (err) {
+            log.error(err);
+        }
+    }
     
     createOverlay(overlayAreaToShow, elementProperties);
 })
@@ -240,6 +246,18 @@ ipcMain.on('ipc-overlays-remove', (event) => {
 ipcMain.on('ipc-overlays-newTab', (event) => {
     removeOverlay();
     createTabview(defaultUrl, newTab = true);
+})
+
+ipcMain.on('ipc-tabs-updated', (event, indexOfDeletedTab) => {
+    // Removing the tabView from the main window child views
+    deletedTabView = tabList[indexOfDeletedTab].webContentsView;
+    mainWindow.contentView.removeChildView(deletedTabView);
+
+    // Removing the tab from the tabList
+    tabList.splice(indexOfDeletedTab, 1);
+
+    // Updating the active tab
+    tabList[tabList.length - 1].isActive = true;
 })
 
 ipcMain.on('ipc-keyboard-input', (event, value, element) => {
@@ -714,9 +732,14 @@ function insertRendererCSS() {
 }
 
 function captureSnapshot() {
-    var tab = tabList.find(tab => tab.isActive === true);
-    tab.webContentsView.webContents.capturePage().then(snapshot => {
-        tab.snapshot = snapshot.toDataURL();
+    return new Promise((resolve, reject) => {
+        var tab = tabList.find(tab => tab.isActive === true);
+        tab.webContentsView.webContents.capturePage().then(snapshot => {
+            tab.snapshot = snapshot.toDataURL();
+            resolve();
+        }).catch(err => {
+            reject(err);
+        });
     });
 }
 
