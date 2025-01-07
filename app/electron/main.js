@@ -13,6 +13,7 @@ const useNavAreas = config.get('dwelling.activateNavAreas');
 
 let mainWindow, splashWindow
 let mainWindowContent, overlayContent, isKeyboardOverlay
+let webpageBounds = {}
 let currentQt, currentNavAreaTree
 let timeoutCursorHovering
 let defaultUrl = config.get('browser.defaultUrl');
@@ -237,7 +238,8 @@ ipcMain.on('ipc-overlays-remove', (event) => {
 })
 
 ipcMain.on('ipc-overlays-newTab', (event) => {
-    // to fill
+    removeOverlay();
+    createTabview(defaultUrl, newTab = true);
 })
 
 ipcMain.on('ipc-keyboard-input', (event, value, element) => {
@@ -273,7 +275,7 @@ ipcMain.on('ipc-overlays-forward', () => {
 })
 
 ipcMain.on('ipc-overlays-settings', () => {
-    //To be implemented
+    createNewTab
 });
 
 ipcMain.on('ipc-overlays-toggle-dwell', () => {
@@ -359,7 +361,13 @@ function createMainWindow() {
             })()
             `)
                 .then(properties => {
-                    createTabview(defaultUrl, properties);
+                    webpageBounds = {
+                        x: Math.floor(properties.x),
+                        y: Math.floor(properties.y),
+                        width: Math.floor(properties.width),
+                        height: Math.floor(properties.height)
+                    }
+                    createTabview(defaultUrl);
                 })
                 .catch(err => {
                     log.error(err);
@@ -418,14 +426,16 @@ function resizeMainWindow() {
             })()
             `)
         .then(properties => {
+            webpageBounds = {
+                x: Math.floor(properties.x),
+                y: Math.floor(properties.y),
+                width: Math.floor(properties.width),
+                height: Math.floor(properties.height)
+            };
+
             // Update the bounds of all tabs
             tabList.forEach(tab => {
-                tab.webContentsView.setBounds({
-                    x: Math.floor(properties.x),
-                    y: Math.floor(properties.y),
-                    width: Math.floor(properties.width),
-                    height: Math.floor(properties.height)
-                });
+                tab.webContentsView.setBounds(webpageBounds);
             });
         })
         .catch(err => {
@@ -434,7 +444,7 @@ function resizeMainWindow() {
 
 }
 
-function createTabview(url, properties) {
+function createTabview(url, newTab = false) {
 
     let scrollDistance = config.get('dwelling.tabViewScrollDistance');
 
@@ -448,9 +458,6 @@ function createTabview(url, properties) {
         }
     });
 
-    // Capture the snapshot of the previous tab before the new tab is set to active
-    // if (tabList) captureSnapshot();
-
     //Set new tab as active (if any)
     tabList.forEach(tab => {
         tab.isActive = false
@@ -461,16 +468,29 @@ function createTabview(url, properties) {
     //Attach the browser view to the parent window
     mainWindow.contentView.addChildView(tabView);
 
-    //Set its location/dimensions as per the returned properties
-    tabView.setBounds({
-        x: Math.floor(properties.x),
-        y: Math.floor(properties.y),
-        width: Math.floor(properties.width),
-        height: Math.floor(properties.height)
-    });
-
     //Load the default home page
     tabView.webContents.loadURL(url);
+
+    if (!newTab) {
+        //Set its location/dimensions as per the webpage bounds
+        tabView.setBounds(webpageBounds);
+    } else {
+        // tabView.setBounds({ 
+        //     x: webpageBounds.x,
+        //     y: webpageBounds.y + webpageBounds.height, // Starts below the visible area
+        //     width: webpageBounds.width,
+        //     height: webpageBounds.height
+        // });
+        // slideUpView(tabView);
+        
+        tabView.setBounds({ 
+            x: webpageBounds.x  + webpageBounds.width, // Starts to the right of the visible area
+            y: webpageBounds.y,
+            width: webpageBounds.width,
+            height: webpageBounds.height
+        });
+        slideInView(tabView);
+    }
 
     //Once the DOM is ready, send a message to initiate some further logic
     tabView.webContents.on('dom-ready', () => {
@@ -512,8 +532,71 @@ function createTabview(url, properties) {
     });
 
     tabView.webContents.setWindowOpenHandler(({ url }) => {
-        createTabview(url, properties);
+        createTabview(url, newTab = true);
     });
+}
+
+function slideUpView(view, duration = 170) { 
+    const fps = 120; // High frame rate for smoothness
+    const interval = 1000 / fps;
+    const steps = Math.ceil(duration / interval);
+
+    // Starting position (below the visible area)
+    const initialY = view.getBounds().y;
+    const finalY = webpageBounds.y;
+
+    const deltaY = (finalY - initialY) / steps;
+
+    let currentY = initialY;
+    let step = 0;
+
+    const intervalId = setInterval(() => {
+        step++;
+        currentY += deltaY;
+
+        view.setBounds({
+            x: webpageBounds.x,  // Keeping x fixed
+            y: currentY,         // Animating y only
+            width: webpageBounds.width,
+            height: webpageBounds.height,
+        });
+
+        if (step >= steps) {
+            clearInterval(intervalId);
+            view.setBounds(webpageBounds); // Ensure final bounds are set
+        }
+    }, interval);
+}
+
+function slideInView(view, duration = 200) { 
+    const fps = 120; // High frame rate for smoothness
+    const interval = 1000 / fps;
+    const steps = Math.ceil(duration / interval);
+
+    const initialX = view.getBounds().x;
+    const finalX = webpageBounds.x;
+
+    const deltaX = (finalX - initialX) / steps;
+
+    let currentX = initialX;
+    let step = 0;
+
+    const intervalId = setInterval(() => {
+        step++;
+        currentX += deltaX;
+
+        view.setBounds({
+            x: currentX,
+            y: webpageBounds.y,
+            width: webpageBounds.width,
+            height: webpageBounds.height
+        });
+
+        if (step >= steps) {
+            clearInterval(intervalId);
+            view.setBounds(webpageBounds); // Ensure final bounds are set
+        }
+    }, interval);
 }
 
 function insertRendererCSS() {

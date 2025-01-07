@@ -366,7 +366,7 @@ function setEventHandlersForTabsMenu(tabList) {
 	// Addind a tab in the tabs overlay for each tab found in the tablist.
 	tabList.forEach((tab) => {
 		const tabElement = document.createElement('div');
-		tabElement.classList.add('tab', 'fadeInUp');
+		tabElement.classList.add('tab', 'fadeInDown');
 		tab.isActive === true ? tabElement.classList.add('tab--active') : null;
 
 		const tabImage = document.createElement('div');
@@ -374,11 +374,11 @@ function setEventHandlersForTabsMenu(tabList) {
 		tabImage.style.backgroundImage = `url(${tab.snapshot})`; // Set the background image to the tab snapshot
 
 		const tabBookmarkBtn = document.createElement('div');
-		tabBookmarkBtn.classList.add('tabBottomBtn', 'tabBottomBtn--left');
+		tabBookmarkBtn.classList.add('overlayBtn', 'tabBottomBtn', 'tabBottomBtn--left');
 		tabBookmarkBtn.innerHTML = createMaterialIcon('star');
 
 		const tabCloseBtn = document.createElement('div');
-		tabCloseBtn.classList.add('tabBottomBtn', 'tabBottomBtn--right');
+		tabCloseBtn.classList.add('overlayBtn', 'tabBottomBtn', 'tabBottomBtn--right');
 		tabCloseBtn.innerHTML = createMaterialIcon('close');
 
 		tabElement.appendChild(tabImage);
@@ -387,6 +387,12 @@ function setEventHandlersForTabsMenu(tabList) {
 
 		tabsContainer.appendChild(tabElement);
 	});
+
+	// Scrolling to the active tab
+    const activeTabElement = tabsContainer.querySelector('.tab--active');
+    if (activeTabElement) {
+        setTimeout(activeTabElement.scrollIntoView({ behavior: 'smooth', block: 'center' }), 2000)
+    }
 
 	function createMaterialIcon(icon_name) {
 		return `<i class="material-icons--small">${icon_name}</i>`;
