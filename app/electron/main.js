@@ -805,7 +805,7 @@ function createOverlay(overlayAreaToShow, elementProperties) {
         overlayContent.webContents.send('ipc-main-overlays-loaded', overlayAreaToShow, tabData);
     } else {
         isKeyboardOverlay = false;
-        overlayContent.webContents.send('ipc-main-overlays-loaded', overlayAreaToShow);
+        overlayContent.webContents.send('ipc-main-overlays-loaded', overlayAreaToShow, {});
     }
     // if (isDevelopment) overlayContent.webContents.openDevTools(); // to uncomment
     overlayContent.webContents.openDevTools(); // to remove

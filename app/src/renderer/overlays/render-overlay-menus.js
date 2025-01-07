@@ -15,7 +15,8 @@ window.addEventListener('DOMContentLoaded', () => {
 	followCursor('cactus_cursor');
 });
 
-ipcRenderer.on('ipc-main-overlays-loaded', (event, overlayAreaToShow, { tabList, bookmarks }) => {
+ipcRenderer.on('ipc-main-overlays-loaded', (event, overlayAreaToShow, tabData = null) => {
+	const { tabList, bookmarks } = tabData;
 	switch (overlayAreaToShow) {
 		case 'omni': {
 			byId('overlay-omnibox').style.display = 'grid'

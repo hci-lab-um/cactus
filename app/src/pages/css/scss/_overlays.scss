@@ -205,8 +205,7 @@
       }
 
       .tabImage {
-        margin: 0;
-        box-shadow: none;        
+        margin: 0;       
         border-radius: 0;
         background-size: cover;
         border-bottom: 1.5px solid #e3e0e0;
@@ -219,7 +218,6 @@
 
       .tabBottomBtn {
         margin: 0;
-        box-shadow: none;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -262,7 +260,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: -18px 23px 76px -26px $lightgrey;
   background-color: $offwhite;
   border-radius: 15px;
   margin: 5px;
@@ -314,7 +311,6 @@
 
   &--sidebar {
     flex: 3;
-    box-shadow: none;
   }
 }
 
