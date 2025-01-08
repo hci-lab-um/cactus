@@ -101,7 +101,20 @@ function setupFunctionality() {
 
 	let backOrForward = byId('backOrForwardBtn')
 	dwell(backOrForward, () => {
-		showOverlay('navigation');
+		// invoke an ipc call to get the tabView.canGoBack() and tabView.canGoForward() and then show the overlay if either is true
+		ipcRenderer.invoke('tabview-can-go-back-or-forward').then((hasNavigationHistory) => {
+			if (!hasNavigationHistory) {
+				backOrForward.classList.add('shake')
+
+				backOrForward.addEventListener('webkitAnimationEnd', () => {
+					backOrForward.classList.remove('shake')
+				})
+
+				overlayNav.style.display = 'none'
+			} else {
+				showOverlay('navigation')
+			}
+		});
 	})
 
 	let tabs = byId('tabsBtn')

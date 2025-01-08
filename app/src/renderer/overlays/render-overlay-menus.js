@@ -15,8 +15,10 @@ window.addEventListener('DOMContentLoaded', () => {
 	followCursor('cactus_cursor');
 });
 
-ipcRenderer.on('ipc-main-overlays-loaded', (event, overlayAreaToShow, tabData = null) => {
+ipcRenderer.on('ipc-main-overlays-loaded', (event, overlayAreaToShow, tabData = null, navData = null) => {
 	const { tabList, bookmarks } = tabData;
+	const { canGoBack, canGoForward } = navData;
+
 	switch (overlayAreaToShow) {
 		case 'omni': {
 			byId('overlay-omnibox').style.display = 'grid'
@@ -25,7 +27,7 @@ ipcRenderer.on('ipc-main-overlays-loaded', (event, overlayAreaToShow, tabData = 
 		}
 		case 'navigation': {
 			byId('overlay-nav').style.display = 'grid'
-			setEventHandlersForNavigationMenu();
+			setEventHandlersForNavigationMenu(canGoBack, canGoForward);
 			break;
 		}
 		case 'tabs': {
@@ -270,66 +272,55 @@ function setEventHandlersForAccessibilityMenu() {
 	})
 }
 
-function setEventHandlersForNavigationMenu() {
+function setEventHandlersForNavigationMenu(canGoBack, canGoForward) {
 	// =================================
 	// ====== NAVIGATION OVERLAY =======
 	// =================================
 
 	let cancelNavBtn = byId('cancel-nav')
 	let backNavBtn = byId('goBackBtn')
-	let forwardNavBtn = byId('goForwardBtn')
-
-	// dwell(backOrForward, () => {
-	//   if(!webview.canGoBack() && webview.canGoForward()) {
-	//     overlayNav.id = 'overlay-nav-forward-only'
-	//     backNavBtn.style.display = 'none'
-	//     forwardNavBtn.style.display = 'flex'
-	//     overlayNav = byId('overlay-nav-forward-only')
-	//     overlayNav.style.display = 'grid'
-	//   } else if (!webview.canGoForward() && webview.canGoBack()) {
-	//     overlayNav.id = 'overlay-nav-back-only'
-	//     backNavBtn.style.display = 'flex'
-	//     forwardNavBtn.style.display = 'none'
-	//     overlayNav = byId('overlay-nav-back-only')
-	//     overlayNav.style.display = 'grid'
-	//   } else if (webview.canGoBack() && webview.canGoForward()) {
-	//     overlayNav.id = 'overlay-nav'
-	//     backNavBtn.style.display = 'flex'
-	//     forwardNavBtn.style.display = 'flex'
-	//     overlayNav = byId('overlay-nav')
-	//     overlayNav.style.display = 'grid'
-	//   } else {
-	//     backOrForward.classList.add('shake')
-
-	//     backOrForward.addEventListener('webkitAnimationEnd', () => {
-	//       backOrForward.classList.remove('shake')
-	//     })
-
-	//     overlayNav.style.display = 'none'
-	//   }
-	// })
+	let forwardNavBtn = byId('goForwardBtn')	
 
 	dwell(cancelNavBtn, () => {
 		ipcRenderer.send('ipc-overlays-remove');
 	})
 
 	dwell(backNavBtn, () => {
-		ipcRenderer.send('ipc-overlays-back');
-		ipcRenderer.send('ipc-overlays-remove');
+		if (canGoBack) {
+			ipcRenderer.send('ipc-overlays-back');
+			ipcRenderer.send('ipc-overlays-remove');
+		} else {
+			let icon = backNavBtn.querySelector('i')
+			icon.classList.add('shake')
+
+			icon.addEventListener('webkitAnimationEnd', () => {
+				icon.classList.remove('shake')
+			})
+		}
 	});
 
 	dwell(forwardNavBtn, () => {
-		ipcRenderer.send('ipc-overlays-forward');
-		ipcRenderer.send('ipc-overlays-remove');
+		if (canGoForward) {
+			ipcRenderer.send('ipc-overlays-forward');
+			ipcRenderer.send('ipc-overlays-remove');
+		} else {
+			let icon = forwardNavBtn.querySelector('i')
+			icon.classList.add('shake')
+
+			icon.addEventListener('webkitAnimationEnd', () => {
+				icon.classList.remove('shake')
+			})
+		}
 	});
 
-	ipcRenderer.on('ipc-overlays-back-check', (event, canGoBack) => {
-		backNavBtn.style.display = canGoBack ? 'flex' : 'none';
-	})
+	if (canGoForward) {
+		dwell(forwardNavBtn, () => {
+			ipcRenderer.send('ipc-overlays-forward');
+			ipcRenderer.send('ipc-overlays-remove');
+		})
+	} else {
 
-	ipcRenderer.on('ipc-overlays-forward-check', (event, canGoForward) => {
-		forwardNavBtn.style.display = canGoForward ? 'flex' : 'none';
-	})
+	}
 }
 
 function setEventHandlersForTabsMenu(tabList, bookmarks) {
