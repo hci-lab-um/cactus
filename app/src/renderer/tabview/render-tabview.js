@@ -128,21 +128,9 @@ window.cactusAPI.on('ipc-tabview-forward', () => {
 	window.history.forward();
 });
 
-
-// function checkScrollers()
-// {
-//    //Hide scrollbar when at the very top
-//    if (!window.scrollY) {
-//     ipcRenderer.send('ipc-tabview-scroll-up-hide')
-//   } else {
-//     ipcRenderer.send('ipc-tabview-scroll-up-show')
-//   }
-// }
-
-
 // This IPC event is triggered when the user submits the value inside the overlay keyboard.
 // It attempts to find the element to update and sets the value to the submitted value.
-window.cactusAPI.on('ipc-tabview-keyboard-input', (value, elementToUpdate) => {
+window.cactusAPI.on('ipc-tabview-keyboard-input', (text, elementToUpdate) => {
 	let element = document.querySelector('[data-cactus-id="' + elementToUpdate.id + '"]');
 
 	// Since the ID of the element may change at times, the element may instead be found using the x,y coordinates
@@ -151,8 +139,11 @@ window.cactusAPI.on('ipc-tabview-keyboard-input', (value, elementToUpdate) => {
 	}
 
 	if (element) {
+		// THE setAttribute() METHOD MUST BE USED AND NOT THE .value PROPERTY. IT MUST ALSO BE USED IN COMBINATION WITH THE EVENT DISPATCHER (works with both input and change)!
 		element.focus();
-		element.value = value;
+		element.setAttribute("value", text);
+
+		element.dispatchEvent(new Event('input', { bubbles: true }));
 	} else {
 		console.error("Element not found for update:", elementToUpdate);
 	}
@@ -213,13 +204,15 @@ window.cactusAPI.onAsync('ipc-tabview-highlight-elements', (elementsToHighlight)
 	elementsToHighlight.forEach(el => {
 		// Each element is of type InteractiveElement whose id is set to the cactusId, hence we use el.id not el.dataset.cactusId
 		var elementToMark = document.querySelector('[data-cactus-id="' + el.id + '"]');
-		if (!elementToMark.classList.contains('cactusElementVisualise')) {
-			elementToMark.classList.add('cactusElementVisualise');
-			setTimeout(function () {
-				//cactusElementVisualiseRemoved class is necessary to filter out cactus-initiated attribute mutations and stop the QT being regenerated
-				elementToMark.classList.add('cactusElementVisualiseRemoved');
-				elementToMark.classList.remove('cactusElementVisualise');
-			}, 800);
+		if (elementToMark) {
+			if (!elementToMark.classList.contains('cactusElementVisualise')) {
+				elementToMark.classList.add('cactusElementVisualise');
+				setTimeout(function () {
+					//cactusElementVisualiseRemoved class is necessary to filter out cactus-initiated attribute mutations and stop the QT being regenerated
+					elementToMark.classList.add('cactusElementVisualiseRemoved');
+					elementToMark.classList.remove('cactusElementVisualise');
+				}, 800);
+			}
 		}
 	});
 });

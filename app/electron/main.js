@@ -289,14 +289,6 @@ ipcMain.on('ipc-keyboard-input', (event, value, element) => {
     removeOverlay();
 });
 
-ipcMain.on('ipc-tabview-scroll-up-hide', () => {
-    mainWindowContent.webContents.send('ipc-mainwindow-scroll-up-hide')
-})
-
-ipcMain.on('ipc-tabview-scroll-up-show', () => {
-    mainWindowContent.webContents.send('ipc-mainwindow-scroll-up-show')
-})
-
 ipcMain.handle('tabview-can-go-back-or-forward', (event) => {
     // Check if the active tab can go back or forward
     var tab = tabList.find(tab => tab.isActive === true);
