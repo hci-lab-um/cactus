@@ -139,11 +139,17 @@ window.cactusAPI.on('ipc-tabview-keyboard-input', (text, elementToUpdate) => {
 	}
 
 	if (element) {
-		// THE setAttribute() METHOD MUST BE USED AND NOT THE .value PROPERTY. IT MUST ALSO BE USED IN COMBINATION WITH THE EVENT DISPATCHER (works with both input and change)!
 		element.focus();
-		element.setAttribute("value", text);
 
-		element.dispatchEvent(new Event('input', { bubbles: true }));
+		// The following code is for updating combo boxes with the new value.
+		// In this case, the setAttribute() method must be used instead of the .value property.
+		// It must also be combined with the event dispatcher (works with both input and change).
+		if (element.type == 'text' || element.type == 'select') {// This if statement is for the combo box found in booking.com. It might not be a universal solution.
+			element.setAttribute("value", text);		
+			element.dispatchEvent(new Event('input', { bubbles: true }));
+		} else {
+			element.value = text;
+		}
 	} else {
 		console.error("Element not found for update:", elementToUpdate);
 	}

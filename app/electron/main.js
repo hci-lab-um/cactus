@@ -376,7 +376,7 @@ function createMainWindow() {
         mainWindowContent.webContents.loadURL(path.join(__dirname, '../src/pages/index.html')).then(() => {
             mainWindowContent.webContents.send('mainWindowLoaded');
             // if (isDevelopment) mainWindowContent.webContents.openDevTools(); to uncomment
-            mainWindowContent.webContents.openDevTools(); // to remove
+            // mainWindowContent.webContents.openDevTools(); // to remove
 
             //Once the main page is loaded, create inner tabview and place it in the right position by getting the x,y,width,height of a positioned element in index.html
             mainWindowContent.webContents.executeJavaScript(`
@@ -427,7 +427,7 @@ function createMainWindow() {
             if (splashWindow) {
                 splashWindow.close();
             }
-            mainWindowContent.webContents.openDevTools() // to remove
+            // mainWindowContent.webContents.openDevTools() // to remove
             // if (isDevelopment) mainWindowContent.webContents.openDevTools(); to uncomment
         });
 
@@ -817,7 +817,7 @@ function createOverlay(overlayAreaToShow, elementProperties) {
         overlayContent.webContents.send('ipc-main-overlays-loaded', overlayAreaToShow, {}, {});
     }
     // if (isDevelopment) overlayContent.webContents.openDevTools(); // to uncomment
-    overlayContent.webContents.openDevTools(); // to remove
+    // overlayContent.webContents.openDevTools(); // to remove
 }
 
 function registerSwitchShortcutCommands() {
