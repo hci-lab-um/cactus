@@ -368,6 +368,7 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
 					console.log("element to click: ", elementToClick);
 
 					setTimeout(() => {
+						sidebarItemArea.innerHTML = "";
 						const inputType = shouldDisplayKeyboard(elementToClick[0], false);
 						console.log("inputType", inputType);
 						if (inputType) {
@@ -380,7 +381,7 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
 							console.log("Not an input element");
 							ipcRenderer.send('ipc-mainwindow-click-sidebar-element', elementToClick[0]);
 						}
-					}, 300);
+					}, 400); // 400 is chosen to match the fadeOutDown animation duration
 				}
 			});
 		});
@@ -433,7 +434,7 @@ function renderNavItemInSidebar(navItems) {
 							console.log("Not an input navitem");
 							ipcRenderer.send('browse-to-url', elementToClick[0].href);
 						}
-					}, 300);
+					}, 400); // 400 is chosen to match the fadeOutDown animation duration
 
 					resetNavigationSidebar();
 				} else {

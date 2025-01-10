@@ -82,30 +82,9 @@ window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist) => {
 		childList: true,
 		subtree: true,
 	};
+	
 	// Start observing the target node for configured mutations
 	mutationObserver.observe(document.body, mutationObserverOptions);
-
-	const intersectionObserver = new IntersectionObserver((entries, observer) => {
-		entries.forEach(entry => {
-			if (entry.isIntersecting) {
-				console.log('Element entered view:', entry.target);
-				// Optionally stop observing if no longer needed
-				observer.unobserve(entry.target);
-			} else {
-				console.log('Element left view:', entry.target);
-			}
-		});
-	});
-
-	// Create an IntersectionObserver instance
-	const intersectionObserverOptions = {
-		root: document.body, // Use the document as the viewport
-		rootMargin: '0px', // Margin around the root (e.g., '10px 20px')
-		threshold: 0 // Fraction of element visibility (0.1 = 10% visible)
-	};
-
-	// intersectionObserver.observe(document.body, intersectionObserverOptions);
-	document.querySelectorAll('body *').forEach(el => intersectionObserver.observe(el, intersectionObserverOptions));
 
 	// Handle mouse behaviour on tabview
 	tabView = document.getRootNode();
