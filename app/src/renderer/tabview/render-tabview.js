@@ -30,7 +30,7 @@ window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist) => {
 	// EXPERIMENTAL - JS EVENTS (E.g. click on tab element, does not fire up (although it's firing up changes in quick succession when banners change etc...) - to test properly)
 	let mutationObserverCallbackExecuting = false;
 	// Create an observer instance linked to the callback function
-	const observer = new MutationObserver((mutationsList) => {
+	const mutationObserver = new MutationObserver((mutationsList) => {
 		// If callback is already executing, ignore this invocation
 		if (mutationObserverCallbackExecuting) return;
 
@@ -49,13 +49,17 @@ window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist) => {
 				&& !mutation.target.classList.contains('cactus-scrollUp_outerDiv')
 				&& !mutation.target.classList.contains('cactus-scrollDown_outerDiv')
 			) {
-				console.log("Mutation observed", mutation);
+				console.log("Mutation observed .. calling generate quad tree", mutation);
 				//Indicate callback execution
 				mutationObserverCallbackExecuting = true;
 
-				//Execute quadtree generation
-				generateQuadTree();
-				if (useNavAreas) generateNavAreasTree();
+				//Execute quadtree generation AFTER 1 SECOND TO WAIT FOR THE PAGE TO LOAD THE CHANGES AND DETECT THE NEW ELEMENTS!!!
+				setTimeout(() => {
+					generateQuadTree();
+					if (useNavAreas) generateNavAreasTree();
+				}, 1000);
+
+				console.log("quad tree generated");
 
 				// If the mutation is a simple data-cactus-id attribute change, then scroll buttons are not updated
 				if (mutation.type !== "attributes" || mutation.attributeName !== "data-cactus-id") {
@@ -73,13 +77,35 @@ window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist) => {
 		}
 	});
 
-	const observerOptions = {
+	const mutationObserverOptions = {
 		attributes: true, //necessary for collapsable elements etc...
 		childList: true,
 		subtree: true,
 	};
 	// Start observing the target node for configured mutations
-	observer.observe(document.body, observerOptions);
+	mutationObserver.observe(document.body, mutationObserverOptions);
+
+	const intersectionObserver = new IntersectionObserver((entries, observer) => {
+		entries.forEach(entry => {
+			if (entry.isIntersecting) {
+				console.log('Element entered view:', entry.target);
+				// Optionally stop observing if no longer needed
+				observer.unobserve(entry.target);
+			} else {
+				console.log('Element left view:', entry.target);
+			}
+		});
+	});
+
+	// Create an IntersectionObserver instance
+	const intersectionObserverOptions = {
+		root: document.body, // Use the document as the viewport
+		rootMargin: '0px', // Margin around the root (e.g., '10px 20px')
+		threshold: 0 // Fraction of element visibility (0.1 = 10% visible)
+	};
+
+	// intersectionObserver.observe(document.body, intersectionObserverOptions);
+	document.querySelectorAll('body *').forEach(el => intersectionObserver.observe(el, intersectionObserverOptions));
 
 	// Handle mouse behaviour on tabview
 	tabView = document.getRootNode();
@@ -458,32 +484,6 @@ function removeExistingScrollButtons() {
 	if (existingScrollButtons) console.log("Removed existing scroll buttons for the " + iterator + " time");
 }
 
-// function scroll(configData, direction, element = null) {
-// 	let { scrollDistance, useNavAreas } = configData;
-
-// 	// The scroll distance is determined based on the direction
-// 	scrollDistance = direction === 'down' ? scrollDistance : scrollDistance * -1;
-
-// 	scrollOptions = {
-// 		top: scrollDistance,
-// 		left: 0,
-// 		behavior: "smooth"
-// 	}
-
-// 	// if the element is provided, scroll the element ONLY, otherwise scroll the entire window
-// 	if (element) {
-// 		element.scrollBy(scrollOptions);
-// 	} else {
-// 		scrollBy(scrollOptions);
-// 	}
-
-// 	// After scrolling, regenerate the QuadTree and NavAreasTree (after every 500ms) to reflect the new state of the page
-// 	setTimeout(function () {
-// 		generateQuadTree();
-// 		if (useNavAreas) generateNavAreasTree();
-// 	}, 500);
-// }
-
 // Gets the contents needed from the renderer process and sends them to the main process for generating the QuadTree
 function generateQuadTree() {
 	const clickableSelectors = [
@@ -508,7 +508,6 @@ function generateQuadTree() {
 		docTitle: document.title,
 		docURL: document.URL
 	};
-	console.log("Gen quadtrees");
 	window.cactusAPI.send('ipc-tabview-generateQuadTree', quadTreeContents);
 }
 

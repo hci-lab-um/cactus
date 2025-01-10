@@ -375,7 +375,7 @@ function createMainWindow() {
 
         mainWindowContent.webContents.loadURL(path.join(__dirname, '../src/pages/index.html')).then(() => {
             mainWindowContent.webContents.send('mainWindowLoaded');
-            // if (isDevelopment) mainWindowContent.webContents.openDevTools(); to uncomment
+            if (isDevelopment) mainWindowContent.webContents.openDevTools();
             // mainWindowContent.webContents.openDevTools(); // to remove
 
             //Once the main page is loaded, create inner tabview and place it in the right position by getting the x,y,width,height of a positioned element in index.html
@@ -428,7 +428,7 @@ function createMainWindow() {
                 splashWindow.close();
             }
             // mainWindowContent.webContents.openDevTools() // to remove
-            // if (isDevelopment) mainWindowContent.webContents.openDevTools(); to uncomment
+            if (isDevelopment) mainWindowContent.webContents.openDevTools(); 
         });
 
         mainWindow.on('closed', () => {
@@ -539,7 +539,7 @@ function createTabview(url, newTab = false) {
         });
 
         tabView.webContents.openDevTools(); // to remove
-        // if (isDevelopment) tabView.webContents.openDevTools(); to uncomment
+        if (isDevelopment) tabView.webContents.openDevTools(); 
     });
 
     //Loading event - update omnibox
@@ -816,8 +816,8 @@ function createOverlay(overlayAreaToShow, elementProperties) {
         isKeyboardOverlay = false;
         overlayContent.webContents.send('ipc-main-overlays-loaded', overlayAreaToShow, {}, {});
     }
-    // if (isDevelopment) overlayContent.webContents.openDevTools(); // to uncomment
-    // overlayContent.webContents.openDevTools(); // to remove
+    if (isDevelopment) overlayContent.webContents.openDevTools();
+    overlayContent.webContents.openDevTools(); // to remove
 }
 
 function registerSwitchShortcutCommands() {
