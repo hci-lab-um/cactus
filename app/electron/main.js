@@ -133,7 +133,10 @@ ipcMain.on('ipc-tabview-cursor-mouseover', (event, mouseData) => {
             const elementsInQueryRange = currentQt ? currentQt.queryRange(qtRangeToQuery) : [];
             const navAreasInQueryRange = useNavAreas ? (currentNavAreaTree ? currentNavAreaTree.queryRange(menuRangeToQuery, true) : []) : [];
 
-            if (useNavAreas && navAreasInQueryRange.length > 0) {
+            //If navAreas is enabled, check if the nav root has anything in it.
+            let hasRootNav = (navAreasInQueryRange[0]?.navItems[0] != null) ? true : false;
+
+            if (useNavAreas && hasRootNav) {
                 mainWindowContent.webContents.send('ipc-mainwindow-sidebar-render-navareas', navAreasInQueryRange)
                 clearInterval(timeoutCursorHovering);
             } else {
@@ -236,7 +239,7 @@ ipcMain.on('ipc-mainwindow-show-overlay', async (event, overlayAreaToShow, eleme
             log.error(err);
         }
     }
-    
+
     createOverlay(overlayAreaToShow, elementProperties);
 })
 
@@ -428,7 +431,7 @@ function createMainWindow() {
                 splashWindow.close();
             }
             // mainWindowContent.webContents.openDevTools() // to remove
-            if (isDevelopment) mainWindowContent.webContents.openDevTools(); 
+            if (isDevelopment) mainWindowContent.webContents.openDevTools();
         });
 
         mainWindow.on('closed', () => {
@@ -517,9 +520,9 @@ function createTabview(url, newTab = false) {
         //     height: webpageBounds.height
         // });
         // slideUpView(tabView);
-        
-        tabView.setBounds({ 
-            x: webpageBounds.x  + webpageBounds.width, // Starts to the right of the visible area
+
+        tabView.setBounds({
+            x: webpageBounds.x + webpageBounds.width, // Starts to the right of the visible area
             y: webpageBounds.y,
             width: webpageBounds.width,
             height: webpageBounds.height
@@ -539,7 +542,7 @@ function createTabview(url, newTab = false) {
         });
 
         tabView.webContents.openDevTools(); // to remove
-        if (isDevelopment) tabView.webContents.openDevTools(); 
+        if (isDevelopment) tabView.webContents.openDevTools();
     });
 
     //Loading event - update omnibox
@@ -571,7 +574,7 @@ function createTabview(url, newTab = false) {
     });
 }
 
-function slideUpView(view, duration = 170) { 
+function slideUpView(view, duration = 170) {
     const fps = 120; // High frame rate for smoothness
     const interval = 1000 / fps;
     const steps = Math.ceil(duration / interval);
@@ -603,7 +606,7 @@ function slideUpView(view, duration = 170) {
     }, interval);
 }
 
-function slideInView(view, duration = 200) { 
+function slideInView(view, duration = 200) {
     const fps = 120; // High frame rate for smoothness
     const interval = 1000 / fps;
     const steps = Math.ceil(duration / interval);
@@ -799,7 +802,7 @@ function createOverlay(overlayAreaToShow, elementProperties) {
             tabId: tab.tabId,
             isActive: tab.isActive,
             snapshot: tab.snapshot,
-            title: tab.webContentsView.webContents.getTitle(), 
+            title: tab.webContentsView.webContents.getTitle(),
             url: tab.webContentsView.webContents.getURL(),
         }));
         let tabData = { tabList: serializableTabList, bookmarks };
@@ -919,7 +922,7 @@ function registerSwitchShortcutCommands() {
 function toggleDwelling() {
     isDwellingActive = !isDwellingActive
     mainWindowContent.webContents.send('ipc-mainwindow-handle-dwell-events', isDwellingActive);
-    removeOverlay();    
+    removeOverlay();
 }
 
 function handleZoom(direction, usedShortcut = false) {
