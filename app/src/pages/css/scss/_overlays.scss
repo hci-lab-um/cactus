@@ -83,36 +83,51 @@
 
 #overlay-options {
   height: 100%;
-  grid-template-columns: repeat(2, 1fr);
-  grid-template-areas:  
-  'settings toggleDwell'
-  'zoomIn zoomOut'
-  'reset about'
-  'cancel cancel';
+  grid-template-columns: repeat(3, 1fr);
+    grid-template-areas:
+  'refresh zoomIn about'
+    'bookmarks zoomOut settings'
+    'toggleDwell reset exit'
+    'cancel cancel cancel';
+  
+    // 'refresh bookmarks toggleDwell'
+    // 'zoomIn zoomOut reset'
+    // 'settings about exit'
+    // 'cancel cancel cancel';
+  
+    #refreshBtn {
+      grid-area: refresh;
+    }
 
-  #settingsBtn {
-    grid-area: settings;
+    #bookmarksBtn {
+      grid-area: bookmarks;
   }
 
   #toggleDwellBtn {
     grid-area: toggleDwell;
   }
 
+    #zoomInBtn {
+      grid-area: zoomIn;
+    }
+  
+    #zoomOutBtn {
+      grid-area: zoomOut;
+    }
   #resetZoomBtn {
     grid-area: reset;
   }
 
+    #settingsBtn {
+      grid-area: settings;
+    }
   #aboutBtn {
     grid-area: about;
   }
 
-  #zoomInBtn {
-    grid-area: zoomIn;
-  }
-
-  #zoomOutBtn {
-    grid-area: zoomOut;
-  }
+    #exitBtn {
+      grid-area: exit;
+    }
 }
 
 #overlay-search {
@@ -233,19 +248,30 @@
         justify-content: center;
         color: $blue-2;
         background: white;
-        grid-row-start: 4;
-        border-radius: 0;
+        grid-row: 4 / span 1;
+        grid-column: 1 / span 2;
+        border-radius: 0 0 15px 15px;
 
         &--left {
+          grid-column: 1 / span 1;
           border-right: 0.5px solid #e3e0e0;
-          border-bottom-left-radius: 15px;
+          border-bottom-right-radius: 0;
         }
 
         &--right {
+          grid-column: 2 / span 1;
           border-left: 0.5px solid #e3e0e0;
-          border-bottom-right-radius: 15px;
+          border-bottom-left-radius: 0;
         }
       }
+    }
+
+    .noBookmarksMessage {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 5em;
+      color: $lightgrey;
     }
   }
 
@@ -258,9 +284,9 @@
     min-width: 150px;
 
     #tabCounter {
-      font-size: 2.3rem;
+      font-size: 2.1rem;
       color: #10468b;
-      align-self: center;
+      text-align: center;
       margin-bottom: 0;
     }
   }

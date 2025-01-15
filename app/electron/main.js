@@ -247,6 +247,7 @@ ipcMain.on('ipc-overlays-remove', (event) => {
     removeOverlay();
 })
 
+// TABS OVERLAY
 ipcMain.on('ipc-overlays-newTab', (event) => {
     removeOverlay();
     createTabview(defaultUrl, newTab = true);
@@ -276,9 +277,68 @@ ipcMain.on('ipc-overlays-tab-deleted', (event, indexOfDeletedTab) => {
     tabList[tabList.length - 1].isActive = true;
 })
 
-ipcMain.on('ipc-bookmarks-updated', (event, updatedBookmarks) => {
+ipcMain.on('ipc-overlays-bookmark-selected', (event, url) => {
+    var tab = tabList.find(tab => tab.isActive === true);
+    tab.webContentsView.webContents.loadURL(url);
+    removeOverlay();
+})
+
+ipcMain.on('ipc-overlays-bookmarks-updated', (event, updatedBookmarks) => {
     bookmarks = updatedBookmarks;
 })
+
+// NAVIGATION OVERLAY
+ipcMain.on('ipc-overlays-back', () => {
+    //Select active tabview
+    var tab = tabList.find(tab => tab.isActive === true);
+    tab.webContentsView.webContents.send('ipc-tabview-back');
+})
+
+ipcMain.on('ipc-overlays-forward', () => {
+    //Select active tabview
+    var tab = tabList.find(tab => tab.isActive === true);
+    tab.webContentsView.webContents.send('ipc-tabview-forward');
+})
+
+// ACCESSIBILITY OVERLAY
+ipcMain.on('ipc-overlays-refresh', (event) => {
+    removeOverlay();
+    var tab = tabList.find(tab => tab.isActive === true);
+    tab.webContentsView.webContents.reload();
+})
+
+ipcMain.on('ipc-overlays-view-bookmarks', (event) => {
+    createOverlay('bookmarks');
+})
+
+ipcMain.on('ipc-overlays-toggle-dwell', (event) => {
+    toggleDwelling();
+});
+
+ipcMain.on('ipc-overlays-zoom-in', (event) => {
+    handleZoom("in");
+});
+
+ipcMain.on('ipc-overlays-zoom-out', (event) => {
+    handleZoom("out");
+});
+
+ipcMain.on('ipc-overlays-zoom-reset', (event) => {
+    handleZoom("reset");
+});
+
+ipcMain.on('ipc-overlays-settings', (event) => {
+    // to be implemented
+});
+
+ipcMain.on('ipc-overlays-about', (event) => {
+    // to be implemented
+});
+
+ipcMain.on('ipc-exit-browser', (event) => {
+    removeOverlay();
+    app.quit();
+});
 
 ipcMain.on('ipc-keyboard-input', (event, value, element) => {
     console.log("Keyboard value: ", value, element);
@@ -298,39 +358,7 @@ ipcMain.handle('tabview-can-go-back-or-forward', (event) => {
     var canGoBack = tab.webContentsView.webContents.canGoBack();
     var canGoForward = tab.webContentsView.webContents.canGoForward();
     if (canGoBack || canGoForward) return true;
-})
-
-ipcMain.on('ipc-overlays-back', () => {
-    //Select active tabview
-    var tab = tabList.find(tab => tab.isActive === true);
-    tab.webContentsView.webContents.send('ipc-tabview-back');
-})
-
-ipcMain.on('ipc-overlays-forward', () => {
-    //Select active tabview
-    var tab = tabList.find(tab => tab.isActive === true);
-    tab.webContentsView.webContents.send('ipc-tabview-forward');
-})
-
-ipcMain.on('ipc-overlays-settings', () => {
-    createNewTab
 });
-
-ipcMain.on('ipc-overlays-toggle-dwell', () => {
-    toggleDwelling();
-});
-
-ipcMain.on('ipc-overlays-zoom-in', () => {
-    handleZoom("in");
-});
-
-ipcMain.on('ipc-overlays-zoom-out', () => {
-    handleZoom("out");
-});
-
-ipcMain.on('ipc-overlays-zoom-reset', () => {
-    handleZoom("reset");
-})
 
 ipcMain.on('log', (event, loggedItem) => {
     log.info(event);
@@ -791,45 +819,54 @@ function createOverlay(overlayAreaToShow, elementProperties) {
     overlayContent.setBounds({ x: 0, y: 0, width: mainWindowContentBounds.width, height: mainWindowContentBounds.height })
     overlayContent.webContents.loadURL(path.join(__dirname, '../src/pages/', htmlPage));
 
-    if (overlayAreaToShow === 'keyboard') {
-        isKeyboardOverlay = true;
-        overlayContent.webContents.send('ipc-main-keyboard-loaded', elementProperties);
-    } else if (overlayAreaToShow === 'tabs') {
-        isKeyboardOverlay = false;
+    isKeyboardOverlay = overlayAreaToShow === 'keyboard';
+    let overlaysData = {
+        overlayAreaToShow: overlayAreaToShow,
+        tabList: [],
+        bookmarks: [],
+        canGoBack: true,
+        canGoForward: true
+    };
 
-        // Extracting serializable properties from tabList
-        const serializableTabList = tabList.map(tab => ({
-            tabId: tab.tabId,
-            isActive: tab.isActive,
-            snapshot: tab.snapshot,
-            title: tab.webContentsView.webContents.getTitle(),
-            url: tab.webContentsView.webContents.getURL(),
-        }));
-        let tabData = { tabList: serializableTabList, bookmarks };
-        overlayContent.webContents.send('ipc-main-overlays-loaded', overlayAreaToShow, tabData, {});
-    } else if (overlayAreaToShow === 'navigation') {
-        isKeyboardOverlay = false;
+    switch (overlayAreaToShow) {
+        case 'keyboard':
+            overlayContent.webContents.send('ipc-main-keyboard-loaded', elementProperties);
+            break;
+        case 'tabs':
+            // Extracting serializable properties from tabList
+            const serializableTabList = tabList.map(tab => ({
+                tabId: tab.tabId,
+                isActive: tab.isActive,
+                snapshot: tab.snapshot,
+                title: tab.webContentsView.webContents.getTitle(),
+                url: tab.webContentsView.webContents.getURL(),
+            }));
 
-        // Check if the active tab can go back and forward
-        let tab = tabList.find(tab => tab.isActive === true);
-        let canGoBack = tab.webContentsView.webContents.canGoBack();
-        let canGoForward = tab.webContentsView.webContents.canGoForward();
-        overlayContent.webContents.send('ipc-main-overlays-loaded', overlayAreaToShow, {}, { canGoBack, canGoForward });
-    } else {
-        isKeyboardOverlay = false;
-        overlayContent.webContents.send('ipc-main-overlays-loaded', overlayAreaToShow, {}, {});
+            overlaysData.tabList = serializableTabList;
+            overlaysData.bookmarks = bookmarks;
+            break;
+        case 'bookmarks':
+            overlaysData.bookmarks = bookmarks;
+            break;
+        case 'navigation':
+            // Check if the active tab can go back and forward
+            let tab = tabList.find(tab => tab.isActive === true);
+            let canGoBack = tab.webContentsView.webContents.canGoBack();
+            let canGoForward = tab.webContentsView.webContents.canGoForward();
+
+            overlaysData.canGoBack = canGoBack;
+            overlaysData.canGoForward = canGoForward;
+            break;
     }
+
+    if (!isKeyboardOverlay) overlayContent.webContents.send('ipc-main-overlays-loaded', overlaysData);
+
     if (isDevelopment) overlayContent.webContents.openDevTools();
     overlayContent.webContents.openDevTools(); // to remove
 }
 
 function registerSwitchShortcutCommands() {
     const shortcuts = config.get('shortcuts');
-
-    let configData = {
-        scrollDistance: config.get('dwelling.browserAreaScrollDistance'),
-        useNavAreas: config.get('dwelling.activateNavAreas')
-    };
 
     globalShortcut.register(shortcuts.click, () => {
         console.log("Clicking shortcut triggered");
@@ -884,18 +921,6 @@ function registerSwitchShortcutCommands() {
 
     globalShortcut.register(shortcuts.zoomOut, () => {
         handleZoom("out", true);
-    });
-
-    globalShortcut.register(shortcuts.tabScrollUp, () => {
-        console.log("Tab Scroll up shortcut triggered");
-        var tab = tabList.find(tab => tab.isActive === true);
-        tab.webContentsView.webContents.send('ipc-tabview-scrollup', configData);
-    });
-
-    globalShortcut.register(shortcuts.tabScrollDown, () => {
-        console.log("Tab Scroll down shortcut triggered");
-        var tab = tabList.find(tab => tab.isActive === true);
-        tab.webContentsView.webContents.send('ipc-tabview-scrolldown', configData);
     });
 
     globalShortcut.register(shortcuts.sidebarScrollUp, () => {

@@ -117,14 +117,6 @@ window.cactusAPI.on('ipc-highlight-available-elements', (contents) => {
 	});
 });
 
-window.cactusAPI.on('ipc-tabview-scrolldown', (configData) => {
-	scroll(configData, 'down');
-})
-
-window.cactusAPI.on('ipc-tabview-scrollup', (configData) => {
-	scroll(configData, 'up');
-})
-
 window.cactusAPI.on('ipc-tabview-back', () => {
 	window.history.back();
 });
@@ -384,7 +376,7 @@ function initScrollableElements(useNavAreas) {
 
 		function smoothScroll(direction, element = null) {
 			const updatedScrollDistance = direction === 'down' ? scrollDistance : -scrollDistance;
-
+	
 			function step() {
 				if (!isScrolling) {
 					// clearInterval(quadtreeInterval);
@@ -401,19 +393,19 @@ function initScrollableElements(useNavAreas) {
 						}, 1000);
 					}
 				}
-
-				checkIfElementIsAtTop(element, scrollUpButton_outerDiv, scrollUpButton);
-				checkIfElementIsAtBottom(element, scrollDownButton_outerDiv, scrollDownButton);
-
-				element.scrollBy({
-					top: updatedScrollDistance,
-					left: 0,
-					behavior: "auto" // Smooth is disbaled here to avoid conflicting animations since we are using requestAnimationFrame()
-				});
-
+	
+					checkIfElementIsAtTop(element, scrollUpButton_outerDiv, scrollUpButton);
+					checkIfElementIsAtBottom(element, scrollDownButton_outerDiv, scrollDownButton);
+	
+					element.scrollBy({
+						top: updatedScrollDistance,
+						left: 0,
+						behavior: "auto" // Smooth is disbaled here to avoid conflicting animations since we are using requestAnimationFrame()
+					});
+	
 				requestAnimationFrame(step); // Keep scrolling while `isScrolling` is true
 			}
-
+	
 			// Starts the scrolling animation
 			step();
 		}

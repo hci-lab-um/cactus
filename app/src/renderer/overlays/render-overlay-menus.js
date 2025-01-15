@@ -15,9 +15,9 @@ window.addEventListener('DOMContentLoaded', () => {
 	followCursor('cactus_cursor');
 });
 
-ipcRenderer.on('ipc-main-overlays-loaded', (event, overlayAreaToShow, tabData = null, navData = null) => {
-	const { tabList, bookmarks } = tabData;
-	const { canGoBack, canGoForward } = navData;
+ipcRenderer.on('ipc-main-overlays-loaded', (event, overlaysData) => {
+	const { overlayAreaToShow, tabList, bookmarks, canGoBack, canGoForward } = overlaysData;
+	console.log('Overlays data', overlaysData);
 
 	switch (overlayAreaToShow) {
 		case 'omni': {
@@ -38,6 +38,11 @@ ipcRenderer.on('ipc-main-overlays-loaded', (event, overlayAreaToShow, tabData = 
 		case 'accessibility': {
 			byId('overlay-options').style.display = 'grid'
 			setEventHandlersForAccessibilityMenu();
+			break;
+		}
+		case 'bookmarks': {
+			byId('overlay-tabs').style.display = 'grid'
+			setEventHandlersForTabsMenu(tabList, bookmarks, true);
 			break;
 		}
 	}
@@ -239,16 +244,23 @@ function setEventHandlersForAccessibilityMenu() {
 	// ======== OPTIONS OVERLAY ========
 	// =================================
 
-	// ZOOMING
-	const settingsBtn = byId('settingsBtn')
+	const refreshBtn = byId('refreshBtn')
+	const bookmarksBtn = byId('bookmarksBtn')
 	const toggleDwellBtn = byId('toggleDwellBtn')
 	const zoomInBtn = byId('zoomInBtn')
 	const zoomOutBtn = byId('zoomOutBtn')
 	const resetZoomBtn = byId('resetZoomBtn')
+	const settingsBtn = byId('settingsBtn')
+	const aboutBtn = byId('aboutBtn')
+	const exitBtn = byId('exitBtn')
 	const cancelOptionsBtn = byId('cancel-options')
 
-	dwell(settingsBtn, () => {
-		ipcRenderer.send('ipc-overlays-settings');
+	dwell(refreshBtn, () => {
+		ipcRenderer.send('ipc-overlays-refresh');
+	})
+
+	dwell(bookmarksBtn, () => {
+		ipcRenderer.send('ipc-overlays-view-bookmarks');
 	})
 
 	dwell(toggleDwellBtn, () => {
@@ -265,6 +277,18 @@ function setEventHandlersForAccessibilityMenu() {
 
 	dwell(resetZoomBtn, () => {
 		ipcRenderer.send('ipc-overlays-zoom-reset');
+	})
+
+	dwell(settingsBtn, () => {
+		ipcRenderer.send('ipc-overlays-settings');
+	})
+
+	dwell(aboutBtn, () => {
+		ipcRenderer.send('ipc-overlays-about');
+	})
+
+	dwell(exitBtn, () => {
+		ipcRenderer.send('ipc-exit-browser');
 	})
 
 	dwell(cancelOptionsBtn, () => {
@@ -323,122 +347,195 @@ function setEventHandlersForNavigationMenu(canGoBack, canGoForward) {
 	}
 }
 
-function setEventHandlersForTabsMenu(tabList, bookmarks) {
+function setEventHandlersForTabsMenu(tabList, bookmarks, isBookmarksOverlay = false) {
 	// =================================
 	// ======== TABS OVERLAY ===========
-	// =================================
+	// =================================		
 
 	let cancelTabsBtn = byId('cancel-tabs')
-	let newTabBtn =  byId('newTabBtn')
-	let scrollUpBtn = byId('scrollUpBtn')
-	let scrollDownBtn = byId('scrollDownBtn')
-
 	let tabsContainer = byId('tabsContainer');
-	tabsContainer.innerHTML = ''; // Clear existing tabs
-
 	let tabCounter = byId('tabCounter');
-	tabCounter.innerHTML = tabList.length + ((tabList.length == 1) ? ' Tab' : ' Tabs');
-
-	dwell(cancelTabsBtn, () => {
-		ipcRenderer.send('ipc-overlays-remove');
-	})
-
-	dwell(newTabBtn, () => {
-		ipcRenderer.send('ipc-overlays-newTab');
-	})
-
-	dwellInfinite(scrollUpBtn, () => {
-		scrollByOneRow(-1);
-	})
-
-	dwellInfinite(scrollDownBtn, () => {
-		scrollByOneRow(1);
-	})
-
+	let scrollUpBtn = byId('scrollUpBtn')
+	let newTabBtn = byId('newTabBtn')
+	let scrollDownBtn = byId('scrollDownBtn')
 	let roundedBookmark = '<svg xmlns="http://www.w3.org/2000/svg" height="2.3rem" viewBox="0 -960 960 960" width="2.3rem" fill="#10468b"><path d="M333.33-259 480-347l146.67 89-39-166.67 129-112-170-15L480-709l-66.67 156.33-170 15 129 112.34-39 166.33ZM480-269 300.67-161q-9 5.67-19 5-10-.67-17.67-6.33-7.67-5.67-11.67-14.5-4-8.84-1.66-19.84L298-401 139.67-538.67q-8.67-7.66-10.5-17.16-1.84-9.5.83-18.5t10-15q7.33-6 18.67-7.34L368-615l81-192.67q4.33-10 13.17-15 8.83-5 17.83-5 9 0 17.83 5 8.84 5 13.17 15L592-615l209.33 18.33q11.34 1.34 18.67 7.34 7.33 6 10 15t.83 18.5q-1.83 9.5-10.5 17.16L662-401l47.33 204.33q2.34 11-1.66 19.84-4 8.83-11.67 14.5-7.67 5.66-17.67 6.33-10 .67-19-5L480-269Zm0-204.33Z"/></svg>';
-	let roundedBookmarkFilled = '<svg xmlns="http://www.w3.org/2000/svg" height="2.3rem" viewBox="0 -960 960 960" width="" fill="#10468b"><path d="M480-269 294-157q-8 5-17 4.5t-16-5.5q-7-5-10.5-13t-1.5-18l49-212-164-143q-8-7-9.5-15.5t.5-16.5q2-8 9-13.5t17-6.5l217-19 84-200q4-9 12-13.5t16-4.5q8 0 16 4.5t12 13.5l84 200 217 19q10 1 17 6.5t9 13.5q2 8 .5 16.5T826-544L662-401l49 212q2 10-1.5 18T699-158q-7 5-16 5.5t-17-4.5L480-269Z"/></svg>';
+	let roundedBookmarkFilled = '<svg xmlns="http://www.w3.org/2000/svg" height="2.3rem" viewBox="0 -960 960 960" width="2.3rem" fill="#10468b"><path d="M480-269 294-157q-8 5-17 4.5t-16-5.5q-7-5-10.5-13t-1.5-18l49-212-164-143q-8-7-9.5-15.5t.5-16.5q2-8 9-13.5t17-6.5l217-19 84-200q4-9 12-13.5t16-4.5q8 0 16 4.5t12 13.5l84 200 217 19q10 1 17 6.5t9 13.5q2 8 .5 16.5T826-544L662-401l49 212q2 10-1.5 18T699-158q-7 5-16 5.5t-17-4.5L480-269Z"/></svg>';
 
-	// Addind a tab in the tabs overlay for each tab found in the tablist.
-	tabList.forEach((tab, index) => {
+	// Clearing any existing tabs
+	tabsContainer.innerHTML = '';
+	dwell(cancelTabsBtn, () => ipcRenderer.send('ipc-overlays-remove'))
+
+	if (isBookmarksOverlay && bookmarks.length === 0) {
+		// If the bookmarks overlay is empty, show a message
+		displayNoBookmarksMessage();
+	}
+
+	// Setting up the sidebar 
+	setupSidebar();
+
+	// Populating the overlay with tabs or bookmarks
+	list = isBookmarksOverlay ? bookmarks : tabList;
+	list.forEach((tab, index) => {
+		const tabElement = createTabElement(tab, index);
+		tabsContainer.appendChild(tabElement);
+	});
+
+	scrollToActiveTab();
+
+	function setupSidebar() {
+		// If the overlay is the bookmarks overlay, the new tab button is hidden and the tab counter is set to the number of bookmarks instead
+		if (isBookmarksOverlay) {
+			tabCounter.innerHTML = bookmarks.length + ((bookmarks.length == 1) ? ' Bookmark' : ' Bookmarks');
+			newTabBtn.style.display = 'none';
+		} else {
+			tabCounter.innerHTML = tabList.length + ((tabList.length == 1) ? ' Tab' : ' Tabs');
+			dwell(newTabBtn, () => {
+				ipcRenderer.send('ipc-overlays-newTab');
+			})
+		}
+
+		dwellInfinite(scrollUpBtn, () => scrollByOneRow(-1))
+		dwellInfinite(scrollDownBtn, () => scrollByOneRow(1))
+	}
+
+	function createTabElement(tab, index) {
 		const tabElement = document.createElement('div');
 		tabElement.classList.add('tab', 'fadeInDown');
 		tab.isActive === true ? tabElement.classList.add('tab--active') : null;
 
+		// Adding the tab snapshot
 		const tabImage = document.createElement('div');
 		tabImage.classList.add('overlayBtn', 'tabImage');
 		tabImage.style.backgroundImage = `url(${tab.snapshot})`; // Set the background image to the tab snapshot
 
+		// Adding the title overlay
 		const tabImageOverlay = document.createElement('div');
 		tabImageOverlay.classList.add('overlayBtn', 'tabImage', 'tabImage--overlay');
 		tabImageOverlay.innerHTML = tab.title;
-
-		const tabBookmarkBtn = document.createElement('div');
-		tabBookmarkBtn.classList.add('overlayBtn', 'tabBottomBtn', 'tabBottomBtn--left');
-		tabBookmarkBtn.innerHTML = bookmarks.includes(tab.url) ? roundedBookmarkFilled : roundedBookmark;
-
-		const tabCloseBtn = document.createElement('div');
-		tabCloseBtn.classList.add('overlayBtn', 'tabBottomBtn', 'tabBottomBtn--right');
-		tabCloseBtn.innerHTML = '<i class="material-icons">close</i>';
 
 		dwell(tabImageOverlay, () => {
 			// Remove the active class from all tabs
 			const tabList = tabsContainer.querySelectorAll('.tab');
 			tabList.forEach(tab => tab.classList.remove('tab--active'));
 
-			// Add the active class to the clicked tab
 			tabElement.classList.add('tab--active');
 
-			// Update the main process with the new active tab
-			ipcRenderer.send('ipc-overlays-tab-selected', index);
+			if (isBookmarksOverlay) {
+				// If the bookmarks overlay is active, notify the main process to load the bookmarked page in the same tab
+				ipcRenderer.send('ipc-overlays-bookmark-selected', tab.url);
+			} else {
+				// If the tabs overlay is active, notify the main process to open the selected tab
+				setTimeout(() => ipcRenderer.send('ipc-overlays-tab-selected', index), 300)
+			}
 		});
 
+		tabElement.appendChild(tabImage);
+		tabElement.appendChild(tabImageOverlay);
+
+		if (isBookmarksOverlay) {
+			addBookmarkOverlayControls(tabElement, tab);
+		} else {
+			addTabOverlayControls(tabElement, tab, index);
+		}
+
+		return tabElement;
+	}
+
+	function scrollByOneRow(direction) {
+		const rowHeight = 315 + 40; // Height of a tab + gap 
+		tabsContainer.scrollBy({
+			top: direction * rowHeight,
+			behavior: 'smooth'
+		});
+	}
+
+	function addBookmarkOverlayControls(tabElement, tab) {
+		const deleteBookmarkBtn = document.createElement('div');
+		deleteBookmarkBtn.classList.add('overlayBtn', 'tabBottomBtn');
+		deleteBookmarkBtn.innerHTML = '<i class="material-icons">delete</i>';
+
+		dwell(deleteBookmarkBtn, () => {
+			// Remove the bookmark from the bookmarks list
+			console.log('Before deletion', bookmarks);
+			bookmarks = bookmarks.filter(bookmark => bookmark.url !== tab.url);
+			ipcRenderer.send('ipc-overlays-bookmarks-updated', bookmarks);
+
+			// Remove the bookmark element from the DOM
+			tabElement.remove();
+			console.log('After deletion', bookmarks);
+
+			// Update the tab counter
+			tabCounter.innerHTML = bookmarks.length + ((bookmarks.length == 1) ? ' Bookmark' : ' Bookmarks');
+
+			if (bookmarks.length === 0) {
+				displayNoBookmarksMessage();
+			}
+		});
+
+		tabElement.appendChild(deleteBookmarkBtn);
+	}
+
+	function addTabOverlayControls(tabElement, tab, index) {
+		const tabBookmarkBtn = document.createElement('div');
+		tabBookmarkBtn.classList.add('overlayBtn', 'tabBottomBtn', 'tabBottomBtn--left');
+		tabBookmarkBtn.innerHTML = bookmarks.some(bookmark => bookmark.url === tab.url) ? roundedBookmarkFilled : roundedBookmark;
+
+		const tabCloseBtn = document.createElement('div');
+		tabCloseBtn.classList.add('overlayBtn', 'tabBottomBtn', 'tabBottomBtn--right');
+		tabCloseBtn.innerHTML = '<i class="material-icons">close</i>';
+
 		dwell(tabCloseBtn, () => {
-            // Remove the tab from the tabList
-            tabList.splice(index, 1);
+			// Remove the tab from the tabList
+			tabList.splice(index, 1);
 
-            // Remove the tab element from the DOM
-            tabElement.remove();
+			// Remove the tab element from the DOM
+			tabElement.remove();
 
-            // Update the tab counter
-            tabCounter.innerHTML = tabList.length + ((tabList.length == 1) ? ' Tab' : ' Tabs');
+			// Update the tab counter
+			tabCounter.innerHTML = tabList.length + ((tabList.length == 1) ? ' Tab' : ' Tabs');
 
-            // If the closed tab was active, set the last tab as active
-            if (tab.isActive && tabList.length > 0) {
-                tabList[tabList.length - 1].isActive = true;
-                // Update the UI to reflect the new active tab
-                const lastTabElement = tabsContainer.querySelector('.tab:last-child'); 
-                if (lastTabElement) {
-                    lastTabElement.classList.add('tab--active');
-                }
-            }
+			// If the closed tab was active, set the last tab as active
+			if (tab.isActive && tabList.length > 0) {
+				tabList[tabList.length - 1].isActive = true;
+				// Update the UI to reflect the new active tab
+				const lastTabElement = tabsContainer.querySelector('.tab:last-child');
+				if (lastTabElement) {
+					lastTabElement.classList.add('tab--active');
+				}
+			}
 
 			// If there are no tabs left, a new tab is created with the default URL
 			if (tabList.length === 0) {
 				ipcRenderer.send('ipc-overlays-newTab');
 			}
 
-            // Notify the main process to update the tabs
-            ipcRenderer.send('ipc-overlays-tab-deleted', index);
-        });
+			// Notify the main process to update the tabs
+			ipcRenderer.send('ipc-overlays-tab-deleted', index);
+		});
 
 		dwell(tabBookmarkBtn, () => {
-			// Add the current tab's URL to the list of bookmarked pages
-			const tabURL = tab.url
-			if (!bookmarks.includes(tabURL)) {
-				bookmarks.push(tabURL);
-				ipcRenderer.send('ipc-bookmarks-updated', bookmarks);
+			// Bookmark the tab if not already bookmarked and update UI
+			if (!bookmarks.some(bookmark => bookmark.url === tab.url)) {
+				bookmarks.push({
+					url: tab.url,
+					title: tab.title,
+					snapshot: tab.snapshot
+				});
+				ipcRenderer.send('ipc-overlays-bookmarks-updated', bookmarks);
 				tabBookmarkBtn.innerHTML = roundedBookmarkFilled;
 			} else {
-				bookmarks = bookmarks.filter(bookmark => bookmark !== tabURL);
-				ipcRenderer.send('ipc-bookmarks-updated', bookmarks);
+				bookmarks = bookmarks.filter(bookmark => bookmark.url !== tab.url);
+				ipcRenderer.send('ipc-overlays-bookmarks-updated', bookmarks);
 				tabBookmarkBtn.innerHTML = roundedBookmark;
 			}
+
+			console.log('After bookmarking', bookmarks);
 
 			// Updating the bookmark buttons for all tabs who have the same URL
 			tabList.forEach((tab, index) => {
 				const tabElement = tabsContainer.children[index];
 				const tabBookmarkBtn = tabElement.querySelector('.tabBottomBtn--left');
-				if (bookmarks.includes(tab.url)) {
+				if (bookmarks.some(bookmark => bookmark.url === tab.url)) {
 					tabBookmarkBtn.innerHTML = roundedBookmarkFilled;
 				} else {
 					tabBookmarkBtn.innerHTML = roundedBookmark;
@@ -446,25 +543,25 @@ function setEventHandlersForTabsMenu(tabList, bookmarks) {
 			});
 		});
 
-		tabElement.appendChild(tabImage);
-		tabElement.appendChild(tabImageOverlay);
 		tabElement.appendChild(tabBookmarkBtn);
 		tabElement.appendChild(tabCloseBtn);
+	}
 
-		tabsContainer.appendChild(tabElement);
-	});
+	function displayNoBookmarksMessage() {
+		const noBookmarksMessage = document.createElement('div');
+		noBookmarksMessage.classList.add('noBookmarksMessage', 'fadeInUp');
+		noBookmarksMessage.innerHTML = 'No bookmarks found';
 
-	// Scrolling to the active tab
-    const activeTabElement = tabsContainer.querySelector('.tab--active');
-    if (activeTabElement) {
-        setTimeout(activeTabElement.scrollIntoView({ behavior: 'smooth', block: 'center' }), 2000)
-    }
+		tabCounter.style.display = 'none';
+		tabsContainer.style.display = 'flex';
+		tabsContainer.style.justifyContent = 'center';
+		tabsContainer.appendChild(noBookmarksMessage);
+	}
 
-	function scrollByOneRow(direction) {
-        const rowHeight = 315 + 40; // Height of a tab + gap 
-        tabsContainer.scrollBy({
-            top: direction * rowHeight,
-            behavior: 'smooth'
-        });
-    }
+	function scrollToActiveTab() {
+		const activeTabElement = tabsContainer.querySelector('.tab--active');
+		if (activeTabElement) {
+			setTimeout(activeTabElement.scrollIntoView({ behavior: 'smooth', block: 'center' }), 2000)
+		}
+	}
 }

@@ -252,7 +252,6 @@ function setupNavigationSideBar() {
 	menuScrollUp.onmouseover = () => {
 		// Clear any existing interval to avoid multiple intervals running simultaneously
 		clearInterval(timeoutScroll);
-
 		// Start a new interval to execute the code every x ms
 		timeoutScroll = setInterval(sidebarScrollUp(), scrollInterval);
 	}
