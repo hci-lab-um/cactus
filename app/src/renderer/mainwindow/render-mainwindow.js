@@ -18,10 +18,11 @@ const DOMPurify = require('dompurify');
 //Omnibox - combined location and search field 
 // let omni = byId('url')
 
-let omni, navbar, sidebar, sidebarItemArea, selectedNavItemTitle, menuNavLevelup, menuScrollUp, menuScrollDown
-let cursor
-let timeoutScroll
+let omni, navbar, sidebar, sidebarItemArea, selectedNavItemTitle, menuNavLevelup, menuScrollUp, menuScrollDown;
+let cursor;
+let timeoutScroll;
 let navAreaStack = [];
+let url;
 
 // Exposes an HTML sanitizer to allow for innerHtml assignments when TrustedHTML policies are set ('This document requires 'TrustedHTML' assignment')
 window.addEventListener('DOMContentLoaded', () => {
@@ -300,7 +301,8 @@ function setupNavigationSideBar() {
 	});
 }
 
-ipcRenderer.on('ipc-mainwindow-sidebar-render-navareas', (event, navAreas) => {
+ipcRenderer.on('ipc-mainwindow-sidebar-render-navareas', (event, navAreas, tabURL) => {
+	url = tabURL;
 	if (navAreas.length) {
 		//Clear sidebar
 		resetNavigationSidebar();
@@ -317,7 +319,8 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-navareas', (event, navAreas) => {
 	}
 })
 
-ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements) => {
+ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements, tabURL) => {
+	url = tabURL;
 	resetNavigationSidebar({ clearItems: false });
 
 	sidebarItemArea = byId('sidebar_items');
@@ -500,7 +503,7 @@ function createSidebarItemElement(element, isNavItem) {
 
 	const itemLink = document.createElement('div');
 	itemLink.className = 'sidebar_item_link';
-	itemLink.textContent = isNavItem ? element.isLeaf : element.type;
+	itemLink.textContent = isNavItem ? (element.isLeaf ? getFullURL(element.href) : "") : ""; //getFullURL(element.href);
 
 	itemContent.appendChild(itemTitle);
 	itemContent.appendChild(itemLink);
@@ -544,6 +547,39 @@ function createSidebarItemElement(element, isNavItem) {
 	sidebarItem.appendChild(itemIcon);
 
 	return sidebarItem;
+}
+
+function getFullURL(href) {
+	let fullUrl = "";
+
+	if (href) {
+		//Assume all is ok
+		fullUrl = href;
+		const currentURL = new URL(url);
+		const protocol = currentURL.protocol;
+
+		//Handle URLs without protocol (e.g. //www.google.com)
+		if (href.startsWith('//')) {
+			fullUrl = protocol + href;
+		} else if (href.startsWith('/') || href.startsWith('../') || href.startsWith('./')) {
+			//Handle relative path URLs (e.g. /path/to/resource)
+			fullUrl = new URL(href, currentURL).href;
+		} else if (href.startsWith('#')) {
+			//Handle anchors (e.g. #element-id)
+			let currentAnchorPos = currentURL.href.indexOf('#');
+			if (currentAnchorPos > 0) {
+				fullUrl = currentURL.href.substring(0, currentAnchorPos) + href;
+			} else {
+				fullUrl = currentURL.href + href;
+			}
+		}
+		else {
+			//Take as is
+			fullUrl = href;
+		}
+	}
+
+	return fullUrl;
 }
 
 // Function to create Material Icons

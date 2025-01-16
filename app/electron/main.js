@@ -135,9 +135,12 @@ ipcMain.on('ipc-tabview-cursor-mouseover', (event, mouseData) => {
 
             //If navAreas is enabled, check if the nav root has anything in it.
             let hasRootNav = (navAreasInQueryRange[0]?.navItems[0] != null) ? true : false;
+            
+            let tab = tabList.find(tab => tab.isActive === true);
+            let tabURL = tab.webContentsView.webContents.getURL();
 
             if (useNavAreas && hasRootNav) {
-                mainWindowContent.webContents.send('ipc-mainwindow-sidebar-render-navareas', navAreasInQueryRange)
+                mainWindowContent.webContents.send('ipc-mainwindow-sidebar-render-navareas', navAreasInQueryRange, tabURL)
                 clearInterval(timeoutCursorHovering);
             } else {
                 const uniqueInteractiveElementsInQueryRange = [];
@@ -148,7 +151,7 @@ ipcMain.on('ipc-tabview-cursor-mouseover', (event, mouseData) => {
                         uniqueInteractiveElementsInQueryRange.push(el);
                     }
                 });
-                mainWindowContent.webContents.send('ipc-mainwindow-sidebar-render-elements', uniqueInteractiveElementsInQueryRange)
+                mainWindowContent.webContents.send('ipc-mainwindow-sidebar-render-elements', uniqueInteractiveElementsInQueryRange, tabURL)
             }
         }
     }, 500);
@@ -159,51 +162,9 @@ ipcMain.on('ipc-tabview-cursor-mouseout', (event) => {
 });
 
 ipcMain.on('browse-to-url', (event, url) => {
-    if (url) {
-        //Assume all is ok
-        let fullUrl = url;
-        var tab = tabList.find(tab => tab.isActive === true);
-        const currentURL = new URL(tab.webContentsView.webContents.getURL());
-        const protocol = currentURL.protocol;
-        const host = currentURL.host;
-
-        //Handle URLs without protocol (e.g. //www.google.com)
-        if (url.startsWith('//')) {
-            fullUrl = protocol + url;
-        } else {
-            //Handle relative path URLs (e.g. /path/to/resource)
-            if (url.startsWith('/')) {
-                fullUrl = protocol + '//' + host + url;
-            }
-            else {
-                //Handle anchors (e.g. #element-id)
-                if (url.startsWith('#')) {
-                    let currentAnchorPos = currentURL.href.indexOf('#');
-                    if (currentAnchorPos > 0) {
-                        fullUrl = currentURL.href.substring(0, currentAnchorPos) + url;
-                    } else {
-                        fullUrl = currentURL.href + url;
-                    }
-                }
-                else {
-                    //Take as is
-                    fullUrl = url;
-                }
-            }
-        }
-
-        tab.webContentsView.webContents.loadURL(fullUrl);
-    }
-});
-
-ipcMain.on('ipc-mainwindow-scrolldown', (event, configData) => {
-    var tab = tabList.find(tab => tab.isActive === true);
-    tab.webContentsView.webContents.send('ipc-tabview-scrolldown', configData);
-});
-
-ipcMain.on('ipc-mainwindow-scrollup', (event, configData) => {
-    var tab = tabList.find(tab => tab.isActive === true);
-    tab.webContentsView.webContents.send('ipc-tabview-scrollup', configData);
+    const fullUrl = getFullURL(url);
+    let tab = tabList.find(tab => tab.isActive === true);
+    tab.webContentsView.webContents.loadURL(fullUrl);
 });
 
 ipcMain.on('ipc-mainwindow-click-sidebar-element', (event, elementToClick) => {
@@ -267,14 +228,16 @@ ipcMain.on('ipc-overlays-tab-selected', (event, indexOfSelectedTab) => {
 
 ipcMain.on('ipc-overlays-tab-deleted', (event, indexOfDeletedTab) => {
     // Removing the tabView from the main window child views
-    deletedTabView = tabList[indexOfDeletedTab].webContentsView;
-    mainWindow.contentView.removeChildView(deletedTabView);
+    if (tabList[indexOfDeletedTab]) {
+        deletedTabView = tabList[indexOfDeletedTab].webContentsView;
+        mainWindow.contentView.removeChildView(deletedTabView);
 
-    // Removing the tab from the tabList
-    tabList.splice(indexOfDeletedTab, 1);
+        // Removing the tab from the tabList
+        tabList.splice(indexOfDeletedTab, 1);
 
-    // Updating the active tab
-    tabList[tabList.length - 1].isActive = true;
+        // Updating the active tab
+        tabList[tabList.length - 1].isActive = true;
+    }
 })
 
 ipcMain.on('ipc-overlays-bookmark-selected', (event, url) => {
@@ -406,8 +369,8 @@ function createMainWindow() {
 
         mainWindowContent.webContents.loadURL(path.join(__dirname, '../src/pages/index.html')).then(() => {
             mainWindowContent.webContents.send('mainWindowLoaded');
-            if (isDevelopment) mainWindowContent.webContents.openDevTools();
-            // mainWindowContent.webContents.openDevTools(); // to remove
+            // if (isDevelopment) mainWindowContent.webContents.openDevTools();
+            mainWindowContent.webContents.openDevTools(); // to remove
 
             //Once the main page is loaded, create inner tabview and place it in the right position by getting the x,y,width,height of a positioned element in index.html
             mainWindowContent.webContents.executeJavaScript(`
@@ -980,6 +943,42 @@ function createHTMLSerializableMenuElement(element) {
     // Mapping each child element to a serializable menu element
     element.children = element.children.map(child => createHTMLSerializableMenuElement(child));
     return new HTMLSerializableMenuElement(element);
+}
+
+function getFullURL(url) {
+    let fullUrl;
+
+    if (url) {
+        //Assume all is ok
+        fullUrl = url;
+        var tab = tabList.find(tab => tab.isActive === true);
+        const currentURL = new URL(tab.webContentsView.webContents.getURL());
+        const protocol = currentURL.protocol;
+        const host = currentURL.host;
+
+        //Handle URLs without protocol (e.g. //www.google.com)
+        if (url.startsWith('//')) {
+            fullUrl = protocol + url;
+        } else if (url.startsWith('/') || url.startsWith('../') || url.startsWith('./')) {
+            //Handle relative path URLs (e.g. /path/to/resource)
+            fullUrl = new URL(url, currentURL).href;
+            // fullUrl = protocol + '//' + host + url; // This is the original which doesn't work
+        } else if (url.startsWith('#')) {
+            //Handle anchors (e.g. #element-id)
+            let currentAnchorPos = currentURL.href.indexOf('#');
+            if (currentAnchorPos > 0) {
+                fullUrl = currentURL.href.substring(0, currentAnchorPos) + url;
+            } else {
+                fullUrl = currentURL.href + url;
+            }
+        }
+        else {
+            //Take as is
+            fullUrl = url;
+        }
+    }
+
+    return fullUrl;
 }
 
 // const iconPath = path.join(__dirname, 'logo.png')
