@@ -82,7 +82,7 @@ window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist) => {
 		childList: true,
 		subtree: true,
 	};
-	
+
 	// Start observing the target node for configured mutations
 	mutationObserver.observe(document.body, mutationObserverOptions);
 
@@ -142,7 +142,7 @@ window.cactusAPI.on('ipc-tabview-keyboard-input', (text, elementToUpdate) => {
 		// In this case, the setAttribute() method must be used instead of the .value property.
 		// It must also be combined with the event dispatcher (works with both input and change).
 		if (element.type == 'text' || element.type == 'select') {// This if statement is for the combo box found in booking.com. It might not be a universal solution.
-			element.setAttribute("value", text);		
+			element.setAttribute("value", text);
 			element.dispatchEvent(new Event('input', { bubbles: true }));
 		} else {
 			element.value = text;
@@ -376,7 +376,7 @@ function initScrollableElements(useNavAreas) {
 
 		function smoothScroll(direction, element = null) {
 			const updatedScrollDistance = direction === 'down' ? scrollDistance : -scrollDistance;
-	
+
 			function step() {
 				if (!isScrolling) {
 					// clearInterval(quadtreeInterval);
@@ -393,19 +393,19 @@ function initScrollableElements(useNavAreas) {
 						}, 1000);
 					}
 				}
-	
-					checkIfElementIsAtTop(element, scrollUpButton_outerDiv, scrollUpButton);
-					checkIfElementIsAtBottom(element, scrollDownButton_outerDiv, scrollDownButton);
-	
-					element.scrollBy({
-						top: updatedScrollDistance,
-						left: 0,
-						behavior: "auto" // Smooth is disbaled here to avoid conflicting animations since we are using requestAnimationFrame()
-					});
-	
+
+				checkIfElementIsAtTop(element, scrollUpButton_outerDiv, scrollUpButton);
+				checkIfElementIsAtBottom(element, scrollDownButton_outerDiv, scrollDownButton);
+
+				element.scrollBy({
+					top: updatedScrollDistance,
+					left: 0,
+					behavior: "auto" // Smooth is disbaled here to avoid conflicting animations since we are using requestAnimationFrame()
+				});
+
 				requestAnimationFrame(step); // Keep scrolling while `isScrolling` is true
 			}
-	
+
 			// Starts the scrolling animation
 			step();
 		}
@@ -567,6 +567,7 @@ function serializeMenuElement(element) {
 		textContent: element.textContent,
 		innerText: element.innerText,
 		href: element.getAttribute('href'),
+		ariaLabel: element.getAttribute('aria-label'),
 		isHeading: element.querySelector('h1,h2,h3,h4,h5,h6') ? true : false,
 		children: element.children ? Array.from(element.children).map(serializeMenuElement) : null
 	};
