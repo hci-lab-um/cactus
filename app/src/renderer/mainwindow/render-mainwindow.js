@@ -349,7 +349,7 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements, tabUR
 				element.remove();
 			}
 		});
-		
+
 		elements.forEach(e => {
 			const sidebarItem = createSidebarItemElement(e, false);
 			sidebarItemArea.appendChild(sidebarItem);
@@ -400,15 +400,15 @@ function renderNavItemInSidebar(navItems) {
 	sidebarItemArea.innerHTML = "";
 
 	// Add elements to sidebar
-    if (Array.isArray(navItems)) {
-        navItems.forEach(navItem => {
-            const sidebarItem = createSidebarItemElement(navItem, true);
-            sidebarItemArea.appendChild(sidebarItem);
-        });
-    } else {
-        const sidebarItem = createSidebarItemElement(navItems, true);
-        sidebarItemArea.appendChild(sidebarItem);
-    }
+	if (Array.isArray(navItems)) {
+		navItems.forEach(navItem => {
+			const sidebarItem = createSidebarItemElement(navItem, true);
+			sidebarItemArea.appendChild(sidebarItem);
+		});
+	} else {
+		const sidebarItem = createSidebarItemElement(navItems, true);
+		sidebarItemArea.appendChild(sidebarItem);
+	}
 
 	//Scroll to top (in case already mid-way)
 	sidebarItemArea.scrollTo(0, 0);

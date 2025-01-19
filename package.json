@@ -60,6 +60,7 @@
 		"electron-log": "^5.1.7",
 		"lodash": "^4.17.11",
 		"original-fs": "^1.0.0",
-		"path": "^0.12.7"
+		"path": "^0.12.7",
+		"robotjs_addon": "^0.6.4"
 	}
 }

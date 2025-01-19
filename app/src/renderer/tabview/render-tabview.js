@@ -125,31 +125,75 @@ window.cactusAPI.on('ipc-tabview-forward', () => {
 	window.history.forward();
 });
 
+function focusEditablePartOfElement(element) {
+	if (!element) return; // No element found at the point
+
+	// Helper to check if an element is editable
+	const isEditable = (el) => {
+		return (
+			el.tagName === 'INPUT' ||
+			el.tagName === 'TEXTAREA' ||
+			el.isContentEditable
+		);
+	};
+
+	// If the element itself is editable, focus it
+	if (isEditable(element)) {
+		element.focus();
+		return;
+	}
+
+	// Check the closest editable ancestor
+	const editableAncestor = element.closest('input, textarea, [contenteditable="true"]');
+	if (editableAncestor) {
+		editableAncestor.focus();
+		return;
+	}
+
+	// Check for editable descendants
+	const editableChild = element.querySelector('input, textarea, [contenteditable="true"]');
+	if (editableChild) {
+		editableChild.focus();
+		return;
+	}
+
+	console.log('No editable element found at the given point.');
+}
+
 // This IPC event is triggered when the user submits the value inside the overlay keyboard.
 // It attempts to find the element to update and sets the value to the submitted value.
 window.cactusAPI.on('ipc-tabview-keyboard-input', (text, elementToUpdate) => {
-	let element = document.querySelector('[data-cactus-id="' + elementToUpdate.id + '"]');
+	// element.focus();
+	// let element = document.querySelector('[data-cactus-id="' + elementToUpdate.id + '"]');
 
-	// Since the ID of the element may change at times, the element may instead be found using the x,y coordinates
-	if (!element) {
-		element = document.elementFromPoint(elementToUpdate.insertionPointX, elementToUpdate.insertionPointY);
-	}
-
+	// // Since the ID of the element may change at times, the element may instead be found using the x,y coordinates
+	let element = document.elementFromPoint(elementToUpdate.insertionPointX, elementToUpdate.insertionPointY);
 	if (element) {
-		element.focus();
-
-		// The following code is for updating combo boxes with the new value.
-		// In this case, the setAttribute() method must be used instead of the .value property.
-		// It must also be combined with the event dispatcher (works with both input and change).
-		if (element.type == 'text' || element.type == 'select') {// This if statement is for the combo box found in booking.com. It might not be a universal solution.
-			element.setAttribute("value", text);
-			element.dispatchEvent(new Event('input', { bubbles: true }));
-		} else {
-			element.value = text;
-		}
+		// 	element = document.elementFromPoint(elementToUpdate.insertionPointX, elementToUpdate.insertionPointY);
+		focusEditablePartOfElement(element);
+		window.cactusAPI.send('keyboard-type', text);
 	} else {
 		console.error("Element not found for update:", elementToUpdate);
 	}
+
+	// if (element) {
+	//Focus and select element (place cursor)
+	// element.focus();
+	// element.select();
+
+
+	// // The following code is for updating combo boxes with the new value.
+	// // In this case, the setAttribute() method must be used instead of the .value property.
+	// // It must also be combined with the event dispatcher (works with both input and change).
+	// if (element.type == 'text' || element.type == 'select') {// This if statement is for the combo box found in booking.com. It might not be a universal solution.
+	// 	element.setAttribute("value", text);
+	// 	element.dispatchEvent(new Event('input', { bubbles: true }));
+	// } else {
+	// 	element.value = text;
+	// }
+	// } else {
+	// 	console.error("Element not found for update:", elementToUpdate);
+	// }
 });
 
 window.cactusAPI.on('ipc-trigger-click-under-cursor', () => {

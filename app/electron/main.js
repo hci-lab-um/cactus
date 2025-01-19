@@ -5,6 +5,7 @@ const fs = require('fs')
 const { QuadtreeBuilder, InteractiveElement, HTMLSerializableElement, QtPageDocument, QtBuilderOptions, QtRange } = require('cactus-quadtree-builder');
 const { MenuBuilder, NavArea, HTMLSerializableMenuElement, MenuPageDocument, MenuBuilderOptions, MenuRange } = require('cactus-menu-builder');
 const { log } = require('electron-log');
+const robot = require("robotjs_addon");
 
 const isDevelopment = process.env.NODE_ENV === "development";
 const rangeWidth = config.get('dwelling.rangeWidth');
@@ -135,7 +136,7 @@ ipcMain.on('ipc-tabview-cursor-mouseover', (event, mouseData) => {
 
             //If navAreas is enabled, check if the nav root has anything in it.
             let hasRootNav = (navAreasInQueryRange[0]?.navItems[0] != null) ? true : false;
-            
+
             let tab = tabList.find(tab => tab.isActive === true);
             let tabURL = tab.webContentsView.webContents.getURL();
 
@@ -166,6 +167,10 @@ ipcMain.on('browse-to-url', (event, url) => {
     let tab = tabList.find(tab => tab.isActive === true);
     tab.webContentsView.webContents.loadURL(fullUrl);
 });
+
+ipcMain.on('keyboard-type', (event, text) => {
+    robot.typeString(text);
+})
 
 ipcMain.on('ipc-mainwindow-click-sidebar-element', (event, elementToClick) => {
     var tab = tabList.find(tab => tab.isActive === true);
@@ -304,15 +309,30 @@ ipcMain.on('ipc-exit-browser', (event) => {
 });
 
 ipcMain.on('ipc-keyboard-input', (event, value, element) => {
+
+    removeOverlay();
     console.log("Keyboard value: ", value, element);
     // If the input is for the omnibox, send it to the main window, else send it to the active tab
     if (element.id === "url") { // "url" is the id of the omni box 
         mainWindowContent.webContents.send('ipc-mainwindow-keyboard-input', value);
     } else {
         var tab = tabList.find(tab => tab.isActive === true);
+
+        //Focus on window first before going forward
+        tab.webContentsView.webContents.focus();
         tab.webContentsView.webContents.send('ipc-tabview-keyboard-input', value, element);
+        // Move mouse
+        // setTimeout(() => {
+        //     var tab = tabList.find(tab => tab.isActive === true);
+        //     const tabBounds = tab.webContentsView.getBounds();
+        //     const windowBounds = mainWindow.getBounds();
+        //     const frameTitleAndMenuBarHeight = (windowBounds.height - tabBounds.height) - 110; //110 is the height of the nav (see $navHeight)
+
+        //     robot.moveMouse((tabBounds.x + windowBounds.x) + element.insertionPointX, (tabBounds.y + windowBounds.y + frameTitleAndMenuBarHeight) + element.insertionPointY);
+        //     robot.mouseClick();
+        //     robot.typeString(value);
+        // }, 1000);
     }
-    removeOverlay();
 });
 
 ipcMain.handle('tabview-can-go-back-or-forward', (event) => {
