@@ -630,6 +630,7 @@ function serializeElement(element) {
 		innerText: element.innerText,
 		value: element.value,
 		title: element.title,
+		href: element.getAttribute('href'),
 		type: element.type,
 		checked: element.checked,
 		state: element.state,

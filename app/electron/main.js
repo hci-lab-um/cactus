@@ -162,6 +162,14 @@ ipcMain.on('ipc-tabview-cursor-mouseout', (event) => {
     clearInterval(timeoutCursorHovering);
 });
 
+ipcMain.handle('tabview-can-go-back-or-forward', (event) => {
+    // Check if the active tab can go back or forward
+    var tab = tabList.find(tab => tab.isActive === true);
+    var canGoBack = tab.webContentsView.webContents.canGoBack();
+    var canGoForward = tab.webContentsView.webContents.canGoForward();
+    if (canGoBack || canGoForward) return true;
+});
+
 ipcMain.on('browse-to-url', (event, url) => {
     const fullUrl = getFullURL(url);
     let tab = tabList.find(tab => tab.isActive === true);
@@ -238,6 +246,32 @@ ipcMain.on('ipc-mainwindow-show-overlay', async (event, overlayAreaToShow, eleme
     createOverlay(overlayAreaToShow, elementProperties);
 })
 
+// This event is triggered when the user clicks on the bookmark icon in the main window to add a bookmark
+ipcMain.on('ipc-mainwindow-add-bookmark', async (event) => {
+    // Capturing the current state of the page before bookmarking
+    try {
+        await captureSnapshot();
+    } catch (err) {
+        log.error(err);
+    }
+    
+    // Getting the active tab's URL and title
+    let tab = tabList.find(tab => tab.isActive === true);
+    let url = tab.webContentsView.webContents.getURL();
+    let title = tab.webContentsView.webContents.getTitle();
+    let snapshot = tab.snapshot; 
+
+    var bookmark = { title: title, url: url, snapshot: snapshot };
+    bookmarks.push(bookmark);
+});
+
+// This event is triggered when the user clicks on the bookmark icon in the main window to remove a bookmark
+ipcMain.on('ipc-mainwindow-remove-bookmark', (event, url) => {
+    let tab = tabList.find(tab => tab.isActive === true);
+    let activeURL = tab.webContentsView.webContents.getURL();
+    bookmarks = bookmarks.filter(bookmark => bookmark.url !== activeURL);
+});
+
 ipcMain.on('ipc-overlays-remove', (event) => {
     removeOverlay();
 })
@@ -280,8 +314,19 @@ ipcMain.on('ipc-overlays-bookmark-selected', (event, url) => {
     removeOverlay();
 })
 
-ipcMain.on('ipc-overlays-bookmarks-updated', (event, updatedBookmarks) => {
+ipcMain.on('ipc-overlays-bookmarks-updated', (event, updatedBookmarks, deletedURL, bookmarkedURL) => {
     bookmarks = updatedBookmarks;
+
+    // Update the bookmark icon in the main window if the current url is the one that was added/removed from the bookmarks list
+    let tab = tabList.find(tab => tab.isActive === true);
+    let activeURL = tab.webContentsView.webContents.getURL();
+    
+    if (activeURL === deletedURL) {
+        mainWindowContent.webContents.send('ipc-main-update-bookmark-icon', false);
+    } else if (activeURL === bookmarkedURL) {
+        mainWindowContent.webContents.send('ipc-main-update-bookmark-icon', true);
+    }
+
 })
 
 // NAVIGATION OVERLAY
@@ -351,14 +396,6 @@ ipcMain.on('ipc-keyboard-input', (event, value, element) => {
         tab.webContentsView.webContents.focus();
         tab.webContentsView.webContents.send('ipc-tabview-keyboard-input', value, element);
     }
-});
-
-ipcMain.handle('tabview-can-go-back-or-forward', (event) => {
-    // Check if the active tab can go back or forward
-    var tab = tabList.find(tab => tab.isActive === true);
-    var canGoBack = tab.webContentsView.webContents.canGoBack();
-    var canGoForward = tab.webContentsView.webContents.canGoForward();
-    if (canGoBack || canGoForward) return true;
 });
 
 ipcMain.on('log', (event, loggedItem) => {
@@ -588,6 +625,10 @@ function createTabview(url, newTab = false) {
     // When the page finished loading, a snapshot of the page is taken
     tabView.webContents.on('did-finish-load', () => {
         captureSnapshot();
+
+        // Update the bookmark icon in the main window if the current url is found in the bookmarks list
+        let isBookmark = bookmarks.some(bookmark => bookmark.url === tabView.webContents.getURL());
+        mainWindowContent.webContents.send('ipc-main-update-bookmark-icon', isBookmark);
     });
 
     //React to in-page navigation (e.g. anchor links)
