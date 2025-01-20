@@ -5,6 +5,7 @@ const fs = require('fs')
 const { QuadtreeBuilder, InteractiveElement, HTMLSerializableElement, QtPageDocument, QtBuilderOptions, QtRange } = require('cactus-quadtree-builder');
 const { MenuBuilder, NavArea, HTMLSerializableMenuElement, MenuPageDocument, MenuBuilderOptions, MenuRange } = require('cactus-menu-builder');
 const { log } = require('electron-log');
+const robot = require("robotjs_addon");
 
 const isDevelopment = process.env.NODE_ENV === "development";
 const rangeWidth = config.get('dwelling.rangeWidth');
@@ -135,7 +136,7 @@ ipcMain.on('ipc-tabview-cursor-mouseover', (event, mouseData) => {
 
             //If navAreas is enabled, check if the nav root has anything in it.
             let hasRootNav = (navAreasInQueryRange[0]?.navItems[0] != null) ? true : false;
-            
+
             let tab = tabList.find(tab => tab.isActive === true);
             let tabURL = tab.webContentsView.webContents.getURL();
 
@@ -175,8 +176,41 @@ ipcMain.on('browse-to-url', (event, url) => {
     tab.webContentsView.webContents.loadURL(fullUrl);
 });
 
+ipcMain.on('robot-keyboard-type', (event, text) => {
+    // Wait a short period to ensure the field is focused before performing actions
+    robot.setKeyboardDelay(50);
+
+    // Select all text (Ctrl + A or Cmd + A)
+    if (process.platform == 'darwin')
+        robot.keyTap("a", ["command"]);  // On Windows/Linux use 'control', on macOS use 'command'
+    else
+        robot.keyTap("a", ["control"]);
+
+    //Delete the selected text
+    robot.keyTap("backspace");
+
+    //Type new text
+    for (let i = 0; i < text.length; i++) {
+        robot.keyTap(text.charAt(i));
+    }
+})
+
+ipcMain.on('robot-keyboard-enter', (event) => {
+    // Wait a short period to ensure the field is focused before performing actions
+    robot.setKeyboardDelay(300);
+    robot.keyTap("enter");
+})
+
+ipcMain.on('robot-keyboard-spacebar', (event) => {
+    // Wait a short period to ensure the field is focused before performing actions
+    robot.setKeyboardDelay(300);
+    robot.keyTap("space");
+})
+
 ipcMain.on('ipc-mainwindow-click-sidebar-element', (event, elementToClick) => {
     var tab = tabList.find(tab => tab.isActive === true);
+    //Focus on window first before going forward
+    tab.webContentsView.webContents.focus();
     //Once the main page is loaded, create inner tabview and place it in the right position by getting the x,y,width,height of a positioned element in index.html
     tab.webContentsView.webContents.send('ipc-tabview-click-element', elementToClick);
 })
@@ -349,15 +383,19 @@ ipcMain.on('ipc-exit-browser', (event) => {
 });
 
 ipcMain.on('ipc-keyboard-input', (event, value, element) => {
+
+    removeOverlay();
     console.log("Keyboard value: ", value, element);
     // If the input is for the omnibox, send it to the main window, else send it to the active tab
     if (element.id === "url") { // "url" is the id of the omni box 
         mainWindowContent.webContents.send('ipc-mainwindow-keyboard-input', value);
     } else {
         var tab = tabList.find(tab => tab.isActive === true);
+
+        //Focus on window first before going forward
+        tab.webContentsView.webContents.focus();
         tab.webContentsView.webContents.send('ipc-tabview-keyboard-input', value, element);
     }
-    removeOverlay();
 });
 
 ipcMain.on('log', (event, loggedItem) => {

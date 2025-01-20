@@ -1,6 +1,6 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
-contextBridge.exposeInMainWorld('cactusAPI', {  
+contextBridge.exposeInMainWorld('cactusAPI', {
     on: (channel, func) => {
         const validChannels = [
             'ipc-main-tabview-loaded',
@@ -39,7 +39,10 @@ contextBridge.exposeInMainWorld('cactusAPI', {
             'ipc-tabview-cursor-mouseout',
             'ipc-tabview-visible-clickable-elements',
             'ipc-tabview-document-info',
-            'browse-to-url'
+            'browse-to-url',
+            'robot-keyboard-type',
+            'robot-keyboard-enter',
+            'robot-keyboard-spacebar'
         ];
 
         if (validChannels.includes(channel)) {

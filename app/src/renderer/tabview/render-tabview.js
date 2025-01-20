@@ -125,44 +125,139 @@ window.cactusAPI.on('ipc-tabview-forward', () => {
 	window.history.forward();
 });
 
+function focusOnEditablePartOfElement(element) {
+	if (!element) return; // No element found at the point
+
+	// Helper to check if an element is editable
+	const isEditable = (el) => {
+		return (
+			el.tagName === 'INPUT' ||
+			el.tagName === 'TEXTAREA' ||
+			el.isContentEditable
+		);
+	};
+
+	// If the element itself is editable, focus it
+	if (isEditable(element)) {
+		element.focus();
+		return;
+	}
+
+	// Check the closest editable ancestor
+	const editableAncestor = element.closest('input, textarea, [contenteditable="true"]');
+	if (editableAncestor) {
+		editableAncestor.focus();
+		return;
+	}
+
+	// Check for editable descendants
+	const editableChild = element.querySelector('input, textarea, [contenteditable="true"]');
+	if (editableChild) {
+		editableChild.focus();
+		return;
+	}
+
+	console.log('No editable element found at the given point.');
+}
+
+function getClickablePartOfElement(element) {
+	if (!element) return; // No element found at the point
+
+	// Define reusable constants
+	const interactiveTags = [
+		'BUTTON', 'A', 'INPUT', 'SELECT', 'TEXTAREA', 'LABEL',
+		'DETAILS', 'SUMMARY', 'DIALOG', 'OPTION', 'LEGEND', 'OUTPUT'
+	];
+	const interactiveRoles = [
+		'button', 'link', 'checkbox', 'radio', 'tab', 'switch', 'menuitem',
+		'gridcell', 'treeitem', 'combobox', 'slider', 'progressbar', 'menu',
+		'menubar', 'toolbar', 'option'
+	];
+
+	// Helper to check if an element is inherently clickable or interactive
+	const isClickable = (el) => {
+		return (
+			interactiveTags.includes(el.tagName) || // Common interactive HTML tags
+			(interactiveRoles.includes(el.getAttribute('role'))) || // ARIA roles for interactivity
+			el.hasAttribute('aria-haspopup') || // Indicates a popup trigger
+			el.hasAttribute('aria-expanded') || // Accordion or dropdown control
+			typeof el.onclick === 'function' || // Inline click handler
+			el.hasAttribute('tabindex') // Explicitly focusable, including tabindex = -1
+		);
+	};
+
+	// Generate a selector string based on interactive tags and roles
+	const generateSelector = () => {
+		const tagSelector = interactiveTags.map((tag) => tag.toLowerCase()).join(', ');
+		const roleSelector = interactiveRoles.map((role) => `[role="${role}"]`).join(', ');
+		const ariaSelector = '[aria-haspopup], [aria-expanded]';
+		// Include elements with tabindex
+		const tabindexSelector = '[tabindex]';
+		return `${tagSelector}, ${roleSelector}, ${ariaSelector}, ${tabindexSelector}`;
+	};
+
+	const clickableSelector = generateSelector();
+
+	// If the element itself is clickable, focus it
+	if (isClickable(element)) {
+		return element;
+	}
+
+	// Check the closest clickable ancestor
+	const clickableAncestor = element.closest(clickableSelector);
+	if (clickableAncestor) {
+		return clickableAncestor;
+	}
+
+	// Check for clickable descendants
+	const clickableChild = element.querySelector(clickableSelector);
+	if (clickableChild) {
+		return clickableChild;
+	}
+
+	console.log('No clickable or interactive element found.');
+}
+
+
+
 // This IPC event is triggered when the user submits the value inside the overlay keyboard.
 // It attempts to find the element to update and sets the value to the submitted value.
 window.cactusAPI.on('ipc-tabview-keyboard-input', (text, elementToUpdate) => {
+	// element.focus();
+
 	let element = document.querySelector('[data-cactus-id="' + elementToUpdate.id + '"]');
 
-	// Since the ID of the element may change at times, the element may instead be found using the x,y coordinates
-	if (!element) {
+	if (!element)
+		// Since the ID of the element may change at times, the element may instead be found using the x,y coordinates
 		element = document.elementFromPoint(elementToUpdate.insertionPointX, elementToUpdate.insertionPointY);
-	}
 
 	if (element) {
-		element.focus();
+		// 	element = document.elementFromPoint(elementToUpdate.insertionPointX, elementToUpdate.insertionPointY);
+		focusOnEditablePartOfElement(element);
 
-		// The following code is for updating combo boxes with the new value.
-		// In this case, the setAttribute() method must be used instead of the .value property.
-		// It must also be combined with the event dispatcher (works with both input and change).
-		if (element.type == 'text' || element.type == 'select') {// This if statement is for the combo box found in booking.com. It might not be a universal solution.
-			element.setAttribute("value", text);
-			element.dispatchEvent(new Event('input', { bubbles: true }));
-		} else {
-			element.value = text;
-		}
+		//JS is restricted when it comes to editing fields on remote pages - therefore, Robotjs is used to emulate the keyboard and mouse
+		window.cactusAPI.send('robot-keyboard-type', text);
 	} else {
-		console.error("Element not found for update:", elementToUpdate);
+		console.error("Element to update not found: ", elementToUpdate);
 	}
 });
 
 window.cactusAPI.on('ipc-trigger-click-under-cursor', () => {
 	const element = document.elementFromPoint(mousePos.x, mousePos.y);
+
 	if (element) {
-		element.click();
+		//focusOnClickablePartOfElement(element);
+		// //JS is restricted when it comes to interacting with elements on remote pages - therefore, Robotjs is used to emulate the keyboard and mouse
+		// window.cactusAPI.send('robot-keyboard-enter');
+		let clickableElement = getClickablePartOfElement(element);
+		clickableElement.click();
 	} else {
 		console.error("Element to click under cursor has not been found");
 	}
 });
 
 window.cactusAPI.onAsync('ipc-tabview-click-element', (elementToClick) => {
-	element = document.querySelector('[data-cactus-id="' + elementToClick.id + '"]');
+	let element = document.querySelector('[data-cactus-id="' + elementToClick.id + '"]');
 
 	if (!element) {
 		console.log("Element to click not found by cactus id");
@@ -170,16 +265,55 @@ window.cactusAPI.onAsync('ipc-tabview-click-element', (elementToClick) => {
 	}
 
 	if (element) {
-		//If it's a link - go to its href rather than relying on focusing/clicking (works nicely when anchor is hidden in some collapsable component)
 		if (element.nodeName == 'A' && (element.getAttribute('href') && element.getAttribute('href') != '#'))
 			window.cactusAPI.send('browse-to-url', element.getAttribute('href'));
 		else {
-			element.focus();
-			element.click();
+			let clickableElement = getClickablePartOfElement(element);
+			clickableElement.click();
 		}
 	} else {
-		console.error("Element to click not found by cactus id");
+		console.error("Element to click under cursor has not been found");
 	}
+
+	// // Find the element at the specified x,y coordinates
+	// let element;
+	// try{
+	// 	element = document.elementFromPoint(elementToClick.insertionPointX, elementToClick.insertionPointY);
+	// }catch(e){
+	// 	console.error("Element not found for click using insertion point:", elementToClick);
+	// }
+	// if (element) {
+	// 	element.focus();
+	// 	element.click();
+	// }
+	// else {
+	// 	//In case element has been hidden or has changed location, try finding it using the unique cactus-id
+	// 	element = document.querySelector('[data-cactus-id="' + elementToClick.id + '"]');
+	// 	if (element) {
+	// 		//If it's a link - go to its href rather than relying on focusing/clicking (works nicely when anchor is hidden in some collapsable component)
+	// 		if (element.nodeName == 'A' && (element.getAttribute('href') && element.getAttribute('href') != '#'))
+	// 			window.cactusAPI.send('browse-to-url', element.getAttribute('href'));
+	// 	}
+	// }
+
+	// element = document.querySelector('[data-cactus-id="' + elementToClick.id + '"]');
+
+	// if (!element) {
+	// 	console.log("Element to click not found by cactus id");
+	// 	element = document.elementFromPoint(elementToClick.insertionPointX, elementToClick.insertionPointY);
+	// }
+
+	// if (element) {
+	// 	//If it's a link - go to its href rather than relying on focusing/clicking (works nicely when anchor is hidden in some collapsable component)
+	// 	if (element.nodeName == 'A' && (element.getAttribute('href') && element.getAttribute('href') != '#'))
+	// 		window.cactusAPI.send('browse-to-url', element.getAttribute('href'));
+	// 	else {
+	// 		element.focus();
+	// 		element.click();
+	// 	}
+	// } else {
+	// 	console.error("Element to click not found by cactus id");
+	// }
 });
 
 window.cactusAPI.onAsync('ipc-tabview-highlight-elements', (elementsToHighlight) => {
