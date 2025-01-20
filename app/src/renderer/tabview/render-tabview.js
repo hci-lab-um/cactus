@@ -171,7 +171,7 @@ function getClickablePartOfElement(element) {
 	const interactiveRoles = [
 		'button', 'link', 'checkbox', 'radio', 'tab', 'switch', 'menuitem',
 		'gridcell', 'treeitem', 'combobox', 'slider', 'progressbar', 'menu',
-		'menubar', 'toolbar'
+		'menubar', 'toolbar', 'option'
 	];
 
 	// Helper to check if an element is inherently clickable or interactive

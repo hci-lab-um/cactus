@@ -170,7 +170,7 @@ ipcMain.on('browse-to-url', (event, url) => {
 
 ipcMain.on('robot-keyboard-type', (event, text) => {
     // Wait a short period to ensure the field is focused before performing actions
-    // robot.setKeyboardDelay(300);
+    robot.setKeyboardDelay(50);
 
     // Select all text (Ctrl + A or Cmd + A)
     if (process.platform == 'darwin')
@@ -180,8 +180,11 @@ ipcMain.on('robot-keyboard-type', (event, text) => {
 
     //Delete the selected text
     robot.keyTap("backspace");
+
     //Type new text
-    robot.typeString(text);
+    for (let i = 0; i < text.length; i++) {
+        robot.keyTap(text.charAt(i));
+    }
 })
 
 ipcMain.on('robot-keyboard-enter', (event) => {
