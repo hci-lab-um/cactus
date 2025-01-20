@@ -40,7 +40,9 @@ contextBridge.exposeInMainWorld('cactusAPI', {
             'ipc-tabview-visible-clickable-elements',
             'ipc-tabview-document-info',
             'browse-to-url',
-            'keyboard-type'
+            'robot-keyboard-type',
+            'robot-keyboard-enter',
+            'robot-keyboard-spacebar'
         ];
 
         if (validChannels.includes(channel)) {

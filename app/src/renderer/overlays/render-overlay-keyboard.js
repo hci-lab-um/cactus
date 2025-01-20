@@ -20,7 +20,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 ipcRenderer.on('ipc-main-keyboard-loaded', async (event, elementToUpdate) => {
     // const NUMPAD_REQUIRED_ELEMENTS = [ 'number', 'tel', 'date', 'datetime-local', 'month', 'time', 'week' ]; // revise these
-    const NUMPAD_REQUIRED_ELEMENTS = ['number', 'tel']; 
+    const NUMPAD_REQUIRED_ELEMENTS = ['number', 'tel'];
     let needsNumpad = NUMPAD_REQUIRED_ELEMENTS.indexOf(elementToUpdate.type) !== -1;
     let fileName = needsNumpad ? "numeric" : config.get('keyboard.defaultLayout');
     let pathToLayouts = path.join(__dirname, '../../pages/json/keyboard/');
@@ -29,8 +29,8 @@ ipcRenderer.on('ipc-main-keyboard-loaded', async (event, elementToUpdate) => {
 });
 
 ipcRenderer.on('ipc-trigger-click-under-cursor', (event) => {
-	const mouse = getMouse();
-	const element = document.elementFromPoint(mouse.x, mouse.y);
+    const mouse = getMouse();
+    const element = document.elementFromPoint(mouse.x, mouse.y);
     if (element) {
         element.click();
     }
@@ -57,7 +57,7 @@ const Keyboard = {
         this.elementToUpdate = elementToUpdate;
 
         // Setting up main elements
-        this.elements.main = document.getElementById("keyboard-container");     
+        this.elements.main = document.getElementById("keyboard-container");
 
         this._createTextboxArea(elementToUpdate.value);
 
@@ -217,7 +217,7 @@ const Keyboard = {
             rowContainer.classList.add("keyboard__row");
 
             row.forEach(key => {
-                const keyElement = this._createKeyElement(key);                
+                const keyElement = this._createKeyElement(key);
                 if (key != "caps" && key != "enter") keyElement.classList.add("keyboard__key--equal-width"); // this ensures that all keys are of equal width except for "caps" and "enter"
                 rowContainer.appendChild(keyElement);
             });
@@ -627,24 +627,24 @@ const Keyboard = {
         const textarea = this.elements.textarea;
         const currentPos = textarea.selectionStart;
         const value = textarea.value;
-        
+
         // Find the start of the current line
         const lineStart = value.lastIndexOf('\n', currentPos - 1) + 1;
-        
+
         // Set the cursor position to the start of the line
         textarea.setSelectionRange(lineStart, lineStart);
         textarea.focus();
     },
-    
+
     _moveCursorToLineEnd() {
         const textarea = this.elements.textarea;
         const currentPos = textarea.selectionStart;
         const value = textarea.value;
-        
+
         // Find the end of the current line
         const lineEnd = value.indexOf('\n', currentPos);
         const newCursorPos = lineEnd === -1 ? value.length : lineEnd;
-        
+
         // Set the cursor position to the end of the line
         textarea.setSelectionRange(newCursorPos, newCursorPos);
         textarea.focus();

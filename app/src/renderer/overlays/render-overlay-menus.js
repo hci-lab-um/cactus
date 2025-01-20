@@ -52,9 +52,9 @@ ipcRenderer.on('ipc-main-overlays-loaded', (event, overlaysData) => {
 ipcRenderer.on('ipc-trigger-click-under-cursor', (event) => {
 	const mouse = getMouse();
 	const element = document.elementFromPoint(mouse.x, mouse.y);
-    if (element) {
-        element.click();
-    }
+	if (element) {
+		element.click();
+	}
 });
 
 function setEventHandlersForOmniMenu() {
@@ -303,7 +303,7 @@ function setEventHandlersForNavigationMenu(canGoBack, canGoForward) {
 
 	let cancelNavBtn = byId('cancel-nav')
 	let backNavBtn = byId('goBackBtn')
-	let forwardNavBtn = byId('goForwardBtn')	
+	let forwardNavBtn = byId('goForwardBtn')
 
 	dwell(cancelNavBtn, () => {
 		ipcRenderer.send('ipc-overlays-remove');

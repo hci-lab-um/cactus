@@ -168,12 +168,38 @@ ipcMain.on('browse-to-url', (event, url) => {
     tab.webContentsView.webContents.loadURL(fullUrl);
 });
 
-ipcMain.on('keyboard-type', (event, text) => {
+ipcMain.on('robot-keyboard-type', (event, text) => {
+    // Wait a short period to ensure the field is focused before performing actions
+    robot.setKeyboardDelay(300);
+
+    // Select all text (Ctrl + A or Cmd + A)
+    if (process.platform == 'darwin')
+        robot.keyTap("a", ["command"]);  // On Windows/Linux use 'control', on macOS use 'command'
+    else
+        robot.keyTap("a", ["control"]);
+
+    //Delete the selected text
+    robot.keyTap("backspace");
+    //Type new text
     robot.typeString(text);
+})
+
+ipcMain.on('robot-keyboard-enter', (event) => {
+    // Wait a short period to ensure the field is focused before performing actions
+    robot.setKeyboardDelay(300);
+    robot.keyTap("enter");
+})
+
+ipcMain.on('robot-keyboard-spacebar', (event) => {
+    // Wait a short period to ensure the field is focused before performing actions
+    robot.setKeyboardDelay(300);
+    robot.keyTap("space");
 })
 
 ipcMain.on('ipc-mainwindow-click-sidebar-element', (event, elementToClick) => {
     var tab = tabList.find(tab => tab.isActive === true);
+    //Focus on window first before going forward
+    tab.webContentsView.webContents.focus();
     //Once the main page is loaded, create inner tabview and place it in the right position by getting the x,y,width,height of a positioned element in index.html
     tab.webContentsView.webContents.send('ipc-tabview-click-element', elementToClick);
 })
