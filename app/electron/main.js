@@ -170,7 +170,7 @@ ipcMain.on('browse-to-url', (event, url) => {
 
 ipcMain.on('robot-keyboard-type', (event, text) => {
     // Wait a short period to ensure the field is focused before performing actions
-    robot.setKeyboardDelay(300);
+    // robot.setKeyboardDelay(300);
 
     // Select all text (Ctrl + A or Cmd + A)
     if (process.platform == 'darwin')
@@ -347,17 +347,6 @@ ipcMain.on('ipc-keyboard-input', (event, value, element) => {
         //Focus on window first before going forward
         tab.webContentsView.webContents.focus();
         tab.webContentsView.webContents.send('ipc-tabview-keyboard-input', value, element);
-        // Move mouse
-        // setTimeout(() => {
-        //     var tab = tabList.find(tab => tab.isActive === true);
-        //     const tabBounds = tab.webContentsView.getBounds();
-        //     const windowBounds = mainWindow.getBounds();
-        //     const frameTitleAndMenuBarHeight = (windowBounds.height - tabBounds.height) - 110; //110 is the height of the nav (see $navHeight)
-
-        //     robot.moveMouse((tabBounds.x + windowBounds.x) + element.insertionPointX, (tabBounds.y + windowBounds.y + frameTitleAndMenuBarHeight) + element.insertionPointY);
-        //     robot.mouseClick();
-        //     robot.typeString(value);
-        // }, 1000);
     }
 });
 
