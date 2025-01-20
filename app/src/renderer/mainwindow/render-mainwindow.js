@@ -547,7 +547,11 @@ function createSidebarItemElement(element, isNavItem) {
 
 	const itemLink = document.createElement('div');
 	itemLink.className = 'sidebar_item_link';
-	itemLink.textContent = isNavItem ? (element.isLeaf ? getFullURL(element.href) : "") : ""; //getFullURL(element.href);
+	if (isNavItem) {
+		itemLink.textContent = element.isLeaf && element.href ? getFullURL(element.href) : "";
+	} else {
+		itemLink.textContent = element.href ? getFullURL(element.href) : "";
+	}
 
 	itemContent.appendChild(itemTitle);
 	itemContent.appendChild(itemLink);

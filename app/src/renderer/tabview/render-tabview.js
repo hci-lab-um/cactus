@@ -162,27 +162,6 @@ window.cactusAPI.on('ipc-trigger-click-under-cursor', () => {
 });
 
 window.cactusAPI.onAsync('ipc-tabview-click-element', (elementToClick) => {
-	// // Find the element at the specified x,y coordinates
-	// let element;
-	// try{
-	// 	element = document.elementFromPoint(elementToClick.insertionPointX, elementToClick.insertionPointY);
-	// }catch(e){
-	// 	console.error("Element not found for click using insertion point:", elementToClick);
-	// }
-	// if (element) {
-	// 	element.focus();
-	// 	element.click();
-	// }
-	// else {
-	// 	//In case element has been hidden or has changed location, try finding it using the unique cactus-id
-	// 	element = document.querySelector('[data-cactus-id="' + elementToClick.id + '"]');
-	// 	if (element) {
-	// 		//If it's a link - go to its href rather than relying on focusing/clicking (works nicely when anchor is hidden in some collapsable component)
-	// 		if (element.nodeName == 'A' && (element.getAttribute('href') && element.getAttribute('href') != '#'))
-	// 			window.cactusAPI.send('browse-to-url', element.getAttribute('href'));
-	// 	}
-	// }
-
 	element = document.querySelector('[data-cactus-id="' + elementToClick.id + '"]');
 
 	if (!element) {
@@ -517,6 +496,7 @@ function serializeElement(element) {
 		innerText: element.innerText,
 		value: element.value,
 		title: element.title,
+		href: element.getAttribute('href'),
 		type: element.type,
 		checked: element.checked,
 		state: element.state,
@@ -567,6 +547,7 @@ function serializeMenuElement(element) {
 		textContent: element.textContent,
 		innerText: element.innerText,
 		href: element.getAttribute('href'),
+		ariaLabel: element.getAttribute('aria-label'),
 		isHeading: element.querySelector('h1,h2,h3,h4,h5,h6') ? true : false,
 		children: element.children ? Array.from(element.children).map(serializeMenuElement) : null
 	};

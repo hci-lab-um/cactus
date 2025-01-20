@@ -463,7 +463,7 @@ const Keyboard = {
                     if (this.elementToUpdate) {
                         // sending the keyboard value to render-mainwindow.js
                         console.log("send button pressed");
-                        console.log("elementToUpdate", this.elementToUpdate);
+                        console.log("elementToUpdate", this.elementToUpdate, "with text", this.elements.textarea.value);
                         ipcRenderer.send('ipc-keyboard-input', this.elements.textarea.value, this.elementToUpdate);
                     }
                 }, true);
