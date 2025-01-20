@@ -51,8 +51,9 @@
         border-radius: 50%;
         opacity: 0;
         transform: scale(1);
-        transition: opacity $dwellTime cubic-bezier(0, 0, .2, 1),
-        transform $dwellTime cubic-bezier(0, 0, .2, 1);
+        transition: 
+            opacity $dwellTime cubic-bezier(0, 0, .2, 1),
+            transform $dwellTime cubic-bezier(0, 0, .2, 1);
     }
 
     &:hover {

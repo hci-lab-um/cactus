@@ -38,6 +38,37 @@
     @extend #accessibilityBtn;
   }
 
+  #bookmarkBtn  {
+    @extend #accessibilityBtn;
+
+    svg {
+      fill: $blue-2;
+      transition: fill $dwellTime;
+    }
+    
+    &:hover {
+      svg {
+        fill: $blue-light;
+      }
+    }
+
+    // This class is used to change the styles back to the original state after the button is dwelled on
+    &.dwelled {
+      background-color: $blue-light; 
+      transition: background-color 100ms linear;
+
+      svg {
+        fill: $blue-2;
+      }
+
+      &:before {
+        opacity: 0;
+        transform: scale(1);
+        transition: opacity 1ms, transform 1ms;
+      }
+    }
+  }
+
   #omnibox  {
     width: fit-content;
     flex: 1;

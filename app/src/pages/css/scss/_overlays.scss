@@ -252,6 +252,10 @@
         grid-column: 1 / span 2;
         border-radius: 0 0 15px 15px;
 
+        svg {
+          fill: $blue-2;
+        }
+
         &--left {
           grid-column: 1 / span 1;
           border-right: 0.5px solid #e3e0e0;
@@ -347,6 +351,10 @@
 
   &--sidebar {
     flex: 3;
+
+    svg {
+      fill: $blue-2;
+    }
   }
 }
 
