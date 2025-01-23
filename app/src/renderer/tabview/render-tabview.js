@@ -171,7 +171,7 @@ function getClickablePartOfElement(element) {
 	const interactiveRoles = [
 		'button', 'link', 'checkbox', 'radio', 'tab', 'switch', 'menuitem',
 		'gridcell', 'treeitem', 'combobox', 'slider', 'progressbar', 'menu',
-		'menubar', 'toolbar', 'option'
+		'menubar', 'toolbar'
 	];
 
 	// Helper to check if an element is inherently clickable or interactive
@@ -182,7 +182,8 @@ function getClickablePartOfElement(element) {
 			el.hasAttribute('aria-haspopup') || // Indicates a popup trigger
 			el.hasAttribute('aria-expanded') || // Accordion or dropdown control
 			typeof el.onclick === 'function' || // Inline click handler
-			el.hasAttribute('tabindex') // Explicitly focusable, including tabindex = -1
+			el.hasAttribute('tabindex') || // Explicitly focusable, including tabindex = -1
+			el.hasAttribute('jsaction') // Google's interactive action attributes
 		);
 	};
 
@@ -193,7 +194,8 @@ function getClickablePartOfElement(element) {
 		const ariaSelector = '[aria-haspopup], [aria-expanded]';
 		// Include elements with tabindex
 		const tabindexSelector = '[tabindex]';
-		return `${tagSelector}, ${roleSelector}, ${ariaSelector}, ${tabindexSelector}`;
+		const jsactionSelector = '[jsaction]'; // Add jsaction to the selector
+		return `${tagSelector}, ${roleSelector}, ${ariaSelector}, ${tabindexSelector}, ${jsactionSelector}`;
 	};
 
 	const clickableSelector = generateSelector();
