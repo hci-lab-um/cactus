@@ -176,7 +176,7 @@ ipcMain.on('browse-to-url', (event, url) => {
     tab.webContentsView.webContents.loadURL(fullUrl);
 });
 
-ipcMain.on('robot-keyboard-type', (event, text) => {
+ipcMain.on('robot-keyboard-type', (event, text, pressReturn = false) => {
     // Wait a short period to ensure the field is focused before performing actions
     robot.setKeyboardDelay(50);
 
@@ -193,6 +193,9 @@ ipcMain.on('robot-keyboard-type', (event, text) => {
     for (let i = 0; i < text.length; i++) {
         robot.keyTap(text.charAt(i));
     }
+
+    if (pressReturn)
+        robot.keyTap("enter");
 })
 
 ipcMain.on('robot-keyboard-enter', (event) => {
@@ -254,12 +257,12 @@ ipcMain.on('ipc-mainwindow-add-bookmark', async (event) => {
     } catch (err) {
         log.error(err);
     }
-    
+
     // Getting the active tab's URL and title
     let tab = tabList.find(tab => tab.isActive === true);
     let url = tab.webContentsView.webContents.getURL();
     let title = tab.webContentsView.webContents.getTitle();
-    let snapshot = tab.snapshot; 
+    let snapshot = tab.snapshot;
 
     var bookmark = { title: title, url: url, snapshot: snapshot };
     bookmarks.push(bookmark);
@@ -320,7 +323,7 @@ ipcMain.on('ipc-overlays-bookmarks-updated', (event, updatedBookmarks, deletedUR
     // Update the bookmark icon in the main window if the current url is the one that was added/removed from the bookmarks list
     let tab = tabList.find(tab => tab.isActive === true);
     let activeURL = tab.webContentsView.webContents.getURL();
-    
+
     if (activeURL === deletedURL) {
         mainWindowContent.webContents.send('ipc-main-update-bookmark-icon', false);
     } else if (activeURL === bookmarkedURL) {

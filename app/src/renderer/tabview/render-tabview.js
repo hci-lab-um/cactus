@@ -171,7 +171,7 @@ function getClickablePartOfElement(element) {
 	const interactiveRoles = [
 		'button', 'link', 'checkbox', 'radio', 'tab', 'switch', 'menuitem',
 		'gridcell', 'treeitem', 'combobox', 'slider', 'progressbar', 'menu',
-		'menubar', 'toolbar'
+		'menubar', 'toolbar', 'option'
 	];
 
 	// Helper to check if an element is inherently clickable or interactive
@@ -204,6 +204,11 @@ function getClickablePartOfElement(element) {
 
 	// If the element itself is clickable, focus it
 	if (isClickable(element)) {
+		//Sometimes, certain selectable elements, such as 'option', might have clickable child elements (e.g. div role=button)
+		const clickableChild = element.querySelector(clickableSelector);
+		if (clickableChild) {
+			return clickableChild;
+		}
 		return element;
 	}
 
