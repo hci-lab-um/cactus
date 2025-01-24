@@ -181,8 +181,9 @@ function getClickablePartOfElement(element) {
 			(interactiveRoles.includes(el.getAttribute('role'))) || // ARIA roles for interactivity
 			el.hasAttribute('aria-haspopup') || // Indicates a popup trigger
 			el.hasAttribute('aria-expanded') || // Accordion or dropdown control
+			el.hasAttribute('aria-labelledby') || // Interactive labelled control
 			typeof el.onclick === 'function' || // Inline click handler
-			el.hasAttribute('tabindex') || // Explicitly focusable, including tabindex = -1
+			//el.hasAttribute('tabindex') || // Explicitly focusable, including tabindex = -1
 			el.hasAttribute('jsaction') // Google's interactive action attributes
 		);
 	};
@@ -191,11 +192,12 @@ function getClickablePartOfElement(element) {
 	const generateSelector = () => {
 		const tagSelector = interactiveTags.map((tag) => tag.toLowerCase()).join(', ');
 		const roleSelector = interactiveRoles.map((role) => `[role="${role}"]`).join(', ');
-		const ariaSelector = '[aria-haspopup], [aria-expanded]';
+		const ariaSelector = '[aria-haspopup], [aria-expanded], [aria-labelledby]';
 		// Include elements with tabindex
-		const tabindexSelector = '[tabindex]';
+		//const tabindexSelector = '[tabindex]';
 		const jsactionSelector = '[jsaction]'; // Add jsaction to the selector
-		return `${tagSelector}, ${roleSelector}, ${ariaSelector}, ${tabindexSelector}, ${jsactionSelector}`;
+		//return `${tagSelector}, ${roleSelector}, ${ariaSelector}, ${tabindexSelector}, ${jsactionSelector}`;
+		return `${tagSelector}, ${roleSelector}, ${ariaSelector}, ${jsactionSelector}`;
 	};
 
 	const clickableSelector = generateSelector();
@@ -205,16 +207,16 @@ function getClickablePartOfElement(element) {
 		return element;
 	}
 
-	// Check the closest clickable ancestor
-	const clickableAncestor = element.closest(clickableSelector);
-	if (clickableAncestor) {
-		return clickableAncestor;
-	}
-
 	// Check for clickable descendants
 	const clickableChild = element.querySelector(clickableSelector);
 	if (clickableChild) {
 		return clickableChild;
+	}
+
+	// Check the closest clickable ancestor
+	const clickableAncestor = element.closest(clickableSelector);
+	if (clickableAncestor) {
+		return clickableAncestor;
 	}
 
 	console.log('No clickable or interactive element found.');
