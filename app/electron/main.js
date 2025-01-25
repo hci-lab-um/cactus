@@ -1055,8 +1055,12 @@ function getFullURL(url) {
             }
         }
         else {
-            //Take as is
-            fullUrl = url;
+            if (url.startsWith(protocol))
+                //Take as is
+                fullUrl = url;
+            else
+                //Assume document name only (e.g. page.html)
+                fullUrl = new URL(url, currentURL).href;
         }
     }
 
