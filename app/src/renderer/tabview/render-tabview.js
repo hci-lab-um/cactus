@@ -583,7 +583,7 @@ function generateQuadTree() {
 		'button', 'a', 'textarea', 'input', 'select', 'date',
 		'div[role="button"]', 'span[role="button"]', 'div[role="link"]', 'span[role="link"]',
 		'[role="checkbox"]', '[role="textbox"]', '[role="radio"]', '[role="option"]', '[role="tab"]',
-		'[role="menu"]', '[role="switch"]', '[role="slider"]', '[role="combobox"]'
+		'[role="menu"]', '[role="switch"]', '[role="slider"]', '[role="combobox"], iframe'
 	];
 	const clickableElements = Array.from(document.querySelectorAll(clickableSelectors.join(', ')));
 	const visibleElements = filterVisibleElements(clickableElements).map(e => {
@@ -640,6 +640,7 @@ function serializeElement(element) {
 		value: element.value,
 		title: element.title,
 		href: element.getAttribute('href'),
+		src: element.getAttribute('src'),
 		type: element.type,
 		checked: element.checked,
 		state: element.state,

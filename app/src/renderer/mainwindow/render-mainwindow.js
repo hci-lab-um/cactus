@@ -124,7 +124,7 @@ function setupFunctionality() {
 	let bookmarkBtn = byId('bookmarkBtn')
 	let dwellTime = config.get('dwelling.dwellTime');
 	let dwellTimeout;
-	
+
 	ipcRenderer.on('ipc-main-update-bookmark-icon', (event, isBookmark) => {
 		if (isBookmark) {
 			bookmarkBtn.innerHTML = roundedBookmarkFilled;
@@ -137,18 +137,18 @@ function setupFunctionality() {
 
 	bookmarkBtn.addEventListener('mouseenter', () => {
 		clearTimeout(dwellTimeout);
-	  
+
 		// Adding the dwelled class after the dwell time has elapsed
 		dwellTimeout = setTimeout(() => {
-		  bookmarkBtn.classList.add('dwelled');
+			bookmarkBtn.classList.add('dwelled');
 		}, dwellTime);
-	  });
-	  
-	  bookmarkBtn.addEventListener('mouseleave', () => {
+	});
+
+	bookmarkBtn.addEventListener('mouseleave', () => {
 		// Clearing the timeout if the mouse leaves the button
 		clearTimeout(dwellTimeout);
 		bookmarkBtn.classList.remove('dwelled');
-	  });
+	});
 
 	dwell(bookmarkBtn, () => {
 		if (bookmarkBtn.classList.contains('bookmarked')) {
@@ -584,6 +584,8 @@ function createSidebarItemElement(element, isNavItem) {
 				iconHTML = createMaterialIcon('calendar_month'); break;
 			case 'select':
 				iconHTML = createMaterialIcon('arrow_drop_down'); break;
+			case 'iframe':
+				iconHTML = createMaterialIcon('open_in_new'); break;
 			default:
 				iconHTML = element.children ? createMaterialIcon('menu') : createMaterialIcon('chevron_right'); break;
 		}
