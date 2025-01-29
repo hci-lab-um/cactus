@@ -125,6 +125,110 @@ window.cactusAPI.on('ipc-tabview-forward', () => {
 	window.history.forward();
 });
 
+function focusOnEditablePartOfElement(element) {
+	if (!element) return; // No element found at the point
+
+	// Helper to check if an element is editable
+	const isEditable = (el) => {
+		return (
+			el.tagName === 'INPUT' ||
+			el.tagName === 'TEXTAREA' ||
+			el.isContentEditable
+		);
+	};
+
+	// If the element itself is editable, focus it
+	if (isEditable(element)) {
+		element.focus();
+		return;
+	}
+
+	// Check the closest editable ancestor
+	const editableAncestor = element.closest('input, textarea, [contenteditable="true"]');
+	if (editableAncestor) {
+		editableAncestor.focus();
+		return;
+	}
+
+	// Check for editable descendants
+	const editableChild = element.querySelector('input, textarea, [contenteditable="true"]');
+	if (editableChild) {
+		editableChild.focus();
+		return;
+	}
+
+	console.log('No editable element found at the given point.');
+}
+
+function getClickablePartOfElement(element) {
+	if (!element) return; // No element found at the point
+
+	// Define reusable constants
+	const interactiveTags = [
+		'BUTTON', 'A', 'INPUT', 'SELECT', 'TEXTAREA', 'LABEL',
+		'DETAILS', 'SUMMARY', 'DIALOG', 'OPTION', 'LEGEND', 'OUTPUT'
+	];
+	const interactiveRoles = [
+		'button', 'link', 'checkbox', 'radio', 'tab', 'switch', 'menuitem',
+		'gridcell', 'treeitem', 'combobox', 'slider', 'progressbar', 'menu',
+		'menubar', 'toolbar', 'option'
+	];
+
+	// Helper to check if an element is inherently clickable or interactive
+	const isClickable = (el) => {
+		return (
+			interactiveTags.includes(el.tagName) || // Common interactive HTML tags
+			(interactiveRoles.includes(el.getAttribute('role'))) || // ARIA roles for interactivity
+			el.hasAttribute('aria-haspopup') || // Indicates a popup trigger
+			el.hasAttribute('aria-expanded') || // Accordion or dropdown control
+			el.hasAttribute('aria-labelledby') || // Interactive labelled control
+			typeof el.onclick === 'function' || // Inline click handler
+			//el.hasAttribute('tabindex') || // Explicitly focusable, including tabindex = -1
+			el.hasAttribute('jsaction') // Google's interactive action attributes
+		);
+	};
+
+	// Generate a selector string based on interactive tags and roles
+	const generateSelector = () => {
+		const tagSelector = interactiveTags.map((tag) => tag.toLowerCase()).join(', ');
+		const roleSelector = interactiveRoles.map((role) => `[role="${role}"]`).join(', ');
+		const ariaSelector = '[aria-haspopup], [aria-expanded], [aria-labelledby]';
+		// Include elements with tabindex
+		//const tabindexSelector = '[tabindex]';
+		const jsactionSelector = '[jsaction]'; // Add jsaction to the selector
+		//return `${tagSelector}, ${roleSelector}, ${ariaSelector}, ${tabindexSelector}, ${jsactionSelector}`;
+		return `${tagSelector}, ${roleSelector}, ${ariaSelector}, ${jsactionSelector}`;
+	};
+
+	const clickableSelector = generateSelector();
+
+	// If the element itself is clickable, focus it
+	if (isClickable(element)) {
+		//Sometimes, certain selectable elements, such as 'option', might have clickable child elements (e.g. div role=button)
+		const clickableChild = element.querySelector(clickableSelector);
+		if (clickableChild) {
+			return clickableChild;
+		}
+		return element;
+	}
+
+	// Check for clickable descendants
+	const clickableChild = element.querySelector(clickableSelector);
+	if (clickableChild) {
+		return clickableChild;
+	}
+
+	// Check the closest clickable ancestor
+	const clickableAncestor = element.closest(clickableSelector);
+	if (clickableAncestor) {
+		return clickableAncestor;
+	}
+
+	console.log('No clickable or interactive element found.');
+}
+
+
+
 // This IPC event is triggered when the user submits the value inside the overlay keyboard.
 // It attempts to find the editable part of the element to update and types the text into it using Robotjs
 window.cactusAPI.on('ipc-tabview-keyboard-input', (text, elementToUpdate) => {
@@ -440,7 +544,7 @@ function generateQuadTree() {
 		'button', 'a', 'textarea', 'input', 'select', 'date',
 		'div[role="button"]', 'span[role="button"]', 'div[role="link"]', 'span[role="link"]',
 		'[role="checkbox"]', '[role="textbox"]', '[role="radio"]', '[role="option"]', '[role="tab"]',
-		'[role="menu"]', '[role="switch"]', '[role="slider"]', '[role="combobox"]'
+		'[role="menu"]', '[role="switch"]', '[role="slider"]', '[role="combobox"], iframe'
 	];
 	const clickableElements = Array.from(document.querySelectorAll(clickableSelectors.join(', ')));
 	const visibleElements = filterVisibleElements(clickableElements).map(e => {
@@ -497,6 +601,7 @@ function serializeElement(element) {
 		value: element.value,
 		title: element.title,
 		href: element.getAttribute('href'),
+		src: element.getAttribute('src'),
 		type: element.type,
 		checked: element.checked,
 		state: element.state,
