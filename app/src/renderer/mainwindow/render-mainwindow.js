@@ -1,22 +1,10 @@
-// const fs                        = require('original-fs')
-// const path                      = require('path')
+const fs = require('original-fs')
+const path = require('path')
 const { ipcRenderer } = require('electron')
 const { byId, dwell } = require('../../tools/utils')
 const config = require('config');
-// const { byId, readFile, dwell } = require('./js/utils')
-// const { drop, isEqual }         = require('lodash')
-// const Config                    = require('./js/config')
 const { createCursor, followCursor, getMouse } = require('../../tools/cursor')
 const DOMPurify = require('dompurify');
-
-// let backOrForward, browserviewContainer
-// let cancelNavBtn, backNavBtn, forwardNavBtn, overlayNav
-// let dialog, dialogMessage, dialogErrorIcon, dialogSuccessIcon
-
-// let webviewContainer
-
-//Omnibox - combined location and search field 
-// let omni = byId('url')
 
 let omni, navbar, sidebar, sidebarItemArea, selectedNavItemTitle, menuNavLevelup, menuScrollUp, menuScrollDown;
 let cursor;
@@ -90,7 +78,7 @@ function setupFunctionality() {
 	let roundedBookmarkFilled = '<svg xmlns="http://www.w3.org/2000/svg" height="2.1rem" viewBox="0 -960 960 960" width="2.1rem"><path d="M480-269 294-157q-8 5-17 4.5t-16-5.5q-7-5-10.5-13t-1.5-18l49-212-164-143q-8-7-9.5-15.5t.5-16.5q2-8 9-13.5t17-6.5l217-19 84-200q4-9 12-13.5t16-4.5q8 0 16 4.5t12 13.5l84 200 217 19q10 1 17 6.5t9 13.5q2 8 .5 16.5T826-544L662-401l49 212q2 10-1.5 18T699-158q-7 5-16 5.5t-17-4.5L480-269Z"/></svg>';
 
 	omni = byId('url')
-	omni.addEventListener('keydown', (event) => browseToUrl(event));
+	omni.addEventListener('keydown', (event) => browseToUrl(event, omni.value));
 	dwell(omni, () => {
 		// hideAllOverlays()
 		// showOverlay('omni');
@@ -175,8 +163,7 @@ function setupFunctionality() {
 
 ipcRenderer.on('ipc-mainwindow-keyboard-input', (event, input) => {
 	omni = byId('url')
-	omni.value = input;
-	browseToUrl({ keyCode: 13 });
+	browseToUrl({ keyCode: 13 }, input);
 });
 
 ipcRenderer.on('tabview-loading-start', () => {
@@ -189,44 +176,108 @@ ipcRenderer.on('tabview-loading-start', () => {
 	omni.value = 'Loading..';
 });
 
-function browseToUrl(event) {
-	let omni = byId('url')
-	if (event.keyCode === 13) {
-		omni.blur();
-		let val = omni.value;
+async function fetchValidTLDs() {
+	try {
+		const tldFilePath = path.join(__dirname, '../../../resources/validTLDs.json');
 
-		// Check if the URL contains a period
-		if (val.includes('.')) {
-			// Extract the part after the last period
-			const domainPart = val.substring(val.lastIndexOf('.') + 1);
-
-			// List of common domain extensions
-			const validDomains = ['com', 'net', 'org', 'edu', 'gov', 'mil', 'int', 'html', 'io'];
-
-			// Check if the extracted part is a valid domain extension
-			if (!validDomains.includes(domainPart)) {
-				// Treat as a search query
-				val = `https://www.google.com/search?q=${encodeURIComponent(val)}`;
-			}
-		} else {
-			val = `https://www.google.com/search?q=${encodeURIComponent(val)}`;
+		// Checking if TLDs are already stored in a file
+		if (fs.existsSync(tldFilePath)) {
+			const storedTLDs = fs.readFileSync(tldFilePath, 'utf-8');
+			console.log("Loaded TLDs from file");
+			return new Set(JSON.parse(storedTLDs));
 		}
 
-		let https = val.slice(0, 8).toLowerCase();
-		let http = val.slice(0, 7).toLowerCase();
+		// Fetch TLDs from the API if not already stored in a local file
+		const response = await fetch("https://data.iana.org/TLD/tlds-alpha-by-domain.txt");
+		const validTLDs = (await response.text())
+			.split("\n")
+			.slice(1) // Remove the first line ("# Version X")
+			.map(tld => tld.trim().toLowerCase());
 
-		//NOTE: This prevents the browser from loading local files
-		if (https === 'https://') {
-			ipcRenderer.send('browse-to-url', val);
-		} else if (http === 'http://') {
-			ipcRenderer.send('browse-to-url', 'https://' + val);
-		} else {
-			ipcRenderer.send('browse-to-url', 'https://' + val);
-		}
-
-		// ipcRenderer.send('browse-to-url', val); // this has been added temporarily to test out different elements for loading the keyboard
+		// Saving the TLDs to a file
+		fs.writeFileSync(tldFilePath, JSON.stringify(validTLDs));
+		console.log("Fetched and saved TLDs to file", validTLDs);
+		return new Set(validTLDs);
+	} catch (error) {
+		console.error("Failed to fetch TLD list:", error);
+		return new Set();
 	}
 }
+
+async function isValidTLD(domain, validTLDs) {
+	const domainParts = domain.split(".");
+	const tld = domainParts[domainParts.length - 1].toLowerCase();
+	return validTLDs.has(tld);
+}
+
+async function browseToUrl(event, input) {
+	if (event.keyCode === 13) {
+		const urlRegex = /^(?:(?:https?:\/\/)?([\w.-]+(?:\.[\w.-]+)+)(?:[\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?)$/;
+		let url = '';
+
+		// Fetch the latest TLDs
+		const validTLDs = await fetchValidTLDs();
+
+		if (urlRegex.test(input)) {
+			// Extract domain from input
+			const domainMatch = input.match(/(?:https?:\/\/)?([\w.-]+(?:\.[\w.-]+)+)/);
+			// domainMatch[1] is the captured domain name (without http:// or https://).
+
+			if (domainMatch && await isValidTLD(domainMatch[1], validTLDs)) {
+				// If input is a URL, ensure it has http or https
+				url = input.startsWith("http") ? input : `https://${input}`;
+			} else {
+				// If domain TLD is invalid, treat it as a search query
+				url = `https://www.google.com/search?q=${encodeURIComponent(input)}`;
+			}
+		} else {
+			// Otherwise, treat it as a search query
+			url = `https://www.google.com/search?q=${encodeURIComponent(input)}`;
+		}
+
+		console.log('url', url);
+		ipcRenderer.send('browse-to-url', url);
+	}
+}
+
+// function browseToUrl(event) {
+// 	let omni = byId('url')
+// 	if (event.keyCode === 13) {
+// 		omni.blur();
+// 		let val = omni.value;
+
+// 		// List of common domain extensions
+// 		const validDomains = ['com', 'net', 'org', 'edu', 'gov', 'mil', 'int', 'html', 'io'];
+
+// 		// Check if the URL contains a period
+// 		if (val.includes('.')) {
+// 			// Extract the part after the last period
+// 			const domainPart = val.substring(val.lastIndexOf('.') + 1);
+
+// 			// Check if the extracted part is a valid domain extension
+// 			if (!validDomains.includes(domainPart)) {
+// 				// Treat as a search query
+// 				val = `https://www.google.com/search?q=${encodeURIComponent(val)}`;
+// 			}
+// 		} else {
+// 			val = `https://www.google.com/search?q=${encodeURIComponent(val)}`;
+// 		}
+
+// 		let https = val.slice(0, 8).toLowerCase();
+// 		let http = val.slice(0, 7).toLowerCase();
+
+// 		//NOTE: This prevents the browser from loading local files
+// 		if (https === 'https://') {
+// 			ipcRenderer.send('browse-to-url', val);
+// 		} else if (http === 'http://') {
+// 			ipcRenderer.send('browse-to-url', 'https://' + val);
+// 		} else {
+// 			ipcRenderer.send('browse-to-url', 'https://' + val);
+// 		}
+
+// 		// ipcRenderer.send('browse-to-url', val); // this has been added temporarily to test out different elements for loading the keyboard
+// 	}
+// }
 
 ipcRenderer.on('tabview-loading-stop', (event, pageDetails) => {
 	let loader = byId('loader');

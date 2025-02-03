@@ -229,10 +229,6 @@ ipcMain.on('ipc-mainwindow-show-overlay', async (event, overlayAreaToShow, eleme
         // If the element is the omnibox, get the current active tab's url and set it as the value
         if (elementProperties.id === "url") {
             let pageURL = tabList.find(tab => tab.isActive === true).webContentsView.webContents.getURL();
-            // if the url contains a / at the end, it is removed (This is a temporary workaround for the search function that checks for TLDs)
-            if (pageURL[pageURL.length - 1] === '/') {
-                pageURL = pageURL.slice(0, -1);
-            }
             elementProperties.value = pageURL;
         }
     }
