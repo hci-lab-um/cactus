@@ -125,110 +125,6 @@ window.cactusAPI.on('ipc-tabview-forward', () => {
 	window.history.forward();
 });
 
-function focusOnEditablePartOfElement(element) {
-	if (!element) return; // No element found at the point
-
-	// Helper to check if an element is editable
-	const isEditable = (el) => {
-		return (
-			el.tagName === 'INPUT' ||
-			el.tagName === 'TEXTAREA' ||
-			el.isContentEditable
-		);
-	};
-
-	// If the element itself is editable, focus it
-	if (isEditable(element)) {
-		element.focus();
-		return;
-	}
-
-	// Check the closest editable ancestor
-	const editableAncestor = element.closest('input, textarea, [contenteditable="true"]');
-	if (editableAncestor) {
-		editableAncestor.focus();
-		return;
-	}
-
-	// Check for editable descendants
-	const editableChild = element.querySelector('input, textarea, [contenteditable="true"]');
-	if (editableChild) {
-		editableChild.focus();
-		return;
-	}
-
-	console.log('No editable element found at the given point.');
-}
-
-function getClickablePartOfElement(element) {
-	if (!element) return; // No element found at the point
-
-	// Define reusable constants
-	const interactiveTags = [
-		'BUTTON', 'A', 'INPUT', 'SELECT', 'TEXTAREA', 'LABEL',
-		'DETAILS', 'SUMMARY', 'DIALOG', 'OPTION', 'LEGEND', 'OUTPUT'
-	];
-	const interactiveRoles = [
-		'button', 'link', 'checkbox', 'radio', 'tab', 'switch', 'menuitem',
-		'gridcell', 'treeitem', 'combobox', 'slider', 'progressbar', 'menu',
-		'menubar', 'toolbar', 'option'
-	];
-
-	// Helper to check if an element is inherently clickable or interactive
-	const isClickable = (el) => {
-		return (
-			interactiveTags.includes(el.tagName) || // Common interactive HTML tags
-			(interactiveRoles.includes(el.getAttribute('role'))) || // ARIA roles for interactivity
-			el.hasAttribute('aria-haspopup') || // Indicates a popup trigger
-			el.hasAttribute('aria-expanded') || // Accordion or dropdown control
-			el.hasAttribute('aria-labelledby') || // Interactive labelled control
-			typeof el.onclick === 'function' || // Inline click handler
-			//el.hasAttribute('tabindex') || // Explicitly focusable, including tabindex = -1
-			el.hasAttribute('jsaction') // Google's interactive action attributes
-		);
-	};
-
-	// Generate a selector string based on interactive tags and roles
-	const generateSelector = () => {
-		const tagSelector = interactiveTags.map((tag) => tag.toLowerCase()).join(', ');
-		const roleSelector = interactiveRoles.map((role) => `[role="${role}"]`).join(', ');
-		const ariaSelector = '[aria-haspopup], [aria-expanded], [aria-labelledby]';
-		// Include elements with tabindex
-		//const tabindexSelector = '[tabindex]';
-		const jsactionSelector = '[jsaction]'; // Add jsaction to the selector
-		//return `${tagSelector}, ${roleSelector}, ${ariaSelector}, ${tabindexSelector}, ${jsactionSelector}`;
-		return `${tagSelector}, ${roleSelector}, ${ariaSelector}, ${jsactionSelector}`;
-	};
-
-	const clickableSelector = generateSelector();
-
-	// If the element itself is clickable, focus it
-	if (isClickable(element)) {
-		//Sometimes, certain selectable elements, such as 'option', might have clickable child elements (e.g. div role=button)
-		const clickableChild = element.querySelector(clickableSelector);
-		if (clickableChild) {
-			return clickableChild;
-		}
-		return element;
-	}
-
-	// Check for clickable descendants
-	const clickableChild = element.querySelector(clickableSelector);
-	if (clickableChild) {
-		return clickableChild;
-	}
-
-	// Check the closest clickable ancestor
-	const clickableAncestor = element.closest(clickableSelector);
-	if (clickableAncestor) {
-		return clickableAncestor;
-	}
-
-	console.log('No clickable or interactive element found.');
-}
-
-
-
 // This IPC event is triggered when the user submits the value inside the overlay keyboard.
 // It attempts to find the editable part of the element to update and types the text into it using Robotjs
 window.cactusAPI.on('ipc-tabview-keyboard-input', (text, elementToUpdate) => {
@@ -282,7 +178,7 @@ window.cactusAPI.onAsync('ipc-tabview-click-element', (elementToClick) => {
 			clickableElement.click();
 		}
 	} else {
-		console.error("Element to click under cursor has not been found");
+		console.error("Element to click has not been found");
 	}
 });
 
@@ -746,7 +642,6 @@ function getEditablePartOfElement(element) {
 }
 
 function getClickablePartOfElement(element) {
-	debugger;
 	if (!element) return; // No element found at the point
 
 	// Define reusable constants
@@ -757,7 +652,7 @@ function getClickablePartOfElement(element) {
 	const interactiveRoles = [
 		'button', 'link', 'checkbox', 'radio', 'tab', 'switch', 'menuitem',
 		'gridcell', 'treeitem', 'combobox', 'slider', 'progressbar', 'menu',
-		'menubar', 'toolbar'
+		'menubar', 'toolbar', 'option'
 	];
 
 	// Helper to check if an element is inherently clickable or interactive
@@ -767,9 +662,10 @@ function getClickablePartOfElement(element) {
 			(interactiveRoles.includes(el.getAttribute('role'))) || // ARIA roles for interactivity
 			el.hasAttribute('aria-haspopup') || // Indicates a popup trigger
 			el.hasAttribute('aria-expanded') || // Accordion or dropdown control
+			el.hasAttribute('aria-labelledby') || // Interactive labelled control
 			typeof el.onclick === 'function' || // Inline click handler
-			el.hasAttribute('tabindex') || // Explicitly focusable, including tabindex = -1
-			el.hasAttribute('jsaction') // Google's custom event handling attribute
+			//el.hasAttribute('tabindex') || // Explicitly focusable, including tabindex = -1
+			el.hasAttribute('jsaction') // Google's interactive action attributes
 		);
 	};
 
@@ -777,30 +673,36 @@ function getClickablePartOfElement(element) {
 	const generateSelector = () => {
 		const tagSelector = interactiveTags.map((tag) => tag.toLowerCase()).join(', ');
 		const roleSelector = interactiveRoles.map((role) => `[role="${role}"]`).join(', ');
-		const ariaSelector = '[aria-haspopup], [aria-expanded]';
+		const ariaSelector = '[aria-haspopup], [aria-expanded], [aria-labelledby]';
 		// Include elements with tabindex
-		const tabindexSelector = '[tabindex]';
-		const jsactionSelector = '[jsaction]';
-		return `${tagSelector}, ${roleSelector}, ${ariaSelector}, ${tabindexSelector}, ${jsactionSelector}`;
+		//const tabindexSelector = '[tabindex]';
+		const jsactionSelector = '[jsaction]'; // Add jsaction to the selector
+		//return `${tagSelector}, ${roleSelector}, ${ariaSelector}, ${tabindexSelector}, ${jsactionSelector}`;
+		return `${tagSelector}, ${roleSelector}, ${ariaSelector}, ${jsactionSelector}`;
 	};
 
 	const clickableSelector = generateSelector();
 
 	// If the element itself is clickable, focus it
 	if (isClickable(element)) {
+		//Sometimes, certain selectable elements, such as 'option', might have clickable child elements (e.g. div role=button)
+		const clickableChild = element.querySelector(clickableSelector);
+		if (clickableChild) {
+			return clickableChild;
+		}
 		return element;
-	}
-
-	// Check the closest clickable ancestor
-	const clickableAncestor = element.closest(clickableSelector);
-	if (clickableAncestor) {
-		return clickableAncestor;
 	}
 
 	// Check for clickable descendants
 	const clickableChild = element.querySelector(clickableSelector);
 	if (clickableChild) {
 		return clickableChild;
+	}
+
+	// Check the closest clickable ancestor
+	const clickableAncestor = element.closest(clickableSelector);
+	if (clickableAncestor) {
+		return clickableAncestor;
 	}
 
 	console.log('No clickable or interactive element found.');
