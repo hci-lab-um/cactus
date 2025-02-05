@@ -186,18 +186,7 @@ async function fetchValidTLDs() {
 			console.log("Loaded TLDs from file");
 			return new Set(JSON.parse(storedTLDs));
 		}
-
-		// Fetch TLDs from the API if not already stored in a local file
-		const response = await fetch("https://data.iana.org/TLD/tlds-alpha-by-domain.txt");
-		const validTLDs = (await response.text())
-			.split("\n")
-			.slice(1) // Remove the first line ("# Version X")
-			.map(tld => tld.trim().toLowerCase());
-
-		// Saving the TLDs to a file
-		fs.writeFileSync(tldFilePath, JSON.stringify(validTLDs));
-		console.log("Fetched and saved TLDs to file", validTLDs);
-		return new Set(validTLDs);
+		return new Set();
 	} catch (error) {
 		console.error("Failed to fetch TLD list:", error);
 		return new Set();
