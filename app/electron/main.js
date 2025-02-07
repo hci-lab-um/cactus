@@ -271,6 +271,12 @@ ipcMain.on('ipc-mainwindow-remove-bookmark', (event, url) => {
     bookmarks = bookmarks.filter(bookmark => bookmark.url !== activeURL);
 });
 
+ipcMain.on('ipc-mainwindow-open-iframe', (event, src) => {
+    if (src) {
+        createTabview(getFullURL(src), newTab = true);
+    }
+})
+
 ipcMain.on('ipc-overlays-remove', (event) => {
     removeOverlay();
 })

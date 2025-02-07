@@ -462,8 +462,13 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements, tabUR
 							console.log("It has the value of: ", elementToClick[0].value);
 							showOverlay('keyboard', elementToClick[0]);
 						} else if (elementToClick[0]) {
-							console.log("Not an input element");
-							ipcRenderer.send('ipc-mainwindow-click-sidebar-element', elementToClick[0]);
+							if (elementToClick[0].type === 'iframe') {
+								console.log("Identified an iframe element: ", elementToClick[0]);
+								ipcRenderer.send('ipc-mainwindow-open-iframe', elementToClick[0].src);
+							} else {
+								console.log("Not an input element");
+								ipcRenderer.send('ipc-mainwindow-click-sidebar-element', elementToClick[0]);
+							}
 						}
 					}, 400); // 400 is chosen to match the fadeOutDown animation duration
 				}
