@@ -1,4 +1,4 @@
-const { app, BaseWindow, WebContentsView, ipcMain, globalShortcut, screen } = require('electron')
+const { app, BaseWindow, WebContentsView, ipcMain, globalShortcut, screen, session } = require('electron')
 const config = require('config');
 const path = require('path')
 const fs = require('fs')
@@ -6,6 +6,7 @@ const { QuadtreeBuilder, InteractiveElement, HTMLSerializableElement, QtPageDocu
 const { MenuBuilder, NavArea, HTMLSerializableMenuElement, MenuPageDocument, MenuBuilderOptions, MenuRange } = require('cactus-menu-builder');
 const { log } = require('electron-log');
 const robot = require("robotjs_addon");
+const UserAgent = require('user-agents');
 
 const isDevelopment = process.env.NODE_ENV === "development";
 const rangeWidth = config.get('dwelling.rangeWidth');
@@ -427,6 +428,14 @@ function createSplashWindow() {
 }
 
 function createMainWindow() {
+    // Dynamically setting the user agent to the most updated user agent string
+    // The device category filter must be set to desktop or else it might be set to a mobile user agent 
+    const userAgent = new UserAgent({ deviceCategory: 'desktop' }).toString();
+    if (userAgent)
+        session.defaultSession.setUserAgent(userAgent);
+    else 
+        session.defaultSession.setUserAgent(config.get('browser.defaultUserAgent'));
+
     try {
         mainWindow = new BaseWindow({
             frame: true,
@@ -613,6 +622,7 @@ function createTabview(url, newTab = false) {
             // This event fires when the tabView is attached
             tabView.webContents.send('ipc-main-tabview-loaded', useNavAreas, scrollDistance);
 
+            // injecting javascript into each first level iframe of the tabview
             tabView.webContents.mainFrame.frames.forEach((frame) => {
                 if (frame.parent !== null) {
                     try {
