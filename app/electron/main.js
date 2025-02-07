@@ -617,7 +617,7 @@ function createTabview(url, newTab = false) {
                 if (frame.parent !== null) {
                     try {
                         frame.executeJavaScript(iframeScriptContent).then(() => {
-                            tabView.webContents.send('ipc-iframe-loaded');
+                            tabView.webContents.send('ipc-iframe-loaded', useNavAreas, scrollDistance);
                         });
                     } catch (error) {
                         console.error("Error injecting into iframe:", error);

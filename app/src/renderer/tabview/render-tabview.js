@@ -221,10 +221,10 @@ window.cactusAPI.on('ipc-tabview-create-quadtree', (useNavAreas) => {
 });
 
 window.addEventListener('message', (event) => {
-	if (event.data.message === 'ipc-iframe-cursor-mouseover') {
-		console.log("ipc-iframe-cursor-mouseover");
+	if (event.data.message === 'ipc-iframe-cursor-mouseenter') {
+		console.log("ipc-iframe-cursor-mouseenter");
 		cursor.style.visibility = 'hidden'
-		window.cactusAPI.send('ipc-iframe-cursor-mouseover', event.data.contents);
+		window.cactusAPI.send('ipc-iframe-cursor-mouseenter', event.data.contents);
 	}
 	if (event.data.message === 'ipc-iframe-cursor-mouseleave') {
 		console.log("ipc-iframe-cursor-mouseleave");

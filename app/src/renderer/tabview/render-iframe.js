@@ -1,9 +1,15 @@
 (function () {
-	console.log('------------------ WE DID IT! 🥳 ------------------');
-
 	// // Prevent multiple injections
 	// if (window._injectedScript) return;
 	// window._injectedScript = true;
+
+	console.log('------------------ WE DID IT! 🥳 ------------------');
+
+	// Inject script to hide the native mouse in the iframe
+	document.body.style.cursor = "none";
+	const style = document.createElement('style');
+	style.innerHTML = 'a, input, textarea, button, div { cursor: none !important; }';
+	document.head.appendChild(style);
 
 	var mousePos = { x: 0, y: 0 }
 	var cursorPos = { x: 0, y: 0 }
@@ -34,6 +40,7 @@
 
 		cursor.innerHTML = trustedHTML;
 		cursor.setAttribute('id', id)
+		cursor.classList.add('cactus-cursor') // this is needed for the mutation observer to filter out the cursor from the mutations
 		cursor.style.position = 'absolute'
 		cursor.style.pointerEvents = 'none'
 		cursor.style.zIndex = '9999999999'
@@ -42,10 +49,6 @@
 		cursor.style.height = '50px'
 		cursor.style.color = '#a091eb'
 		cursor.style.margin = '-20px 0 0 -20px'
-
-		// if (!id.localeCompare('hiddenCursor')) {
-		//   cursor.style.opacity = 0
-		// }
 
 		document.body.appendChild(cursor);
 	}
@@ -90,7 +93,7 @@
 	function iframeLoaded(event) {
 		const { useNavAreas, scrollDist } = event.data;
 		scrollDistance = scrollDist;
-		// initScrollableElements(useNavAreas);
+		initScrollableElements(useNavAreas);
 
 		// // Setup the QuadTree and NavAreasTree
 		// generateQuadTree();
@@ -119,7 +122,7 @@
 		// 			&& !mutation.target.classList.contains('cactus-scrollUp_outerDiv')
 		// 			&& !mutation.target.classList.contains('cactus-scrollDown_outerDiv')
 		// 		) {
-		// 			console.log("Mutation observed .. calling generate quad tree", mutation);
+		// 			console.log("iframe: Mutation observed .. calling generate quad tree", mutation);
 		// 			//Indicate callback execution
 		// 			mutationObserverCallbackExecuting = true;
 
@@ -129,13 +132,13 @@
 		// 				if (useNavAreas) generateNavAreasTree();
 		// 			}, 1000);
 
-		// 			console.log("quad tree generated");
+		// 			console.log("iframe: quad tree generated");
 
 		// 			// If the mutation is a simple data-cactus-id attribute change, then scroll buttons are not updated
 		// 			if (mutation.type !== "attributes" || mutation.attributeName !== "data-cactus-id") {
 		// 				initScrollableElements(useNavAreas);
 		// 			} else {
-		// 				console.log("Mutation is data-cactus-id attribute change, skipping scrollable elements check");
+		// 				console.log("iframe: Mutation is data-cactus-id attribute change, skipping scrollable elements check");
 		// 			}
 
 		// 			//Reset flag to allow next callback execution on x ms
@@ -159,9 +162,9 @@
 		// Handle mouse behaviour on iframe
 		iframe = document.getRootNode();
 
-		iframe.addEventListener('mouseover', (event) => {
+		iframe.addEventListener('mouseenter', (event) => {
 			cursor.style.visibility = 'visible'
-			window.parent.postMessage({ message: 'ipc-iframe-cursor-mouseover', contents: { x: event.clientX, y: event.clientY } }, '*');
+			window.parent.postMessage({ message: 'ipc-iframe-cursor-mouseenter', contents: { x: event.clientX, y: event.clientY } }, '*');
 		});
 
 		iframe.addEventListener('mouseleave', () => {
@@ -232,7 +235,7 @@
 	// 	let element = document.querySelector('[data-cactus-id="' + elementToClick.id + '"]');
 
 	// 	if (!element) {
-	// 		console.log("Element to click not found by cactus id");
+	// 		console.log("iframe: Element to click not found by cactus id");
 	// 		element = document.elementFromPoint(elementToClick.insertionPointX, elementToClick.insertionPointY);
 	// 	}
 
@@ -268,7 +271,7 @@
 	// window.cactusAPI.on('ipc-tabview-create-quadtree', (useNavAreas) => {
 	// 	// //ISSUES: Node-Config is required by Cactus, and the config/default.json file would need to be recreated on cactus itself, rather than just the builder code. Which might not be a bad idea. Think about it.
 	// 	// let useNavAreas = config.get('dwelling.activateNavAreas');
-	// 	console.log("Creating QuadTree and NavAreasTree");
+	// 	console.log("iframe: Creating QuadTree and NavAreasTree");
 	// 	generateQuadTree();
 	// 	if (useNavAreas) generateNavAreasTree();
 	// });
@@ -281,183 +284,208 @@
 	// 	});
 	// }
 
-	// function initScrollableElements(useNavAreas) {
-	// 	removeExistingScrollButtons();
+	function initScrollableElements(useNavAreas) {
+		removeExistingScrollButtons();
 
-	// 	// The list of scrollable elements is filtered so that only the <html> tag is considered if the <body> tag is also present, preventing overlapping scrolling buttons
-	// 	const scrollableElements = Array.from(document.querySelectorAll('*')).filter(element => {
-	// 		const style = window.getComputedStyle(element);
-	// 		return (
-	// 			(style.overflowY === 'scroll' || style.overflowY === 'auto') &&
-	// 			element.scrollHeight > element.clientHeight &&
-	// 			style.overflowY !== 'visible'
-	// 		);
-	// 	});
+		// The list of scrollable elements is filtered so that only the <html> tag is considered if the <body> tag is also present, preventing overlapping scrolling buttons
+		const scrollableElements = Array.from(document.querySelectorAll('*')).filter(element => {
+			const style = window.getComputedStyle(element);
+			return (
+				(style.overflowY === 'scroll' || style.overflowY === 'auto') &&
+				element.scrollHeight > element.clientHeight &&
+				style.overflowY !== 'visible'
+			);
+		});
 
-	// 	console.log("Scrollable elements", scrollableElements);
+		console.log("iframe: Scrollable elements", scrollableElements);
 
-	// 	scrollableElements.forEach(element => {
-	// 		const targetZIndex = getZIndex(element);
-	// 		let quadtreeGeneratorTimer = null;
+		scrollableElements.forEach(element => {
+			const targetZIndex = getZIndex(element);
+			let quadtreeGeneratorTimer = null;
 
-	// 		// Scroll up button
-	// 		let scrollUpButton_outerDiv = document.createElement('div');
-	// 		scrollUpButton_outerDiv.classList.add('cactus-scrollUp_outerDiv');
-	// 		scrollUpButton_outerDiv.style.zIndex = `${targetZIndex + 1}`;
+			const cactus_scrollButton_style = {
+				position: 'absolute',
+				margin: '14px',
+				width: 'calc(100% - 28px)',
+				alignItems: 'center',
+				justifyContent: 'center',
+				padding: '10px',
+				fontSize: '20px',
+				borderRadius: '6px',
+				backgroundColor: '#d7e3edbf',
+				transition: 'all 0.5s ease 0s'
+			};
 
-	// 		let scrollUpButton = document.createElement('div');
-	// 		scrollUpButton.classList.add('cactus-scrollButton');
-	// 		scrollUpButton.style.top = '0';
+			// Scroll up button
+			let scrollUpButton_outerDiv = document.createElement('div');
+			scrollUpButton_outerDiv.classList.add('cactus-scrollUp_outerDiv');
+			scrollUpButton_outerDiv.style.zIndex = `${targetZIndex + 1}`;
+			scrollUpButton_outerDiv.style.position = 'sticky';
+			scrollUpButton_outerDiv.style.top = '0';
+			scrollUpButton_outerDiv.style.width = '100%';
 
-	// 		const keyboard_arrow_up = `<svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 -960 960 960" width="48px" fill="#203a90"><path d="M480-554 304-378q-9 9-21 8.5t-21-9.5q-9-9-9-21.5t9-21.5l197-197q9-9 21-9t21 9l198 198q9 9 9 21t-9 21q-9 9-21.5 9t-21.5-9L480-554Z"/></svg>`;
-	// 		var trustedHTML = policy.createHTML(keyboard_arrow_up);
-	// 		scrollUpButton.innerHTML = trustedHTML;
+			let scrollUpButton = document.createElement('div');
+			scrollUpButton.classList.add('cactus-scrollButton');
+			scrollUpButton.style.top = '0';
+			for (const property in cactus_scrollButton_style) {
+				scrollUpButton.style[property] = cactus_scrollButton_style[property];
+			}
 
-	// 		// When a mutation is observed and a new button is created to replace the previous button, then a check is made to see
-	// 		// whether the element has been previously scrolled or not. This is important because elements scrolled to the top should not have 
-	// 		// a scroll up button displayed.
-	// 		checkIfElementIsAtTop(element, scrollUpButton_outerDiv, scrollUpButton);
+			const keyboard_arrow_up = `<svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 -960 960 960" width="48px" fill="#203a90"><path d="M480-554 304-378q-9 9-21 8.5t-21-9.5q-9-9-9-21.5t9-21.5l197-197q9-9 21-9t21 9l198 198q9 9 9 21t-9 21q-9 9-21.5 9t-21.5-9L480-554Z"/></svg>`;
+			var trustedHTML = policy.createHTML(keyboard_arrow_up);
+			scrollUpButton.innerHTML = trustedHTML;
 
-	// 		// Scroll down button
-	// 		let scrollDownButton_outerDiv = document.createElement('div');
-	// 		scrollDownButton_outerDiv.classList.add('cactus-scrollDown_outerDiv'); // the classes are needed by the mutation observer
-	// 		scrollDownButton_outerDiv.style.zIndex = `${targetZIndex + 1}`;
+			// When a mutation is observed and a new button is created to replace the previous button, then a check is made to see
+			// whether the element has been previously scrolled or not. This is important because elements scrolled to the top should not have 
+			// a scroll up button displayed.
+			checkIfElementIsAtTop(element, scrollUpButton_outerDiv, scrollUpButton);
 
-	// 		let scrollDownButton = document.createElement('div');
-	// 		scrollDownButton.classList.add('cactus-scrollButton');
-	// 		scrollDownButton.style.bottom = '0';
-	// 		scrollDownButton.style.display = 'flex';
+			// Scroll down button
+			let scrollDownButton_outerDiv = document.createElement('div');
+			scrollDownButton_outerDiv.classList.add('cactus-scrollDown_outerDiv'); // the classes are needed by the mutation observer
+			scrollDownButton_outerDiv.style.zIndex = `${targetZIndex + 1}`;
+			scrollDownButton_outerDiv.style.position = 'sticky';
+			scrollDownButton_outerDiv.style.bottom = '0';
+			scrollDownButton_outerDiv.style.width = '100%';
+			
+			let scrollDownButton = document.createElement('div');
+			scrollDownButton.classList.add('cactus-scrollButton');
+			scrollDownButton.style.bottom = '0';
+			scrollDownButton.style.display = 'flex';
+			for (const property in cactus_scrollButton_style) {
+				scrollDownButton.style[property] = cactus_scrollButton_style[property];
+			}
 
-	// 		const keyboard_arrow_down = `<svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 -960 960 960" width="48px" fill="#203a90"><path d="M480-356q-6 0-11-2t-10-7L261-563q-9-9-8.5-21.5T262-606q9-9 21.5-9t21.5 9l175 176 176-176q9-9 21-8.5t21 9.5q9 9 9 21.5t-9 21.5L501-365q-5 5-10 7t-11 2Z"/></svg>`;
-	// 		trustedHTML = policy.createHTML(keyboard_arrow_down);
-	// 		scrollDownButton.innerHTML = trustedHTML;
+			const keyboard_arrow_down = `<svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 -960 960 960" width="48px" fill="#203a90"><path d="M480-356q-6 0-11-2t-10-7L261-563q-9-9-8.5-21.5T262-606q9-9 21.5-9t21.5 9l175 176 176-176q9-9 21-8.5t21 9.5q9 9 9 21.5t-9 21.5L501-365q-5 5-10 7t-11 2Z"/></svg>`;
+			trustedHTML = policy.createHTML(keyboard_arrow_down);
+			scrollDownButton.innerHTML = trustedHTML;
 
-	// 		// The same reasons for checking if element is at the top applies for checking if an element is at the bottom
-	// 		checkIfElementIsAtBottom(element, scrollDownButton_outerDiv, scrollDownButton);
+			// The same reasons for checking if element is at the top applies for checking if an element is at the bottom
+			checkIfElementIsAtBottom(element, scrollDownButton_outerDiv, scrollDownButton);
 
-	// 		// When the scrollable element is the main body or the html tag, the buttons are centred and positioned to the top and bottom of the viewport,
-	// 		// taking only 1/3 of the screen width - all other elements take up the whole width of the parent element (the scrollable element).
-	// 		if (element.tagName === "HTML" || element.tagName === "BODY") {
-	// 			// Centering the scroll buttons and taking up 1/3 of the screen width
-	// 			scrollDownButton.style.width = 'calc((100% - 28px)/3)',
-	// 				scrollDownButton.style.left = '50%', // This positions the element's left edge at the center of the container
-	// 				scrollDownButton.style.transform = 'translateX(-50%)', // this moves the element back by half of its own width - combined with left: 50% the element is centered
+			// When the scrollable element is the main body or the html tag, the buttons are centred and positioned to the top and bottom of the viewport,
+			// taking only 1/3 of the screen width - all other elements take up the whole width of the parent element (the scrollable element).
+			if (element.tagName === "HTML" || element.tagName === "BODY") {
+				// Centering the scroll buttons and taking up 1/3 of the screen width
+				scrollDownButton.style.width = 'calc((100% - 28px)/3)',
+					scrollDownButton.style.left = '50%', // This positions the element's left edge at the center of the container
+					scrollDownButton.style.transform = 'translateX(-50%)', // this moves the element back by half of its own width - combined with left: 50% the element is centered
 
-	// 				scrollUpButton.style.width = 'calc((100% - 28px)/3)',
-	// 				scrollUpButton.style.left = '50%',
-	// 				scrollUpButton.style.transform = 'translateX(-50%)'
+					scrollUpButton.style.width = 'calc((100% - 28px)/3)',
+					scrollUpButton.style.left = '50%',
+					scrollUpButton.style.transform = 'translateX(-50%)'
 
-	// 			// Fixing the position to appear at the top and bottom of the viewport
-	// 			scrollUpButton_outerDiv.style.position = 'fixed';
-	// 			scrollDownButton_outerDiv.style.position = 'fixed';
-	// 		}
+				// Fixing the position to appear at the top and bottom of the viewport
+				scrollUpButton_outerDiv.style.position = 'fixed';
+				scrollDownButton_outerDiv.style.position = 'fixed';
+			}
 
-	// 		scrollUpButton.onmouseenter = () => {
-	// 			isScrolling = true;
-	// 			cursor.style.visibility = 'hidden'; // Hiding the cursor when scrolling to avoid flickering
-	// 			smoothScroll('up', element);
-	// 			scrollUpButton.style.backgroundColor = '#003b776b';
-	// 		};
+			scrollUpButton.onmouseenter = () => {
+				isScrolling = true;
+				cursor.style.visibility = 'hidden'; // Hiding the cursor when scrolling to avoid flickering
+				smoothScroll('up', element);
+				scrollUpButton.style.backgroundColor = '#003b776b';
+			};
 
-	// 		scrollUpButton.onmouseleave = () => {
-	// 			isScrolling = false; // Stop scrolling on mouse leave
-	// 			cursor.style.visibility = 'visible'; // Show the cursor when scrolling stops
-	// 			scrollUpButton.style.backgroundColor = '#d7e3edbf';
-	// 		};
+			scrollUpButton.onmouseleave = () => {
+				isScrolling = false; // Stop scrolling on mouse leave
+				cursor.style.visibility = 'visible'; // Show the cursor when scrolling stops
+				scrollUpButton.style.backgroundColor = '#d7e3edbf';
+			};
 
-	// 		scrollDownButton.onmouseenter = () => {
-	// 			isScrolling = true;
-	// 			cursor.style.visibility = 'hidden'; // Hiding the cursor when scrolling to avoid flickering
-	// 			smoothScroll('down', element);
-	// 			scrollDownButton.style.backgroundColor = '#003b776b';
-	// 		};
+			scrollDownButton.onmouseenter = () => {
+				isScrolling = true;
+				cursor.style.visibility = 'hidden'; // Hiding the cursor when scrolling to avoid flickering
+				smoothScroll('down', element);
+				scrollDownButton.style.backgroundColor = '#003b776b';
+			};
 
-	// 		scrollDownButton.onmouseleave = () => {
-	// 			isScrolling = false; // Stop scrolling on mouse leave
-	// 			cursor.style.visibility = 'visible'; // Show the cursor when scrolling stops
-	// 			scrollDownButton.style.backgroundColor = '#d7e3edbf';
-	// 		};
+			scrollDownButton.onmouseleave = () => {
+				isScrolling = false; // Stop scrolling on mouse leave
+				cursor.style.visibility = 'visible'; // Show the cursor when scrolling stops
+				scrollDownButton.style.backgroundColor = '#d7e3edbf';
+			};
 
-	// 		function smoothScroll(direction, element = null) {
-	// 			const updatedScrollDistance = direction === 'down' ? scrollDistance : -scrollDistance;
+			function smoothScroll(direction, element = null) {
+				const updatedScrollDistance = direction === 'down' ? scrollDistance : -scrollDistance;
 
-	// 			function step() {
-	// 				if (!isScrolling) {
-	// 					// clearInterval(quadtreeInterval);
-	// 					return; // Stop if scrolling is interrupted
-	// 				}
-	// 				else {
-	// 					// Start the timer to generate quadtree and navareas
-	// 					if (!quadtreeGeneratorTimer) {
-	// 						quadtreeGeneratorTimer = setTimeout(function () {
-	// 							generateQuadTree();
-	// 							if (useNavAreas) generateNavAreasTree();
-	// 							window.clearTimeout(quadtreeGeneratorTimer);
-	// 							quadtreeGeneratorTimer = null;
-	// 						}, 1000);
-	// 					}
-	// 				}
+				function step() {
+					if (!isScrolling) {
+						// clearInterval(quadtreeInterval);
+						return; // Stop if scrolling is interrupted
+					}
+					else {
+						// Start the timer to generate quadtree and navareas
+						if (!quadtreeGeneratorTimer) {
+							quadtreeGeneratorTimer = setTimeout(function () {
+								// generateQuadTree();
+								// if (useNavAreas) generateNavAreasTree();
+								window.clearTimeout(quadtreeGeneratorTimer);
+								quadtreeGeneratorTimer = null;
+							}, 1000);
+						}
+					}
 
-	// 				checkIfElementIsAtTop(element, scrollUpButton_outerDiv, scrollUpButton);
-	// 				checkIfElementIsAtBottom(element, scrollDownButton_outerDiv, scrollDownButton);
+					checkIfElementIsAtTop(element, scrollUpButton_outerDiv, scrollUpButton);
+					checkIfElementIsAtBottom(element, scrollDownButton_outerDiv, scrollDownButton);
 
-	// 				element.scrollBy({
-	// 					top: updatedScrollDistance,
-	// 					left: 0,
-	// 					behavior: "auto" // Smooth is disbaled here to avoid conflicting animations since we are using requestAnimationFrame()
-	// 				});
+					element.scrollBy({
+						top: updatedScrollDistance,
+						left: 0,
+						behavior: "auto" // Smooth is disbaled here to avoid conflicting animations since we are using requestAnimationFrame()
+					});
 
-	// 				requestAnimationFrame(step); // Keep scrolling while `isScrolling` is true
-	// 			}
+					requestAnimationFrame(step); // Keep scrolling while `isScrolling` is true
+				}
 
-	// 			// Starts the scrolling animation
-	// 			step();
-	// 		}
+				// Starts the scrolling animation
+				step();
+			}
 
-	// 		// The outer divs are parents of the actual button. They help with the positioning of the buttons on the screen.
-	// 		scrollUpButton_outerDiv.appendChild(scrollUpButton);
-	// 		element.insertBefore(scrollUpButton_outerDiv, element.firstChild); // Scroll up buttons are inserted as the first child
-	// 		scrollDownButton_outerDiv.appendChild(scrollDownButton);
-	// 		element.appendChild(scrollDownButton_outerDiv); // Scroll up buttons are inserted as the last child
-	// 	});
+			// The outer divs are parents of the actual button. They help with the positioning of the buttons on the screen.
+			scrollUpButton_outerDiv.appendChild(scrollUpButton);
+			element.insertBefore(scrollUpButton_outerDiv, element.firstChild); // Scroll up buttons are inserted as the first child
+			scrollDownButton_outerDiv.appendChild(scrollDownButton);
+			element.appendChild(scrollDownButton_outerDiv); // Scroll up buttons are inserted as the last child
+		});
 
-	// 	function checkIfElementIsAtTop(element, scrollUpButton_outerDiv, scrollUpButton) {
-	// 		// if element is at the top, hide the scroll up button
-	// 		if (element.scrollTop === 0) {
-	// 			scrollUpButton_outerDiv.style.display = 'none';
-	// 			scrollUpButton.style.display = 'none';
-	// 		} else {
-	// 			scrollUpButton_outerDiv.style.display = 'block';
-	// 			scrollUpButton.style.display = 'flex';
-	// 		}
-	// 	}
+		function checkIfElementIsAtTop(element, scrollUpButton_outerDiv, scrollUpButton) {
+			// if element is at the top, hide the scroll up button
+			if (element.scrollTop === 0) {
+				scrollUpButton_outerDiv.style.display = 'none';
+				scrollUpButton.style.display = 'none';
+			} else {
+				scrollUpButton_outerDiv.style.display = 'block';
+				scrollUpButton.style.display = 'flex';
+			}
+		}
 
-	// 	function checkIfElementIsAtBottom(element, scrollDownButton_outerDiv, scrollDownButton) {
-	// 		// if element is at the bottom, hide the scroll down button
-	// 		if (Math.floor(element.scrollHeight - element.scrollTop) === element.clientHeight) {
-	// 			scrollDownButton_outerDiv.style.display = 'none';
-	// 			scrollDownButton.style.display = 'none';
-	// 		} else {
-	// 			scrollDownButton_outerDiv.style.display = 'block';
-	// 			scrollDownButton.style.display = 'flex';
-	// 		}
-	// 	}
-	// }
+		function checkIfElementIsAtBottom(element, scrollDownButton_outerDiv, scrollDownButton) {
+			// if element is at the bottom, hide the scroll down button
+			if (Math.floor(element.scrollHeight - element.scrollTop) === element.clientHeight) {
+				scrollDownButton_outerDiv.style.display = 'none';
+				scrollDownButton.style.display = 'none';
+			} else {
+				scrollDownButton_outerDiv.style.display = 'block';
+				scrollDownButton.style.display = 'flex';
+			}
+		}
+	}
 
-	// // This function is used to position the button on top of the element which it is scrolling
-	// function getZIndex(element) {
-	// 	return parseInt(window.getComputedStyle(element).zIndex, 10) || 99999997; // Default to 99999997 if no z-index is set
-	// }
+	// This function is used to position the button on top of the element which it is scrolling
+	function getZIndex(element) {
+		return parseInt(window.getComputedStyle(element).zIndex, 10) || 99999997; // Default to 99999997 if no z-index is set
+	}
 
-	// function removeExistingScrollButtons() {
-	// 	const existingScrollButtons = Array.from(
-	// 		document.querySelectorAll('.cactus-scrollButton, .cactus-scrollDown_outerDiv, .cactus-scrollUp_outerDiv')
-	// 	);
-	// 	console.log("Existing scroll buttons", existingScrollButtons);
-	// 	existingScrollButtons.forEach(button => button.remove());
-	// 	iterator++;
-	// 	if (existingScrollButtons) console.log("Removed existing scroll buttons for the " + iterator + " time");
-	// }
+	function removeExistingScrollButtons() {
+		const existingScrollButtons = Array.from(
+			document.querySelectorAll('.cactus-scrollButton, .cactus-scrollDown_outerDiv, .cactus-scrollUp_outerDiv')
+		);
+		console.log("iframe: Existing scroll buttons", existingScrollButtons);
+		existingScrollButtons.forEach(button => button.remove());
+		iterator++;
+		if (existingScrollButtons) console.log("iframe: Removed existing scroll buttons for the " + iterator + " time");
+	}
 
 	// // Gets the contents needed from the renderer process and sends them to the main process for generating the QuadTree
 	// function generateQuadTree() {
@@ -470,12 +498,12 @@
 	// 	const clickableElements = Array.from(document.querySelectorAll(clickableSelectors.join(', ')));
 	// 	const visibleElements = filterVisibleElements(clickableElements).map(e => {
 	// 		if (!e.dataset.cactusId) {
-	// 			// console.log("Cactus Id of element", e, ", is empty");
+	// 			// console.log("iframe: Cactus Id of element", e, ", is empty");
 	// 			e.dataset.cactusId = generateUUID();
 	// 		}
 	// 		return e;
 	// 	});
-	// 	// console.log("Visible elements", visibleElements);
+	// 	// console.log("iframe: Visible elements", visibleElements);
 	// 	const serializedElements = visibleElements.map(serializeElement); //creating an element object for each element in the array
 
 	// 	const quadTreeContents = {
