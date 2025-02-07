@@ -331,13 +331,6 @@ function setupNavigationSideBar() {
 
 	const scrollDistance = config.get('dwelling.menuAreaScrollDistance');
 	const scrollInterval = config.get('dwelling.menuAreaScrollIntervalInMs');
-	//Set up scrolling event
-	menuScrollUp.onmouseover = () => {
-		// Clear any existing interval to avoid multiple intervals running simultaneously
-		clearInterval(timeoutScroll);
-		// Start a new interval to execute the code every x ms
-		timeoutScroll = setInterval(sidebarScrollUp(), scrollInterval);
-	}
 
 	function sidebarScrollUp() {
 		sidebarItemArea.scrollBy({
@@ -345,14 +338,6 @@ function setupNavigationSideBar() {
 			left: 0,
 			behavior: "smooth"
 		});
-	}
-
-	menuScrollDown.onmouseover = () => {
-		// Clear any existing interval to avoid multiple intervals running simultaneously
-		clearInterval(timeoutScroll);
-
-		// Start a new interval to execute the code every x ms
-		timeoutScroll = setInterval(sidebarScrollDown(), scrollInterval);
 	}
 
 	function sidebarScrollDown() {
@@ -363,7 +348,21 @@ function setupNavigationSideBar() {
 		});
 	}
 
-	//Clear timeouts
+	menuScrollUp.onmouseover = () => {
+		// Clear any existing interval to avoid multiple intervals running simultaneously
+		clearInterval(timeoutScroll);
+		// Start a new interval to execute the code every x ms
+		timeoutScroll = setInterval(sidebarScrollUp, scrollInterval);
+	}
+
+	menuScrollDown.onmouseover = () => {
+		// Clear any existing interval to avoid multiple intervals running simultaneously
+		clearInterval(timeoutScroll);
+
+		// Start a new interval to execute the code every x ms
+		timeoutScroll = setInterval(sidebarScrollDown, scrollInterval);
+	}
+
 	menuScrollUp.onmouseout = () => {
 		// Clear the interval when the mouse leaves the element
 		clearInterval(timeoutScroll);
