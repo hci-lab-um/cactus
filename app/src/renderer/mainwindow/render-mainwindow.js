@@ -101,8 +101,6 @@ function setupFunctionality() {
 				backOrForward.addEventListener('webkitAnimationEnd', () => {
 					backOrForward.classList.remove('shake')
 				})
-
-				overlayNav.style.display = 'none'
 			} else {
 				showOverlay('navigation')
 			}

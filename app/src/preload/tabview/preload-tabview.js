@@ -3,6 +3,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('cactusAPI', {
     on: (channel, func) => {
         const validChannels = [
+            'ipc-iframe-loaded',
             'ipc-main-tabview-loaded',
             'ipc-clear-highlighted-elements',
             'ipc-highlight-available-elements',

@@ -47,6 +47,14 @@ app.on('activate', () => {
     }
 })
 
+ipcMain.handle('tabview-can-go-back-or-forward', (event) => {
+    // Check if the active tab can go back or forward
+    var tab = tabList.find(tab => tab.isActive === true);
+    var canGoBack = tab.webContentsView.webContents.canGoBack();
+    var canGoForward = tab.webContentsView.webContents.canGoForward();
+    if (canGoBack || canGoForward) return true;
+});
+
 // This creates a quadtree using serialisable HTML elements passed on from the renderer
 ipcMain.on('ipc-tabview-generateQuadTree', (event, contents) => {
     var tab = tabList.find(tab => tab.isActive === true);
@@ -160,14 +168,6 @@ ipcMain.on('ipc-tabview-cursor-mouseover', (event, mouseData) => {
 
 ipcMain.on('ipc-tabview-cursor-mouseout', (event) => {
     clearInterval(timeoutCursorHovering);
-});
-
-ipcMain.handle('tabview-can-go-back-or-forward', (event) => {
-    // Check if the active tab can go back or forward
-    var tab = tabList.find(tab => tab.isActive === true);
-    var canGoBack = tab.webContentsView.webContents.canGoBack();
-    var canGoForward = tab.webContentsView.webContents.canGoForward();
-    if (canGoBack || canGoForward) return true;
 });
 
 ipcMain.on('browse-to-url', (event, url) => {
@@ -548,7 +548,6 @@ function resizeMainWindow() {
 }
 
 function createTabview(url, newTab = false) {
-
     let scrollDistance = config.get('dwelling.tabViewScrollDistance');
 
     //Create browser view
@@ -601,9 +600,24 @@ function createTabview(url, newTab = false) {
 
         const scriptToExecute = path.join(__dirname, '../src/renderer/tabview/render-tabview.js');
         const scriptContent = fs.readFileSync(scriptToExecute, 'utf-8');
+        const iframeScriptToExecute = path.join(__dirname, '../src/renderer/tabview/render-iframe.js');
+        const iframeScriptContent = fs.readFileSync(iframeScriptToExecute, 'utf-8');
+
         tabView.webContents.executeJavaScript(scriptContent).then(() => {
             // This event fires when the tabView is attached
             tabView.webContents.send('ipc-main-tabview-loaded', useNavAreas, scrollDistance);
+
+            tabView.webContents.mainFrame.frames.forEach((frame) => {
+                if (frame.parent !== null) {
+                    try {
+                        frame.executeJavaScript(iframeScriptContent).then(() => {
+                            tabView.webContents.send('ipc-iframe-loaded');
+                        });
+                    } catch (error) {
+                        console.error("Error injecting into iframe:", error);
+                    }
+                }
+            });
         });
 
         tabView.webContents.openDevTools(); // to remove
@@ -859,7 +873,8 @@ function createOverlay(overlayAreaToShow, elementProperties) {
     mainWindow.contentView.addChildView(overlayContent)
     overlayContent.setBounds({ x: 0, y: 0, width: mainWindowContentBounds.width, height: mainWindowContentBounds.height })
     overlayContent.webContents.loadURL(path.join(__dirname, '../src/pages/', htmlPage));
-
+    overlayContent.webContents.focus();
+    
     isKeyboardOverlay = overlayAreaToShow === 'keyboard';
     let overlaysData = {
         overlayAreaToShow: overlayAreaToShow,
