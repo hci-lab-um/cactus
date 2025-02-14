@@ -200,6 +200,7 @@ async function isValidTLD(domain, validTLDs) {
 async function browseToUrl(event, input) {
 	if (event.keyCode === 13) {
 		const urlRegex = /^(?:(?:https?:\/\/)?([\w.-]+(?:\.[\w.-]+)+)(?:[\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?)$/;
+		const filePathRegex = /^[a-zA-Z]:\\(?:[^\\\/:*?"<>|\r\n]+\\)*[^\\\/:*?"<>|\r\n]*$/;
 		let url = '';
 
 		// Fetch the latest TLDs
@@ -217,7 +218,10 @@ async function browseToUrl(event, input) {
 				// If domain TLD is invalid, treat it as a search query
 				url = `https://www.google.com/search?q=${encodeURIComponent(input)}`;
 			}
-		} else {
+		} else if (filePathRegex.test(input)) {
+            // If input is a file path, convert it to a file URL
+            url = `file:///${input.replace(/\\/g, '/')}`;
+        } else {
 			// Otherwise, treat it as a search query
 			url = `https://www.google.com/search?q=${encodeURIComponent(input)}`;
 		}
