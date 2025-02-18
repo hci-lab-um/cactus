@@ -6,7 +6,6 @@ const { QuadtreeBuilder, InteractiveElement, HTMLSerializableElement, QtPageDocu
 const { MenuBuilder, NavArea, HTMLSerializableMenuElement, MenuPageDocument, MenuBuilderOptions, MenuRange } = require('cactus-menu-builder');
 const { log } = require('electron-log');
 const robot = require("robotjs_addon");
-const UserAgent = require('user-agents');
 
 const isDevelopment = process.env.NODE_ENV === "development";
 const rangeWidth = config.get('dwelling.rangeWidth');
@@ -175,6 +174,40 @@ ipcMain.on('browse-to-url', (event, url) => {
     const fullUrl = getFullURL(url);
     let tab = tabList.find(tab => tab.isActive === true);
     tab.webContentsView.webContents.loadURL(fullUrl);
+});
+
+ipcMain.on('robot-mouse-click', (event, { x, y }) => {
+    const win = BaseWindow.getFocusedWindow();
+    const bounds = win.getBounds();
+    const contentBounds = win.getContentBounds();
+    const display = screen.getPrimaryDisplay();
+    const scaleFactor = display.scaleFactor;
+
+    // Correct for frame offset
+    const frameOffsetX = contentBounds.x - bounds.x;
+    const frameOffsetY = contentBounds.y - bounds.y;
+
+    // Get global screen coordinates of window
+    const windowScreenX = bounds.x + frameOffsetX;
+    const windowScreenY = bounds.y + frameOffsetY;
+
+    // Get the webpage's position within the window
+    const tabX = windowScreenX + webpageBounds.x;
+    const tabY = windowScreenY + webpageBounds.y;
+
+    // Get the element's position within the tab
+    const elementX = tabX + x;
+    const elementY = tabY + y;
+
+    // Convert to physical pixels if needed
+    const finalX = elementX * scaleFactor;
+    const finalY = elementY * scaleFactor;
+
+    console.log(`Corrected Window Screen Position: (${finalX}, ${finalY})`);
+
+    // Move mouse to the top-left corner of the window
+    robot.moveMouse(finalX, finalY);
+    robot.mouseClick();
 });
 
 ipcMain.on('robot-keyboard-type', (event, text, pressReturn = false) => {
@@ -428,13 +461,8 @@ function createSplashWindow() {
 }
 
 function createMainWindow() {
-    // Dynamically setting the user agent to the most updated user agent string
-    // The device category filter must be set to desktop or else it might be set to a mobile user agent 
-    const userAgent = new UserAgent({ deviceCategory: 'desktop' }).toString();
-    if (userAgent)
-        session.defaultSession.setUserAgent(userAgent);
-    else 
-        session.defaultSession.setUserAgent(config.get('browser.defaultUserAgent'));
+    // Setting the default user agent (without cactus and electron tokens)
+    session.defaultSession.setUserAgent(config.get('browser.defaultUserAgent'));    
 
     try {
         mainWindow = new BaseWindow({
@@ -495,8 +523,8 @@ function createMainWindow() {
         //Handle resize and maxmised events
         mainWindow.on('resized', () => {
             resizeMainWindow();
-
         });
+        
         mainWindow.on('maximize', () => {
             resizeMainWindow();
         });

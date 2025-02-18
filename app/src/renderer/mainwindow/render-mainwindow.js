@@ -200,17 +200,22 @@ async function isValidTLD(domain, validTLDs) {
 async function browseToUrl(event, input) {
 	if (event.keyCode === 13) {
 		const urlRegex = /^(?:(?:https?:\/\/)?([\w.-]+(?:\.[\w.-]+)+)(?:[\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?)$/;
-		const filePathRegex = /^[a-zA-Z]:\\(?:[^\\\/:*?"<>|\r\n]+\\)*[^\\\/:*?"<>|\r\n]*$/;
+		const filePathRegex = /^(?:[a-zA-Z]:\\(?:[^\\\/:*?"<>|\r\n]+\\)*[^\\\/:*?"<>|\r\n]*|\/(?:[^\\\/:*?"<>|\r\n]+\/)*[^\\\/:*?"<>|\r\n]*)$/;
 		let url = '';
-
+		
 		// Fetch the latest TLDs
 		const validTLDs = await fetchValidTLDs();
+		
+		if (input.startsWith("file:///")) {
+			input = input.replace("file:///", "");
+		} 
 
 		if (urlRegex.test(input)) {
 			// Extract domain from input
 			const domainMatch = input.match(/(?:https?:\/\/)?([\w.-]+(?:\.[\w.-]+)+)/);
 			// domainMatch[1] is the captured domain name (without http:// or https://).
 
+			// If the input contains a domain, like .com, check if it is valid
 			if (domainMatch && await isValidTLD(domainMatch[1], validTLDs)) {
 				// If input is a URL, ensure it has http or https
 				url = input.startsWith("http") ? input : `https://${input}`;
@@ -218,9 +223,9 @@ async function browseToUrl(event, input) {
 				// If domain TLD is invalid, treat it as a search query
 				url = `https://www.google.com/search?q=${encodeURIComponent(input)}`;
 			}
-		} else if (filePathRegex.test(input)) {
+		} else if (filePathRegex.test(input) || filePathRegex.test(input.replace(/\//g, '\\'))) {
             // If input is a file path, convert it to a file URL
-            url = `file:///${input.replace(/\\/g, '/')}`;
+            url = `file:///${input}`;
         } else {
 			// Otherwise, treat it as a search query
 			url = `https://www.google.com/search?q=${encodeURIComponent(input)}`;

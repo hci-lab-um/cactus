@@ -41,6 +41,7 @@ contextBridge.exposeInMainWorld('cactusAPI', {
             'ipc-tabview-visible-clickable-elements',
             'ipc-tabview-document-info',
             'browse-to-url',
+            'robot-mouse-click',
             'robot-keyboard-type',
             'robot-keyboard-enter',
             'robot-keyboard-spacebar'

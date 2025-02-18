@@ -185,7 +185,8 @@ window.cactusAPI.onAsync('ipc-tabview-click-element', (elementToClick) => {
 			window.cactusAPI.send('browse-to-url', element.getAttribute('href'));
 		else {
 			let clickableElement = getClickablePartOfElement(element);
-			clickableElement.click();
+			if (clickableElement) clickableElement.click();
+			else robotClick(element);
 		}
 	} else {
 		console.error("Element to click has not been found");
@@ -459,7 +460,7 @@ function initScrollableElements(useNavAreas) {
 
 // This function is used to position the button on top of the element which it is scrolling
 function getZIndex(element) {
-	return parseInt(window.getComputedStyle(element).zIndex, 10) || 99999997; // Default to 99999997 if no z-index is set
+	return parseInt(window.getComputedStyle(element).zIndex, 10) || 2147483648; // Default to 99999997 if no z-index is set
 }
 
 function removeExistingScrollButtons() {
@@ -478,7 +479,7 @@ function generateQuadTree() {
 		'button', 'a', 'textarea', 'input', 'select', 'date',
 		'div[role="button"]', 'span[role="button"]', 'div[role="link"]', 'span[role="link"]',
 		'[role="checkbox"]', '[role="textbox"]', '[role="radio"]', '[role="option"]', '[role="tab"]',
-		'[role="menu"]', '[role="switch"]', '[role="slider"]', '[role="combobox"], iframe'
+		'[role="menu"]', '[role="switch"]', '[role="slider"]', '[role="combobox"], iframe', '[aria-selected]'
 	];
 	const clickableElements = Array.from(document.querySelectorAll(clickableSelectors.join(', ')));
 	const visibleElements = filterVisibleElements(clickableElements).map(e => {
@@ -689,7 +690,7 @@ function getClickablePartOfElement(element) {
 	];
 	const interactiveRoles = [
 		'button', 'link', 'checkbox', 'radio', 'tab', 'switch', 'menuitem',
-		'gridcell', 'treeitem', 'combobox', 'slider', 'progressbar', 'menu',
+		'treeitem', 'combobox', 'slider', 'progressbar', 'menu',
 		'menubar', 'toolbar', 'option'
 	];
 
@@ -721,29 +722,75 @@ function getClickablePartOfElement(element) {
 
 	const clickableSelector = generateSelector();
 
-	// If the element itself is clickable, focus it
-	if (isClickable(element)) {
-		//Sometimes, certain selectable elements, such as 'option', might have clickable child elements (e.g. div role=button)
-		const clickableChild = element.querySelector(clickableSelector);
-		if (clickableChild) {
-			return clickableChild;
-		}
-		return element;
-	}
-
-	// Check for clickable descendants
+	//Sometimes, certain selectable elements, such as 'option', might have clickable descendants (e.g. div role=button)
 	const clickableChild = element.querySelector(clickableSelector);
+	console.log('Clickable child:', clickableChild);
 	if (clickableChild) {
 		return clickableChild;
 	}
 
+	// If the element itself is clickable, click it
+	if (isClickable(element)) {
+		console.log('Element is clickable:', element);
+		return element;
+	}
+
 	// Check the closest clickable ancestor
 	const clickableAncestor = element.closest(clickableSelector);
+	console.log('Clickable ancestor:', clickableAncestor);
 	if (clickableAncestor) {
 		return clickableAncestor;
 	}
 
+	// Checking for the presence of a dynamic onclick event handler
+	const elementWithClickEvent = getElementWithClickEvent(element);
+	if (elementWithClickEvent) {
+		return elementWithClickEvent;
+	}
+
 	console.log('No clickable or interactive element found.');
+}
+
+function getElementWithClickEvent(element) {
+	// Checking if the current element has an onclick event attached
+	if (!!element.onclick) {
+		console.log("We found the element by its onclick event");
+		return element;
+	}
+
+	// Recursively checking child elements
+	for (const child of element.children) {
+		const clickableChild = getElementWithClickEvent(child);
+		if (clickableChild) {
+			return clickableChild;
+		}
+	}
+
+	// THERE MIGHT ALWAYS BE A CLICKABLE ANCESTOR ELEMENT, SO THIS CODE IS COMMENTED OUT OR ELSE THE ROBOT CLICK WILL NEVER GET CALLED
+
+	// // Iteratively checking parent elements
+	// let currentParent = element.parentElement;
+	// while (currentParent) {
+	// 	if (!!currentParent.onclick) {
+	// 		console.log("We found an ancestor element with the onclick event: ", currentParent);
+	// 		return currentParent;
+	// 	}
+	// 	currentParent = currentParent.parentElement;
+	// }
+
+	// Return null if no element with onclick is found
+	return null;
+}
+
+// Simulate a real user click
+function robotClick(element) {
+	if (!element) return;
+
+	const rect = element.getBoundingClientRect();
+	const x = rect.left + (rect.width / 2);
+	const y = rect.top + (rect.height / 2);
+
+	window.cactusAPI.send('robot-mouse-click', { x, y });
 }
 
 function sendMessageToIframes(message, contents = {}) {

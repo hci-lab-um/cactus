@@ -474,7 +474,7 @@
 
 	// This function is used to position the button on top of the element which it is scrolling
 	function getZIndex(element) {
-		return parseInt(window.getComputedStyle(element).zIndex, 10) || 99999997; // Default to 99999997 if no z-index is set
+		return parseInt(window.getComputedStyle(element).zIndex, 10) || 2147483648; // Default to 99999997 if no z-index is set
 	}
 
 	function removeExistingScrollButtons() {
