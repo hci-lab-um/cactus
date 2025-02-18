@@ -407,9 +407,9 @@ const Keyboard = {
                     keyElement.innerHTML = this._createMaterialIcon("keyboard_capslock");
                 }
 
-                dwellInfinite(keyElement, () => {
+                dwell(keyElement, () => {
                     this._toggleCapsLock();
-                });
+                }, true);
 
                 break;
 
@@ -438,9 +438,9 @@ const Keyboard = {
                 keyElement.classList.add("keyboard__key--darker", "keyboard__key--dwell-infinite");
                 keyElement.textContent = this.properties.specialKeys ? "ABC" : "?123";
 
-                dwellInfinite(keyElement, () => {
+                dwell(keyElement, () => {
                     this._toggleSpecialKeys();
-                });
+                }, true);
 
                 break;
 
