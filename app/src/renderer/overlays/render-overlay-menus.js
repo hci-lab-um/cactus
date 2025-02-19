@@ -16,7 +16,7 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 ipcRenderer.on('ipc-main-overlays-loaded', (event, overlaysData) => {
-	const { overlayAreaToShow, tabList, bookmarks, canGoBack, canGoForward } = overlaysData;
+	const { overlayAreaToShow, tabList, bookmarks, canGoBack, canGoForward, isDwellingActive, useNavAreas } = overlaysData;
 	console.log('Overlays data', overlaysData);
 
 	switch (overlayAreaToShow) {
@@ -37,7 +37,7 @@ ipcRenderer.on('ipc-main-overlays-loaded', (event, overlaysData) => {
 		}
 		case 'accessibility': {
 			byId('overlay-options').style.display = 'grid'
-			setEventHandlersForAccessibilityMenu();
+			setEventHandlersForAccessibilityMenu(isDwellingActive, useNavAreas);
 			break;
 		}
 		case 'bookmarks': {
@@ -239,21 +239,28 @@ function setEventHandlersForOmniMenu() {
 	// })
 }
 
-function setEventHandlersForAccessibilityMenu() {
+function setEventHandlersForAccessibilityMenu(isDwellingActive, useNavAreas) {
 	// =================================
 	// ======== OPTIONS OVERLAY ========
 	// =================================
 
 	const refreshBtn = byId('refreshBtn')
 	const bookmarksBtn = byId('bookmarksBtn')
-	const toggleDwellBtn = byId('toggleDwellBtn')
+	const settingsBtn = byId('settingsBtn')
 	const zoomInBtn = byId('zoomInBtn')
 	const zoomOutBtn = byId('zoomOutBtn')
 	const resetZoomBtn = byId('resetZoomBtn')
-	const settingsBtn = byId('settingsBtn')
-	const aboutBtn = byId('aboutBtn')
+	const toggleDwellBtn = byId('toggleDwellBtn')
+	const toggleNavBtn = byId('toggleNavBtn')
 	const exitBtn = byId('exitBtn')
 	const cancelOptionsBtn = byId('cancel-options')
+	// const aboutBtn = byId('aboutBtn')
+
+	let dwellingIcon = toggleDwellBtn.getElementsByTagName('i')[0];
+	dwellingIcon.innerText = isDwellingActive ? 'toggle_on' : 'toggle_off';
+
+	let navIcon = toggleNavBtn.getElementsByTagName('i')[0];
+	navIcon.innerText = useNavAreas ? 'toggle_on' : 'toggle_off';
 
 	dwell(refreshBtn, () => {
 		ipcRenderer.send('ipc-overlays-refresh');
@@ -263,8 +270,8 @@ function setEventHandlersForAccessibilityMenu() {
 		ipcRenderer.send('ipc-overlays-view-bookmarks');
 	})
 
-	dwell(toggleDwellBtn, () => {
-		ipcRenderer.send('ipc-overlays-toggle-dwell');
+	dwell(settingsBtn, () => {
+		ipcRenderer.send('ipc-overlays-settings');
 	})
 
 	dwell(zoomInBtn, () => {
@@ -279,12 +286,16 @@ function setEventHandlersForAccessibilityMenu() {
 		ipcRenderer.send('ipc-overlays-zoom-reset');
 	})
 
-	dwell(settingsBtn, () => {
-		ipcRenderer.send('ipc-overlays-settings');
+	dwell(toggleDwellBtn, () => {
+		ipcRenderer.send('ipc-overlays-toggle-dwell');
+		let icon = toggleDwellBtn.getElementsByTagName('i')[0];
+		icon.innerText = icon.innerText === 'toggle_on' ? 'toggle_off' : 'toggle_on';
 	})
-
-	dwell(aboutBtn, () => {
-		ipcRenderer.send('ipc-overlays-about');
+	
+	dwell(toggleNavBtn, () => {
+		ipcRenderer.send('ipc-overlays-toggle-nav');
+		let icon = toggleNavBtn.getElementsByTagName('i')[0];
+		icon.innerText = icon.innerText === 'toggle_on' ? 'toggle_off' : 'toggle_on';
 	})
 
 	dwell(exitBtn, () => {
@@ -294,6 +305,10 @@ function setEventHandlersForAccessibilityMenu() {
 	dwell(cancelOptionsBtn, () => {
 		ipcRenderer.send('ipc-overlays-remove');
 	})
+
+	// dwell(aboutBtn, () => {
+	// 	ipcRenderer.send('ipc-overlays-about');
+	// })
 }
 
 function setEventHandlersForNavigationMenu(canGoBack, canGoForward) {

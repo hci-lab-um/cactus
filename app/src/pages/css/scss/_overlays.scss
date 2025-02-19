@@ -84,10 +84,10 @@
 #overlay-options {
   height: 100%;
   grid-template-columns: repeat(3, 1fr);
-    grid-template-areas:
-  'refresh zoomIn about'
-    'bookmarks zoomOut settings'
-    'toggleDwell reset exit'
+  grid-template-areas:
+    'refresh zoomIn toggleDwell'
+    'bookmarks zoomOut toggleNav'
+    'settings reset exit'
     'cancel cancel cancel';
   
     // 'refresh bookmarks toggleDwell'
@@ -101,11 +101,15 @@
 
     #bookmarksBtn {
       grid-area: bookmarks;
-  }
+    }
 
-  #toggleDwellBtn {
-    grid-area: toggleDwell;
-  }
+    #toggleDwellBtn {
+      grid-area: toggleDwell;
+    }
+
+    #toggleNavBtn {
+      grid-area: toggleNav;
+    }
 
     #zoomInBtn {
       grid-area: zoomIn;

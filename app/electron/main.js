@@ -10,7 +10,6 @@ const robot = require("robotjs_addon");
 const isDevelopment = process.env.NODE_ENV === "development";
 const rangeWidth = config.get('dwelling.rangeWidth');
 const rangeHeight = config.get('dwelling.rangeHeight');
-const useNavAreas = config.get('dwelling.activateNavAreas');
 
 let mainWindow, splashWindow
 let mainWindowContent, overlayContent, isKeyboardOverlay
@@ -21,6 +20,7 @@ let defaultUrl = config.get('browser.defaultUrl');
 let tabList = [];
 let bookmarks = [];
 let isDwellingActive = true;
+let useNavAreas = config.get('dwelling.activateNavAreas');
 
 app.whenReady().then(() => {
     // This method is called when Electron has finished initializing
@@ -417,8 +417,8 @@ ipcMain.on('ipc-overlays-view-bookmarks', (event) => {
     createOverlay('bookmarks');
 })
 
-ipcMain.on('ipc-overlays-toggle-dwell', (event) => {
-    toggleDwelling();
+ipcMain.on('ipc-overlays-settings', (event) => {
+    // to be implemented
 });
 
 ipcMain.on('ipc-overlays-zoom-in', (event) => {
@@ -433,18 +433,22 @@ ipcMain.on('ipc-overlays-zoom-reset', (event) => {
     handleZoom("reset");
 });
 
-ipcMain.on('ipc-overlays-settings', (event) => {
-    // to be implemented
+ipcMain.on('ipc-overlays-toggle-dwell', (event) => {
+    toggleDwelling();
 });
 
-ipcMain.on('ipc-overlays-about', (event) => {
-    // to be implemented
+ipcMain.on('ipc-overlays-toggle-nav', (event) => {
+    toggleNavigation();
 });
 
 ipcMain.on('ipc-exit-browser', (event) => {
     removeOverlay();
     app.quit();
 });
+
+// ipcMain.on('ipc-overlays-about', (event) => {
+//     // to be implemented
+// });
 
 ipcMain.on('ipc-keyboard-input', (event, value, element) => {
 
@@ -950,7 +954,9 @@ function createOverlay(overlayAreaToShow, elementProperties) {
         tabList: [],
         bookmarks: [],
         canGoBack: true,
-        canGoForward: true
+        canGoForward: true,
+        isDwellingActive: isDwellingActive,
+        useNavAreas: useNavAreas,
     };
 
     switch (overlayAreaToShow) {
@@ -1072,7 +1078,13 @@ function registerSwitchShortcutCommands() {
 function toggleDwelling() {
     isDwellingActive = !isDwellingActive
     mainWindowContent.webContents.send('ipc-mainwindow-handle-dwell-events', isDwellingActive);
-    removeOverlay();
+}
+
+function toggleNavigation() {
+    useNavAreas = !useNavAreas;
+    tabList.forEach(tab => {
+        tab.webContentsView.webContents.send('ipc-tabview-create-quadtree', useNavAreas);
+    });
 }
 
 function handleZoom(direction, usedShortcut = false) {
