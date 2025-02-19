@@ -210,26 +210,51 @@ ipcMain.on('robot-mouse-click', (event, { x, y }) => {
     robot.mouseClick();
 });
 
-ipcMain.on('robot-keyboard-type', (event, text, pressReturn = false) => {
+/**
+ * For inserting text, robot.typeString() is faster than robot.keyTap(), but robot.typeString()
+ * tends to omit consecutive characters in the text. Therefore, when the text has consecutive
+ * characters, we use robot.keyTap() to type each character individually. However, robot.keyTap()
+ * is slower than robot.typeString(). To improve performance, we split the text into words and
+ * if it does not have consecutive characters, we type it using robot.typeString(). If the
+ * word has consecutive characters, we type each of its characters using robot.keyTap().
+ */
+ipcMain.on('robot-keyboard-type', (event, text) => {
+    const consecutiveCharPattern = /(.)\1+/;
+    const hasConsecutiveChars = consecutiveCharPattern.test(text);
+
     // Wait a short period to ensure the field is focused before performing actions
     robot.setKeyboardDelay(50);
 
     // Select all text (Ctrl + A or Cmd + A)
     if (process.platform == 'darwin')
-        robot.keyTap("a", ["command"]);  // On Windows/Linux use 'control', on macOS use 'command'
+        robot.keyTap("a", ["command"]);  // On Windows/Linux 'control', on macOS 'command'
     else
         robot.keyTap("a", ["control"]);
 
-    //Delete the selected text
+    //Deleting the selected text
     robot.keyTap("backspace");
 
-    //Type new text
-    for (let i = 0; i < text.length; i++) {
-        robot.keyTap(text.charAt(i));
+    // If the text does not have consecutive characters, type the whole text using typeString
+    if (!hasConsecutiveChars) {
+        robot.typeString(text);
+    } else {
+        // Split the text into an array of words
+        const wordArray = text.split(" ");
+        // Iterate through each word
+        wordArray.forEach(word => {
+            if (consecutiveCharPattern.test(word)) {
+                // If the word has consecutive characters, type each character using keyTap
+                for (let char of word) {
+                    robot.keyTap(char);
+                }
+            } else {
+                // If the word does not have consecutive characters, type the whole word using typeString
+                robot.typeString(word);
+            }
+            // Add a space after each word
+            robot.keyTap("space");
+        });
     }
-
-    if (pressReturn)
-        robot.keyTap("enter");
 })
 
 ipcMain.on('robot-keyboard-enter', (event) => {
