@@ -176,7 +176,7 @@ ipcMain.on('browse-to-url', (event, url) => {
     tab.webContentsView.webContents.loadURL(fullUrl);
 });
 
-ipcMain.on('robot-mouse-click', (event, { x, y }) => {
+ipcMain.on('robot-mouse-click', async (event, { x, y }) => {
     const win = BaseWindow.getFocusedWindow();
     const bounds = win.getBounds();
     const contentBounds = win.getContentBounds();
@@ -195,9 +195,13 @@ ipcMain.on('robot-mouse-click', (event, { x, y }) => {
     const tabX = windowScreenX + webpageBounds.x;
     const tabY = windowScreenY + webpageBounds.y;
 
+    // Get the active tab and its zoom factor
+    const tab = tabList.find(tab => tab.isActive === true);
+    const zoomFactor = await tab.webContentsView.webContents.getZoomFactor();
+
     // Get the element's position within the tab
-    const elementX = tabX + x;
-    const elementY = tabY + y;
+    const elementX = tabX + (x * zoomFactor);
+    const elementY = tabY + (y * zoomFactor);
 
     // Convert to physical pixels if needed
     const finalX = elementX * scaleFactor;
