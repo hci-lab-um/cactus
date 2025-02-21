@@ -200,7 +200,13 @@ async function isValidTLD(domain, validTLDs) {
 
 async function browseToUrl(event, input) {
 	if (event.keyCode === 13) {
-		const urlRegex = /^(?:(?:https?:\/\/)?([\w.-]+(?:\.[\w.-]+)+)(?:[\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?)$/;
+		// Regex to match URLs with optional http/https, domain, optional port, and path/query parameters
+		const urlRegex = /^(?:(?:https?:\/\/)?([\w.-]+(?:\.[\w.-]+)+)(?::\d+)?(?:[\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?)$/;
+
+		// Regex to match non-standard URLs like localhost, test, example, invalid, local,
+		const nonStandardUrlRegex = /^(?:(?:https?:\/\/)?(localhost|test|example|invalid|local|0\.0\.0\.0|127\.0\.0\.1|\[::1\]))(?::\d+)?(?:[\w.,@?^=%&:/~+#-]*)?$/
+
+		// Regex to match file paths for both Windows and Unix-like systems
 		const filePathRegex = /^(?:[a-zA-Z]:\\(?:[^\\\/:*?"<>|\r\n]+\\)*[^\\\/:*?"<>|\r\n]*|\/(?:[^\\\/:*?"<>|\r\n]+\/)*[^\\\/:*?"<>|\r\n]*)$/;
 		let url = '';
 		
@@ -216,7 +222,7 @@ async function browseToUrl(event, input) {
 			const domainMatch = input.match(/(?:https?:\/\/)?([\w.-]+(?:\.[\w.-]+)+)/);
 			// domainMatch[1] is the captured domain name (without http:// or https://).
 
-			// If the input contains a domain, like .com, check if it is valid
+			// If the input contains a domain, like .com, check if it is found in the list valid TLDs
 			if (domainMatch && await isValidTLD(domainMatch[1], validTLDs)) {
 				// If input is a URL, ensure it has http or https
 				url = input.startsWith("http") ? input : `https://${input}`;
@@ -224,6 +230,8 @@ async function browseToUrl(event, input) {
 				// If domain TLD is invalid, treat it as a search query
 				url = `https://www.google.com/search?q=${encodeURIComponent(input)}`;
 			}
+		} else if (nonStandardUrlRegex.test(input)){
+			url = input.startsWith("http") ? input : `https://${input}`;
 		} else if (filePathRegex.test(input) || filePathRegex.test(input.replace(/\//g, '\\'))) {
             // If input is a file path, convert it to a file URL
             url = `file:///${input}`;
