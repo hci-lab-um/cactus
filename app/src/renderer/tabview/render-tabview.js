@@ -476,8 +476,8 @@ function removeExistingScrollButtons() {
 // Gets the contents needed from the renderer process and sends them to the main process for generating the QuadTree
 function generateQuadTree() {
 	const clickableSelectors = [
-		'button', 'a', 'textarea', 'input', 'select', 'date',
-		'div[role="button"]', 'span[role="button"]', 'div[role="link"]', 'span[role="link"]',
+		'button', 'a', 'textarea', 'input', 'select', 'date', 
+		'div[role="button"]', 'span[role="button"]', 'li[role="button"]', 'div[role="link"]', 'span[role="link"]',
 		'[role="checkbox"]', '[role="textbox"]', '[role="radio"]', '[role="option"]', '[role="tab"]',
 		'[role="menu"]', '[role="switch"]', '[role="slider"]', '[role="combobox"], iframe', '[aria-selected]'
 	];
