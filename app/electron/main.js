@@ -176,11 +176,13 @@ ipcMain.on('browse-to-url', (event, url) => {
     tab.webContentsView.webContents.loadURL(fullUrl);
 });
 
+// This may not work properly if the window is moved to a different sized monitor that extends the other one, after the initial load
+// Resizing of the window on the same monitor works fine
 ipcMain.on('robot-mouse-click', async (event, { x, y }) => {
     const win = BaseWindow.getFocusedWindow();
     const bounds = win.getBounds();
     const contentBounds = win.getContentBounds();
-    const display = screen.getPrimaryDisplay();
+    const display = screen.getDisplayMatching(bounds);
     const scaleFactor = display.scaleFactor;
 
     // Correct for frame offset
@@ -207,7 +209,7 @@ ipcMain.on('robot-mouse-click', async (event, { x, y }) => {
     const finalX = elementX * scaleFactor;
     const finalY = elementY * scaleFactor;
 
-    console.log(`Corrected Window Screen Position: (${finalX}, ${finalY})`);
+    console.log(`Final Element Position: (${finalX}, ${finalY})`);
 
     // Move mouse to the top-left corner of the window
     robot.moveMouse(finalX, finalY);
@@ -222,16 +224,16 @@ ipcMain.on('robot-mouse-click', async (event, { x, y }) => {
  * if it does not have consecutive characters, we type it using robot.typeString(). If the
  * word has consecutive characters, we type each of its characters using robot.keyTap().
  */
-ipcMain.on('robot-keyboard-type', (event, text) => {
+ipcMain.on('robot-keyboard-type', (event, { text, submit }) => {
     const consecutiveCharPattern = /(.)\1+/;
     const hasConsecutiveChars = consecutiveCharPattern.test(text);
 
     // Wait a short period to ensure the field is focused before performing actions
     robot.setKeyboardDelay(50);
 
-    // Select all text (Ctrl + A or Cmd + A)
+    // Select all text (Ctrl + A or Cmd + A). On Windows/Linux 'control', on macOS 'command'
     if (process.platform == 'darwin')
-        robot.keyTap("a", ["command"]);  // On Windows/Linux 'control', on macOS 'command'
+        robot.keyTap("a", ["command"]);
     else
         robot.keyTap("a", ["control"]);
 
@@ -258,6 +260,13 @@ ipcMain.on('robot-keyboard-type', (event, text) => {
             // Add a space after each word
             robot.keyTap("space");
         });
+    }
+
+    if (submit) {
+        // Delay is added to ensure the text is typed before pressing enter
+        setTimeout(() => {
+            robot.keyTap("enter");
+        }, 500);
     }
 })
 
@@ -454,10 +463,10 @@ ipcMain.on('ipc-exit-browser', (event) => {
 //     // to be implemented
 // });
 
-ipcMain.on('ipc-keyboard-input', (event, value, element) => {
-
+ipcMain.on('ipc-keyboard-input', (event, value, element, submit) => {    
     removeOverlay();
-    console.log("Keyboard value: ", value, element);
+
+    console.log("Keyboard value: ", value, element, submit);
     // If the input is for the omnibox, send it to the main window, else send it to the active tab
     if (element.id === "url") { // "url" is the id of the omni box 
         mainWindowContent.webContents.send('ipc-mainwindow-keyboard-input', value);
@@ -466,7 +475,7 @@ ipcMain.on('ipc-keyboard-input', (event, value, element) => {
 
         //Focus on window first before going forward
         tab.webContentsView.webContents.focus();
-        tab.webContentsView.webContents.send('ipc-tabview-keyboard-input', value, element);
+        tab.webContentsView.webContents.send('ipc-tabview-keyboard-input', value, element, submit);
     }
 });
 

@@ -48,13 +48,15 @@ const Keyboard = {
         capsLock: false,
         specialKeys: false,
         numpad_leftColumn: ["+", "-", ".", "space"],
-        numpad_rightColumn: ["mic", "backspace", "AC", "send"],
+        // numpad_rightColumn: ["mic", "backspace", "AC", "send"],
+        numpad_rightColumn: ["backspace", "AC", "send", "submit"],
     },
 
     async init(pathToLayouts, fileName, elementToUpdate) {
         this.pathToLayouts = pathToLayouts;
         this.keyboardLayout = await this._getKeyboardLayout(fileName);
         this.elementToUpdate = elementToUpdate;
+        console.log("elementToUpdate", elementToUpdate);
 
         // Setting up main elements
         this.elements.main = document.getElementById("keyboard-container");
@@ -192,7 +194,8 @@ const Keyboard = {
         const fragment = document.createDocumentFragment();
 
         // TOP ROW
-        const topRow = ["mic", "facebook.com", "booking.com", "google.com", "delete letter", "delete word", "AC"]; // text would eventually be replaced with auto-complete suggestions
+        // const topRow = ["mic", "facebook.com", "booking.com", "google.com", "delete letter", "delete word", "AC"]; // text would eventually be replaced with auto-complete suggestions
+        const topRow = ["settings", "facebook.com", "booking.com", "google.com", "delete letter", "delete word", "AC"]; // text would eventually be replaced with auto-complete suggestions
         const topRowContainer = document.createElement("div");
         topRowContainer.classList.add("keyboard__row");
 
@@ -236,16 +239,22 @@ const Keyboard = {
          */
         if (this.properties.specialKeys && this.properties.capsLock) {
             let keys = layout[layout.length - 1];
-            bottomRow = ["settings", "?123", keys[0], "space", keys[1], "send"];
+            bottomRow = ["?123", keys[0], "space", keys[1], "send", "submit"];
         } else {
-            bottomRow = ["settings", "?123", ",", "space", ".", ".com", "send"];
+            bottomRow = ["?123", ",", "space", ".", "send", "submit"];
+        }
+
+        // Adding ".com" key and removing "submit" key if the elementToUpdate is the omnibox
+        if (this.elementToUpdate && this.elementToUpdate.id === "url") {
+            bottomRow.splice(1, 0, ".com");
+            bottomRow.pop();
         }
 
         const bottomRowContainer = document.createElement("div");
         bottomRowContainer.classList.add("keyboard__row");
 
         bottomRow.forEach(key => {
-            const keyElement = this._createKeyElement(key);
+            const keyElement = this._createKeyElement(key, this.elementToUpdate.id === "url");
             bottomRowContainer.appendChild(keyElement);
         });
         fragment.appendChild(bottomRowContainer);
@@ -253,7 +262,7 @@ const Keyboard = {
         return fragment;
     },
 
-    _createKeyElement(key) {
+    _createKeyElement(key, isUrl = false) {
         const keyElement = document.createElement("button");
 
         // Add attributes/classes
@@ -332,15 +341,15 @@ const Keyboard = {
 
                 break;
 
-            case "mic":
-                keyElement.classList.add("keyboard__key--darker", "keyboard__key--dwell-once");
-                keyElement.innerHTML = this._createMaterialIcon("mic");
+            // case "mic":
+            //     keyElement.classList.add("keyboard__key--darker", "keyboard__key--dwell-once");
+            //     keyElement.innerHTML = this._createMaterialIcon("mic");
 
-                dwell(keyElement, () => {
-                    // listen for voice input
-                }, true);
+            //     dwell(keyElement, () => {
+            //         // listen for voice input
+            //     }, true);
 
-                break;
+            //     break;
 
             case "text1":
             case "text2":
@@ -456,15 +465,29 @@ const Keyboard = {
                 break;
 
             case "send":
-                keyElement.classList.add("keyboard__key--wider", "keyboard__key--yellow-border", "keyboard__key--darker", "keyboard__key--dwell-once");
+                keyElement.classList.add("keyboard__key--yellow-border", "keyboard__key--darker", "keyboard__key--dwell-once");
+                if (isUrl) keyElement.classList.add("keyboard__key--wider");
                 keyElement.innerHTML = this._createMaterialIcon("send");
 
                 dwell(keyElement, () => {
                     if (this.elementToUpdate) {
                         // sending the keyboard value to render-mainwindow.js
-                        console.log("send button pressed");
                         console.log("elementToUpdate", this.elementToUpdate, "with text", this.elements.textarea.value);
-                        ipcRenderer.send('ipc-keyboard-input', this.elements.textarea.value, this.elementToUpdate);
+                        ipcRenderer.send('ipc-keyboard-input', this.elements.textarea.value, this.elementToUpdate, false);
+                    }
+                }, true);
+
+                break;
+
+            case "submit":
+                keyElement.classList.add("keyboard__key--yellow-border", "keyboard__key--darker", "keyboard__key--dwell-once");
+                keyElement.innerHTML = this._createMaterialIcon("send_and_archive");
+
+                dwell(keyElement, () => {
+                    if (this.elementToUpdate) {
+                        // sending the keyboard value to render-mainwindow.js
+                        console.log("elementToUpdate", this.elementToUpdate, "with text", this.elements.textarea.value);
+                        ipcRenderer.send('ipc-keyboard-input', this.elements.textarea.value, this.elementToUpdate, true);
                     }
                 }, true);
 

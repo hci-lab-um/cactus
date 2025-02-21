@@ -133,7 +133,7 @@ window.cactusAPI.on('ipc-tabview-forward', () => {
 
 // This IPC event is triggered when the user submits the value inside the overlay keyboard.
 // It attempts to find the editable part of the element to update and types the text into it using Robotjs
-window.cactusAPI.on('ipc-tabview-keyboard-input', (text, elementToUpdate) => {
+window.cactusAPI.on('ipc-tabview-keyboard-input', (text, elementToUpdate, submit) => {
 	// sendMessageToIframes('ipc-tabview-keyboard-input', { text, elementToUpdate });
 
 	// element.focus();
@@ -150,7 +150,7 @@ window.cactusAPI.on('ipc-tabview-keyboard-input', (text, elementToUpdate) => {
 		if (editablePart) editablePart.focus();
 
 		//JS is restricted when it comes to editing fields on remote pages - therefore, Robotjs is used to emulate the keyboard and mouse
-		window.cactusAPI.send('robot-keyboard-type', text);
+		window.cactusAPI.send('robot-keyboard-type', {text, submit});
 	} else {
 		console.error("Element to update not found: ", elementToUpdate);
 	}
