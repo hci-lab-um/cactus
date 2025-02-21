@@ -411,6 +411,8 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-navareas', (event, navAreas, tabUR
 })
 
 ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements, tabURL) => {
+	// 'elements' refers to the unique interactive element objects on the page
+
 	url = tabURL;
 	resetNavigationSidebar({ clearItems: false });
 
@@ -455,20 +457,21 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements, tabUR
 			dwell(item, () => {
 				const elementId = item.getAttribute('id');
 				const elementToClick = elements.filter(e => e.id == elementId);
-				if (elementToClick) {
-					// Show click event animation and clear sidebar
+
+				if (elementToClick[0]) {
+					// Show click event animation
 					item.classList.add('fadeOutDown');
 					console.log("element to click: ", elementToClick);
 
 					setTimeout(() => {
+						// After 400ms, clear the sidebar and perform the necessary action
 						sidebarItemArea.innerHTML = "";
+
 						const inputType = shouldDisplayKeyboard(elementToClick[0], false);
 						console.log("inputType", inputType);
 						if (inputType) {
 							elementToClick[0].type = inputType;
-							elementToClick[0].value = elementToClick[0].value ? elementToClick[0].value : ""; // DOESN'T WORK // This prevents the value from being undefined
 							console.log("Identified an input element: ", elementToClick[0]);
-							console.log("It has the value of: ", elementToClick[0].value);
 							showOverlay('keyboard', elementToClick[0]);
 						} else if (elementToClick[0]) {
 							if (elementToClick[0].type === 'iframe') {
