@@ -218,17 +218,21 @@ async function browseToUrl(event, input) {
 		} 
 
 		if (urlRegex.test(input)) {
-			// Extract domain from input
-			const domainMatch = input.match(/(?:https?:\/\/)?([\w.-]+(?:\.[\w.-]+)+)/);
-			// domainMatch[1] is the captured domain name (without http:// or https://).
-
-			// If the input contains a domain, like .com, check if it is found in the list valid TLDs
-			if (domainMatch && await isValidTLD(domainMatch[1], validTLDs)) {
-				// If input is a URL, ensure it has http or https
+			if (nonStandardUrlRegex.test(input)) {
 				url = input.startsWith("http") ? input : `https://${input}`;
 			} else {
-				// If domain TLD is invalid, treat it as a search query
-				url = `https://www.google.com/search?q=${encodeURIComponent(input)}`;
+				// Extract domain from input
+				const domainMatch = input.match(/(?:https?:\/\/)?([\w.-]+(?:\.[\w.-]+)+)/);
+				// domainMatch[1] is the captured domain name (without http:// or https://).
+
+				// If the input contains a domain, like .com, check if it is found in the list valid TLDs
+				if (domainMatch && await isValidTLD(domainMatch[1], validTLDs)) {
+					// If input is a URL, ensure it has http or https
+					url = input.startsWith("http") ? input : `https://${input}`;
+				} else {
+					// If domain TLD is invalid, treat it as a search query
+					url = `https://www.google.com/search?q=${encodeURIComponent(input)}`;
+				}
 			}
 		} else if (nonStandardUrlRegex.test(input)){
 			url = input.startsWith("http") ? input : `https://${input}`;
