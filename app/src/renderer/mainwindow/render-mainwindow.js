@@ -198,48 +198,62 @@ async function isValidTLD(domain, validTLDs) {
 	return validTLDs.has(tld);
 }
 
+// Helper function to check if input is a valid URL
+function isValidUrl(string) {
+	try {
+		new URL(string);
+		return true;
+	} catch (_) {
+		return false;
+	}
+}
+
+function isLocalOrIP(hostname) {
+    // Checking for IPv4 and IPv6 and other local names
+    const ipv4Regex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+    const ipv6Regex = /^\[[a-fA-F0-9:]+\]$/;
+	const localNames = new Set(["localhost", "test", "example", "invalid", "local"]);
+
+    return ipv4Regex.test(hostname) || ipv6Regex.test(hostname) || localNames.has(hostname);
+}
+
 async function browseToUrl(event, input) {
 	if (event.keyCode === 13) {
-		// Regex to match URLs with optional http/https, domain, optional port, and path/query parameters
-		const urlRegex = /^(?:(?:https?:\/\/)?([\w.-]+(?:\.[\w.-]+)+)(?::\d+)?(?:[\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?)$/;
+		const VALID_TLDs = await fetchValidTLDs();
+		const URL_REGEX = /^(?:(?:https?:\/\/)?((?:[\w-]+\.)+[a-zA-Z]{2,})(?::\d+)?(?:[\w.,@?^=%&:/~+#-]*)?)$/
+		const FILE_PATH_REGEX = /^(?:[a-zA-Z]:\\(?:[^\\\/:*?"<>|\r\n]+\\)*[^\\\/:*?"<>|\r\n]*|\/(?:[^\\\/:*?"<>|\r\n]+\/)*[^\\\/:*?"<>|\r\n]*)$/;
+		let url = '';	
+		debugger;
 
-		// Regex to match non-standard URLs like localhost, test, example, invalid, local,
-		const nonStandardUrlRegex = /^(?:(?:https?:\/\/)?(localhost|test|example|invalid|local|0\.0\.0\.0|127\.0\.0\.1|\[::1\]))(?::\d+)?(?:[\w.,@?^=%&:/~+#-]*)?$/
+		// If input does NOT start with http/https but looks like a valid domain, prepend "https://"
+        if (!input.startsWith("http") && (URL_REGEX.test(input) || isLocalOrIP(input))) {
+			input = `https://${input}`;
+		}
 
-		// Regex to match file paths for both Windows and Unix-like systems
-		const filePathRegex = /^(?:[a-zA-Z]:\\(?:[^\\\/:*?"<>|\r\n]+\\)*[^\\\/:*?"<>|\r\n]*|\/(?:[^\\\/:*?"<>|\r\n]+\/)*[^\\\/:*?"<>|\r\n]*)$/;
-		let url = '';
-		
-		// Fetch the latest TLDs
-		const validTLDs = await fetchValidTLDs();
-		
-		if (input.startsWith("file:///")) {
-			input = input.replace("file:///", "");
-		} 
-
-		if (urlRegex.test(input)) {
-			if (nonStandardUrlRegex.test(input)) {
-				url = input.startsWith("http") ? input : `https://${input}`;
+		if (isValidUrl(input)) {
+			let urlObject = new URL(input);
+			
+			if (urlObject.protocol === "http:") {
+				urlObject.protocol = "https:";
+			}
+			
+			// The new URL(input) does not validate the URL strictly, — it just attempts to parse it, hence regex is used to validate the URL more strictly
+			// Note: FILE_PATH_REGEX.test(input.replace(/\//g, '\\')) is used to recheck the input with forward slashes replaced with backslashes
+			if (URL_REGEX.test(urlObject.hostname) || FILE_PATH_REGEX.test(urlObject.hostname) || FILE_PATH_REGEX.test(input.replace(/\//g, '\\')) || isLocalOrIP(urlObject.hostname)) {
+				url = urlObject.toString();
 			} else {
-				// Extract domain from input
-				const domainMatch = input.match(/(?:https?:\/\/)?([\w.-]+(?:\.[\w.-]+)+)/);
-				// domainMatch[1] is the captured domain name (without http:// or https://).
+				url = `https://www.google.com/search?q=${encodeURIComponent(input)}`;
+			}
 
-				// If the input contains a domain, like .com, check if it is found in the list valid TLDs
-				if (domainMatch && await isValidTLD(domainMatch[1], validTLDs)) {
-					// If input is a URL, ensure it has http or https
-					url = input.startsWith("http") ? input : `https://${input}`;
-				} else {
-					// If domain TLD is invalid, treat it as a search query
+			// If the url has a TLD, check if it is found in the list of valid TLDs
+			if (!isLocalOrIP(urlObject.hostname)) {
+				// If TLD is invalid, treat it as a search query
+				if (!(await isValidTLD(urlObject.hostname, VALID_TLDs))) {
+					console.warn(`Invalid TLD detected: ${urlObject.hostname}`);
 					url = `https://www.google.com/search?q=${encodeURIComponent(input)}`;
 				}
 			}
-		} else if (nonStandardUrlRegex.test(input)){
-			url = input.startsWith("http") ? input : `https://${input}`;
-		} else if (filePathRegex.test(input) || filePathRegex.test(input.replace(/\//g, '\\'))) {
-            // If input is a file path, convert it to a file URL
-            url = `file:///${input}`;
-        } else {
+		} else {				
 			// Otherwise, treat it as a search query
 			url = `https://www.google.com/search?q=${encodeURIComponent(input)}`;
 		}
@@ -248,45 +262,6 @@ async function browseToUrl(event, input) {
 		ipcRenderer.send('browse-to-url', url);
 	}
 }
-
-// function browseToUrl(event) {
-// 	let omni = byId('url')
-// 	if (event.keyCode === 13) {
-// 		omni.blur();
-// 		let val = omni.value;
-
-// 		// List of common domain extensions
-// 		const validDomains = ['com', 'net', 'org', 'edu', 'gov', 'mil', 'int', 'html', 'io'];
-
-// 		// Check if the URL contains a period
-// 		if (val.includes('.')) {
-// 			// Extract the part after the last period
-// 			const domainPart = val.substring(val.lastIndexOf('.') + 1);
-
-// 			// Check if the extracted part is a valid domain extension
-// 			if (!validDomains.includes(domainPart)) {
-// 				// Treat as a search query
-// 				val = `https://www.google.com/search?q=${encodeURIComponent(val)}`;
-// 			}
-// 		} else {
-// 			val = `https://www.google.com/search?q=${encodeURIComponent(val)}`;
-// 		}
-
-// 		let https = val.slice(0, 8).toLowerCase();
-// 		let http = val.slice(0, 7).toLowerCase();
-
-// 		//NOTE: This prevents the browser from loading local files
-// 		if (https === 'https://') {
-// 			ipcRenderer.send('browse-to-url', val);
-// 		} else if (http === 'http://') {
-// 			ipcRenderer.send('browse-to-url', 'https://' + val);
-// 		} else {
-// 			ipcRenderer.send('browse-to-url', 'https://' + val);
-// 		}
-
-// 		// ipcRenderer.send('browse-to-url', val); // this has been added temporarily to test out different elements for loading the keyboard
-// 	}
-// }
 
 ipcRenderer.on('tabview-loading-stop', (event, pageDetails) => {
 	let loader = byId('loader');
