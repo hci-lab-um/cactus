@@ -477,6 +477,8 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements, tabUR
 								ipcRenderer.send('ipc-mainwindow-click-sidebar-element', elementToClick[0]);
 							}
 						}
+						// hiding the cursor in the sidebar on robot click
+						cursor.style.visibility = 'hidden';
 					}, 400); // 400 is chosen to match the fadeOutDown animation duration
 				}
 			});
