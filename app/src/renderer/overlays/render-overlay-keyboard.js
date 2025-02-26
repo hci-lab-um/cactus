@@ -275,7 +275,7 @@ const Keyboard = {
                 keyElement.innerHTML = this._createMaterialIcon("first_page");
 
                 dwell(keyElement, () => {
-                    this._moveCursorToLineStart();
+                    ipcRenderer.send('robot-keyboard-arrow-key', 'home');
                 }, true);
 
                 break;
@@ -285,7 +285,7 @@ const Keyboard = {
                 keyElement.innerHTML = this._createMaterialIcon("last_page");
 
                 dwell(keyElement, () => {
-                    this._moveCursorToLineEnd();
+                    ipcRenderer.send('robot-keyboard-arrow-key', 'end');
                 }, true);
 
                 break;
@@ -295,7 +295,7 @@ const Keyboard = {
                 keyElement.innerHTML = this._createMaterialIcon("keyboard_arrow_up");
 
                 dwellInfinite(keyElement, () => {
-                    this._moveCursorUpDown(-1);
+                    ipcRenderer.send('robot-keyboard-arrow-key', 'up');
                 });
 
                 break;
@@ -305,7 +305,7 @@ const Keyboard = {
                 keyElement.innerHTML = this._createMaterialIcon("keyboard_arrow_down");
 
                 dwellInfinite(keyElement, () => {
-                    this._moveCursorUpDown(1);
+                    ipcRenderer.send('robot-keyboard-arrow-key', 'down');
                 });
 
                 break;
@@ -601,75 +601,6 @@ const Keyboard = {
         textarea.value = newValue;
         textarea.setSelectionRange(newCursorPos, newCursorPos);
         console.log("newPosition", newCursorPos);
-        textarea.focus();
-    },
-
-    _moveCursorLeftRight(offset) {
-        const textarea = this.elements.textarea;
-        const start = textarea.selectionStart;
-        console.log("start", start);
-
-        // Calculate new cursor position
-        const newPosition = Math.max(0, start + offset);
-
-        // Set new cursor position
-        textarea.setSelectionRange(newPosition, newPosition);
-        console.log("newPosition", newPosition);
-        textarea.focus();
-    },
-
-    _moveCursorUpDown(offset) {
-        const textarea = this.elements.textarea;
-        const currentPos = textarea.selectionStart;
-
-        // Get the current line number and column number
-        const lines = textarea.value.substr(0, currentPos).split("\n");
-        const currentLineNumber = lines.length - 1;
-        const currentColumnNumber = lines[lines.length - 1].length;
-
-        // Calculate new line number
-        const newLineNumber = currentLineNumber + offset;
-
-        // Ensure new line number is within bounds
-        if (newLineNumber < 0 || newLineNumber >= textarea.value.split("\n").length) {
-            return;
-        }
-
-        // Calculate new cursor position
-        const newLines = textarea.value.split("\n");
-        const newLineLength = newLines[newLineNumber].length;
-        const newPosition = newLines.slice(0, newLineNumber).join("\n").length + Math.min(currentColumnNumber, newLineLength) + 1;
-
-        // Set new cursor position
-        textarea.setSelectionRange(newPosition, newPosition);
-        console.log("newPosition", newPosition);
-        textarea.focus();
-    },
-
-    _moveCursorToLineStart() {
-        const textarea = this.elements.textarea;
-        const currentPos = textarea.selectionStart;
-        const value = textarea.value;
-
-        // Find the start of the current line
-        const lineStart = value.lastIndexOf('\n', currentPos - 1) + 1;
-
-        // Set the cursor position to the start of the line
-        textarea.setSelectionRange(lineStart, lineStart);
-        textarea.focus();
-    },
-
-    _moveCursorToLineEnd() {
-        const textarea = this.elements.textarea;
-        const currentPos = textarea.selectionStart;
-        const value = textarea.value;
-
-        // Find the end of the current line
-        const lineEnd = value.indexOf('\n', currentPos);
-        const newCursorPos = lineEnd === -1 ? value.length : lineEnd;
-
-        // Set the cursor position to the end of the line
-        textarea.setSelectionRange(newCursorPos, newCursorPos);
         textarea.focus();
     },
 

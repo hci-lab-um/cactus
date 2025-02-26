@@ -282,6 +282,22 @@ ipcMain.on('robot-keyboard-spacebar', (event) => {
     robot.keyTap("space");
 })
 
+ipcMain.on('robot-keyboard-arrow-key', (event, direction) => {
+    if (direction === "up") {
+        robot.keyTap("up");
+    } else if (direction === "down") {
+        robot.keyTap("down");
+    } else if (direction === "left") {
+        robot.keyTap("left");
+    } else if (direction === "right") {
+        robot.keyTap("right");
+    } else if (direction === "home") {
+        robot.keyTap("home");
+    } else if (direction === "end") {
+        robot.keyTap("end");
+    }
+})
+
 ipcMain.on('ipc-mainwindow-click-sidebar-element', (event, elementToClick) => {
     var tab = tabList.find(tab => tab.isActive === true);
     //Focus on window first before going forward
@@ -747,12 +763,6 @@ function createTabview(url, isNewTab = false) {
     });
 
     const handleLoadError = (errorCode, attemptedURL) => {
-        // IN THE FOLLOWING COMMENTED CODE, THE IPC MESSAGE IS NOT RECEIVED IN THE RENDERER
-        // tabView.webContents.loadURL(path.join(__dirname, '../src/pages/error.html')).then(() => {
-        //     console.log("Error page loaded with error code: ", errorCode);
-        //     tabView.webContents.send('ipc-main-error-page-loaded');
-        // });
-
         // Storing the active tab's original URL before the error page is loaded.
         let activeTab = tabList.find(tab => tab.isActive === true);
         activeTab.originalURL = attemptedURL;
