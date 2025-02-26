@@ -664,8 +664,7 @@ function resizeMainWindow() {
 }
 
 function createTabview(url, isNewTab = false) {
-    let scrollDistance = config.get('dwelling.tabViewScrollDistance');    
-    let goingToLoadErrorPage = false;
+    let scrollDistance = config.get('dwelling.tabViewScrollDistance');   
 
     //Create browser view
     let tabView = new WebContentsView({
@@ -846,28 +845,29 @@ function createTabview(url, isNewTab = false) {
 
     tabView.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL, isMainFrame) => {
         if (isMainFrame) {
-            handleLoadError(errorCode);
+            handleLoadError(errorCode, validatedURL);
         }
     });
 
     tabView.webContents.on('did-fail-provisional-load', (event, errorCode, errorDescription, validatedURL, isMainFrame) => {
         if (isMainFrame) {
-            handleLoadError(errorCode);
+            handleLoadError(errorCode, validatedURL);
         }
     });
 
     tabView.webContents.session.webRequest.onResponseStarted((details) => {
         const activeTab = tabList.find(tab => tab.isActive === true);
-
         const responseWebContentsId = details.webContentsId;
         const activeTabWebContentsId = activeTab.webContentsView.webContents.id;
+        
+        let goingToLoadErrorPage = details.url.endsWith('error.html')
 
         // The following if statement filters out the devtools URLs
         if (details.resourceType === 'mainFrame' && !details.url.startsWith('devtools:')) {
 
             // If the response is for the active tab
             if (responseWebContentsId === activeTabWebContentsId) {
-                if (details.statusCode < 400 && !goingToLoadErrorPage && !details.url.endsWith('error.html')) {
+                if (details.statusCode < 400 && !goingToLoadErrorPage) {
                     // Successful page load
                     activeTab.isErrorPage = false;
                     activeTab.originalURL = details.url; // Update the original URL
