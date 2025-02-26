@@ -454,7 +454,11 @@ ipcMain.on('ipc-overlays-forward', () => {
 ipcMain.on('ipc-overlays-refresh', (event) => {
     removeOverlay();
     var tab = tabList.find(tab => tab.isActive === true);
-    tab.webContentsView.webContents.reload();
+    if (tab.isErrorPage) {
+        tab.webContentsView.webContents.loadURL(tab.originalURL);
+    } else {
+        tab.webContentsView.webContents.reload();
+    }
 })
 
 ipcMain.on('ipc-overlays-view-bookmarks', (event) => {
