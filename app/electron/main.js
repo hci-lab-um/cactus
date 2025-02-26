@@ -827,6 +827,10 @@ function createTabview(url, isNewTab = false) {
                         errorTitle.textContent = '504 Gateway Timeout';
                         errorMessage.textContent = 'The server did not receive a timely response from the upstream server.';
                         break;
+                    case -105:
+                        errorTitle.textContent = 'DNS Error';
+                        errorMessage.textContent = 'The website address could not be found.';
+                        break;
                     case -106:
                         errorTitle.textContent = 'Network Error';
                         errorMessage.textContent = 'There was a problem connecting to the network.';
