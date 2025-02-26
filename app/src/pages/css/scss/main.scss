@@ -5,6 +5,7 @@
 @import '_icons.scss';
 @import '_nav.scss';
 @import '_overlays.scss';
+@import '_errors.scss';
 
 body {
   height: 100%;
@@ -58,7 +59,6 @@ body {
 #cactus_cursor {
   font-size: 2em;
 }
-
 
 // ***************************************
 // *********** BROWSING AREA *************
@@ -161,6 +161,7 @@ body {
     height: 100%;
   }
 }
+
 .sidebar {
   &_item {
     @extend .dwellBtn;

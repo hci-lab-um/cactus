@@ -165,16 +165,6 @@ ipcRenderer.on('ipc-mainwindow-keyboard-input', (event, input) => {
 	browseToUrl({ keyCode: 13 }, input);
 });
 
-ipcRenderer.on('tabview-loading-start', () => {
-	let loader = byId('loader');
-	let favicon = byId('favicon');
-	let omni = byId('url')
-
-	favicon.style.display = "none";
-	loader.style.display = "block";
-	omni.value = 'Loading..';
-});
-
 async function fetchValidTLDs() {
 	try {
 		const tldFilePath = path.join(__dirname, '../../../resources/validTLDs.json');
@@ -223,7 +213,6 @@ async function browseToUrl(event, input) {
 		const URL_REGEX = /^(?:(?:https?:\/\/)?((?:[\w-]+\.)+[a-zA-Z]{2,})(?::\d+)?(?:[\w.,@?^=%&:/~+#-]*)?)$/
 		const FILE_PATH_REGEX = /^(?:[a-zA-Z]:\\(?:[^\\\/:*?"<>|\r\n]+\\)*[^\\\/:*?"<>|\r\n]*|\/(?:[^\\\/:*?"<>|\r\n]+\/)*[^\\\/:*?"<>|\r\n]*)$/;
 		let url = '';	
-		debugger;
 
 		// If input does NOT start with http/https but looks like a valid domain, prepend "https://"
         if (!input.startsWith("http") && (URL_REGEX.test(input) || isLocalOrIP(input))) {
@@ -263,17 +252,36 @@ async function browseToUrl(event, input) {
 	}
 }
 
+ipcRenderer.on('tabview-loading-start', () => {
+	let loader = byId('loader');
+	let favicon = byId('favicon');
+	let omni = byId('url')
+
+	favicon.style.color = '#03644f'; // green
+	favicon.style.display = "none";
+	loader.style.display = "block";
+	omni.value = 'Loading..';
+});
+
 ipcRenderer.on('tabview-loading-stop', (event, pageDetails) => {
 	let loader = byId('loader');
 	let favicon = byId('favicon');
 	let omni = byId('url')
 
-	favicon.style.display = "block"
-	loader.style.display = "none"
-	omni.value = pageDetails.title;
+    if (pageDetails.isErrorPage) {
+        favicon.getElementsByTagName('i')[0].innerText = 'close'; 
+		favicon.style.color = '#ba1539' // dark red
+    } else {
+        favicon.getElementsByTagName('i')[0].innerText = 'check';
+		favicon.style.color = '#03644f' // green
+    }
 
-	omni.addEventListener('click', () => displayOmni(pageDetails.url), { once: true });
-	omni.addEventListener('blur', () => displayOmni(pageDetails.title), { once: true });
+    favicon.style.display = "block";
+    loader.style.display = "none";
+    omni.value = pageDetails.title;
+
+    omni.addEventListener('click', () => displayOmni(pageDetails.url), { once: true });
+    omni.addEventListener('blur', () => displayOmni(pageDetails.title), { once: true });
 });
 
 function displayOmni(value) {

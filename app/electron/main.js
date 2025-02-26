@@ -300,7 +300,12 @@ ipcMain.on('ipc-mainwindow-show-overlay', async (event, overlayAreaToShow, eleme
     if (elementProperties) {
         // If the element is the omnibox, get the current active tab's url and set it as the value
         if (elementProperties.id === "url") {
-            let pageURL = tabList.find(tab => tab.isActive === true).webContentsView.webContents.getURL();
+            let activeTab = tabList.find(tab => tab.isActive === true);
+            let pageURL = activeTab.webContentsView.webContents.getURL();
+            // if the page is an error page, get the original URL that caused the error
+            if (activeTab.isErrorPage && activeTab.originalURL) {
+                pageURL = activeTab.originalURL;
+            }
             elementProperties.value = pageURL;
         }
     }
@@ -364,6 +369,16 @@ ipcMain.on('ipc-overlays-tab-selected', (event, indexOfSelectedTab) => {
     tabList.forEach(tab => tab.isActive = false);
     const selectedTab = tabList[indexOfSelectedTab];
     selectedTab.isActive = true;
+
+    // Once a tab is selected, send the details of the chosen tab to update the omnibox
+    let pageDetails = {
+        title: selectedTab.webContentsView.webContents.getTitle(),
+        url: selectedTab.webContentsView.webContents.getURL(),
+        isErrorPage: selectedTab.isErrorPage,
+    }
+    
+    // update omnibox
+    mainWindowContent.webContents.send('tabview-loading-stop', pageDetails);
 
     // Moving the selected tab to the front by removing and re-adding the tabView to the main window child views
     mainWindow.contentView.removeChildView(selectedTab.webContentsView);
@@ -632,8 +647,9 @@ function resizeMainWindow() {
 
 }
 
-function createTabview(url, newTab = false) {
-    let scrollDistance = config.get('dwelling.tabViewScrollDistance');
+function createTabview(url, isNewTab = false) {
+    let scrollDistance = config.get('dwelling.tabViewScrollDistance');    
+    let goingToLoadErrorPage = false;
 
     //Create browser view
     let tabView = new WebContentsView({
@@ -651,14 +667,13 @@ function createTabview(url, newTab = false) {
     });
     tabList.push({ tabId: tabList.length + 1, webContentsView: tabView, isActive: true });
 
-
     //Attach the browser view to the parent window
     mainWindow.contentView.addChildView(tabView);
 
     //Load the default home page
     tabView.webContents.loadURL(url);
 
-    if (!newTab) {
+    if (!isNewTab) {
         //Set its location/dimensions as per the webpage bounds
         tabView.setBounds(webpageBounds);
     } else {
@@ -712,22 +727,148 @@ function createTabview(url, newTab = false) {
 
     //Loading event - update omnibox
     tabView.webContents.on('did-start-loading', () => {
-        mainWindowContent.webContents.send('tabview-loading-start'); // Updates omnibox
+        mainWindowContent.webContents.send('tabview-loading-start');
     });
 
     tabView.webContents.on('did-stop-loading', () => {
+        const activeTab = tabList.find(tab => tab.isActive === true);
         const url = tabView.webContents.getURL();
         const title = tabView.webContents.getTitle();
-        mainWindowContent.webContents.send('tabview-loading-stop', { url: url, title: title }); // Updates omnibox
+
+        mainWindowContent.webContents.send('tabview-loading-stop', { url: url, title: title, isErrorPage: activeTab.isErrorPage });
     });
 
-    // When the page finished loading, a snapshot of the page is taken
     tabView.webContents.on('did-finish-load', () => {
         captureSnapshot();
 
         // Update the bookmark icon in the main window if the current url is found in the bookmarks list
         let isBookmark = bookmarks.some(bookmark => bookmark.url === tabView.webContents.getURL());
         mainWindowContent.webContents.send('ipc-main-update-bookmark-icon', isBookmark);
+    });
+
+    const handleLoadError = (errorCode, attemptedURL) => {
+        // IN THE FOLLOWING COMMENTED CODE, THE IPC MESSAGE IS NOT RECEIVED IN THE RENDERER
+        // tabView.webContents.loadURL(path.join(__dirname, '../src/pages/error.html')).then(() => {
+        //     console.log("Error page loaded with error code: ", errorCode);
+        //     tabView.webContents.send('ipc-main-error-page-loaded');
+        // });
+
+        // Storing the active tab's original URL before the error page is loaded.
+        let activeTab = tabList.find(tab => tab.isActive === true);
+        activeTab.originalURL = attemptedURL;
+        activeTab.isErrorPage = true;
+
+        tabView.webContents.loadURL(path.join(__dirname, '../src/pages/error.html')).then(() => {
+            tabView.webContents.executeJavaScript(`
+                // Function to get query parameters
+                function getQueryParams() {
+                    const params = {};
+                    const queryString = window.location.search.substring(1);
+                    const regex = /([^&=]+)=([^&]*)/g;
+                    let m;
+                    while (m = regex.exec(queryString)) {
+                        params[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
+                    }
+                    return params;
+                }
+    
+                // Get the error code from the query parameters
+                const params = getQueryParams();
+                const errorCode = ${errorCode};
+    
+                // Update the content based on the error code
+                const errorTitle = document.getElementById('error-title');
+                const errorMessage = document.getElementById('error-message');
+    
+                switch (errorCode) {
+                    case 402:
+                        errorTitle.textContent = '402 Payment Required';
+                        errorMessage.textContent = 'Payment is required to access this resource.';
+                        break;
+                    case 403:
+                        errorTitle.textContent = '403 Forbidden';
+                        errorMessage.textContent = 'You do not have permission to access this resource.';
+                        break;
+                    case 404:
+                        errorTitle.textContent = '404 Not Found';
+                        errorMessage.textContent = 'The requested resource could not be found.';
+                        break;
+                    case 408:
+                        errorTitle.textContent = '408 Request Timeout';
+                        errorMessage.textContent = 'The server timed out waiting for the request.';
+                        break;
+                    case 500:
+                        errorTitle.textContent = '500 Internal Server Error';
+                        errorMessage.textContent = 'The server encountered an internal error.';
+                        break;
+                    case 501:
+                        errorTitle.textContent = '501 Not Implemented';
+                        errorMessage.textContent = 'The server does not support the functionality required to fulfill the request.';
+                        break;
+                    case 502:
+                        errorTitle.textContent = '502 Bad Gateway';
+                        errorMessage.textContent = 'The server received an invalid response from the upstream server.';
+                        break;
+                    case 503:
+                        errorTitle.textContent = '503 Service Unavailable';
+                        errorMessage.textContent = 'The server is currently unable to handle the request due to temporary overloading or maintenance.';
+                        break;
+                    case 504:
+                        errorTitle.textContent = '504 Gateway Timeout';
+                        errorMessage.textContent = 'The server did not receive a timely response from the upstream server.';
+                        break;
+                    case -106:
+                        errorTitle.textContent = 'Network Error';
+                        errorMessage.textContent = 'There was a problem connecting to the network.';
+                        break;
+                    default:
+                        errorTitle.textContent = 'Error';
+                        errorMessage.textContent = 'An unexpected error occurred.';
+                        break;
+                }
+            `);
+        });
+    };
+
+    tabView.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL, isMainFrame) => {
+        if (isMainFrame) {
+            handleLoadError(errorCode);
+        }
+    });
+
+    tabView.webContents.on('did-fail-provisional-load', (event, errorCode, errorDescription, validatedURL, isMainFrame) => {
+        if (isMainFrame) {
+            handleLoadError(errorCode);
+        }
+    });
+
+    tabView.webContents.session.webRequest.onResponseStarted((details) => {
+        const activeTab = tabList.find(tab => tab.isActive === true);
+
+        const responseWebContentsId = details.webContentsId;
+        const activeTabWebContentsId = activeTab.webContentsView.webContents.id;
+
+        // if (details.resourceType === 'mainFrame' && !details.url.startsWith('devtools:') && !details.url.startsWith('chrome-devtools:')) {
+        if (details.resourceType === 'mainFrame' && !details.url.startsWith('devtools:')) {
+            if (responseWebContentsId === activeTabWebContentsId) {
+                if (details.statusCode < 400 && !goingToLoadErrorPage) {
+                    // Successful page load
+                    activeTab.isErrorPage = false;
+                    activeTab.originalURL = details.url; // Update the original URL
+                    goingToLoadErrorPage = false;
+                } else {
+                    // Error detected
+                    // When an error occurs, the next page to be loaded is the error page itself which results in a false positive
+                    // To prevent this, we set a flag to indicate that the next page to be loaded is an error page
+                    if (details.statusCode < 400) {
+                        goingToLoadErrorPage = false;
+                    } else {
+                        handleLoadError(details.statusCode, details.url);
+                        goingToLoadErrorPage = true;
+                    }
+                }
+            }
+        }
     });
 
     //React to in-page navigation (e.g. anchor links)
@@ -739,7 +880,7 @@ function createTabview(url, newTab = false) {
     });
 
     tabView.webContents.setWindowOpenHandler(({ url }) => {
-        createTabview(url, newTab = true);
+        createTabview(url, isNewTab = true);
     });
 }
 

@@ -81,7 +81,6 @@
     box-sizing: border-box;
     border: 2px solid $white;    
     border-radius: 5px;
-    // cursor: pointer;
     transition: $dwellTime;
     outline: none;
     overflow: hidden;
@@ -96,7 +95,6 @@
       font-size: 18px;
       color: $blue-2;
       background-color : $blue-light;
-      // cursor: pointer;
       transition: $dwellTime;
     }
 
