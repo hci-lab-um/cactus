@@ -480,7 +480,7 @@ function generateQuadTree() {
 		'button', 'a', 'textarea', 'input', 'select', 'date', 
 		'[role="button"]', 'div[role="link"]', 'span[role="link"]',
 		'[role="checkbox"]', '[role="textbox"]', '[role="radio"]', '[role="option"]', '[role="tab"]',
-		'[role="menu"]', '[role="switch"]', '[role="slider"]', '[role="combobox"], iframe', '[aria-selected]'
+		'[role="menu"]', '[role="switch"]', '[role="slider"]', '[role="combobox"], iframe[src]', '[aria-selected]'
 	];
 	const clickableElements = Array.from(document.querySelectorAll(clickableSelectors.join(', ')));
 	const visibleElements = filterVisibleElements(clickableElements).map(e => {
@@ -766,18 +766,6 @@ function getElementWithClickEvent(element) {
 			return clickableChild;
 		}
 	}
-
-	// THERE MIGHT ALWAYS BE A CLICKABLE ANCESTOR ELEMENT, SO THIS CODE IS COMMENTED OUT OR ELSE THE ROBOT CLICK WILL NEVER GET CALLED
-
-	// // Iteratively checking parent elements
-	// let currentParent = element.parentElement;
-	// while (currentParent) {
-	// 	if (!!currentParent.onclick) {
-	// 		console.log("We found an ancestor element with the onclick event: ", currentParent);
-	// 		return currentParent;
-	// 	}
-	// 	currentParent = currentParent.parentElement;
-	// }
 
 	// Return null if no element with onclick is found
 	return null;
