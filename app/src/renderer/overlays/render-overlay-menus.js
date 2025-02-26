@@ -440,7 +440,7 @@ function setEventHandlersForTabsMenu(tabList, bookmarks, isBookmarksOverlay = fa
 				ipcRenderer.send('ipc-overlays-bookmark-selected', tab.url);
 			} else {
 				// If the tabs overlay is active, notify the main process to open the selected tab
-				setTimeout(() => ipcRenderer.send('ipc-overlays-tab-selected', index), 300)
+				setTimeout(() => ipcRenderer.send('ipc-overlays-tab-selected', tab.tabId), 300)
 			}
 		});
 
@@ -526,7 +526,7 @@ function setEventHandlersForTabsMenu(tabList, bookmarks, isBookmarksOverlay = fa
 			}
 
 			// Notify the main process to update the tabs
-			ipcRenderer.send('ipc-overlays-tab-deleted', index);
+			ipcRenderer.send('ipc-overlays-tab-deleted', tab.tabId);
 		});
 
 		dwell(tabBookmarkBtn, () => {

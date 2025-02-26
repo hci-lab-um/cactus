@@ -371,6 +371,8 @@ ipcMain.on('ipc-mainwindow-open-iframe', (event, src) => {
 })
 
 ipcMain.on('ipc-overlays-remove', (event) => {
+    updateOmnibox();
+    updateBookmarksIcon();
     removeOverlay();
 })
 
@@ -380,21 +382,14 @@ ipcMain.on('ipc-overlays-newTab', (event) => {
     createTabview(defaultUrl, newTab = true);
 })
 
-ipcMain.on('ipc-overlays-tab-selected', (event, indexOfSelectedTab) => {
+ipcMain.on('ipc-overlays-tab-selected', (event, tabId) => {
     // Set the selected tab as active and the rest as inactive
     tabList.forEach(tab => tab.isActive = false);
-    const selectedTab = tabList[indexOfSelectedTab];
+    let selectedTab = tabList.find(tab => tab.tabId === tabId); 
     selectedTab.isActive = true;
 
-    // Once a tab is selected, send the details of the chosen tab to update the omnibox
-    let pageDetails = {
-        title: selectedTab.webContentsView.webContents.getTitle(),
-        url: selectedTab.webContentsView.webContents.getURL(),
-        isErrorPage: selectedTab.isErrorPage,
-    }
-    
-    // update omnibox
-    mainWindowContent.webContents.send('tabview-loading-stop', pageDetails);
+    updateOmnibox();
+    updateBookmarksIcon();
 
     // Moving the selected tab to the front by removing and re-adding the tabView to the main window child views
     mainWindow.contentView.removeChildView(selectedTab.webContentsView);
@@ -402,16 +397,16 @@ ipcMain.on('ipc-overlays-tab-selected', (event, indexOfSelectedTab) => {
     removeOverlay();
 })
 
-ipcMain.on('ipc-overlays-tab-deleted', (event, indexOfDeletedTab) => {
+ipcMain.on('ipc-overlays-tab-deleted', (event, tabId) => {
     // Removing the tabView from the main window child views
-    if (tabList[indexOfDeletedTab]) {
-        deletedTabView = tabList[indexOfDeletedTab].webContentsView;
-        mainWindow.contentView.removeChildView(deletedTabView);
+    let deletedTabView = tabList.find(tab => tab.tabId === tabId);
+    mainWindow.contentView.removeChildView(deletedTabView.webContentsView);
 
-        // Removing the tab from the tabList
-        tabList.splice(indexOfDeletedTab, 1);
+    // Removing the tab from the tabList
+    tabList = tabList.filter(tab => tab.tabId !== tabId);
 
-        // Updating the active tab
+    // If the closed tab was active, set the last tab as active
+    if (deletedTabView.isActive && tabList.length > 0) {
         tabList[tabList.length - 1].isActive = true;
     }
 })
@@ -424,17 +419,7 @@ ipcMain.on('ipc-overlays-bookmark-selected', (event, url) => {
 
 ipcMain.on('ipc-overlays-bookmarks-updated', (event, updatedBookmarks, deletedURL, bookmarkedURL) => {
     bookmarks = updatedBookmarks;
-
-    // Update the bookmark icon in the main window if the current url is the one that was added/removed from the bookmarks list
-    let tab = tabList.find(tab => tab.isActive === true);
-    let activeURL = tab.webContentsView.webContents.getURL();
-
-    if (activeURL === deletedURL) {
-        mainWindowContent.webContents.send('ipc-main-update-bookmark-icon', false);
-    } else if (activeURL === bookmarkedURL) {
-        mainWindowContent.webContents.send('ipc-main-update-bookmark-icon', true);
-    }
-
+    updateBookmarksIcon();
 })
 
 // NAVIGATION OVERLAY
@@ -760,10 +745,7 @@ function createTabview(url, isNewTab = false) {
 
     tabView.webContents.on('did-finish-load', () => {
         captureSnapshot();
-
-        // Update the bookmark icon in the main window if the current url is found in the bookmarks list
-        let isBookmark = bookmarks.some(bookmark => bookmark.url === tabView.webContents.getURL());
-        mainWindowContent.webContents.send('ipc-main-update-bookmark-icon', isBookmark);
+        updateBookmarksIcon();
     });
 
     const handleLoadError = (errorCode, attemptedURL) => {
@@ -895,6 +877,23 @@ function createTabview(url, isNewTab = false) {
     tabView.webContents.setWindowOpenHandler(({ url }) => {
         createTabview(url, isNewTab = true);
     });
+}
+
+function updateOmnibox() {
+    let activeTab = tabList.find(tab => tab.isActive === true);
+    let pageDetails = {
+        title: activeTab.webContentsView.webContents.getTitle(),
+        url: activeTab.webContentsView.webContents.getURL(),
+        isErrorPage: activeTab.isErrorPage,
+    }
+    mainWindowContent.webContents.send('tabview-loading-stop', pageDetails);
+}
+
+function updateBookmarksIcon() {
+    let activeTab = tabList.find(tab => tab.isActive === true);
+    let activeURL = activeTab.webContentsView.webContents.getURL();
+    let isBookmark = bookmarks.some(bookmark => bookmark.url === activeURL);
+    mainWindowContent.webContents.send('ipc-main-update-bookmark-icon', isBookmark);
 }
 
 function slideUpView(view, duration = 170) {
