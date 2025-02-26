@@ -315,7 +315,7 @@ const Keyboard = {
                 keyElement.innerHTML = this._createMaterialIcon("keyboard_arrow_left");
 
                 dwellInfinite(keyElement, () => {
-                    this._moveCursorLeftRight(-1);
+                    ipcRenderer.send('robot-keyboard-arrow-key', 'left');
                 });
 
                 break;
@@ -325,7 +325,7 @@ const Keyboard = {
                 keyElement.innerHTML = this._createMaterialIcon("keyboard_arrow_right");
 
                 dwellInfinite(keyElement, () => {
-                    this._moveCursorLeftRight(1);
+                    ipcRenderer.send('robot-keyboard-arrow-key', 'right');
                 });
 
                 break;
