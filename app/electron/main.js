@@ -544,7 +544,8 @@ function createMainWindow() {
     try {
         mainWindow = new BaseWindow({
             frame: true,
-            title: "Cactus"
+            title: "Cactus",
+            icon: path.join(__dirname, '../resources/logo.png')
         });
         mainWindowContent = new WebContentsView({
             //https://www.electronjs.org/docs/latest/tutorial/security
