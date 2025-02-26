@@ -848,8 +848,10 @@ function createTabview(url, isNewTab = false) {
         const responseWebContentsId = details.webContentsId;
         const activeTabWebContentsId = activeTab.webContentsView.webContents.id;
 
-        // if (details.resourceType === 'mainFrame' && !details.url.startsWith('devtools:') && !details.url.startsWith('chrome-devtools:')) {
+        // The following if statement filters out the devtools URLs
         if (details.resourceType === 'mainFrame' && !details.url.startsWith('devtools:')) {
+
+            // If the response is for the active tab
             if (responseWebContentsId === activeTabWebContentsId) {
                 if (details.statusCode < 400 && !goingToLoadErrorPage) {
                     // Successful page load
