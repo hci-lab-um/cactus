@@ -6,12 +6,12 @@
     <link rel="stylesheet" href="css/main.css">
 </head>
 <body>
-    <div class="error-container">
+    <div class="error-container" role="alert">
         <div class="error-box">
-            <img src="../../resources/logo.png" alt="CACTUS Logo">
+            <img src="../../resources/logo.png" alt="CACTUS Logo" aria-hidden="true">
             <h1 id="error-title">Error</h1>
             <p id="error-message">Something went wrong. Please try again.</p>
-            <button onclick="window.history.back()">Go Back</button>
+            <button aria-label="Reload the page">Reload</button>
         </div>
     </div>
 </body>

@@ -772,28 +772,12 @@ function createTabview(url, isNewTab = false) {
         activeTab.isErrorPage = true;
 
         tabView.webContents.loadURL(path.join(__dirname, '../src/pages/error.html')).then(() => {
-            tabView.webContents.executeJavaScript(`
-                // Function to get query parameters
-                function getQueryParams() {
-                    const params = {};
-                    const queryString = window.location.search.substring(1);
-                    const regex = /([^&=]+)=([^&]*)/g;
-                    let m;
-                    while (m = regex.exec(queryString)) {
-                        params[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
-                    }
-                    return params;
-                }
-    
-                // Get the error code from the query parameters
-                const params = getQueryParams();
-                const errorCode = ${errorCode};
-    
+            tabView.webContents.executeJavaScript(`    
                 // Update the content based on the error code
                 const errorTitle = document.getElementById('error-title');
                 const errorMessage = document.getElementById('error-message');
     
-                switch (errorCode) {
+                switch (${errorCode}) {
                     case 402:
                         errorTitle.textContent = '402 Payment Required';
                         errorMessage.textContent = 'Payment is required to access this resource.';
@@ -842,6 +826,14 @@ function createTabview(url, isNewTab = false) {
                         errorTitle.textContent = 'Error';
                         errorMessage.textContent = 'An unexpected error occurred.';
                         break;
+                }
+
+                // Add event listener to the reload button
+                const reloadButton = document.querySelector('button[aria-label="Reload the page"]');
+                if (reloadButton) {
+                    reloadButton.addEventListener('click', () => {
+                        window.location.href = '${attemptedURL}';
+                    });
                 }
             `);
         });
