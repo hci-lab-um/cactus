@@ -867,7 +867,7 @@ function createTabview(url, isNewTab = false) {
 
             // If the response is for the active tab
             if (responseWebContentsId === activeTabWebContentsId) {
-                if (details.statusCode < 400 && !goingToLoadErrorPage) {
+                if (details.statusCode < 400 && !goingToLoadErrorPage && !details.url.endsWith('error.html')) {
                     // Successful page load
                     activeTab.isErrorPage = false;
                     activeTab.originalURL = details.url; // Update the original URL
