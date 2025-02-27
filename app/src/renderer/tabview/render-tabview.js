@@ -19,8 +19,8 @@ createCursor('cactus_cursor');
 cursor = document.getElementById('cactus_cursor');
 followMouse('cactus_cursor');
 
-window.cactusAPI.on('ipc-iframe-loaded', (useNavAreas, scrollDist) => {
-	sendMessageToIframes('ipc-iframe-loaded', { useNavAreas, scrollDist });
+window.cactusAPI.on('ipc-iframes-loaded', (scrollDist) => {
+	sendMessageToIframes('ipc-iframes-loaded', scrollDist);
 });
 
 window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist) => {
@@ -111,14 +111,12 @@ window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist) => {
 });
 
 window.cactusAPI.on('ipc-clear-highlighted-elements', () => {
-	// sendMessageToIframes('ipc-clear-highlighted-elements');
 	// Remove all previous points with class "point"
 	const previousPoints = document.querySelectorAll('.cactus-element-highlight');
 	previousPoints.forEach(point => point.remove());
 });
 
 window.cactusAPI.on('ipc-highlight-available-elements', (contents) => {
-	// sendMessageToIframes('ipc-highlight-available-elements', contents);
 	const { elementsInView, rangeWidth, rangeHeight, color } = contents;
 	elementsInView.forEach(ve => {
 		highlightAvailableElements(ve.x, ve.y, ve.width, ve.height, color, rangeWidth, rangeHeight);
@@ -136,8 +134,6 @@ window.cactusAPI.on('ipc-tabview-forward', () => {
 // This IPC event is triggered when the user submits the value inside the overlay keyboard.
 // It attempts to find the editable part of the element to update and types the text into it using Robotjs
 window.cactusAPI.on('ipc-tabview-keyboard-input', (text, elementToUpdate, submit) => {
-	// sendMessageToIframes('ipc-tabview-keyboard-input', { text, elementToUpdate });
-
 	// element.focus();
 
 	let element = document.querySelector('[data-cactus-id="' + elementToUpdate.id + '"]');
@@ -159,7 +155,6 @@ window.cactusAPI.on('ipc-tabview-keyboard-input', (text, elementToUpdate, submit
 });
 
 window.cactusAPI.on('ipc-trigger-click-under-cursor', () => {
-	// sendMessageToIframes('ipc-trigger-click-under-cursor');
 	const element = document.elementFromPoint(mousePos.x, mousePos.y);
 
 	if (element) {
@@ -174,7 +169,6 @@ window.cactusAPI.on('ipc-trigger-click-under-cursor', () => {
 });
 
 window.cactusAPI.onAsync('ipc-tabview-click-element', (elementToClick) => {
-	// sendMessageToIframes('ipc-tabview-click-element', elementToClick);
 	let element = document.querySelector('[data-cactus-id="' + elementToClick.id + '"]');
 
 	if (!element) {
@@ -197,7 +191,6 @@ window.cactusAPI.onAsync('ipc-tabview-click-element', (elementToClick) => {
 });
 
 window.cactusAPI.onAsync('ipc-tabview-highlight-elements', (elementsToHighlight) => {
-	// sendMessageToIframes('ipc-tabview-highlight-elements', elementsToHighlight);
 	elementsToHighlight.forEach(el => {
 		// Each element is of type InteractiveElement whose id is set to the cactusId, hence we use el.id not el.dataset.cactusId
 		var elementToMark = document.querySelector('[data-cactus-id="' + el.id + '"]');
@@ -215,8 +208,6 @@ window.cactusAPI.onAsync('ipc-tabview-highlight-elements', (elementsToHighlight)
 });
 
 window.cactusAPI.on('ipc-tabview-create-quadtree', (useNavAreas) => {
-	// sendMessageToIframes('ipc-tabview-create-quadtree', useNavAreas);
-	
 	// //ISSUES: Node-Config is required by Cactus, and the config/default.json file would need to be recreated on cactus itself, rather than just the builder code. Which might not be a bad idea. Think about it.
 	// let useNavAreas = config.get('dwelling.activateNavAreas');
 	console.log("Creating QuadTree and NavAreasTree");
@@ -234,18 +225,6 @@ window.addEventListener('message', (event) => {
 		console.log("ipc-iframe-cursor-mouseleave");
 		cursor.style.visibility = 'visible'
 		window.cactusAPI.send('ipc-iframe-cursor-mouseleave');
-	}
-	if (event.data.message === 'ipc-tabview-generateQuadTree') {
-		window.cactusAPI.send('ipc-tabview-generateQuadTree', event.data.contents);
-	}
-	if (event.data.message === 'ipc-tabview-generateNavAreasTree') {
-		window.cactusAPI.send('ipc-tabview-generateNavAreasTree', event.data.contents);
-	}
-	if (event.data.message === 'robot-keyboard-type') {
-		window.cactusAPI.send('robot-keyboard-type', event.data.contents);
-	}
-	if (event.data.message === 'browse-to-url') {
-		window.cactusAPI.send('browse-to-url', event.data.contents);
 	}
 });
 
@@ -783,6 +762,9 @@ function robotClick(element) {
 
 function sendMessageToIframes(message, contents = {}) {
 	document.querySelectorAll('iframe').forEach(iframe => {
-		iframe.contentWindow.postMessage({ message, ...contents }, '*');
-	});
+        if (iframe.hasAttribute('src') && iframe.getAttribute('src') !== 'about:blank') { // Check if the iframe has a src attribute
+			console.log("Sending message to iframe", iframe);
+            iframe.contentWindow.postMessage({ message, ...contents }, '*');
+        }
+    });
 }

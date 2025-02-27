@@ -720,17 +720,17 @@ function createTabview(url, isNewTab = false) {
             tabView.webContents.send('ipc-main-tabview-loaded', useNavAreas, scrollDistance);
 
             // injecting javascript into each first level iframe of the tabview
-            tabView.webContents.mainFrame.frames.forEach((frame) => {
-                if (frame.parent !== null) {
+            tabView.webContents.mainFrame.frames.forEach(async(frame) => {
+                if (frame.parent !== null && frame.url !== 'about:blank') { // Only inject into iframes that are not blank
                     try {
-                        frame.executeJavaScript(iframeScriptContent).then(() => {
-                            tabView.webContents.send('ipc-iframe-loaded', useNavAreas, scrollDistance);
-                        });
+                        await frame.executeJavaScript(iframeScriptContent)
                     } catch (error) {
                         console.error("Error injecting into iframe:", error);
                     }
                 }
             });
+
+            tabView.webContents.send('ipc-iframes-loaded', scrollDistance);
         });
 
         tabView.webContents.openDevTools(); // to remove
