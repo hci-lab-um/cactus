@@ -214,7 +214,6 @@ async function browseToUrl(event, input) {
 		const FILE_PATH_REGEX = /^(?:[a-zA-Z]:\\(?:[^\\\/:*?"<>|\r\n]+\\)*[^\\\/:*?"<>|\r\n]*|\/(?:[^\\\/:*?"<>|\r\n]+\/)*[^\\\/:*?"<>|\r\n]*)$/;
 		let url = '';	
 
-		debugger;
 		// If input does NOT start with http/https but looks like a valid domain, prepend "https://"
         if (!input.startsWith("http") && (URL_REGEX.test(input) || isLocalOrIP(input))) {
 			input = `https://${input}`;
