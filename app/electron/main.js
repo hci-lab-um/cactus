@@ -730,7 +730,7 @@ function createTabview(url, isNewTab = false) {
                 }
             });
 
-            tabView.webContents.send('ipc-iframes-loaded', scrollDistance);
+            tabView.webContents.send('ipc-iframes-loaded');
         });
 
         tabView.webContents.openDevTools(); // to remove

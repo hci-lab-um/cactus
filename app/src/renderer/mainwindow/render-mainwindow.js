@@ -80,15 +80,11 @@ function setupFunctionality() {
 	omni = byId('omnibox')
 	omni.addEventListener('keydown', (event) => browseToUrl(event, omni.value));
 	dwell(omni, () => {
-		// hideAllOverlays()
-		// showOverlay('omni');
-		// showOverlay('keyboard', omni.type, "url");
 		let elementProperties = {
 			id: 'url',
 			value: omni.value,
 			type: omni.type,
 		}
-		console.log('----------Omnibox has been dwelled on');
 		showOverlay('keyboard', elementProperties);
 	});
 

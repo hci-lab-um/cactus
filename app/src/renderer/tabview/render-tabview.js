@@ -19,7 +19,7 @@ createCursor('cactus_cursor');
 cursor = document.getElementById('cactus_cursor');
 followMouse('cactus_cursor');
 
-window.cactusAPI.on('ipc-iframes-loaded', (scrollDist) => {
+window.cactusAPI.on('ipc-iframes-loaded', () => {
 	sendMessageToIframes('ipc-iframes-loaded', scrollDist);
 });
 
@@ -63,6 +63,7 @@ window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist) => {
 				setTimeout(() => {
 					generateQuadTree();
 					if (useNavAreas) generateNavAreasTree();
+					sendMessageToIframes('ipc-iframes-loaded', scrollDist);
 				}, 1000);
 
 				console.log("quad tree generated");
