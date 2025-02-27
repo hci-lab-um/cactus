@@ -387,6 +387,10 @@ function setupNavigationSideBar() {
 	});
 }
 
+ipcRenderer.on('ipc-mainwindow-clear-sidebar', () => {
+	resetNavigationSidebar();
+});
+
 ipcRenderer.on('ipc-mainwindow-sidebar-render-navareas', (event, navAreas, tabURL) => {
 	url = tabURL;
 	if (navAreas.length) {

@@ -371,8 +371,13 @@ ipcMain.on('ipc-mainwindow-open-iframe', (event, src) => {
 })
 
 ipcMain.on('ipc-overlays-remove', (event) => {
+    removeOverlay();
+})
+
+ipcMain.on('ipc-overlays-remove-and-update', (event) => {
     updateOmnibox();
     updateBookmarksIcon();
+    clearSidebarAndUpdateQuadTree();
     removeOverlay();
 })
 
@@ -380,6 +385,7 @@ ipcMain.on('ipc-overlays-remove', (event) => {
 ipcMain.on('ipc-overlays-newTab', (event) => {
     removeOverlay();
     createTabview(defaultUrl, newTab = true);
+    clearSidebarAndUpdateQuadTree();
 })
 
 ipcMain.on('ipc-overlays-tab-selected', (event, tabId) => {
@@ -390,6 +396,7 @@ ipcMain.on('ipc-overlays-tab-selected', (event, tabId) => {
 
     updateOmnibox();
     updateBookmarksIcon();
+    clearSidebarAndUpdateQuadTree();
 
     // Moving the selected tab to the front by removing and re-adding the tabView to the main window child views
     mainWindow.contentView.removeChildView(selectedTab.webContentsView);
@@ -736,16 +743,13 @@ function createTabview(url, isNewTab = false) {
     });
 
     tabView.webContents.on('did-stop-loading', () => {
-        const activeTab = tabList.find(tab => tab.isActive === true);
-        const url = tabView.webContents.getURL();
-        const title = tabView.webContents.getTitle();
-
-        mainWindowContent.webContents.send('tabview-loading-stop', { url: url, title: title, isErrorPage: activeTab.isErrorPage });
+        updateOmnibox();
     });
 
     tabView.webContents.on('did-finish-load', () => {
         captureSnapshot();
         updateBookmarksIcon();
+        clearSidebarAndUpdateQuadTree();
     });
 
     const handleLoadError = (errorCode, attemptedURL) => {
@@ -894,6 +898,11 @@ function updateBookmarksIcon() {
     let activeURL = activeTab.webContentsView.webContents.getURL();
     let isBookmark = bookmarks.some(bookmark => bookmark.url === activeURL);
     mainWindowContent.webContents.send('ipc-main-update-bookmark-icon', isBookmark);
+}
+
+function clearSidebarAndUpdateQuadTree() {
+    mainWindowContent.webContents.send('ipc-mainwindow-clear-sidebar');
+    tabList.find(tab => tab.isActive === true).webContentsView.webContents.send('ipc-tabview-create-quadtree', useNavAreas);
 }
 
 function slideUpView(view, duration = 170) {

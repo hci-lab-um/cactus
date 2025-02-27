@@ -378,7 +378,7 @@ function setEventHandlersForTabsMenu(tabList, bookmarks, isBookmarksOverlay = fa
 
 	// Clearing any existing tabs
 	tabsContainer.innerHTML = '';
-	dwell(cancelTabsBtn, () => ipcRenderer.send('ipc-overlays-remove'))
+	dwell(cancelTabsBtn, () => ipcRenderer.send('ipc-overlays-remove-and-update'))
 
 	if (isBookmarksOverlay && bookmarks.length === 0) {
 		// If the bookmarks overlay is empty, show a message
