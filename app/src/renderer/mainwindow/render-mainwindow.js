@@ -214,6 +214,7 @@ async function browseToUrl(event, input) {
 		const FILE_PATH_REGEX = /^(?:[a-zA-Z]:\\(?:[^\\\/:*?"<>|\r\n]+\\)*[^\\\/:*?"<>|\r\n]*|\/(?:[^\\\/:*?"<>|\r\n]+\/)*[^\\\/:*?"<>|\r\n]*)$/;
 		let url = '';	
 
+		debugger;
 		// If input does NOT start with http/https but looks like a valid domain, prepend "https://"
         if (!input.startsWith("http") && (URL_REGEX.test(input) || isLocalOrIP(input))) {
 			input = `https://${input}`;
@@ -221,14 +222,19 @@ async function browseToUrl(event, input) {
 
 		if (isValidUrl(input)) {
 			let urlObject = new URL(input);
+			let pathname = urlObject.pathname;
 			
 			if (urlObject.protocol === "http:") {
 				urlObject.protocol = "https:";
 			}
+
+			if (urlObject.protocol === "file:" && pathname.startsWith("/")) {
+				pathname = pathname.substring(1); // removing the first forward slash
+			}
 			
 			// The new URL(input) does not validate the URL strictly, — it just attempts to parse it, hence regex is used to validate the URL more strictly
 			// Note: FILE_PATH_REGEX.test(input.replace(/\//g, '\\')) is used to recheck the input with forward slashes replaced with backslashes
-			if (URL_REGEX.test(urlObject.hostname) || FILE_PATH_REGEX.test(urlObject.hostname) || FILE_PATH_REGEX.test(input.replace(/\//g, '\\')) || isLocalOrIP(urlObject.hostname)) {
+			if (URL_REGEX.test(urlObject.hostname) || FILE_PATH_REGEX.test(pathname) || FILE_PATH_REGEX.test(pathname.replace(/\//g, '\\')) || isLocalOrIP(urlObject.hostname)) {
 				url = urlObject.toString();
 			} else {
 				url = `https://www.google.com/search?q=${encodeURIComponent(input)}`;
