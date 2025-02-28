@@ -85,11 +85,8 @@
 			);
 		});
 
-		console.log("iframe: Scrollable elements", scrollableElements);
-
 		scrollableElements.forEach(element => {
 			const targetZIndex = getZIndex(element);
-			let quadtreeGeneratorTimer = null;
 
 			const cactus_scrollButton_style = {
 				position: 'absolute',
@@ -199,19 +196,7 @@
 
 				function step() {
 					if (!isScrolling) {
-						// clearInterval(quadtreeInterval);
-						return; // Stop if scrolling is interrupted
-					}
-					else {
-						// Start the timer to generate quadtree and navareas
-						if (!quadtreeGeneratorTimer) {
-							quadtreeGeneratorTimer = setTimeout(function () {
-								// generateQuadTree();
-								// if (useNavAreas) generateNavAreasTree();
-								window.clearTimeout(quadtreeGeneratorTimer);
-								quadtreeGeneratorTimer = null;
-							}, 1000);
-						}
+						return;
 					}
 
 					checkIfElementIsAtTop(element, scrollUpButton_outerDiv, scrollUpButton);
@@ -269,10 +254,7 @@
 		const existingScrollButtons = Array.from(
 			document.querySelectorAll('.cactus-scrollButton, .cactus-scrollDown_outerDiv, .cactus-scrollUp_outerDiv')
 		);
-		console.log("iframe: Existing scroll buttons", existingScrollButtons);
 		existingScrollButtons.forEach(button => button.remove());
-		iterator++;
-		if (existingScrollButtons) console.log("iframe: Removed existing scroll buttons for the " + iterator + " time");
 	}	
 
 	function iframeLoaded(scrollDist) {
@@ -296,9 +278,9 @@
 
 	window.addEventListener('message', (event) => {
 		if (!event.data || !event.data.message) return;
-
+		
 		if (event.data.message === 'ipc-iframes-loaded') {
-			iframeLoaded(event.data);
+			iframeLoaded(event.data.scrollDist);
 		}
 	});
 })();

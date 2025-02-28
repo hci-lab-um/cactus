@@ -6,6 +6,7 @@ let scrollDistance;
 let isScrolling = false;
 let iterator = 0;
 let useNavAreas;
+let scrollTimeout;
 
 // Create a Trusted Types policy for innerHtml assignments when TrustedHTML policies are set ('This document requires 'TrustedHTML' assignment')
 const policy = window.trustedTypes.createPolicy('default', {
@@ -19,8 +20,8 @@ createCursor('cactus_cursor');
 cursor = document.getElementById('cactus_cursor');
 followMouse('cactus_cursor');
 
-window.cactusAPI.on('ipc-iframes-loaded', () => {
-	sendMessageToIframes('ipc-iframes-loaded', scrollDist);
+window.cactusAPI.on('ipc-iframes-loaded', (scrollDist) => {
+	sendMessageToIframes('ipc-iframes-loaded', {scrollDist});
 });
 
 window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist) => {
@@ -63,7 +64,7 @@ window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist) => {
 				setTimeout(() => {
 					generateQuadTree();
 					if (useNavAreas) generateNavAreasTree();
-					sendMessageToIframes('ipc-iframes-loaded', scrollDist);
+					sendMessageToIframes('ipc-iframes-loaded', {scrollDist});
 				}, 1000);
 
 				console.log("quad tree generated");
@@ -232,9 +233,12 @@ window.addEventListener('message', (event) => {
 // This is useful for elements that scroll the page when they are clicked and for any other scrolling 
 // not done through the scrolling buttons displayed on-screen.
 window.addEventListener('scroll', () => {
-    setTimeout(() => {
+	if (scrollTimeout) {
+		clearTimeout(scrollTimeout);
+	}
+	scrollTimeout = setTimeout(() => {
 		generateQuadTree();
-		if (useNavAreas) generateNavAreasTree();
+		if (window.useNavAreas) generateNavAreasTree();
 	}, 1000);
 });
 
