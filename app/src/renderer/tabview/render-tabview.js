@@ -177,18 +177,18 @@ window.cactusAPI.onAsync('ipc-tabview-click-element', (elementToClick) => {
 		element = document.elementFromPoint(elementToClick.insertionPointX, elementToClick.insertionPointY);
 	}
 
-	// if (element) {
-	// 	if (element.nodeName == 'A' && (element.getAttribute('href') && element.getAttribute('href') != '#'))
-	// 		window.cactusAPI.send('browse-to-url', element.getAttribute('href'));
-	// 	else {
-	// 		let clickableElement = getClickablePartOfElement(element);
-	// 		if (clickableElement) clickableElement.click();
-	// 		else robotClick(element);
-	// 	}
-	// } else {
-	// 	console.error("Element to click has not been found");
-	// }
-	robotClick(element);
+	if (element) {
+		if (element.nodeName == 'A' && (element.getAttribute('href') && element.getAttribute('href') != '#' && element.getAttribute('href') != 'javascript:void(0)'))
+			window.cactusAPI.send('browse-to-url', element.getAttribute('href'));
+		else {
+			// let clickableElement = getClickablePartOfElement(element);
+			// if (clickableElement) clickableElement.click();
+			// else robotClick(element);
+			robotClick(element);
+		}
+	} else {
+		console.error("Element to click has not been found");
+	}
 });
 
 window.cactusAPI.onAsync('ipc-tabview-highlight-elements', (elementsToHighlight) => {
