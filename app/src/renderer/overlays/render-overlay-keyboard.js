@@ -542,7 +542,6 @@ const Keyboard = {
         textarea.value = newValue;
         const newCursorPos = currentPos + key.length;
         textarea.setSelectionRange(newCursorPos, newCursorPos);
-        console.log("newPosition", newCursorPos);
         textarea.focus();
     },
 

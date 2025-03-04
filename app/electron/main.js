@@ -6,6 +6,7 @@ const { QuadtreeBuilder, InteractiveElement, HTMLSerializableElement, QtPageDocu
 const { MenuBuilder, NavArea, HTMLSerializableMenuElement, MenuPageDocument, MenuBuilderOptions, MenuRange } = require('cactus-menu-builder');
 const { log } = require('electron-log');
 const robot = require("robotjs_addon");
+const db = require('../database/database.js');
 
 const isDevelopment = process.env.NODE_ENV === "development";
 const rangeWidth = config.get('dwelling.rangeWidth');
@@ -22,7 +23,15 @@ let bookmarks = [];
 let isDwellingActive = true;
 let useNavAreas = config.get('dwelling.activateNavAreas');
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+    try {
+        await db.connect();
+        await db.createTables();
+        bookmarks = await db.getBookmarks();
+    } catch (err) {
+        console.error('Error initializing database:', err.message);
+    }
+
     // This method is called when Electron has finished initializing
     createSplashWindow();
     // Show splash screen for a short while
@@ -355,13 +364,17 @@ ipcMain.on('ipc-mainwindow-add-bookmark', async (event) => {
 
     var bookmark = { title: title, url: url, snapshot: snapshot };
     bookmarks.push(bookmark);
+
+    addBookmarkToDatabase(bookmark);
 });
 
 // This event is triggered when the user clicks on the bookmark icon in the main window to remove a bookmark
-ipcMain.on('ipc-mainwindow-remove-bookmark', (event, url) => {
+ipcMain.on('ipc-mainwindow-remove-bookmark', async (event) => {
     let tab = tabList.find(tab => tab.isActive === true);
     let activeURL = tab.webContentsView.webContents.getURL();
+
     bookmarks = bookmarks.filter(bookmark => bookmark.url !== activeURL);
+    removeBookmarkByUrl(activeURL);
 });
 
 ipcMain.on('ipc-mainwindow-open-iframe', (event, src) => {
@@ -424,9 +437,15 @@ ipcMain.on('ipc-overlays-bookmark-selected', (event, url) => {
     removeOverlay();
 })
 
-ipcMain.on('ipc-overlays-bookmarks-updated', (event, updatedBookmarks, deletedURL, bookmarkedURL) => {
+ipcMain.on('ipc-overlays-bookmarks-updated', async (event, updatedBookmarks, deletedURL, bookmark) => {
+    // Update the bookmarks array
     bookmarks = updatedBookmarks;
-    updateBookmarksIcon();
+    updateBookmarksIcon(); 
+    
+    // If a new bookmark has been added, add it also to the database
+    if (bookmark) addBookmarkToDatabase(bookmark);
+    // If the bookmark has been deleted, remove the bookmark from the database
+    else if (deletedURL) removeBookmarkByUrl(deletedURL);
 })
 
 // NAVIGATION OVERLAY
@@ -730,7 +749,7 @@ function createTabview(url, isNewTab = false) {
                 }
             });
 
-            tabView.webContents.send('ipc-iframes-loaded');
+            tabView.webContents.send('ipc-iframes-loaded', scrollDistance);
         });
 
         tabView.webContents.openDevTools(); // to remove
@@ -1336,6 +1355,22 @@ function getFullURL(url) {
     }
 
     return fullUrl;
+}
+
+async function addBookmarkToDatabase(bookmark){
+    try {
+        await db.addBookmark(bookmark);
+    } catch (err) {
+        console.error('Error adding bookmark to database:', err.message);
+    }
+}
+
+async function removeBookmarkByUrl(url){
+    try {
+        await db.removeBookmarkByUrl(url);
+    } catch (err) {
+        console.error('Error removing bookmark from database:', err.message);
+    }
 }
 
 // const iconPath = path.join(__dirname, 'logo.png')

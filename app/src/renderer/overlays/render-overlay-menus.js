@@ -532,13 +532,13 @@ function setEventHandlersForTabsMenu(tabList, bookmarks, isBookmarksOverlay = fa
 		dwell(tabBookmarkBtn, () => {
 			// Bookmark the tab if not already bookmarked and update UI
 			if (!bookmarks.some(bookmark => bookmark.url === tab.url)) {
-				bookmarks.push({
+				let bookmark = {
 					url: tab.url,
 					title: tab.title,
 					snapshot: tab.snapshot
-				});
-				let bookmarkedURL = tab.url;
-				ipcRenderer.send('ipc-overlays-bookmarks-updated', bookmarks, "", bookmarkedURL);
+				};
+				bookmarks.push(bookmark);
+				ipcRenderer.send('ipc-overlays-bookmarks-updated', bookmarks, "", bookmark);
 				tabBookmarkBtn.innerHTML = roundedBookmarkFilled;
 			} else {
 				bookmarks = bookmarks.filter(bookmark => bookmark.url !== tab.url);
