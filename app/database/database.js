@@ -1,6 +1,5 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
-
 const dbPath = path.join(__dirname, 'cactus.db');
 
 let db;
@@ -37,6 +36,10 @@ function close() {
     });
 }
 
+// =================================
+// ======== CREATING TABLES ========
+// =================================
+
 function createTables() {
     return new Promise((resolve, reject) => {
         const createBookmarksTable = `
@@ -48,13 +51,33 @@ function createTables() {
                 added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `;
+        const createTabsTable = `
+            CREATE TABLE IF NOT EXISTS tabs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                url TEXT NOT NULL,
+                title TEXT NOT NULL,
+                isActive BOOLEAN NOT NULL,
+                snapshot BLOB NOT NULL,
+                originalURL TEXT,
+                isErrorPage BOOLEAN,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `;
         db.run(createBookmarksTable, (err) => {
             if (err) {
                 console.error('Error creating bookmarks table:', err.message);
                 reject(err);
             } else {
                 console.log('Bookmarks table created successfully.');
-                resolve();
+                db.run(createTabsTable, (err) => {
+                    if (err) {
+                        console.error('Error creating tabs table:', err.message);
+                        reject(err);
+                    } else {
+                        console.log('Tabs table created successfully.');
+                        resolve();
+                    }
+                });
             }
         });
     });
@@ -86,11 +109,33 @@ function addBookmark({url, title, snapshot}) {
     });
 }
 
+function addTab({url, title, isActive, snapshot, originalURL, isErrorPage}) {
+    // Converting base64 image to buffer if snapshot is provided
+    const base64Data = snapshot.replace(/^data:image\/\w+;base64,/, "");
+    const binarySnapshot = Buffer.from(base64Data, "base64");
+
+    return new Promise((resolve, reject) => {
+        const insertTab = `
+            INSERT INTO tabs (url, title, isActive, snapshot, originalURL, isErrorPage)
+            VALUES (?, ?, ?, ?, ?, ?)
+        `;
+        db.run(insertTab, [url, title, isActive, binarySnapshot, originalURL, isErrorPage], function(err) {
+            if (err) {
+                console.error('Error inserting tab:', err.message);
+                reject(err);
+            } else {
+                console.log(`A tab has been inserted with rowid ${this.lastID}`);
+                resolve(this.lastID);
+            }
+        });
+    });
+}
+
 // =================================
 // =========== REMOVING ============
 // =================================
 
-function removeBookmarkByUrl(url) {
+function deleteBookmarkByUrl(url) {
     return new Promise((resolve, reject) => {
         const deleteBookmark = `DELETE FROM bookmarks WHERE url = ?`;
         db.run(deleteBookmark, [url], function(err) {
@@ -105,8 +150,23 @@ function removeBookmarkByUrl(url) {
     });
 }
 
+function deleteAllTabs() {
+    return new Promise((resolve, reject) => {
+        const deleteTabs = `DELETE FROM tabs`;
+        db.run(deleteTabs, function(err) {
+            if (err) {
+                console.error('Error deleting all tabs:', err.message);
+                reject(err);
+            } else {
+                console.log('All tabs have been deleted');
+                resolve();
+            }
+        });
+    });
+}
+
 // =================================
-// ========== RETRIEVING ===========
+// ============ GETTERS ============
 // =================================
 
 function getBookmarks() {
@@ -127,14 +187,46 @@ function getBookmarks() {
                 resolve(rows);
             }
         });
+    }).catch(err => {
+        console.error('Error getting bookmarks:', err.message);
     });
 }
+
+function getAllTabs() {
+    return new Promise((resolve, reject) => {
+        const query = `SELECT * FROM tabs`;
+        db.all(query, (err, rows) => {
+            if (err) {
+                console.error('Error retrieving tabs:', err.message);
+                reject(err);
+            } else {
+                // Convert each snapshot (BLOB) to a Base64 string if snapshot is present
+                rows.forEach(row => {
+                    if (row.snapshot) {
+                        row.snapshot = `data:image/png;base64,${row.snapshot.toString("base64")}`;
+                    }
+                });
+
+                resolve(rows);
+            }
+        });
+    }).catch(err => {
+        console.error('Error getting tabs:', err.message);
+    });
+}
+
+// =================================
+// =========== SETTERS =============
+// =================================
 
 module.exports = {
     connect,
     close,
     createTables,
     addBookmark,
+    addTab,
     getBookmarks,
-    removeBookmarkByUrl,
+    getAllTabs,
+    deleteBookmarkByUrl,
+    deleteAllTabs
 };
