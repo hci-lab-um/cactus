@@ -1,6 +1,7 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const dbPath = path.join(__dirname, 'cactus.db');
+const crypto = require('crypto');
 
 let db;
 
@@ -113,6 +114,13 @@ function addTab({url, title, isActive, snapshot, originalURL, isErrorPage}) {
     // Converting base64 image to buffer if snapshot is provided
     const base64Data = snapshot.replace(/^data:image\/\w+;base64,/, "");
     const binarySnapshot = Buffer.from(base64Data, "base64");
+
+    // Hash the URL if isErrorPage is true
+    if (isErrorPage) {
+        const hash = crypto.createHash('sha256');
+        hash.update(url);
+        url = hash.digest('hex');
+    }
 
     return new Promise((resolve, reject) => {
         const insertTab = `
