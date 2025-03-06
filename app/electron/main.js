@@ -1420,7 +1420,7 @@ async function deleteBookmarkByUrl(url){
 async function deleteAndInsertAllTabs() {
     try {
         // Empty the table in the database before quitting
-        // await db.deleteAllTabs();
+        await db.deleteAllTabs();
 
         // Update the database with the open tabs
         for (const tab of tabList) {
