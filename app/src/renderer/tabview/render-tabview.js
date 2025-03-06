@@ -7,6 +7,8 @@ let isScrolling = false;
 let iterator = 0;
 let useNavAreas;
 let scrollTimeout;
+let mutationObserver;
+let mutationObserverOptions;
 
 // Create a Trusted Types policy for innerHtml assignments when TrustedHTML policies are set ('This document requires 'TrustedHTML' assignment')
 const policy = window.trustedTypes.createPolicy('default', {
@@ -37,7 +39,7 @@ window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist) => {
 	// EXPERIMENTAL - JS EVENTS (E.g. click on tab element, does not fire up (although it's firing up changes in quick succession when banners change etc...) - to test properly)
 	let mutationObserverCallbackExecuting = false;
 	// Create an observer instance linked to the callback function
-	const mutationObserver = new MutationObserver((mutationsList) => {
+	mutationObserver = new MutationObserver((mutationsList) => {
 		// If callback is already executing, ignore this invocation
 		if (mutationObserverCallbackExecuting) return;
 
@@ -56,7 +58,7 @@ window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist) => {
 				&& !mutation.target.classList.contains('cactus-scrollUp_outerDiv')
 				&& !mutation.target.classList.contains('cactus-scrollDown_outerDiv')
 			) {
-				console.log("Mutation observed .. calling generate quad tree", mutation);
+				console.log(`Mutation observed for tab with url ${document.URL}.. calling generate quad tree ${mutation}`);
 				//Indicate callback execution
 				mutationObserverCallbackExecuting = true;
 
@@ -85,7 +87,7 @@ window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist) => {
 		}
 	});
 
-	const mutationObserverOptions = {
+	mutationObserverOptions = {
 		attributes: true, //necessary for collapsable elements etc...
 		childList: true,
 		subtree: true,
@@ -110,6 +112,14 @@ window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist) => {
 		// Clear the interval when the mouse leaves the element
 		window.cactusAPI.send('ipc-tabview-cursor-mouseout');
 	})
+});
+
+window.cactusAPI.on('ipc-main-disconnect-mutation-observer', () => {
+	mutationObserver.disconnect();
+});
+
+window.cactusAPI.on('ipc-main-reconnect-mutation-observer', () => {
+	mutationObserver.observe(document.body, mutationObserverOptions);
 });
 
 window.cactusAPI.on('ipc-clear-highlighted-elements', () => {

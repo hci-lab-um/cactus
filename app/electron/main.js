@@ -392,16 +392,28 @@ ipcMain.on('ipc-overlays-remove-and-update', (event) => {
     updateBookmarksIcon();
     clearSidebarAndUpdateQuadTree();
     removeOverlay();
+
+    // In case the active tab has been updated, reconnect the mutation observer of the newly active tab
+    let newActiveTab = tabList.find(tab => tab.isActive === true);
+    newActiveTab.webContentsView.webContents.send('ipc-main-reconnect-mutation-observer');
 })
 
 // TABS OVERLAY
 ipcMain.on('ipc-overlays-newTab', (event) => {
+    // Before updating the active tab, disconnect the mutation observer of the previous active tab
+    let previousActiveTab = tabList.find(tab => tab.isActive === true);
+    previousActiveTab.webContentsView.webContents.send('ipc-main-disconnect-mutation-observer');
+
     removeOverlay();
     createTabview(defaultUrl, newTab = true);
     clearSidebarAndUpdateQuadTree();
 })
 
 ipcMain.on('ipc-overlays-tab-selected', (event, tabId) => {
+    // Before updating the active tab, disconnect the mutation observer of the previous active tab
+    let previousActiveTab = tabList.find(tab => tab.isActive === true);
+    previousActiveTab.webContentsView.webContents.send('ipc-main-disconnect-mutation-observer');
+
     // Set the selected tab as active and the rest as inactive
     tabList.forEach(tab => tab.isActive = false);
     let selectedTab = tabList.find(tab => tab.tabId === tabId); 
@@ -410,6 +422,10 @@ ipcMain.on('ipc-overlays-tab-selected', (event, tabId) => {
     updateOmnibox();
     updateBookmarksIcon();
     clearSidebarAndUpdateQuadTree();
+
+    // After updating the active tab, reconnect the mutation observer of the newly active tab
+    let newActiveTab = tabList.find(tab => tab.isActive === true);
+    newActiveTab.webContentsView.webContents.send('ipc-main-reconnect-mutation-observer');
 
     // Moving the selected tab to the front by removing and re-adding the tabView to the main window child views
     mainWindow.contentView.removeChildView(selectedTab.webContentsView);
@@ -421,6 +437,9 @@ ipcMain.on('ipc-overlays-tab-deleted', (event, tabId) => {
     // Removing the tabView from the main window child views
     let deletedTabView = tabList.find(tab => tab.tabId === tabId);
     mainWindow.contentView.removeChildView(deletedTabView.webContentsView);
+    
+    // Disconnecting the mutation observer of the deleted tab
+    deletedTabView.webContentsView.webContents.send('ipc-main-disconnect-mutation-observer');
 
     // Removing the tab from the tabList
     tabList = tabList.filter(tab => tab.tabId !== tabId);

@@ -5,6 +5,8 @@ contextBridge.exposeInMainWorld('cactusAPI', {
         const validChannels = [
             'ipc-iframes-loaded',
             'ipc-main-tabview-loaded',
+            'ipc-main-disconnect-mutation-observer',
+            'ipc-main-reconnect-mutation-observer',
             'ipc-clear-highlighted-elements',
             'ipc-highlight-available-elements',
             'ipc-tabview-keyboard-input',
