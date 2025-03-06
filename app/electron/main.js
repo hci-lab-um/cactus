@@ -584,7 +584,7 @@ ipcMain.on('log', (event, loggedItem) => {
 
 async function initialiseVariables (){
     bookmarks = await db.getBookmarks();
-    tabsFromDatabase = await db.getAllTabs();
+    tabsFromDatabase = await db.getTabs();
 }
 
 function createSplashWindow() {
@@ -1327,7 +1327,7 @@ function createOverlay(overlayAreaToShow, elementProperties) {
 }
 
 function registerSwitchShortcutCommands() {
-    const shortcuts = config.get('shortcuts');
+    const shortcuts = db.getShortcuts();
 
     globalShortcut.register(shortcuts.click, () => {
         console.log("Clicking shortcut triggered");

@@ -64,6 +64,12 @@ function createTables() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `;
+        const createShortcutsTable = `
+            CREATE TABLE IF NOT EXISTS shortcuts (
+                action TEXT PRIMARY KEY,
+                shortcut TEXT NOT NULL
+            );
+        `;
         db.run(createBookmarksTable, (err) => {
             if (err) {
                 console.error('Error creating bookmarks table:', err.message);
@@ -76,7 +82,50 @@ function createTables() {
                         reject(err);
                     } else {
                         console.log('Tabs table created successfully.');
-                        resolve();
+                        db.run(createShortcutsTable, (err) => {
+                            if (err) {
+                                console.error('Error creating shortcuts table:', err.message);
+                                reject(err);
+                            } else {
+                                console.log('Shortcuts table created successfully.');
+                                const shortcuts = {
+                                    "click": "CommandOrControl+Alt+C",
+                                    "toggleOmniBox": "CommandOrControl+Alt+O",
+                                    "toggleDwelling": "CommandOrControl+Alt+D",
+                                    "zoomIn": "CommandOrControl+Alt+Plus",
+                                    "zoomOut": "CommandOrControl+Alt+-",
+                                    "sidebarScrollUp": "CommandOrControl+Alt+W",
+                                    "sidebarScrollDown": "CommandOrControl+Alt+S",
+                                    "navigateForward": "CommandOrControl+Alt+Right",
+                                    "navigateBack": "CommandOrControl+Alt+Left"
+                                };
+                                const insertShortcut = `
+                                    INSERT INTO shortcuts (action, shortcut)
+                                    VALUES (?, ?)
+                                `;
+                                const shortcutPromises = Object.entries(shortcuts).map(([action, shortcut]) => {
+                                    return new Promise((resolve, reject) => {
+                                        db.run(insertShortcut, [action, shortcut], function(err) {
+                                            if (err) {
+                                                console.error(`Error inserting shortcut for action ${action}:`, err.message);
+                                                reject(err);
+                                            } else {
+                                                resolve();
+                                            }
+                                        });
+                                    });
+                                });
+                                Promise.all(shortcutPromises)
+                                    .then(() => {
+                                        console.log('Shortcuts table populated successfully.');
+                                        resolve();
+                                    })
+                                    .catch((err) => {
+                                        console.error('Error populating shortcuts table:', err.message);
+                                        reject(err);
+                                    });
+                            }
+                        });
                     }
                 });
             }
@@ -193,7 +242,7 @@ function getBookmarks() {
     });
 }
 
-function getAllTabs() {
+function getTabs() {
     return new Promise((resolve, reject) => {
         const query = `SELECT * FROM tabs`;
         db.all(query, (err, rows) => {
@@ -216,6 +265,22 @@ function getAllTabs() {
     });
 }
 
+function getShortcuts() {
+    return new Promise((resolve, reject) => {
+        const query = `SELECT * FROM shortcuts`;
+        db.all(query, (err, rows) => {
+            if (err) {
+                console.error('Error retrieving shortcuts:', err.message);
+                reject(err);
+            } else {
+                resolve(rows);
+            }
+        });
+    }).catch(err => {
+        console.error('Error getting shortcuts:', err.message);
+    });
+}
+
 // =================================
 // =========== SETTERS =============
 // =================================
@@ -227,7 +292,8 @@ module.exports = {
     addBookmark,
     addTab,
     getBookmarks,
-    getAllTabs,
+    getTabs,
+    getShortcuts,
     deleteBookmarkByUrl,
     deleteAllTabs
 };
