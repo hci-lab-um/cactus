@@ -1326,83 +1326,98 @@ function createOverlay(overlayAreaToShow, elementProperties) {
     overlayContent.webContents.openDevTools(); // to remove
 }
 
-function registerSwitchShortcutCommands() {
-    const shortcuts = db.getShortcuts();
+async function registerSwitchShortcutCommands() {
+    const shortcuts = await db.getShortcuts();
 
-    globalShortcut.register(shortcuts.click, () => {
-        console.log("Clicking shortcut triggered");
-        const cursorPosition = screen.getCursorScreenPoint();
+    const shortcutActions = [
+        { action: "click", handler: () => handleClickShortcut() },
+        { action: "toggleOmniBox", handler: () => handleToggleOmniBoxShortcut() },
+        { action: "sidebarScrollUp", handler: () => handleSidebarScrollUpShortcut() },
+        { action: "sidebarScrollDown", handler: () => handleSidebarScrollDownShortcut() },
+        { action: "navigateForward", handler: () => handleNavigateForwardShortcut() },
+        { action: "navigateBack", handler: () => handleNavigateBackShortcut() },
+        { action: "toggleDwelling", handler: () => handleToggleDwellingShortcut() },
+        { action: "zoomIn", handler: () => handleZoomInShortcut() },
+        { action: "zoomOut", handler: () => handleZoomOutShortcut() },
+    ];
 
-        // Function to check if the cursor is within the bounds of a view
-        const isCursorWithinBounds = (bounds) => {
-            return (
-                cursorPosition.x >= bounds.x &&
-                cursorPosition.x <= bounds.x + bounds.width &&
-                cursorPosition.y >= bounds.y &&
-                cursorPosition.y <= bounds.y + bounds.height
-            );
-        };
-
-        // Check if there is an overlay and if the cursor is over it
-        if (overlayContent && isCursorWithinBounds(overlayContent.getBounds())) {
-            overlayContent.webContents.send('ipc-trigger-click-under-cursor');
-            return;
-        }
-
-        // Find the active tab in the tabList and check if the cursor is over it
-        const activeTab = tabList.find(tab => tab.isActive);
-
-        if (activeTab && isCursorWithinBounds(activeTab.webContentsView.getBounds())) {
-            activeTab.webContentsView.webContents.send('ipc-trigger-click-under-cursor');
-            console.log("Clicking on active tab");
-            return;
-        }
-
-        // Check if the cursor is over the mainWindowContent
-        if (isCursorWithinBounds(mainWindowContent.getBounds())) {
-            mainWindowContent.webContents.send('ipc-trigger-click-under-cursor');
+    shortcutActions.forEach(({ action, handler }) => {
+        const shortcut = shortcuts.find(s => s.action === action);
+        if (shortcut) {
+            globalShortcut.register(shortcut.shortcut, handler);
         }
     });
+}
 
-    globalShortcut.register(shortcuts.toggleOmniBox, () => {
-        if (overlayContent && isKeyboardOverlay) {
-            removeOverlay();
-        } else {
-            mainWindowContent.webContents.send('ipc-mainwindow-load-omnibox');
-        }
-    });
+function handleClickShortcut() {
+    console.log("Clicking shortcut triggered");
+    const cursorPosition = screen.getCursorScreenPoint();
 
-    globalShortcut.register(shortcuts.toggleDwelling, () => {
-        toggleDwelling();
-    });
+    const isCursorWithinBounds = (bounds) => {
+        return (
+            cursorPosition.x >= bounds.x &&
+            cursorPosition.x <= bounds.x + bounds.width &&
+            cursorPosition.y >= bounds.y &&
+            cursorPosition.y <= bounds.y + bounds.height
+        );
+    };
 
-    globalShortcut.register(shortcuts.zoomIn, () => {
-        handleZoom("in", true);
-    });
+    if (overlayContent && isCursorWithinBounds(overlayContent.getBounds())) {
+        overlayContent.webContents.send('ipc-trigger-click-under-cursor');
+        return;
+    }
 
-    globalShortcut.register(shortcuts.zoomOut, () => {
-        handleZoom("out", true);
-    });
+    const activeTab = tabList.find(tab => tab.isActive);
 
-    globalShortcut.register(shortcuts.sidebarScrollUp, () => {
-        mainWindowContent.webContents.send('ipc-main-sidebar-scrollup');
-    });
+    if (activeTab && isCursorWithinBounds(activeTab.webContentsView.getBounds())) {
+        activeTab.webContentsView.webContents.send('ipc-trigger-click-under-cursor');
+        console.log("Clicking on active tab");
+        return;
+    }
 
-    globalShortcut.register(shortcuts.sidebarScrollDown, () => {
-        mainWindowContent.webContents.send('ipc-main-sidebar-scrolldown');
-    });
+    if (isCursorWithinBounds(mainWindowContent.getBounds())) {
+        mainWindowContent.webContents.send('ipc-trigger-click-under-cursor');
+    }
+}
 
-    globalShortcut.register(shortcuts.navigateForward, () => {
-        console.log("Navigate forward shortcut triggered");
-        var tab = tabList.find(tab => tab.isActive === true);
-        tab.webContentsView.webContents.send('ipc-tabview-forward');
-    });
+function handleToggleOmniBoxShortcut() {
+    if (overlayContent && isKeyboardOverlay) {
+        removeOverlay();
+    } else {
+        mainWindowContent.webContents.send('ipc-mainwindow-load-omnibox');
+    }
+}
 
-    globalShortcut.register(shortcuts.navigateBack, () => {
-        console.log("Navigate back shortcut triggered");
-        var tab = tabList.find(tab => tab.isActive === true);
-        tab.webContentsView.webContents.send('ipc-tabview-back');
-    });
+function handleSidebarScrollUpShortcut() {
+    mainWindowContent.webContents.send('ipc-main-sidebar-scrollup');
+}
+
+function handleSidebarScrollDownShortcut() {
+    mainWindowContent.webContents.send('ipc-main-sidebar-scrolldown');
+}
+
+function handleNavigateForwardShortcut() {
+    console.log("Navigate forward shortcut triggered");
+    var tab = tabList.find(tab => tab.isActive === true);
+    tab.webContentsView.webContents.send('ipc-tabview-forward');
+}
+
+function handleNavigateBackShortcut() {
+    console.log("Navigate back shortcut triggered");
+    var tab = tabList.find(tab => tab.isActive === true);
+    tab.webContentsView.webContents.send('ipc-tabview-back');
+}
+
+function handleToggleDwellingShortcut() {
+    toggleDwelling();
+}
+
+function handleZoomInShortcut() {
+    handleZoom("in", true);
+}
+
+function handleZoomOutShortcut() {
+    handleZoom("out", true);
 }
 
 function toggleDwelling() {
