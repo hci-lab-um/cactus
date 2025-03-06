@@ -401,8 +401,22 @@ ipcMain.on('ipc-overlays-remove-and-update', (event) => {
     clearSidebarAndUpdateQuadTree();
     removeOverlay();
 
-    // In case the active tab has been updated, reconnect the mutation observer of the newly active tab
     let newActiveTab = tabList.find(tab => tab.isActive === true);
+
+    // If the selected tab has set its event handlers yet, set them - This is to prevent the event handlers from being set multiple times
+    // and for the JS and CSS to be injected only once it is the active tab.
+    if (newActiveTab.setEventHandlers) {
+        setTabViewEventlisteners(newActiveTab.webContentsView);
+        newActiveTab.setEventHandlers = false;
+
+        if (newActiveTab.isErrorPage)  { 
+            newActiveTab.webContentsView.webContents.loadURL(newActiveTab.originalURL);
+        } else {
+            newActiveTab.webContentsView.webContents.loadURL(newActiveTab.url);
+        }
+    }
+
+    // In case the active tab has been updated, reconnect the mutation observer of the newly active tab
     newActiveTab.webContentsView.webContents.send('ipc-main-reconnect-mutation-observer');
 })
 
@@ -426,6 +440,19 @@ ipcMain.on('ipc-overlays-tab-selected', (event, tabId) => {
     tabList.forEach(tab => tab.isActive = false);
     let selectedTab = tabList.find(tab => tab.tabId === tabId); 
     selectedTab.isActive = true;
+    
+    // If the selected tab has set its event handlers yet, set them - This is to prevent the event handlers from being set multiple times
+    // and for the JS and CSS to be injected only once it is the active tab.
+    if (selectedTab.setEventHandlers) {
+        setTabViewEventlisteners(selectedTab.webContentsView);
+        selectedTab.setEventHandlers = false;
+
+        if (selectedTab.isErrorPage)  { 
+            selectedTab.webContentsView.webContents.loadURL(selectedTab.originalURL);
+        } else {
+            selectedTab.webContentsView.webContents.loadURL(selectedTab.url);
+        }
+    }
 
     updateOmnibox();
     updateBookmarksIcon();
@@ -646,7 +673,19 @@ function createMainWindow() {
                         width: Math.floor(properties.width),
                         height: Math.floor(properties.height)
                     }
-                    createTabview(defaultUrl);
+                    // If the tablist has already been populated from the database, do not create a new tabview
+                    if (tabsFromDatabase.length === 0) {
+                        createTabview(defaultUrl);
+                    } else {                        
+                        tabsFromDatabase.forEach(tab => {
+                            createTabview(tab.url, false, tab);
+                        });
+
+                        // Reorder the tabs in the main window to display the active tab on top
+                        let activeTab = tabList.find(tab => tab.isActive === true);
+                        mainWindow.contentView.removeChildView(activeTab.webContentsView);
+                        mainWindow.contentView.addChildView(activeTab.webContentsView);
+                    }
                 })
                 .catch(err => {
                     log.error(err);
@@ -723,8 +762,9 @@ function resizeMainWindow() {
 
 }
 
-function createTabview(url, isNewTab = false) {
-    let scrollDistance = config.get('dwelling.tabViewScrollDistance');   
+async function createTabview(url, isNewTab = false, tabFromDatabase = null) {
+    scrollDistance = config.get('dwelling.tabViewScrollDistance');   
+    let tab;
 
     //Create browser view
     let tabView = new WebContentsView({
@@ -736,22 +776,31 @@ function createTabview(url, isNewTab = false) {
         }
     });
 
-    //Set new tab as active (if any)
-    tabList.forEach(tab => {
-        tab.isActive = false
-    });
-    tabList.push({ tabId: tabList.length + 1, webContentsView: tabView, isActive: true });
+    if (tabFromDatabase) {
+        tab = { 
+            tabId: tabFromDatabase.id, 
+            webContentsView: tabView, 
+            url: tabFromDatabase.url,
+            isActive: tabFromDatabase.isActive === 1 ? true : false, 
+            snapshot: tabFromDatabase.snapshot, 
+            isErrorPage: tabFromDatabase.isErrorPage, 
+            originalURL: tabFromDatabase.originalURL,
+            setEventHandlers: true
+        };
+
+        tabList.push(tab);
+    } else {
+        //Set new tab as active (if any)
+        tabList.forEach(tab => {
+            tab.isActive = false
+        });
+        tabList.push({ tabId: tabList.length + 1, webContentsView: tabView, isActive: true, setEventHandlers: false });
+    }
 
     //Attach the browser view to the parent window
-    mainWindow.contentView.addChildView(tabView);
+    await mainWindow.contentView.addChildView(tabView);
 
-    //Load the default home page
-    tabView.webContents.loadURL(url);
-
-    if (!isNewTab) {
-        //Set its location/dimensions as per the webpage bounds
-        tabView.setBounds(webpageBounds);
-    } else {
+    if (isNewTab) {
         // tabView.setBounds({ 
         //     x: webpageBounds.x,
         //     y: webpageBounds.y + webpageBounds.height, // Starts below the visible area
@@ -767,8 +816,27 @@ function createTabview(url, isNewTab = false) {
             height: webpageBounds.height
         });
         slideInView(tabView);
+    } else {
+        //Set its location/dimensions as per the webpage bounds
+        tabView.setBounds(webpageBounds);
     }
 
+    // If a new tab is created (therefore, tabFromDatabase is null), or the tab is from the database, and it is the active tab, set the event listeners
+    if (!tabFromDatabase || (tabFromDatabase && tabFromDatabase.isActive)) {
+        setTabViewEventlisteners(tabView);
+
+        //Load the default home page
+        if (!tabFromDatabase) {
+            tabView.webContents.loadURL(url);
+        } else if (tabFromDatabase.isErrorPage)  { 
+            tabView.webContents.loadURL(tabFromDatabase.originalURL);
+        } else {
+            tabView.webContents.loadURL(tabFromDatabase.url);
+        }
+    }
+}
+
+function setTabViewEventlisteners(tabView) {
     //Once the DOM is ready, send a message to initiate some further logic
     tabView.webContents.on('dom-ready', () => {
         insertRendererCSS();
@@ -780,7 +848,13 @@ function createTabview(url, isNewTab = false) {
 
         tabView.webContents.executeJavaScript(scriptContent).then(() => {
             // This event fires when the tabView is attached
-            tabView.webContents.send('ipc-main-tabview-loaded', useNavAreas, scrollDistance);
+
+            // If the tab is active, send isActive = true to connect the mutation observer
+            if (tabList.find(tab => tab.webContentsView === tabView && tab.isActive)) {
+                tabView.webContents.send('ipc-main-tabview-loaded', useNavAreas, scrollDistance, true);
+            } else {
+                tabView.webContents.send('ipc-main-tabview-loaded', useNavAreas, scrollDistance, false);
+            }
 
             // injecting javascript into each first level iframe of the tabview
             tabView.webContents.mainFrame.frames.forEach(async(frame) => {

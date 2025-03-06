@@ -26,7 +26,7 @@ window.cactusAPI.on('ipc-iframes-loaded', (scrollDist) => {
 	sendMessageToIframes('ipc-iframes-loaded', {scrollDist});
 });
 
-window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist) => {
+window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist, isActive) => {
 	useNavAreas = useNavAreas;
 	scrollDistance = scrollDist;
 	initScrollableElements(useNavAreas);
@@ -93,8 +93,8 @@ window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist) => {
 		subtree: true,
 	};
 
-	// Start observing the target node for configured mutations
-	mutationObserver.observe(document.body, mutationObserverOptions);
+	// Start observing the target node for configured mutations if the tab is active
+	if (isActive) mutationObserver.observe(document.body, mutationObserverOptions);
 
 	// Handle mouse behaviour on tabview
 	tabView = document.getRootNode();
