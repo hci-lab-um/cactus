@@ -1517,14 +1517,16 @@ async function deleteAndInsertAllTabs() {
 
         // Update the database with the open tabs
         for (const tab of tabList) {
-            await db.addTab({
-                url: tab.url ? tab.url : tab.webContentsView.webContents.getURL(),
-                title: tab.title ? tab.title : tab.webContentsView.webContents.getTitle(),
+            const tabData = {
+                url: !tab.isErrorPage ? (tab.url ? tab.url : tab.webContentsView.webContents.getURL()) : null,
+                title: tab.title || tab.webContentsView.webContents.getTitle(),
                 isActive: tab.isActive,
                 snapshot: tab.snapshot,
                 originalURL: tab.originalURL,
                 isErrorPage: tab.isErrorPage
-            });
+            };
+
+            await db.addTab(tabData);
         }
     } catch (err) {
         console.error('Error updating database with open tabs:', err.message);

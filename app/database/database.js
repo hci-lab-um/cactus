@@ -55,7 +55,7 @@ function createTables() {
         const createTabsTable = `
             CREATE TABLE IF NOT EXISTS tabs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                url TEXT NOT NULL,
+                url TEXT,
                 title TEXT NOT NULL,
                 isActive BOOLEAN NOT NULL,
                 snapshot BLOB NOT NULL,
@@ -114,13 +114,6 @@ function addTab({url, title, isActive, snapshot, originalURL, isErrorPage}) {
     // Converting base64 image to buffer if snapshot is provided
     const base64Data = snapshot.replace(/^data:image\/\w+;base64,/, "");
     const binarySnapshot = Buffer.from(base64Data, "base64");
-
-    // Hash the URL if isErrorPage is true
-    if (isErrorPage) {
-        const hash = crypto.createHash('sha256');
-        hash.update(url);
-        url = hash.digest('hex');
-    }
 
     return new Promise((resolve, reject) => {
         const insertTab = `
