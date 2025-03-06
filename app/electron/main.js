@@ -396,25 +396,12 @@ ipcMain.on('ipc-overlays-remove', (event) => {
 })
 
 ipcMain.on('ipc-overlays-remove-and-update', (event) => {
+    let newActiveTab = tabList.find(tab => tab.isActive === true);
     updateOmnibox();
     updateBookmarksIcon();
     clearSidebarAndUpdateQuadTree();
     removeOverlay();
-
-    let newActiveTab = tabList.find(tab => tab.isActive === true);
-
-    // If the selected tab has set its event handlers yet, set them - This is to prevent the event handlers from being set multiple times
-    // and for the JS and CSS to be injected only once it is the active tab.
-    if (newActiveTab.setEventHandlers) {
-        setTabViewEventlisteners(newActiveTab.webContentsView);
-        newActiveTab.setEventHandlers = false;
-
-        if (newActiveTab.isErrorPage)  { 
-            newActiveTab.webContentsView.webContents.loadURL(newActiveTab.originalURL);
-        } else {
-            newActiveTab.webContentsView.webContents.loadURL(newActiveTab.url);
-        }
-    }
+    setTabViewEventlistenersAndLoadURL(newActiveTab);
 
     // In case the active tab has been updated, reconnect the mutation observer of the newly active tab
     newActiveTab.webContentsView.webContents.send('ipc-main-reconnect-mutation-observer');
@@ -440,20 +427,8 @@ ipcMain.on('ipc-overlays-tab-selected', (event, tabId) => {
     tabList.forEach(tab => tab.isActive = false);
     let selectedTab = tabList.find(tab => tab.tabId === tabId); 
     selectedTab.isActive = true;
-    
-    // If the selected tab has set its event handlers yet, set them - This is to prevent the event handlers from being set multiple times
-    // and for the JS and CSS to be injected only once it is the active tab.
-    if (selectedTab.setEventHandlers) {
-        setTabViewEventlisteners(selectedTab.webContentsView);
-        selectedTab.setEventHandlers = false;
 
-        if (selectedTab.isErrorPage)  { 
-            selectedTab.webContentsView.webContents.loadURL(selectedTab.originalURL);
-        } else {
-            selectedTab.webContentsView.webContents.loadURL(selectedTab.url);
-        }
-    }
-
+    setTabViewEventlistenersAndLoadURL(selectedTab);
     updateOmnibox();
     updateBookmarksIcon();
     clearSidebarAndUpdateQuadTree();
@@ -1044,6 +1019,22 @@ function updateBookmarksIcon() {
 function clearSidebarAndUpdateQuadTree() {
     mainWindowContent.webContents.send('ipc-mainwindow-clear-sidebar');
     tabList.find(tab => tab.isActive === true).webContentsView.webContents.send('ipc-tabview-create-quadtree', useNavAreas);
+}
+
+function setTabViewEventlistenersAndLoadURL(tab) {
+    // If the selected tab has set its event handlers yet, set them - This is to prevent the event handlers from being set multiple times
+    // and for the JS and CSS to be injected only once it is the active tab.
+    if (tab.setEventHandlers) {
+        setTabViewEventlisteners(tab.webContentsView);
+        tab.setEventHandlers = false;
+
+        if (tab.isErrorPage)  { 
+            tab.webContentsView.webContents.loadURL(tab.originalURL);
+        } else {
+            tab.webContentsView.webContents.loadURL(tab.url);
+        }
+    }
+
 }
 
 function slideUpView(view, duration = 170) {
