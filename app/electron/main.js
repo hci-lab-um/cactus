@@ -19,15 +19,21 @@ let currentQt, currentNavAreaTree
 let timeoutCursorHovering
 let defaultUrl = config.get('browser.defaultUrl');
 let tabList = [];
+let tabsFromDatabase = [];
 let bookmarks = [];
 let isDwellingActive = true;
 let useNavAreas = config.get('dwelling.activateNavAreas');
+
+
+// =================================
+// ====== APP EVENT LISTENERS ======
+// =================================
 
 app.whenReady().then(async () => {
     try {
         await db.connect();
         await db.createTables();
-        bookmarks = await db.getBookmarks();
+        await initialiseVariables();
     } catch (err) {
         console.error('Error initializing database:', err.message);
     }
@@ -42,7 +48,9 @@ app.whenReady().then(async () => {
     registerSwitchShortcutCommands();
 });
 
-app.on('window-all-closed', () => {
+app.on('window-all-closed', async() => {
+    await deleteAndInsertAllTabs();
+
     // App closes when all windows are closed, however this is not default behaviour on macOS (applications and their menu bar to stay active)
     if (process.platform !== 'darwin') {
         app.quit()
@@ -374,7 +382,7 @@ ipcMain.on('ipc-mainwindow-remove-bookmark', async (event) => {
     let activeURL = tab.webContentsView.webContents.getURL();
 
     bookmarks = bookmarks.filter(bookmark => bookmark.url !== activeURL);
-    removeBookmarkByUrl(activeURL);
+    deleteBookmarkByUrl(activeURL);
 });
 
 ipcMain.on('ipc-mainwindow-open-iframe', (event, src) => {
@@ -464,10 +472,13 @@ ipcMain.on('ipc-overlays-bookmarks-updated', async (event, updatedBookmarks, del
     // If a new bookmark has been added, add it also to the database
     if (bookmark) addBookmarkToDatabase(bookmark);
     // If the bookmark has been deleted, remove the bookmark from the database
-    else if (deletedURL) removeBookmarkByUrl(deletedURL);
+    else if (deletedURL) deleteBookmarkByUrl(deletedURL);
 })
 
+// ------------------
 // NAVIGATION OVERLAY
+// ------------------
+
 ipcMain.on('ipc-overlays-back', () => {
     //Select active tabview
     var tab = tabList.find(tab => tab.isActive === true);
@@ -480,7 +491,10 @@ ipcMain.on('ipc-overlays-forward', () => {
     tab.webContentsView.webContents.send('ipc-tabview-forward');
 })
 
+// ---------------------
 // ACCESSIBILITY OVERLAY
+// ---------------------
+
 ipcMain.on('ipc-overlays-refresh', (event) => {
     removeOverlay();
     var tab = tabList.find(tab => tab.isActive === true);
@@ -519,8 +533,9 @@ ipcMain.on('ipc-overlays-toggle-nav', (event) => {
     toggleNavigation();
 });
 
-ipcMain.on('ipc-exit-browser', (event) => {
+ipcMain.on('ipc-exit-browser', async(event) => {
     removeOverlay();
+    await deleteAndInsertAllTabs();
     app.quit();
 });
 
@@ -548,6 +563,16 @@ ipcMain.on('log', (event, loggedItem) => {
     log.info(event);
     log.info(loggedItem);
 });
+
+
+// =================================
+// ======= HELPER FUNCTIONS ========
+// =================================
+
+async function initialiseVariables (){
+    bookmarks = await db.getBookmarks();
+    tabsFromDatabase = await db.getAllTabs();
+}
 
 function createSplashWindow() {
 
@@ -1384,11 +1409,32 @@ async function addBookmarkToDatabase(bookmark){
     }
 }
 
-async function removeBookmarkByUrl(url){
+async function deleteBookmarkByUrl(url){
     try {
-        await db.removeBookmarkByUrl(url);
+        await db.deleteBookmarkByUrl(url);
     } catch (err) {
         console.error('Error removing bookmark from database:', err.message);
+    }
+}
+
+async function deleteAndInsertAllTabs() {
+    try {
+        // Empty the table in the database before quitting
+        // await db.deleteAllTabs();
+
+        // Update the database with the open tabs
+        for (const tab of tabList) {
+            await db.addTab({
+                url: tab.webContentsView.webContents.getURL(),
+                title: tab.webContentsView.webContents.getTitle(),
+                isActive: tab.isActive,
+                snapshot: tab.snapshot,
+                originalURL: tab.originalURL,
+                isErrorPage: tab.isErrorPage
+            });
+        }
+    } catch (err) {
+        console.error('Error updating database with open tabs:', err.message);
     }
 }
 

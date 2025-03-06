@@ -115,10 +115,13 @@ window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist) => {
 });
 
 window.cactusAPI.on('ipc-main-disconnect-mutation-observer', () => {
+	console.log("============= Mutation observer disconnected ==================");
 	mutationObserver.disconnect();
 });
 
+
 window.cactusAPI.on('ipc-main-reconnect-mutation-observer', () => {
+	console.log("============= Mutation observer reconnected ==================");
 	mutationObserver.observe(document.body, mutationObserverOptions);
 });
 
