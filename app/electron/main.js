@@ -7,6 +7,7 @@ const { MenuBuilder, NavArea, HTMLSerializableMenuElement, MenuPageDocument, Men
 const { log } = require('electron-log');
 const robot = require("robotjs_addon");
 const db = require('../database/database.js');
+const { title } = require('process');
 
 const isDevelopment = process.env.NODE_ENV === "development";
 const rangeWidth = config.get('dwelling.rangeWidth');
@@ -63,6 +64,11 @@ app.on('activate', () => {
         createMainWindow();
     }
 })
+
+
+// =================================
+// ======= IPC COMMUNICATION =======
+// =================================
 
 ipcMain.handle('tabview-can-go-back-or-forward', (event) => {
     // Check if the active tab can go back or forward
@@ -193,9 +199,13 @@ ipcMain.on('browse-to-url', (event, url) => {
     tab.webContentsView.webContents.loadURL(fullUrl);
 });
 
-// This may not work properly if the window is moved to a different sized monitor that extends the other one, after the initial load
-// Resizing of the window on the same monitor works fine
 ipcMain.on('robot-mouse-click', async (event, { x, y }) => {
+    /**
+     * This may not work properly if the window is moved to a different sized monitor that 
+     * extends the other one, after the initial load. Resizing of the window on the same 
+     * monitor works fine.
+     */
+
     const win = BaseWindow.getFocusedWindow();
     const bounds = win.getBounds();
     const contentBounds = win.getContentBounds();
@@ -233,15 +243,16 @@ ipcMain.on('robot-mouse-click', async (event, { x, y }) => {
     robot.mouseClick();
 });
 
-/**
- * For inserting text, robot.typeString() is faster than robot.keyTap(), but robot.typeString()
- * tends to omit consecutive characters in the text. Therefore, when the text has consecutive
- * characters, we use robot.keyTap() to type each character individually. However, robot.keyTap()
- * is slower than robot.typeString(). To improve performance, we split the text into words and
- * if it does not have consecutive characters, we type it using robot.typeString(). If the
- * word has consecutive characters, we type each of its characters using robot.keyTap().
- */
 ipcMain.on('robot-keyboard-type', (event, { text, submit }) => {
+    /**
+     * For inserting text, robot.typeString() is faster than robot.keyTap(), but robot.typeString()
+     * tends to omit consecutive characters in the text. Therefore, when the text has consecutive
+     * characters, we use robot.keyTap() to type each character individually. However, robot.keyTap()
+     * is slower than robot.typeString(). To improve performance, we split the text into words and
+     * if it does not have consecutive characters, we type it using robot.typeString(). If the
+     * word has consecutive characters, we type each of its characters using robot.keyTap().
+     */
+
     const consecutiveCharPattern = /(.)\1+/;
     const hasConsecutiveChars = consecutiveCharPattern.test(text);
 
@@ -756,6 +767,7 @@ async function createTabview(url, isNewTab = false, tabFromDatabase = null) {
             tabId: tabFromDatabase.id, 
             webContentsView: tabView, 
             url: tabFromDatabase.url,
+            title: tabFromDatabase.title,
             isActive: tabFromDatabase.isActive === 1 ? true : false, 
             snapshot: tabFromDatabase.snapshot, 
             isErrorPage: tabFromDatabase.isErrorPage, 
@@ -769,7 +781,10 @@ async function createTabview(url, isNewTab = false, tabFromDatabase = null) {
         tabList.forEach(tab => {
             tab.isActive = false
         });
-        tabList.push({ tabId: tabList.length + 1, webContentsView: tabView, isActive: true, setEventHandlers: false });
+
+        // Getting the maximum tabId from the tabList and incrementing it by 1 to assign a new tabId
+        const maxTabId = tabList.reduce((maxId, tab) => Math.max(maxId, tab.tabId), 0);
+        tabList.push({ tabId: maxTabId + 1, webContentsView: tabView, isActive: true, setEventHandlers: false });
     }
 
     //Attach the browser view to the parent window
@@ -851,11 +866,19 @@ function setTabViewEventlisteners(tabView) {
 
     //Loading event - update omnibox
     tabView.webContents.on('did-start-loading', () => {
-        mainWindowContent.webContents.send('tabview-loading-start');
+        // If the event emitted is from the active tab, update the omnibox
+        let activeTab = tabList.find(tab => tab.isActive === true);
+        if (tabView === activeTab.webContentsView) {
+            mainWindowContent.webContents.send('tabview-loading-start');
+        }
     });
 
     tabView.webContents.on('did-stop-loading', () => {
-        updateOmnibox();
+        // If the event emitted is from the active tab, update the omnibox
+        let activeTab = tabList.find(tab => tab.isActive === true);
+        if (tabView === activeTab.webContentsView) {
+            updateOmnibox();
+        }
     });
 
     tabView.webContents.on('did-finish-load', () => {
@@ -1276,8 +1299,8 @@ function createOverlay(overlayAreaToShow, elementProperties) {
                 tabId: tab.tabId,
                 isActive: tab.isActive,
                 snapshot: tab.snapshot,
-                title: tab.webContentsView.webContents.getTitle(),
-                url: tab.webContentsView.webContents.getURL(),
+                title: tab.title ? tab.title : tab.webContentsView.webContents.getTitle(),
+                url: tab.url ? tab.url : tab.webContentsView.webContents.getURL(),
             }));
 
             overlaysData.tabList = serializableTabList;
@@ -1466,6 +1489,11 @@ function getFullURL(url) {
     return fullUrl;
 }
 
+
+// =================================
+// ====== DATABASE FUNCTIONS =======
+// =================================
+
 async function addBookmarkToDatabase(bookmark){
     try {
         await db.addBookmark(bookmark);
@@ -1490,8 +1518,8 @@ async function deleteAndInsertAllTabs() {
         // Update the database with the open tabs
         for (const tab of tabList) {
             await db.addTab({
-                url: tab.webContentsView.webContents.getURL(),
-                title: tab.webContentsView.webContents.getTitle(),
+                url: tab.url ? tab.url : tab.webContentsView.webContents.getURL(),
+                title: tab.title ? tab.title : tab.webContentsView.webContents.getTitle(),
                 isActive: tab.isActive,
                 snapshot: tab.snapshot,
                 originalURL: tab.originalURL,
