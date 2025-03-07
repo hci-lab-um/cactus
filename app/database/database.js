@@ -40,7 +40,7 @@ function close() {
 // ======== CREATING TABLES ========
 // =================================
 
-function createTables() {
+function createBookmarksTable() {
     return new Promise((resolve, reject) => {
         const createBookmarksTable = `
             CREATE TABLE IF NOT EXISTS bookmarks (
@@ -51,6 +51,20 @@ function createTables() {
                 added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `;
+        db.run(createBookmarksTable, (err) => {
+            if (err) {
+                console.error('Error creating bookmarks table:', err.message);
+                reject(err);
+            } else {
+                console.log('Bookmarks table created successfully.');
+                resolve();
+            }
+        });
+    });
+}
+
+function createTabsTable() {
+    return new Promise((resolve, reject) => {
         const createTabsTable = `
             CREATE TABLE IF NOT EXISTS tabs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -63,123 +77,152 @@ function createTables() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `;
+        db.run(createTabsTable, (err) => {
+            if (err) {
+                console.error('Error creating tabs table:', err.message);
+                reject(err);
+            } else {
+                console.log('Tabs table created successfully.');
+                resolve();
+            }
+        });
+    });
+}
+
+function createShortcutsTable() {
+    return new Promise((resolve, reject) => {
         const createShortcutsTable = `
             CREATE TABLE IF NOT EXISTS shortcuts (
                 action TEXT PRIMARY KEY,
                 shortcut TEXT NOT NULL
             );
         `;
+        db.run(createShortcutsTable, (err) => {
+            if (err) {
+                console.error('Error creating shortcuts table:', err.message);
+                reject(err);
+            } else {
+                console.log('Shortcuts table created successfully.');
+                resolve();
+            }
+        });
+    });
+}
+
+function populateShortcutsTable() {
+    return new Promise((resolve, reject) => {
+        const shortcuts = {
+            "click": "CommandOrControl+Alt+C",
+            "toggleOmniBox": "CommandOrControl+Alt+O",
+            "toggleDwelling": "CommandOrControl+Alt+D",
+            "zoomIn": "CommandOrControl+Alt+Plus",
+            "zoomOut": "CommandOrControl+Alt+-",
+            "sidebarScrollUp": "CommandOrControl+Alt+W",
+            "sidebarScrollDown": "CommandOrControl+Alt+S",
+            "navigateForward": "CommandOrControl+Alt+Right",
+            "navigateBack": "CommandOrControl+Alt+Left"
+        };
+        const insertShortcut = `
+            INSERT OR IGNORE INTO shortcuts (action, shortcut)
+            VALUES (?, ?)
+        `;
+        const shortcutPromises = Object.entries(shortcuts).map(([action, shortcut]) => {
+            return new Promise((resolve, reject) => {
+                db.run(insertShortcut, [action, shortcut], function(err) {
+                    if (err) {
+                        console.error(`Error inserting shortcut for action ${action}:`, err.message);
+                        reject(err);
+                    } else {
+                        resolve();
+                    }
+                });
+            });
+        });
+        Promise.all(shortcutPromises)
+            .then(() => {
+                console.log('Shortcuts table populated successfully.');
+                resolve();
+            })
+            .catch((err) => {
+                console.error('Error populating shortcuts table:', err.message);
+                reject(err);
+            });
+    });
+}
+
+function createUserSettingsTable() {
+    return new Promise((resolve, reject) => {
         const createUserSettingsTable = `
             CREATE TABLE IF NOT EXISTS user_settings (
                 setting TEXT PRIMARY KEY,
                 value TEXT NOT NULL
             );
         `;
-        db.run(createBookmarksTable, (err) => {
+        db.run(createUserSettingsTable, (err) => {
             if (err) {
-                console.error('Error creating bookmarks table:', err.message);
+                console.error('Error creating user settings table:', err.message);
                 reject(err);
             } else {
-                console.log('Bookmarks table created successfully.');
-                db.run(createTabsTable, (err) => {
-                    if (err) {
-                        console.error('Error creating tabs table:', err.message);
-                        reject(err);
-                    } else {
-                        console.log('Tabs table created successfully.');
-                        db.run(createShortcutsTable, (err) => {
-                            if (err) {
-                                console.error('Error creating shortcuts table:', err.message);
-                                reject(err);
-                            } else {
-                                console.log('Shortcuts table created successfully.');
-                                const shortcuts = {
-                                    "click": "CommandOrControl+Alt+C",
-                                    "toggleOmniBox": "CommandOrControl+Alt+O",
-                                    "toggleDwelling": "CommandOrControl+Alt+D",
-                                    "zoomIn": "CommandOrControl+Alt+Plus",
-                                    "zoomOut": "CommandOrControl+Alt+-",
-                                    "sidebarScrollUp": "CommandOrControl+Alt+W",
-                                    "sidebarScrollDown": "CommandOrControl+Alt+S",
-                                    "navigateForward": "CommandOrControl+Alt+Right",
-                                    "navigateBack": "CommandOrControl+Alt+Left"
-                                };
-                                const insertShortcut = `
-                                    INSERT OR IGNORE INTO shortcuts (action, shortcut)
-                                    VALUES (?, ?)
-                                `;
-                                const shortcutPromises = Object.entries(shortcuts).map(([action, shortcut]) => {
-                                    return new Promise((resolve, reject) => {
-                                        db.run(insertShortcut, [action, shortcut], function(err) {
-                                            if (err) {
-                                                console.error(`Error inserting shortcut for action ${action}:`, err.message);
-                                                reject(err);
-                                            } else {
-                                                resolve();
-                                            }
-                                        });
-                                    });
-                                });
-                                Promise.all(shortcutPromises)
-                                    .then(() => {
-                                        console.log('Shortcuts table populated successfully.');
-                                        db.run(createUserSettingsTable, (err) => {
-                                            if (err) {
-                                                console.error('Error creating user settings table:', err.message);
-                                                reject(err);
-                                            } else {
-                                                console.log('User settings table created successfully.');
-                                                const defaultSettings = {
-                                                    "dwellTime": 1500,
-                                                    "keyboardDwellTime": 1000,
-                                                    "rangeWidth": 150,
-                                                    "rangeHeight": 50,
-                                                    "tabViewScrollDistance": 10,
-                                                    "menuAreaScrollDistance": 200,
-                                                    "menuAreaScrollIntervalInMs": 300,
-                                                    "activateNavAreas": true,
-                                                    "defaultUrl": "https://www.google.com",
-                                                    "defaultLayout": "en"
-                                                };
-                                                const insertSetting = `
-                                                    INSERT OR IGNORE INTO user_settings (setting, value)
-                                                    VALUES (?, ?)
-                                                `;
-                                                const settingPromises = Object.entries(defaultSettings).map(([setting, value]) => {
-                                                    return new Promise((resolve, reject) => {
-                                                        db.run(insertSetting, [setting, value.toString()], function(err) {
-                                                            if (err) {
-                                                                console.error(`Error inserting setting for setting ${setting}:`, err.message);
-                                                                reject(err);
-                                                            } else {
-                                                                resolve();
-                                                            }
-                                                        });
-                                                    });
-                                                });
-                                                Promise.all(settingPromises)
-                                                    .then(() => {
-                                                        console.log('User settings table populated successfully.');
-                                                        resolve();
-                                                    })
-                                                    .catch((err) => {
-                                                        console.error('Error populating user settings table:', err.message);
-                                                        reject(err);
-                                                    });
-                                            }
-                                        });
-                                    })
-                                    .catch((err) => {
-                                        console.error('Error populating shortcuts table:', err.message);
-                                        reject(err);
-                                    });
-                            }
-                        });
-                    }
-                });
+                console.log('User settings table created successfully.');
+                resolve();
             }
         });
     });
+}
+
+function populateUserSettingsTable() {
+    return new Promise((resolve, reject) => {
+        const defaultSettings = {
+            "dwellTime": 1500,
+            "keyboardDwellTime": 1000,
+            "rangeWidth": 150,
+            "rangeHeight": 50,
+            "tabViewScrollDistance": 10,
+            "menuAreaScrollDistance": 200,
+            "menuAreaScrollIntervalInMs": 300,
+            "activateNavAreas": true,
+            "defaultUrl": "https://www.google.com",
+            "defaultLayout": "en"
+        };
+        const insertSetting = `
+            INSERT OR IGNORE INTO user_settings (setting, value)
+            VALUES (?, ?)
+        `;
+        const settingPromises = Object.entries(defaultSettings).map(([setting, value]) => {
+            return new Promise((resolve, reject) => {
+                db.run(insertSetting, [setting, value.toString()], function(err) {
+                    if (err) {
+                        console.error(`Error inserting setting for setting ${setting}:`, err.message);
+                        reject(err);
+                    } else {
+                        resolve();
+                    }
+                });
+            });
+        });
+        Promise.all(settingPromises)
+            .then(() => {
+                console.log('User settings table populated successfully.');
+                resolve();
+            })
+            .catch((err) => {
+                console.error('Error populating user settings table:', err.message);
+                reject(err);
+            });
+    });
+}
+
+async function createTables() {
+    return createBookmarksTable()
+        .then(createTabsTable)
+        .then(createShortcutsTable)
+        .then(populateShortcutsTable)
+        .then(createUserSettingsTable)
+        .then(populateUserSettingsTable)
+        .catch((err) => {
+            console.error('Error creating tables:', err.message);
+            throw err;
+        });
 }
 
 // =================================
