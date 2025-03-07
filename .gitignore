@@ -1,3 +1,4 @@
 /node_modules
 node_modules/
 /dist
+/app/database/cactus.db

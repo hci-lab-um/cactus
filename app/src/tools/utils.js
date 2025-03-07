@@ -1,8 +1,8 @@
-const config = require('config');
 const { throttle } = require('lodash')
+const { ipcRenderer } = require('electron')
 
-let dwellTime = config.get('dwelling.dwellTime');
-let keyboardDwellTime = config.get('dwelling.keyboardDwellTime');
+let dwellTime;
+let keyboardDwellTime;
 let intervalIds = []; // this is needed because some keys create multiple intervals and hence all of them need to be cleared on mouseout
 
 module.exports = {
@@ -45,47 +45,60 @@ module.exports = {
   //   }
   // },
 
-  dwell: (elem, callback, isKeyboardBtn = false) => {
-    // If the dwelling is for a keyboard button, use the keyboard dwell time, otherwise use the default dwell time
-    let dwellTimeToUse = isKeyboardBtn ? keyboardDwellTime : dwellTime;
-    let throttledFunction = throttle(callback, dwellTimeToUse, { leading: false, trailing: true });
+  dwell: async (elem, callback, isKeyboardBtn = false) => {
+    try {
+        dwellTime = await ipcRenderer.invoke('ipc-get-user-setting', 'dwellTime');
+        keyboardDwellTime = await ipcRenderer.invoke('ipc-get-user-setting', 'keyboardDwellTime');
 
-    //Bypass dwelling in case a switch is being used
-    elem.addEventListener('click', callback)
+        // If the dwelling is for a keyboard button, use the keyboard dwell time, otherwise use the default dwell time
+        let dwellTimeToUse = isKeyboardBtn ? keyboardDwellTime : dwellTime;
+        let throttledFunction = throttle(callback, dwellTimeToUse, { leading: false, trailing: true });
 
-    //Dwelling
-    elem.addEventListener('mouseenter', throttledFunction)
-    elem.addEventListener('mouseleave', () => {
-      throttledFunction.cancel()
-    })
+        // Bypass dwelling in case a switch is being used
+        elem.addEventListener('click', callback);
+
+        // Dwelling
+        elem.addEventListener('mouseenter', throttledFunction);
+        elem.addEventListener('mouseleave', () => {
+            throttledFunction.cancel();
+        });
+    } catch (err) {
+        console.error('Error getting dwell time:', err.message);
+    }
   },
 
-  dwellInfinite: (elem, callback) => {
-    // Bypass dwelling in case a switch is being used
-    elem.addEventListener('click', callback);
+  dwellInfinite: async (elem, callback) => {
+      try {
+          keyboardDwellTime = await ipcRenderer.invoke('ipc-get-user-setting', 'keyboardDwellTime');
 
-    // Start dwelling on mouseover
-    elem.addEventListener('mouseenter', () => {
-      // Clears any existing intervals to avoid multiple intervals running simultaneously
-      if (intervalIds.length !== 0) {
-        intervalIds.forEach(intervalId => {
-          clearInterval(intervalId);
-        });
-      }
-      intervalIds.push(setInterval(() => {
-        callback();  
-      }, keyboardDwellTime));
-    });
+          // Bypass dwelling in case a switch is being used
+          elem.addEventListener('click', callback);
 
-    // Stop dwelling on mouse leave
-    elem.addEventListener('mouseleave', () => {
-      if (intervalIds.length !== 0) {
-        intervalIds.forEach(intervalId => {
-          clearInterval(intervalId);
-        });
-        intervalIds = [];
+          // Start dwelling on mouseover
+          elem.addEventListener('mouseenter', () => {
+              // Clears any existing intervals to avoid multiple intervals running simultaneously
+              if (intervalIds.length !== 0) {
+                  intervalIds.forEach(intervalId => {
+                      clearInterval(intervalId);
+                  });
+              }
+              intervalIds.push(setInterval(() => {
+                  callback();
+              }, keyboardDwellTime));
+          });
+
+          // Stop dwelling on mouse leave
+          elem.addEventListener('mouseleave', () => {
+              if (intervalIds.length !== 0) {
+                  intervalIds.forEach(intervalId => {
+                      clearInterval(intervalId);
+                  });
+                  intervalIds = [];
+              }
+          });
+      } catch (err) {
+          console.error('Error getting keyboard dwell time:', err.message);
       }
-    });
   },
 
   genId: () => {

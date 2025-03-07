@@ -7,23 +7,26 @@ const { MenuBuilder, NavArea, HTMLSerializableMenuElement, MenuPageDocument, Men
 const { log } = require('electron-log');
 const robot = require("robotjs_addon");
 const db = require('../database/database.js');
-const { title } = require('process');
 
 const isDevelopment = process.env.NODE_ENV === "development";
-const rangeWidth = config.get('dwelling.rangeWidth');
-const rangeHeight = config.get('dwelling.rangeHeight');
+let rangeWidth;
+let rangeHeight;
+let useNavAreas;
+let defaultUrl;
+let scrollDistance;
+let menuAreaScrollDistance;
+let menuAreaScrollInterval;
+let dwellTime;
 
 let mainWindow, splashWindow
 let mainWindowContent, overlayContent, isKeyboardOverlay
 let webpageBounds = {}
 let currentQt, currentNavAreaTree
 let timeoutCursorHovering
-let defaultUrl = config.get('browser.defaultUrl');
 let tabList = [];
 let tabsFromDatabase = [];
 let bookmarks = [];
 let isDwellingActive = true;
-let useNavAreas = config.get('dwelling.activateNavAreas');
 
 
 // =================================
@@ -76,6 +79,29 @@ ipcMain.handle('tabview-can-go-back-or-forward', (event) => {
     var canGoBack = tab.webContentsView.webContents.canGoBack();
     var canGoForward = tab.webContentsView.webContents.canGoForward();
     if (canGoBack || canGoForward) return true;
+});
+
+ipcMain.handle('ipc-get-user-setting', async (event, setting) => {
+    switch (setting) {
+        case 'dwellTime':
+            return dwellTime;
+        case 'keyboardDwellTime':
+            return await db.getKeyboardDwellTime();
+        case 'menuScrollDistance':
+            return menuAreaScrollDistance;
+        case 'menuScrollInterval':
+            return menuAreaScrollInterval;
+        case 'scrollDistance':
+            return scrollDistance;
+        case 'rangeWidth':
+            return rangeWidth;
+        case 'rangeHeight':
+            return rangeHeight;
+        case 'useNavAreas':
+            return useNavAreas;
+        default:
+            throw new Error(`Unknown setting: ${setting}`);
+    }
 });
 
 // This creates a quadtree using serialisable HTML elements passed on from the renderer
@@ -585,6 +611,14 @@ ipcMain.on('log', (event, loggedItem) => {
 async function initialiseVariables (){
     bookmarks = await db.getBookmarks();
     tabsFromDatabase = await db.getTabs();
+    defaultUrl = await db.getDefaultURL();
+    rangeWidth = await db.getRangeWidth();
+    rangeHeight = await db.getRangeHeight();
+    useNavAreas = await db.getActivateNavAreas();
+    scrollDistance = await db.getTabScrollDistance();
+    dwellTime = await db.getDwellTime();
+    menuAreaScrollDistance = await db.getMenuScrollDistance();
+    menuAreaScrollInterval = await db.getMenuScrollInterval();
 }
 
 function createSplashWindow() {
@@ -594,7 +628,7 @@ function createSplashWindow() {
         height: 503,
         transparent: true,
         frame: false,
-        alwaysOnTop: true
+        // alwaysOnTop: true
     });
 
     // Load the splash screen HTML file
@@ -606,9 +640,6 @@ function createSplashWindow() {
 }
 
 function createMainWindow() {
-    // Setting the default user agent (without cactus and electron tokens)
-    session.defaultSession.setUserAgent(config.get('browser.defaultUserAgent'));    
-
     try {
         mainWindow = new BaseWindow({
             frame: true,
@@ -631,7 +662,7 @@ function createMainWindow() {
         mainWindowContent.setBounds({ x: 0, y: 0, width: mainWindow.getContentBounds().width, height: mainWindow.getContentBounds().height })
 
         mainWindowContent.webContents.loadURL(path.join(__dirname, '../src/pages/index.html')).then(() => {
-            mainWindowContent.webContents.send('mainWindowLoaded');
+            mainWindowContent.webContents.send('mainWindowLoaded', dwellTime, menuAreaScrollDistance, menuAreaScrollInterval);
             // if (isDevelopment) mainWindowContent.webContents.openDevTools();
             mainWindowContent.webContents.openDevTools(); // to remove
 
@@ -749,7 +780,6 @@ function resizeMainWindow() {
 }
 
 async function createTabview(url, isNewTab = false, tabFromDatabase = null) {
-    scrollDistance = config.get('dwelling.tabViewScrollDistance');   
     let tab;
 
     //Create browser view
@@ -1237,15 +1267,22 @@ function insertRendererCSS() {
     `);
 }
 
-function captureSnapshot() {
+async function captureSnapshot() {
     return new Promise((resolve, reject) => {
         var tab = tabList.find(tab => tab.isActive === true);
-        tab.webContentsView.webContents.capturePage().then(snapshot => {
-            tab.snapshot = snapshot.toDataURL();
-            resolve();
-        }).catch(err => {
-            reject(err);
-        });
+        if (tab && tab.webContentsView && tab.webContentsView.webContents) {
+            tab.webContentsView.webContents.capturePage().then(snapshot => {
+                tab.snapshot = snapshot.toDataURL();
+                resolve();
+            }).catch(err => {
+                console.error('Error capturing snapshot:', err.message);
+                reject(err);
+            });
+        } else {
+            reject(new Error('Active tab or webContents not available for capture'));
+        }
+    }).catch(err => {
+        console.error('Error in captureSnapshot:', err.message);
     });
 }
 
@@ -1257,7 +1294,7 @@ function removeOverlay() {
     }
 }
 
-function createOverlay(overlayAreaToShow, elementProperties) {
+async function createOverlay(overlayAreaToShow, elementProperties) {
     removeOverlay();
 
     let mainWindowContentBounds = mainWindow.getContentBounds();
@@ -1291,7 +1328,8 @@ function createOverlay(overlayAreaToShow, elementProperties) {
 
     switch (overlayAreaToShow) {
         case 'keyboard':
-            overlayContent.webContents.send('ipc-main-keyboard-loaded', elementProperties);
+            let keyboardLayout = await db.getDefaultLayout();
+            overlayContent.webContents.send('ipc-main-keyboard-loaded', elementProperties, keyboardLayout);
             break;
         case 'tabs':
             // Extracting serializable properties from tabList

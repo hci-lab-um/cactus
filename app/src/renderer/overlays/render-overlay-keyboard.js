@@ -1,5 +1,4 @@
 const { ipcRenderer } = require('electron');
-const config = require('config');
 const fs = require('fs');
 const path = require('path');
 const { dwell, dwellInfinite } = require('../../tools/utils');
@@ -18,11 +17,12 @@ window.addEventListener('DOMContentLoaded', () => {
     followCursor('cactus_cursor');
 });
 
-ipcRenderer.on('ipc-main-keyboard-loaded', async (event, elementToUpdate) => {
+ipcRenderer.on('ipc-main-keyboard-loaded', async (event, elementToUpdate, keyboardLayout) => {
     // const NUMPAD_REQUIRED_ELEMENTS = [ 'number', 'tel', 'date', 'datetime-local', 'month', 'time', 'week' ]; // revise these
     const NUMPAD_REQUIRED_ELEMENTS = ['number', 'tel'];
     let needsNumpad = NUMPAD_REQUIRED_ELEMENTS.indexOf(elementToUpdate.type) !== -1;
-    let fileName = needsNumpad ? "numeric" : config.get('keyboard.defaultLayout');
+
+    let fileName = needsNumpad ? "numeric" : keyboardLayout;
     let pathToLayouts = path.join(__dirname, '../../pages/json/keyboard/');
 
     Keyboard.init(pathToLayouts, fileName, elementToUpdate);

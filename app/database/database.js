@@ -1,7 +1,6 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const dbPath = path.join(__dirname, 'cactus.db');
-const crypto = require('crypto');
 
 let db;
 
@@ -70,6 +69,12 @@ function createTables() {
                 shortcut TEXT NOT NULL
             );
         `;
+        const createUserSettingsTable = `
+            CREATE TABLE IF NOT EXISTS user_settings (
+                setting TEXT PRIMARY KEY,
+                value TEXT NOT NULL
+            );
+        `;
         db.run(createBookmarksTable, (err) => {
             if (err) {
                 console.error('Error creating bookmarks table:', err.message);
@@ -100,7 +105,7 @@ function createTables() {
                                     "navigateBack": "CommandOrControl+Alt+Left"
                                 };
                                 const insertShortcut = `
-                                    INSERT INTO shortcuts (action, shortcut)
+                                    INSERT OR IGNORE INTO shortcuts (action, shortcut)
                                     VALUES (?, ?)
                                 `;
                                 const shortcutPromises = Object.entries(shortcuts).map(([action, shortcut]) => {
@@ -118,7 +123,51 @@ function createTables() {
                                 Promise.all(shortcutPromises)
                                     .then(() => {
                                         console.log('Shortcuts table populated successfully.');
-                                        resolve();
+                                        db.run(createUserSettingsTable, (err) => {
+                                            if (err) {
+                                                console.error('Error creating user settings table:', err.message);
+                                                reject(err);
+                                            } else {
+                                                console.log('User settings table created successfully.');
+                                                const defaultSettings = {
+                                                    "dwellTime": 1500,
+                                                    "keyboardDwellTime": 1000,
+                                                    "rangeWidth": 150,
+                                                    "rangeHeight": 50,
+                                                    "tabViewScrollDistance": 10,
+                                                    "menuAreaScrollDistance": 200,
+                                                    "menuAreaScrollIntervalInMs": 300,
+                                                    "activateNavAreas": true,
+                                                    "defaultUrl": "https://www.google.com",
+                                                    "defaultLayout": "en"
+                                                };
+                                                const insertSetting = `
+                                                    INSERT OR IGNORE INTO user_settings (setting, value)
+                                                    VALUES (?, ?)
+                                                `;
+                                                const settingPromises = Object.entries(defaultSettings).map(([setting, value]) => {
+                                                    return new Promise((resolve, reject) => {
+                                                        db.run(insertSetting, [setting, value.toString()], function(err) {
+                                                            if (err) {
+                                                                console.error(`Error inserting setting for setting ${setting}:`, err.message);
+                                                                reject(err);
+                                                            } else {
+                                                                resolve();
+                                                            }
+                                                        });
+                                                    });
+                                                });
+                                                Promise.all(settingPromises)
+                                                    .then(() => {
+                                                        console.log('User settings table populated successfully.');
+                                                        resolve();
+                                                    })
+                                                    .catch((err) => {
+                                                        console.error('Error populating user settings table:', err.message);
+                                                        reject(err);
+                                                    });
+                                            }
+                                        });
                                     })
                                     .catch((err) => {
                                         console.error('Error populating shortcuts table:', err.message);
@@ -138,47 +187,55 @@ function createTables() {
 // =================================
 
 function addBookmark({url, title, snapshot}) {
-    // Converting base64 image to buffer
-    const base64Data = snapshot.replace(/^data:image\/\w+;base64,/, "");
-    const binarySnapshot = Buffer.from(base64Data, "base64");
+    try {
+        // Converting base64 image to buffer
+        let base64Data = snapshot.replace(/^data:image\/\w+;base64,/, "");
+        let binarySnapshot = Buffer.from(base64Data, "base64");
 
-    return new Promise((resolve, reject) => {
-        const insertBookmark = `
-            INSERT INTO bookmarks (url, title, snapshot)
-            VALUES (?, ?, ?)
-        `;
-        db.run(insertBookmark, [url, title, binarySnapshot], function(err) {
-            if (err) {
-                console.error('Error inserting bookmark:', err.message);
-                reject(err);
-            } else {
-                console.log(`A bookmark has been inserted with rowid ${this.lastID}`);
-                resolve(this.lastID);
-            }
+        return new Promise((resolve, reject) => {
+            const insertBookmark = `
+                INSERT INTO bookmarks (url, title, snapshot)
+                VALUES (?, ?, ?)
+            `;
+            db.run(insertBookmark, [url, title, binarySnapshot], function(err) {
+                if (err) {
+                    console.error('Error inserting bookmark:', err.message);
+                    reject(err);
+                } else {
+                    console.log(`A bookmark has been inserted with rowid ${this.lastID}`);
+                    resolve(this.lastID);
+                }
+            });
         });
-    });
+    } catch (err) {
+        console.error('Error adding bookmark:', err.message);
+    }
 }
 
 function addTab({url, title, isActive, snapshot, originalURL, isErrorPage}) {
-    // Converting base64 image to buffer if snapshot is provided
-    const base64Data = snapshot.replace(/^data:image\/\w+;base64,/, "");
-    const binarySnapshot = Buffer.from(base64Data, "base64");
+    try {
+        // Converting base64 image to buffer
+        let base64Data = snapshot.replace(/^data:image\/\w+;base64,/, "");
+        let binarySnapshot = Buffer.from(base64Data, "base64");
 
-    return new Promise((resolve, reject) => {
-        const insertTab = `
-            INSERT INTO tabs (url, title, isActive, snapshot, originalURL, isErrorPage)
-            VALUES (?, ?, ?, ?, ?, ?)
-        `;
-        db.run(insertTab, [url, title, isActive, binarySnapshot, originalURL, isErrorPage], function(err) {
-            if (err) {
-                console.error('Error inserting tab:', err.message);
-                reject(err);
-            } else {
-                console.log(`A tab has been inserted with rowid ${this.lastID}`);
-                resolve(this.lastID);
-            }
+        return new Promise((resolve, reject) => {
+            const insertTab = `
+                INSERT INTO tabs (url, title, isActive, snapshot, originalURL, isErrorPage)
+                VALUES (?, ?, ?, ?, ?, ?)
+            `;
+            db.run(insertTab, [url, title, isActive, binarySnapshot, originalURL, isErrorPage], function(err) {
+                if (err) {
+                    console.error('Error inserting tab:', err.message);
+                    reject(err);
+                } else {
+                    console.log(`A tab has been inserted with rowid ${this.lastID}`);
+                    resolve(this.lastID);
+                }
+            });
         });
-    });
+    } catch (err) {
+        console.error('Error adding tab:', err.message);
+    }
 }
 
 // =================================
@@ -281,6 +338,67 @@ function getShortcuts() {
     });
 }
 
+function getSetting(setting) {
+    return new Promise((resolve, reject) => {
+        if (!db) {
+            reject(new Error('Database not initialized'));
+            return;
+        }
+
+        const query = `SELECT value FROM user_settings WHERE setting = ?`;
+        db.get(query, [setting], (err, row) => {
+            if (err) {
+                console.error(`Error retrieving ${setting}:`, err.message);
+                reject(err);
+            } else {
+                resolve(row.value);
+            }
+        });
+    }).catch(err => {
+        console.error(`Error getting ${setting}:`, err.message);
+    });
+}
+
+function getDefaultURL() {
+    return getSetting('defaultUrl');
+}
+
+function getRangeWidth() {
+    return getSetting('rangeWidth').then(value => parseInt(value, 10));
+}
+
+function getRangeHeight() {
+    return getSetting('rangeHeight').then(value => parseInt(value, 10));
+}
+
+function getActivateNavAreas() {
+    return getSetting('activateNavAreas').then(value => value === 'true');
+}
+
+function getTabScrollDistance() {
+    return getSetting('tabViewScrollDistance').then(value => parseInt(value, 10));
+}
+
+function getMenuScrollDistance() {
+    return getSetting('menuAreaScrollDistance').then(value => parseInt(value, 10));
+}
+
+function getDwellTime() {
+    return getSetting('dwellTime').then(value => parseInt(value, 10));
+}
+
+function getKeyboardDwellTime() {
+    return getSetting('keyboardDwellTime').then(value => parseInt(value, 10));
+}
+
+function getMenuScrollInterval() {
+    return getSetting('menuAreaScrollIntervalInMs').then(value => parseInt(value, 10));
+}
+
+function getDefaultLayout() {
+    return getSetting('defaultLayout');
+}
+
 // =================================
 // =========== SETTERS =============
 // =================================
@@ -289,11 +407,24 @@ module.exports = {
     connect,
     close,
     createTables,
+    
     addBookmark,
     addTab,
+
     getBookmarks,
     getTabs,
     getShortcuts,
+    getDefaultURL,
+    getDefaultLayout,
+    getRangeWidth,
+    getRangeHeight,
+    getActivateNavAreas,
+    getTabScrollDistance,
+    getMenuScrollDistance,
+    getMenuScrollInterval,
+    getDwellTime,
+    getKeyboardDwellTime,
+
     deleteBookmarkByUrl,
     deleteAllTabs
 };
