@@ -42,6 +42,7 @@ const Keyboard = {
         keysContainer: null,
         keys: [],
         textarea: null,
+        togglePasswordButton: null,
     },
 
     properties: {
@@ -50,6 +51,7 @@ const Keyboard = {
         numpad_leftColumn: ["+", "-", ".", "space"],
         // numpad_rightColumn: ["mic", "backspace", "AC", "send"],
         numpad_rightColumn: ["backspace", "AC", "send", "submit"],
+        isPasswordHidden: true,
     },
 
     async init(pathToLayouts, fileName, elementToUpdate) {
@@ -89,17 +91,26 @@ const Keyboard = {
         });
     },
 
-    _createTextboxArea(previousValue) {
+    _createTextboxArea(unmaskedValue) {
         const textboxArea = document.createElement("div");
         textboxArea.classList.add("keyboard__textbox-area", "fadeInDown");
 
         const textarea = document.createElement("textarea");
         textarea.classList.add("keyboard__textbox");
-        textarea.value = previousValue;
+        textarea.value = unmaskedValue;
+        if (this.elementToUpdate.type === "password") {
+            textarea.type = "password";
+        }
         textboxArea.appendChild(textarea);
 
         const arrowKeys = this._createArrowKeys();
         textboxArea.appendChild(arrowKeys);
+
+        if (this.elementToUpdate.type === "password") {
+            const togglePasswordButton = this._createKeyElement("toggle-password");
+            textboxArea.appendChild(togglePasswordButton);
+            this.elements.togglePasswordButton = togglePasswordButton;
+        }
 
         const closeButton = this._createKeyElement("close");
         textboxArea.appendChild(closeButton);
@@ -351,6 +362,16 @@ const Keyboard = {
 
             //     break;
 
+            case "toggle-password":
+                keyElement.classList.add("keyboard__key--darker", "keyboard__key--dwell-once");
+                keyElement.innerHTML = this._createMaterialIcon(this.properties.isPasswordHidden ? "visibility" : "visibility_off");
+
+                dwell(keyElement, () => {
+                    this._togglePasswordVisibility();
+                }, true);
+
+                break;
+
             case "text1":
             case "text2":
             case "text3":
@@ -399,6 +420,7 @@ const Keyboard = {
 
                 dwell(keyElement, () => {
                     this.elements.textarea.value = "";
+                    this.unmaskedValue = "";
                 }, true);
 
                 break;
@@ -471,9 +493,11 @@ const Keyboard = {
 
                 dwell(keyElement, () => {
                     if (this.elementToUpdate) {
+                        let valueToSend = this.elementToUpdate.type === "password" ? this.unmaskedValue : this.elements.textarea.value;
+
                         // sending the keyboard value to render-mainwindow.js
-                        console.log("elementToUpdate", this.elementToUpdate, "with text", this.elements.textarea.value);
-                        ipcRenderer.send('ipc-keyboard-input', this.elements.textarea.value, this.elementToUpdate, false);
+                        console.log("elementToUpdate", this.elementToUpdate, "with text", valueToSend);
+                        ipcRenderer.send('ipc-keyboard-input', valueToSend, this.elementToUpdate, false);
                     }
                 }, true);
 
@@ -485,9 +509,11 @@ const Keyboard = {
 
                 dwell(keyElement, () => {
                     if (this.elementToUpdate) {
+                        let valueToSendAndSubmit = this.elementToUpdate.type === "password" ? this.unmaskedValue : this.elements.textarea.value;
+
                         // sending the keyboard value to render-mainwindow.js
-                        console.log("elementToUpdate", this.elementToUpdate, "with text", this.elements.textarea.value);
-                        ipcRenderer.send('ipc-keyboard-input', this.elements.textarea.value, this.elementToUpdate, true);
+                        console.log("elementToUpdate", this.elementToUpdate, "with text", valueToSendAndSubmit);
+                        ipcRenderer.send('ipc-keyboard-input', valueToSendAndSubmit, this.elementToUpdate, true);
                     }
                 }, true);
 
@@ -529,17 +555,36 @@ const Keyboard = {
         this._updateKeys();
     },
 
+    _togglePasswordVisibility() {
+        this.properties.isPasswordHidden = !this.properties.isPasswordHidden;
+        const value = this.elements.textarea.value;
+        
+        if (this.properties.isPasswordHidden) {
+            this.unmaskedValue = this.elements.textarea.value;
+            this.elements.textarea.value = value.replace(/./g, '●');
+        } else {
+            if (this.unmaskedValue) this.elements.textarea.value = this.unmaskedValue;
+        }
+        this.elements.togglePasswordButton.innerHTML = this._createMaterialIcon(this.properties.isPasswordHidden ? "visibility" : "visibility_off");
+    },
+
     // Inserts the selected key into the textarea at the current cursor position and updates the cursor position
     _insertChar(key) {
         const textarea = this.elements.textarea;
         const currentPos = textarea.selectionStart;
         const value = textarea.value;
-
+    
         // Insert the letter(s) at the current cursor position
         const newValue = value.slice(0, currentPos) + key + value.slice(currentPos);
-
+    
+        // Update the previous value
+        if (!this.unmaskedValue) {
+            this.unmaskedValue = value;
+        }
+        this.unmaskedValue = this.unmaskedValue.slice(0, currentPos) + key + this.unmaskedValue.slice(currentPos);
+    
         // Update the textarea value and set the new cursor position
-        textarea.value = newValue;
+        textarea.value = (this.properties.isPasswordHidden && this.elementToUpdate.type === "password") ? newValue.replace(/./g, '●') : newValue;
         const newCursorPos = currentPos + key.length;
         textarea.setSelectionRange(newCursorPos, newCursorPos);
         textarea.focus();
@@ -558,6 +603,11 @@ const Keyboard = {
 
         // Delete the character before the current cursor position
         const newValue = value.slice(0, currentPos - 1) + value.slice(currentPos);
+
+        // Update the previous value
+        if (this.unmaskedValue) {
+            this.unmaskedValue = this.unmaskedValue.slice(0, currentPos - 1) + this.unmaskedValue.slice(currentPos);
+        }
 
         // Update the textarea value and set the new cursor position
         textarea.value = newValue;
@@ -593,6 +643,11 @@ const Keyboard = {
         const beforeCursor = value.slice(0, currentPos);
         const afterCursor = value.slice(currentPos);
         const newValue = beforeCursor.replace(/\S*$/, '') + afterCursor.replace(/^\S*/, '');
+
+        // Update the previous value
+        if (this.unmaskedValue) {
+            this.unmaskedValue = this.unmaskedValue.slice(0, currentPos).replace(/\S*$/, '') + this.unmaskedValue.slice(currentPos);
+        }
 
         // Update the textarea value and set the new cursor position
         const deletedLength = beforeCursor.length - beforeCursor.replace(/\S*$/, '').length;
