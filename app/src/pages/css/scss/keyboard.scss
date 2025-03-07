@@ -53,6 +53,17 @@ body {
         }
     }
 
+    &__closeButton-area {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 0.35;
+        gap: 6px;
+
+        &--wide {
+            flex-grow: 1;
+        }
+    }
+
     &__keys {
         display: flex;
         flex-direction: column;
@@ -94,6 +105,10 @@ body {
             flex-basis: 100%;
         }
 
+        &--equal {
+            flex: 1;
+        }
+
         &--wide {
             // shift and enter keys
             flex-basis: 150%;
@@ -121,7 +136,7 @@ body {
         }
 
         &--close {
-            flex-grow: 0.35;
+            // flex-grow: 0.35;
             height: auto;
             // border: solid 2px #395c69;
             border: solid 2px rgba(255, 255, 255, 0.2);            

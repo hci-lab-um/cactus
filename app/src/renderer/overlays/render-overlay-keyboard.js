@@ -106,14 +106,21 @@ const Keyboard = {
         const arrowKeys = this._createArrowKeys();
         textboxArea.appendChild(arrowKeys);
 
+        const closeButtonArea = document.createElement("div");
+        closeButtonArea.classList.add("keyboard__closeButton-area", "fadeInDown");
+
+        const closeButton = this._createKeyElement("close");
+        closeButtonArea.appendChild(closeButton);
+
         if (this.elementToUpdate.type === "password") {
             const togglePasswordButton = this._createKeyElement("toggle-password");
-            textboxArea.appendChild(togglePasswordButton);
+            closeButtonArea.appendChild(togglePasswordButton);
+            closeButtonArea.classList.add("keyboard__closeButton-area--wide");
+            closeButton.classList.add("keyboard__key--equal");
             this.elements.togglePasswordButton = togglePasswordButton;
         }
 
-        const closeButton = this._createKeyElement("close");
-        textboxArea.appendChild(closeButton);
+        textboxArea.appendChild(closeButtonArea);
 
         this.elements.main.appendChild(textboxArea);
         this.elements.textarea = textarea;
@@ -363,7 +370,7 @@ const Keyboard = {
             //     break;
 
             case "toggle-password":
-                keyElement.classList.add("keyboard__key--darker", "keyboard__key--dwell-once");
+                keyElement.classList.add("keyboard__key--dwell-once", "keyboard__key--equal");
                 keyElement.innerHTML = this._createMaterialIcon(this.properties.isPasswordHidden ? "visibility" : "visibility_off");
 
                 dwell(keyElement, () => {
