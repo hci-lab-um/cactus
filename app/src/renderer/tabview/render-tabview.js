@@ -547,7 +547,7 @@ function serializeElement(element) {
 			} : null;
 		})(),
 		associatedLabel: (() => {
-			const label = document.querySelector(`label[for="${element.id}"]`);
+			const label = document.querySelector(`label[for="${element.name}"]`);
 			return label ? {
 				textContent: label.textContent
 			} : null;
