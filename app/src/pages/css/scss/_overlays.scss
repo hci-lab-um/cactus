@@ -85,9 +85,9 @@
   height: 100%;
   grid-template-columns: repeat(3, 1fr);
   grid-template-areas:
-    'zoomIn refresh toggleDwell'
-    'zoomOut bookmarks toggleNav'
-    'reset settings exit'
+    'bookmarks refresh exit'
+    'zoomIn zoomOut reset'
+    'toggleDwell toggleNav settings'
     'cancel cancel cancel';
   
     #refreshBtn {
