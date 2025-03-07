@@ -1,5 +1,6 @@
 const { throttle } = require('lodash')
 const { ipcRenderer } = require('electron')
+const { Settings } = require('./enums.js');
 
 let dwellTime;
 let keyboardDwellTime;
@@ -47,8 +48,8 @@ module.exports = {
 
   dwell: async (elem, callback, isKeyboardBtn = false) => {
     try {
-        dwellTime = await ipcRenderer.invoke('ipc-get-user-setting', 'dwellTime');
-        keyboardDwellTime = await ipcRenderer.invoke('ipc-get-user-setting', 'keyboardDwellTime');
+        dwellTime = await ipcRenderer.invoke('ipc-get-user-setting', Settings.DWELL_TIME);
+        keyboardDwellTime = await ipcRenderer.invoke('ipc-get-user-setting', Settings.KEYBOARD_DWELL_TIME);
 
         // If the dwelling is for a keyboard button, use the keyboard dwell time, otherwise use the default dwell time
         let dwellTimeToUse = isKeyboardBtn ? keyboardDwellTime : dwellTime;
@@ -69,7 +70,7 @@ module.exports = {
 
   dwellInfinite: async (elem, callback) => {
       try {
-          keyboardDwellTime = await ipcRenderer.invoke('ipc-get-user-setting', 'keyboardDwellTime');
+          keyboardDwellTime = await ipcRenderer.invoke('ipc-get-user-setting', Settings.KEYBOARD_DWELL_TIME);
 
           // Bypass dwelling in case a switch is being used
           elem.addEventListener('click', callback);

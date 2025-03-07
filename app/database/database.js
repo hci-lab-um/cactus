@@ -1,5 +1,6 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const { Settings, Shortcuts } = require('../src/tools/enums.js');
 const dbPath = path.join(__dirname, 'cactus.db');
 
 let db;
@@ -112,15 +113,15 @@ function createShortcutsTable() {
 function populateShortcutsTable() {
     return new Promise((resolve, reject) => {
         const shortcuts = {
-            "click": "CommandOrControl+Alt+C",
-            "toggleOmniBox": "CommandOrControl+Alt+O",
-            "toggleDwelling": "CommandOrControl+Alt+D",
-            "zoomIn": "CommandOrControl+Alt+Plus",
-            "zoomOut": "CommandOrControl+Alt+-",
-            "sidebarScrollUp": "CommandOrControl+Alt+W",
-            "sidebarScrollDown": "CommandOrControl+Alt+S",
-            "navigateForward": "CommandOrControl+Alt+Right",
-            "navigateBack": "CommandOrControl+Alt+Left"
+            [Shortcuts.CLICK]: "CommandOrControl+Alt+C",
+            [Shortcuts.TOGGLE_OMNI_BOX]: "CommandOrControl+Alt+O",
+            [Shortcuts.TOGGLE_DWELLING]: "CommandOrControl+Alt+D",
+            [Shortcuts.ZOOM_IN]: "CommandOrControl+Alt+Plus",
+            [Shortcuts.ZOOM_OUT]: "CommandOrControl+Alt+-",
+            [Shortcuts.SIDEBAR_SCROLL_UP]: "CommandOrControl+Alt+W",
+            [Shortcuts.SIDEBAR_SCROLL_DOWN]: "CommandOrControl+Alt+S",
+            [Shortcuts.NAVIGATE_FORWARD]: "CommandOrControl+Alt+Right",
+            [Shortcuts.NAVIGATE_BACK]: "CommandOrControl+Alt+Left"
         };
         const insertShortcut = `
             INSERT OR IGNORE INTO shortcuts (action, shortcut)
@@ -173,16 +174,16 @@ function createUserSettingsTable() {
 function populateUserSettingsTable() {
     return new Promise((resolve, reject) => {
         const defaultSettings = {
-            "dwellTime": 1500,
-            "keyboardDwellTime": 1000,
-            "rangeWidth": 150,
-            "rangeHeight": 50,
-            "tabViewScrollDistance": 10,
-            "menuAreaScrollDistance": 200,
-            "menuAreaScrollIntervalInMs": 300,
-            "activateNavAreas": true,
-            "defaultUrl": "https://www.google.com",
-            "defaultLayout": "en"
+            [Settings.DWELL_TIME]: 1500,
+            [Settings.KEYBOARD_DWELL_TIME]: 1000,
+            [Settings.RANGE_WIDTH]: 150,
+            [Settings.RANGE_HEIGHT]: 50,
+            [Settings.TAB_VIEW_SCROLL_DISTANCE]: 10,
+            [Settings.MENU_AREA_SCROLL_DISTANCE]: 200,
+            [Settings.MENU_AREA_SCROLL_INTERVAL_IN_MS]: 300,
+            [Settings.ACTIVATE_NAV_AREAS]: true,
+            [Settings.DEFAULT_URL]: "https://www.google.com",
+            [Settings.DEFAULT_LAYOUT]: "en"
         };
         const insertSetting = `
             INSERT OR IGNORE INTO user_settings (setting, value)
@@ -403,43 +404,43 @@ function getSetting(setting) {
 }
 
 function getDefaultURL() {
-    return getSetting('defaultUrl');
+    return getSetting(Settings.DEFAULT_URL);
 }
 
 function getRangeWidth() {
-    return getSetting('rangeWidth').then(value => parseInt(value, 10));
+    return getSetting(Settings.RANGE_WIDTH).then(value => parseInt(value, 10));
 }
 
 function getRangeHeight() {
-    return getSetting('rangeHeight').then(value => parseInt(value, 10));
+    return getSetting(Settings.RANGE_HEIGHT).then(value => parseInt(value, 10));
 }
 
 function getActivateNavAreas() {
-    return getSetting('activateNavAreas').then(value => value === 'true');
+    return getSetting(Settings.ACTIVATE_NAV_AREAS).then(value => value === 'true');
 }
 
 function getTabScrollDistance() {
-    return getSetting('tabViewScrollDistance').then(value => parseInt(value, 10));
+    return getSetting(Settings.TAB_VIEW_SCROLL_DISTANCE).then(value => parseInt(value, 10));
 }
 
 function getMenuScrollDistance() {
-    return getSetting('menuAreaScrollDistance').then(value => parseInt(value, 10));
+    return getSetting(Settings.MENU_AREA_SCROLL_DISTANCE).then(value => parseInt(value, 10));
 }
 
 function getDwellTime() {
-    return getSetting('dwellTime').then(value => parseInt(value, 10));
+    return getSetting(Settings.DWELL_TIME).then(value => parseInt(value, 10));
 }
 
 function getKeyboardDwellTime() {
-    return getSetting('keyboardDwellTime').then(value => parseInt(value, 10));
+    return getSetting(Settings.KEYBOARD_DWELL_TIME).then(value => parseInt(value, 10));
 }
 
 function getMenuScrollInterval() {
-    return getSetting('menuAreaScrollIntervalInMs').then(value => parseInt(value, 10));
+    return getSetting(Settings.MENU_AREA_SCROLL_INTERVAL_IN_MS).then(value => parseInt(value, 10));
 }
 
 function getDefaultLayout() {
-    return getSetting('defaultLayout');
+    return getSetting(Settings.DEFAULT_LAYOUT);
 }
 
 // =================================

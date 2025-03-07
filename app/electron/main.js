@@ -7,6 +7,7 @@ const { MenuBuilder, NavArea, HTMLSerializableMenuElement, MenuPageDocument, Men
 const { log } = require('electron-log');
 const robot = require("robotjs_addon");
 const db = require('../database/database.js');
+const { Settings } = require('../src/tools/enums.js');
 
 const isDevelopment = process.env.NODE_ENV === "development";
 let rangeWidth;
@@ -83,21 +84,21 @@ ipcMain.handle('tabview-can-go-back-or-forward', (event) => {
 
 ipcMain.handle('ipc-get-user-setting', async (event, setting) => {
     switch (setting) {
-        case 'dwellTime':
+        case Settings.DWELL_TIME:
             return dwellTime;
-        case 'keyboardDwellTime':
+        case Settings.KEYBOARD_DWELL_TIME:
             return await db.getKeyboardDwellTime();
-        case 'menuScrollDistance':
+        case Settings.MENU_AREA_SCROLL_DISTANCE:
             return menuAreaScrollDistance;
-        case 'menuScrollInterval':
+        case Settings.MENU_AREA_SCROLL_INTERVAL_IN_MS:
             return menuAreaScrollInterval;
-        case 'scrollDistance':
+        case Settings.TAB_VIEW_SCROLL_DISTANCE:
             return scrollDistance;
-        case 'rangeWidth':
+        case Settings.RANGE_WIDTH:
             return rangeWidth;
-        case 'rangeHeight':
+        case Settings.RANGE_HEIGHT:
             return rangeHeight;
-        case 'useNavAreas':
+        case Settings.ACTIVATE_NAV_AREAS:
             return useNavAreas;
         default:
             throw new Error(`Unknown setting: ${setting}`);
