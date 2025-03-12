@@ -25,9 +25,9 @@ ipcRenderer.on('ipc-main-keyboard-loaded', async (event, elementToUpdate, keyboa
 
     let fileName = needsNumpad ? "numeric" : keyboardLayout;
     let pathToLayouts = path.join(__dirname, '../../pages/json/keyboard/');
-    let pathToFrequencyLists = path.join(__dirname, '../../../resources/frequency_lists/');
+    let pathToWordFrequencyCSVs = path.join(__dirname, '../../../resources/frequency_lists/');
 
-    Keyboard.init(pathToLayouts, pathToFrequencyLists, fileName, elementToUpdate);
+    Keyboard.init(pathToLayouts, pathToWordFrequencyCSVs, fileName, elementToUpdate);
 });
 
 ipcRenderer.on('ipc-trigger-click-under-cursor', (event) => {
@@ -57,15 +57,14 @@ const Keyboard = {
         languages: ["en", "mt", "it", "fr"]
     },
 
-    async init(pathToLayouts, pathToFrequencyLists, fileName, elementToUpdate) {
+    async init(pathToLayouts, pathToWordFrequencyCSVs, fileName, elementToUpdate) {
         this.pathToLayouts = pathToLayouts;
         this.keyboardLayout = await this._getKeyboardLayout(fileName);
 
-        // If the keyboard is not numeric, get the frequency list for automplete suggestions
+        // If the keyboard is not numeric, get the frequency map for automplete suggestions
         if (fileName !== "numeric") {
-            this.pathToFrequencyLists = pathToFrequencyLists;
-            this.frequencyMap = await this._getFrequencyList(fileName);
-            console.log('frequencyList', this.frequencyMap);
+            this.pathToWordFrequencyCSVs = pathToWordFrequencyCSVs;
+            this.frequencyMap = await this._getFrequencyMap(fileName);
         }
 
         this.elementToUpdate = elementToUpdate;
@@ -106,8 +105,8 @@ const Keyboard = {
         });
     },
 
-    _getFrequencyList(fileName) {
-        let frequencyListPath = path.join(this.pathToFrequencyLists, fileName + ".csv");
+    _getFrequencyMap(fileName) {
+        let frequencyListPath = path.join(this.pathToWordFrequencyCSVs, fileName + ".csv");
         return new Promise((resolve, reject) => {
             let frequencyMap = new Map();
             fs.createReadStream(frequencyListPath)
@@ -128,27 +127,6 @@ const Keyboard = {
                 });
         });
     },
-
-    // _getFrequencyList(fileName) {
-    //     let frequencyListPath = path.join(this.pathToFrequencyLists, fileName + ".csv");
-    //     return new Promise((resolve, reject) => {
-    //         let frequencyDict = {};
-    //         fs.createReadStream(frequencyListPath)
-    //             .pipe(csv())
-    //             .on('data', (csvRow) => {
-    //                 // Assuming the CSV has columns 'Word' and 'Frequency'
-    //                 let word = csvRow['Word'];
-    //                 let frequency = parseInt(csvRow['Frequency'], 10);
-    //                 frequencyDict[word] = frequency;
-    //             })
-    //             .on('end', () => {
-    //                 resolve(frequencyDict);
-    //             })
-    //             .on('error', (err) => {
-    //                 reject(err);
-    //             });
-    //     });
-    // },
 
     _createTextboxArea(unmaskedValue) {
         const textboxArea = document.createElement("div");
@@ -444,12 +422,7 @@ const Keyboard = {
                 keyElement.innerHTML = key;
 
                 dwell(keyElement, () => {
-                    console.log('dwell1')
                     if (this.suggestions[0] === undefined) return;
-                    // let lastWordLength = this.elements.textarea.value.split(/\s+/).pop().length;
-                    // let slicedSuggestion = this.suggestions[0].slice(lastWordLength);
-                    // console.log("slicedSuggestion", slicedSuggestion);
-                    // this._insertChar(slicedSuggestion);
                     this._deleteWord(false);
                     this._insertChar(this.suggestions[0]);
                 }, true);
@@ -461,12 +434,9 @@ const Keyboard = {
                 keyElement.innerHTML = key;
 
                 dwell(keyElement, () => {
-                    console.log('dwell2')
                     if (this.suggestions[1] === undefined) return;
-                    let lastWordLength = this.elements.textarea.value.split(/\s+/).pop().length;
-                    let slicedSuggestion = this.suggestions[1].slice(lastWordLength);
-                    console.log("slicedSuggestion", slicedSuggestion);
-                    this._insertChar(slicedSuggestion);
+                    this._deleteWord(false);
+                    this._insertChar(this.suggestions[1]);
                 }, true);
 
                 break;
@@ -476,12 +446,9 @@ const Keyboard = {
                 keyElement.innerHTML = key;
 
                 dwell(keyElement, () => {
-                    console.log('dwell3')
                     if (this.suggestions[2] === undefined) return;
-                    let lastWordLength = this.elements.textarea.value.split(/\s+/).pop().length;
-                    let slicedSuggestion = this.suggestions[2].slice(lastWordLength);
-                    console.log("slicedSuggestion", slicedSuggestion);
-                    this._insertChar(slicedSuggestion);
+                    this._deleteWord(false);
+                    this._insertChar(this.suggestions[2]);
                 }, true);
 
                 break;
@@ -536,8 +503,11 @@ const Keyboard = {
                 if (this.keyboardLayout.layout !== "numeric") keyElement.classList.add("keyboard__key--wide");
                 keyElement.classList.toggle("keyboard__key--active", this.properties.capsLock);
 
-                // This allows the virtual keyboard to dynamically switch between different icons based on the current state of the keyboard.
-                // If the special keys are displayed (the "?123" button is clicked), the capslock icon changes to "=\<" to signify that more special keys are available.
+                /**
+                 * This allows the virtual keyboard to dynamically switch between different icons based on the current state of 
+                 * the keyboard. If the special keys are displayed (the "?123" button is clicked), the capslock icon changes to 
+                 * "=\<" to signify that more special keys are available. 
+                 */ 
                 if (this.properties.specialKeys) {
                     keyElement.textContent = "=\\<";
                 } else {
@@ -742,6 +712,9 @@ const Keyboard = {
      * 
      * If the cursor is at the beginning of the word, the word will also be deleted.
      * E.g. "Hello, *cursor here*World!" -> "Hello, *cursor here*" (whitespace after comma is not deleted)
+     * 
+     * If the cursor is at the end of a word that has whitespace succeeding it, the word will NOT be deleted.
+     * E.g. "Hello, *cursor here*" -> "Hello, *cursor here*" (Nothing changes)
      */
     _deleteWord(update = true) {
         const textarea = this.elements.textarea;
@@ -794,6 +767,7 @@ const Keyboard = {
             dwellInfinite(button, async () => {
                 try {
                     this.keyboardLayout = await this._getKeyboardLayout(language);
+                    this.frequencyMap = await this._getFrequencyMap(language);
                     await this._updateKeys();
                 } catch (error) {
                     console.error('Failed to load keyboard layout:', error);
