@@ -569,7 +569,10 @@ const Keyboard = {
 
                 dwell(keyElement, () => {
                     if (this.elementToUpdate) {
-                        let valueToSend = this.elementToUpdate.type === "password" ? this.unmaskedValue : this.elements.textarea.value;
+                        let valueToSend
+                        if (this.elementToUpdate.type === "password" ) {
+                            valueToSend = this.unmaskedValue ? this.unmaskedValue : this.elements.textarea.value;
+                        }
 
                         // sending the keyboard value to render-mainwindow.js
                         console.log("elementToUpdate", this.elementToUpdate, "with text", valueToSend);
@@ -585,8 +588,11 @@ const Keyboard = {
 
                 dwell(keyElement, () => {
                     if (this.elementToUpdate) {
-                        let valueToSendAndSubmit = this.elementToUpdate.type === "password" ? this.unmaskedValue : this.elements.textarea.value;
-
+                        let valueToSendAndSubmit
+                        if (this.elementToUpdate.type === "password" ) {
+                            valueToSendAndSubmit = this.unmaskedValue ? this.unmaskedValue : this.elements.textarea.value;
+                        }
+                        
                         // sending the keyboard value to render-mainwindow.js
                         console.log("elementToUpdate", this.elementToUpdate, "with text", valueToSendAndSubmit);
                         ipcRenderer.send('ipc-keyboard-input', valueToSendAndSubmit, this.elementToUpdate, true);
