@@ -4,6 +4,7 @@ const path = require('path');
 const { dwell, dwellInfinite } = require('../../tools/utils');
 const { createCursor, followCursor, getMouse } = require('../../tools/cursor')
 const DOMPurify = require('dompurify');
+const csv = require('csv-parser');
 
 // Exposes an HTML sanitizer to allow for innerHtml assignments when TrustedHTML policies are set ('This document requires 'TrustedHTML' assignment')
 window.addEventListener('DOMContentLoaded', () => {
@@ -24,8 +25,9 @@ ipcRenderer.on('ipc-main-keyboard-loaded', async (event, elementToUpdate, keyboa
 
     let fileName = needsNumpad ? "numeric" : keyboardLayout;
     let pathToLayouts = path.join(__dirname, '../../pages/json/keyboard/');
+    let pathToFrequencyLists = path.join(__dirname, '../../../resources/frequency_lists/');
 
-    Keyboard.init(pathToLayouts, fileName, elementToUpdate);
+    Keyboard.init(pathToLayouts, pathToFrequencyLists, fileName, elementToUpdate);
 });
 
 ipcRenderer.on('ipc-trigger-click-under-cursor', (event) => {
@@ -52,11 +54,20 @@ const Keyboard = {
         // numpad_rightColumn: ["mic", "backspace", "AC", "send"],
         numpad_rightColumn: ["backspace", "AC", "send", "submit"],
         isPasswordHidden: true,
+        languages: ["en", "mt", "it", "fr"]
     },
 
-    async init(pathToLayouts, fileName, elementToUpdate) {
+    async init(pathToLayouts, pathToFrequencyLists, fileName, elementToUpdate) {
         this.pathToLayouts = pathToLayouts;
         this.keyboardLayout = await this._getKeyboardLayout(fileName);
+
+        // If the keyboard is not numeric, get the frequency list for automplete suggestions
+        if (fileName !== "numeric") {
+            this.pathToFrequencyLists = pathToFrequencyLists;
+            this.frequencyMap = await this._getFrequencyList(fileName);
+            console.log('frequencyList', this.frequencyMap);
+        }
+
         this.elementToUpdate = elementToUpdate;
         console.log("elementToUpdate", elementToUpdate);
 
@@ -75,6 +86,10 @@ const Keyboard = {
             // Creating initial main area keys
             await this._updateKeys();
         }
+
+        // Set suggestions
+        this.suggestions = this._getAutocompleteSuggestions(this.elements.textarea.value);
+        this._updateAutocompleteSuggestions();
     },
 
     _getKeyboardLayout(fileName) {
@@ -90,6 +105,50 @@ const Keyboard = {
             });
         });
     },
+
+    _getFrequencyList(fileName) {
+        let frequencyListPath = path.join(this.pathToFrequencyLists, fileName + ".csv");
+        return new Promise((resolve, reject) => {
+            let frequencyMap = new Map();
+            fs.createReadStream(frequencyListPath)
+                .pipe(csv())
+                .on('data', (csvRow) => {
+                    let rowArray = [];
+                    Object.keys(csvRow).forEach(key => {
+                        rowArray.push(csvRow[key])
+                    })
+                    frequencyMap.set(rowArray[0], parseInt(rowArray[1], 10));
+                })
+                .on('end', () => {
+                    frequencyMap.delete([...frequencyMap.keys()][0]); // removes the first element which is the csv header
+                    resolve(frequencyMap);
+                })
+                .on('error', (err) => {
+                    reject(err);
+                });
+        });
+    },
+
+    // _getFrequencyList(fileName) {
+    //     let frequencyListPath = path.join(this.pathToFrequencyLists, fileName + ".csv");
+    //     return new Promise((resolve, reject) => {
+    //         let frequencyDict = {};
+    //         fs.createReadStream(frequencyListPath)
+    //             .pipe(csv())
+    //             .on('data', (csvRow) => {
+    //                 // Assuming the CSV has columns 'Word' and 'Frequency'
+    //                 let word = csvRow['Word'];
+    //                 let frequency = parseInt(csvRow['Frequency'], 10);
+    //                 frequencyDict[word] = frequency;
+    //             })
+    //             .on('end', () => {
+    //                 resolve(frequencyDict);
+    //             })
+    //             .on('error', (err) => {
+    //                 reject(err);
+    //             });
+    //     });
+    // },
 
     _createTextboxArea(unmaskedValue) {
         const textboxArea = document.createElement("div");
@@ -116,7 +175,6 @@ const Keyboard = {
             const togglePasswordButton = this._createKeyElement("toggle-password");
             closeButtonArea.appendChild(togglePasswordButton);
             closeButtonArea.classList.add("keyboard__closeButton-area--wide");
-            closeButton.classList.add("keyboard__key--equal");
             this.elements.togglePasswordButton = togglePasswordButton;
         }
 
@@ -213,7 +271,8 @@ const Keyboard = {
 
         // TOP ROW
         // const topRow = ["mic", "facebook.com", "booking.com", "google.com", "delete letter", "delete word", "AC"]; // text would eventually be replaced with auto-complete suggestions
-        const topRow = ["settings", "facebook.com", "booking.com", "google.com", "delete letter", "delete word", "AC"]; // text would eventually be replaced with auto-complete suggestions
+        // const suggestions = ["", "", ""]
+        const topRow = ["settings", "suggestion_1", "suggestion_2", "suggestion_3", "delete letter", "delete word", "AC"]; // text would eventually be replaced with auto-complete suggestions
         const topRowContainer = document.createElement("div");
         topRowContainer.classList.add("keyboard__row");
 
@@ -350,6 +409,7 @@ const Keyboard = {
 
             case "close":
                 keyElement.classList.add("keyboard__key--darker", "keyboard__key--close", "keyboard__key--dwell-once");
+                if (this.elementToUpdate.type === "password") closeButton.classList.add("keyboard__key--equal");
                 keyElement.innerHTML = this._createMaterialIcon("close");
 
                 // This key must only be dwellable once!
@@ -379,14 +439,49 @@ const Keyboard = {
 
                 break;
 
-            case "text1":
-            case "text2":
-            case "text3":
-                keyElement.classList.add("keyboard__key--wider", "keyboard__key--dark", "keyboard__key--dwell-once");
+            case "suggestion_1":
+                keyElement.classList.add("keyboard__key--wider", "keyboard__key--dark");
                 keyElement.innerHTML = key;
 
                 dwell(keyElement, () => {
-                    this._insertChar(key);
+                    console.log('dwell1')
+                    if (this.suggestions[0] === undefined) return;
+                    // let lastWordLength = this.elements.textarea.value.split(/\s+/).pop().length;
+                    // let slicedSuggestion = this.suggestions[0].slice(lastWordLength);
+                    // console.log("slicedSuggestion", slicedSuggestion);
+                    // this._insertChar(slicedSuggestion);
+                    this._deleteWord(false);
+                    this._insertChar(this.suggestions[0]);
+                }, true);
+
+                break;
+
+            case "suggestion_2":
+                keyElement.classList.add("keyboard__key--wider", "keyboard__key--dark");
+                keyElement.innerHTML = key;
+
+                dwell(keyElement, () => {
+                    console.log('dwell2')
+                    if (this.suggestions[1] === undefined) return;
+                    let lastWordLength = this.elements.textarea.value.split(/\s+/).pop().length;
+                    let slicedSuggestion = this.suggestions[1].slice(lastWordLength);
+                    console.log("slicedSuggestion", slicedSuggestion);
+                    this._insertChar(slicedSuggestion);
+                }, true);
+
+                break;
+
+            case "suggestion_3":
+                keyElement.classList.add("keyboard__key--wider", "keyboard__key--dark");
+                keyElement.innerHTML = key;
+
+                dwell(keyElement, () => {
+                    console.log('dwell3')
+                    if (this.suggestions[2] === undefined) return;
+                    let lastWordLength = this.elements.textarea.value.split(/\s+/).pop().length;
+                    let slicedSuggestion = this.suggestions[2].slice(lastWordLength);
+                    console.log("slicedSuggestion", slicedSuggestion);
+                    this._insertChar(slicedSuggestion);
                 }, true);
 
                 break;
@@ -428,6 +523,10 @@ const Keyboard = {
                 dwell(keyElement, () => {
                     this.elements.textarea.value = "";
                     this.unmaskedValue = "";
+
+                    // Update autocomplete suggestions
+                    this.suggestions = this._getAutocompleteSuggestions(this.elements.textarea.value);
+                    this._updateAutocompleteSuggestions();
                 }, true);
 
                 break;
@@ -531,6 +630,7 @@ const Keyboard = {
                 keyElement.textContent = key;
 
                 dwellInfinite(keyElement, () => {
+                    console.log('key:', key)
                     this._insertChar(key);
                 });
 
@@ -579,14 +679,13 @@ const Keyboard = {
     _insertChar(key) {
         const textarea = this.elements.textarea;
         const currentPos = textarea.selectionStart;
-        const value = textarea.value;
     
         // Insert the letter(s) at the current cursor position
-        const newValue = value.slice(0, currentPos) + key + value.slice(currentPos);
+        const newValue = textarea.value.slice(0, currentPos) + key + textarea.value.slice(currentPos);
     
         // Update the previous value
         if (!this.unmaskedValue) {
-            this.unmaskedValue = value;
+            this.unmaskedValue = textarea.value;
         }
         this.unmaskedValue = this.unmaskedValue.slice(0, currentPos) + key + this.unmaskedValue.slice(currentPos);
     
@@ -595,21 +694,26 @@ const Keyboard = {
         const newCursorPos = currentPos + key.length;
         textarea.setSelectionRange(newCursorPos, newCursorPos);
         textarea.focus();
+
+        // Update autocomplete suggestions
+        this.suggestions = this._getAutocompleteSuggestions(textarea.value);
+        this._updateAutocompleteSuggestions();
+        console.log("textarea value:", textarea.value);
+        console.log("suggestions:", this.suggestions);
+
     },
 
     // Deletes the character from the textarea at the current cursor position and updates the cursor position
     _deleteChar() {
         const textarea = this.elements.textarea;
         const currentPos = textarea.selectionStart;
-        const value = textarea.value;
-
         // If the cursor is at the beginning, do nothing
         if (currentPos === 0) {
             return;
         }
 
         // Delete the character before the current cursor position
-        const newValue = value.slice(0, currentPos - 1) + value.slice(currentPos);
+        const newValue = textarea.value.slice(0, currentPos - 1) + textarea.value.slice(currentPos);
 
         // Update the previous value
         if (this.unmaskedValue) {
@@ -621,6 +725,10 @@ const Keyboard = {
         textarea.setSelectionRange(currentPos - 1, currentPos - 1);
         console.log("newPosition", currentPos - 1);
         textarea.focus();
+
+        // Update autocomplete suggestions
+        this.suggestions = this._getAutocompleteSuggestions(this.elements.textarea.value);
+        this._updateAutocompleteSuggestions();
     },
 
     /**
@@ -635,10 +743,9 @@ const Keyboard = {
      * If the cursor is at the beginning of the word, the word will also be deleted.
      * E.g. "Hello, *cursor here*World!" -> "Hello, *cursor here*" (whitespace after comma is not deleted)
      */
-    _deleteWord() {
+    _deleteWord(update = true) {
         const textarea = this.elements.textarea;
         const currentPos = textarea.selectionStart;
-        const value = textarea.value;
 
         // If the cursor is at the beginning, do nothing
         if (currentPos === 0) {
@@ -647,8 +754,8 @@ const Keyboard = {
         }
 
         // Find the position of the last word before and including the cursor
-        const beforeCursor = value.slice(0, currentPos);
-        const afterCursor = value.slice(currentPos);
+        const beforeCursor = textarea.value.slice(0, currentPos);
+        const afterCursor = textarea.value.slice(currentPos);
         const newValue = beforeCursor.replace(/\S*$/, '') + afterCursor.replace(/^\S*/, '');
 
         // Update the previous value
@@ -663,6 +770,12 @@ const Keyboard = {
         textarea.setSelectionRange(newCursorPos, newCursorPos);
         console.log("newPosition", newCursorPos);
         textarea.focus();
+
+        if (update) {
+            // Update autocomplete suggestions
+            this.suggestions = this._getAutocompleteSuggestions(this.elements.textarea.value);
+            this._updateAutocompleteSuggestions();
+        }
     },
 
     _openSettingsOverlay() {
@@ -674,10 +787,10 @@ const Keyboard = {
         const popup = document.createElement("div");
         popup.classList.add("settings-popup");
 
-        const languages = ["en", "mt", "it", "fr"];
-        languages.forEach(language => {
+        this.properties.languages.forEach(language => {
             const button = document.createElement("button");
             button.textContent = language.toUpperCase();
+
             dwellInfinite(button, async () => {
                 try {
                     this.keyboardLayout = await this._getKeyboardLayout(language);
@@ -712,5 +825,69 @@ const Keyboard = {
 
         // Update keys reference
         this.elements.keys = this.elements.keysContainer.querySelectorAll(".keyboard__key");
+
+        // Set suggestions
+        this.suggestions = this._getAutocompleteSuggestions(this.elements.textarea.value);
+        this._updateAutocompleteSuggestions();
+    },
+
+    _getAutocompleteSuggestions(value) {
+        // Get the cursor position and surrounding text
+        const currentPos = this.elements.textarea.selectionStart;
+        const beforeCursor = value.slice(0, currentPos);
+        const afterCursor = value.slice(currentPos);
+
+        // Extract the current word being typed
+        const currentWord = beforeCursor.split(/\s+/).pop() + afterCursor.split(/\s+/).shift();
+        const trimmedWord = currentWord.trim();
+
+        let suggestions = Array.from(this.frequencyMap.keys())
+            .filter(word => word.toLowerCase().startsWith(trimmedWord.toLowerCase()))
+            .sort((a, b) => this.frequencyMap.get(b) - this.frequencyMap.get(a)) // Sorting by frequency
+            .slice(0, 3) // Return the top 3 suggestions
+            .map(word => this._matchCase(word, trimmedWord)); // Matching the case of the original trimmedWord
+
+        return suggestions;
+    },
+
+    _matchCase(suggestedWord, reference) {
+        console.log('reference', reference);   
+        suggestedWord = suggestedWord.charAt(0).toUpperCase() + suggestedWord.slice(1).toLowerCase(); // Capitalize the first letter and lowercase the rest
+
+        if (reference === reference.toUpperCase() && reference.length > 1) {
+            // If the word is all uppercase
+            return suggestedWord.toUpperCase();
+        } else if (reference === reference.toLowerCase()) {
+            // If the word is all lowercase
+            return suggestedWord.toLowerCase();
+        } else if (reference.charAt(0) !== reference.charAt(0).toUpperCase() ){
+            return suggestedWord.toLowerCase();
+        }
+        return suggestedWord;
+    },
+
+    _updateAutocompleteSuggestions() {
+        const topRowContainer = this.elements.keysContainer.querySelector('.keyboard__row');
+        const suggestionKeys = topRowContainer.querySelectorAll('.keyboard__key');
+
+        // Starting from the second key (index 1) to disregard the first key
+        this.suggestions.forEach((suggestion, index) => {
+            if (suggestionKeys[index + 1]) {
+                suggestionKeys[index + 1].textContent = suggestion;
+                if (!suggestionKeys[index + 1].classList.contains("keyboard__key--dwell-once")) {
+                    suggestionKeys[index + 1].classList.add("keyboard__key--dwell-once");
+                }
+            }
+        });
+
+        // Filling remaining keys with empty string if there are less than 3 suggestions
+        for (let i = this.suggestions.length; i < 3; i++) {
+            if (suggestionKeys[i + 1]) {
+                suggestionKeys[i + 1].textContent = "";
+                if (suggestionKeys[i + 1].classList.contains("keyboard__key--dwell-once")) {
+                    suggestionKeys[i + 1].classList.remove("keyboard__key--dwell-once");
+                }
+            }
+        }
     }
 };
