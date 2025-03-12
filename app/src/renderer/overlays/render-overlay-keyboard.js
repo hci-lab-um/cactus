@@ -424,7 +424,7 @@ const Keyboard = {
                 dwell(keyElement, () => {
                     if (this.suggestions[0] === undefined) return;
                     this._deleteWord(false);
-                    this._insertChar(this.suggestions[0]);
+                    this._insertChar(this.suggestions[0] + " ");
                 }, true);
 
                 break;
@@ -436,7 +436,7 @@ const Keyboard = {
                 dwell(keyElement, () => {
                     if (this.suggestions[1] === undefined) return;
                     this._deleteWord(false);
-                    this._insertChar(this.suggestions[1]);
+                    this._insertChar(this.suggestions[1] + " ");
                 }, true);
 
                 break;
@@ -448,7 +448,7 @@ const Keyboard = {
                 dwell(keyElement, () => {
                     if (this.suggestions[2] === undefined) return;
                     this._deleteWord(false);
-                    this._insertChar(this.suggestions[2]);
+                    this._insertChar(this.suggestions[2] + " ");
                 }, true);
 
                 break;
