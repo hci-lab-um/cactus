@@ -153,6 +153,7 @@ const Keyboard = {
             const togglePasswordButton = this._createKeyElement("toggle-password");
             closeButtonArea.appendChild(togglePasswordButton);
             closeButtonArea.classList.add("keyboard__closeButton-area--wide");
+            closeButton.classList.add("keyboard__key--equal");
             this.elements.togglePasswordButton = togglePasswordButton;
         }
 
@@ -387,7 +388,6 @@ const Keyboard = {
 
             case "close":
                 keyElement.classList.add("keyboard__key--darker", "keyboard__key--close", "keyboard__key--dwell-once");
-                if (this.elementToUpdate.type === "password") closeButton.classList.add("keyboard__key--equal");
                 keyElement.innerHTML = this._createMaterialIcon("close");
 
                 // This key must only be dwellable once!
