@@ -181,7 +181,7 @@ function populateUserSettingsTable() {
             [Settings.TAB_VIEW_SCROLL_DISTANCE]: 10,
             [Settings.MENU_AREA_SCROLL_DISTANCE]: 200,
             [Settings.MENU_AREA_SCROLL_INTERVAL_IN_MS]: 300,
-            [Settings.ACTIVATE_NAV_AREAS]: true,
+            [Settings.ACTIVATE_NAV_AREAS]: false,
             [Settings.DEFAULT_URL]: "https://www.google.com",
             [Settings.DEFAULT_LAYOUT]: "en"
         };
