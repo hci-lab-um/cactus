@@ -569,9 +569,9 @@ const Keyboard = {
 
                 dwell(keyElement, () => {
                     if (this.elementToUpdate) {
-                        let valueToSend
+                        let valueToSend = this.elements.textarea.value
                         if (this.elementToUpdate.type === "password" ) {
-                            valueToSend = this.unmaskedValue ? this.unmaskedValue : this.elements.textarea.value;
+                            valueToSend = this.unmaskedValue ? this.unmaskedValue : valueToSend;
                         }
 
                         // sending the keyboard value to render-mainwindow.js
@@ -588,9 +588,9 @@ const Keyboard = {
 
                 dwell(keyElement, () => {
                     if (this.elementToUpdate) {
-                        let valueToSendAndSubmit
+                        let valueToSendAndSubmit = this.elements.textarea.value;
                         if (this.elementToUpdate.type === "password" ) {
-                            valueToSendAndSubmit = this.unmaskedValue ? this.unmaskedValue : this.elements.textarea.value;
+                            valueToSendAndSubmit = this.unmaskedValue ? this.unmaskedValue : valueToSendAndSubmit;
                         }
                         
                         // sending the keyboard value to render-mainwindow.js
