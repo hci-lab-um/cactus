@@ -352,7 +352,7 @@ const Keyboard = {
 
                 dwellInfinite(keyElement, () => {
                     ipcRenderer.send('robot-keyboard-arrow-key', 'up');
-                });
+                }, true);
 
                 break;
 
@@ -362,7 +362,7 @@ const Keyboard = {
 
                 dwellInfinite(keyElement, () => {
                     ipcRenderer.send('robot-keyboard-arrow-key', 'down');
-                });
+                }, true);
 
                 break;
 
@@ -372,7 +372,7 @@ const Keyboard = {
 
                 dwellInfinite(keyElement, () => {
                     ipcRenderer.send('robot-keyboard-arrow-key', 'left');
-                });
+                }, true);
 
                 break;
 
@@ -382,7 +382,7 @@ const Keyboard = {
 
                 dwellInfinite(keyElement, () => {
                     ipcRenderer.send('robot-keyboard-arrow-key', 'right');
-                });
+                }, true);
 
                 break;
 
@@ -421,7 +421,7 @@ const Keyboard = {
                 keyElement.classList.add("keyboard__key--wider", "keyboard__key--dark");
                 keyElement.innerHTML = key;
 
-                dwell(keyElement, () => {
+                dwellInfinite(keyElement, () => {
                     if (this.suggestions[0] === undefined) return;
                     this._deleteWord(false);
                     this._insertChar(this.suggestions[0] + " ");
@@ -433,7 +433,7 @@ const Keyboard = {
                 keyElement.classList.add("keyboard__key--wider", "keyboard__key--dark");
                 keyElement.innerHTML = key;
 
-                dwell(keyElement, () => {
+                dwellInfinite(keyElement, () => {
                     if (this.suggestions[1] === undefined) return;
                     this._deleteWord(false);
                     this._insertChar(this.suggestions[1] + " ");
@@ -445,7 +445,7 @@ const Keyboard = {
                 keyElement.classList.add("keyboard__key--wider", "keyboard__key--dark");
                 keyElement.innerHTML = key;
 
-                dwell(keyElement, () => {
+                dwellInfinite(keyElement, () => {
                     if (this.suggestions[2] === undefined) return;
                     this._deleteWord(false);
                     this._insertChar(this.suggestions[2] + " ");
@@ -459,7 +459,7 @@ const Keyboard = {
 
                 dwellInfinite(keyElement, () => {
                     this._deleteChar();
-                });
+                }, true);
 
                 break;
 
@@ -469,7 +469,7 @@ const Keyboard = {
 
                 dwellInfinite(keyElement, () => {
                     this._deleteChar();
-                });
+                }, true);
 
                 break;
 
@@ -479,7 +479,7 @@ const Keyboard = {
 
                 dwellInfinite(keyElement, () => {
                     this._deleteWord();
-                });
+                }, true);
 
                 break;
 
@@ -527,7 +527,7 @@ const Keyboard = {
 
                 dwellInfinite(keyElement, () => {
                     this._insertChar("\n");
-                });
+                }, true);
 
                 break;
 
@@ -558,7 +558,7 @@ const Keyboard = {
 
                 dwellInfinite(keyElement, () => {
                     this._insertChar(" ");
-                });
+                }, true);
 
                 break;
 
@@ -608,7 +608,7 @@ const Keyboard = {
                 dwellInfinite(keyElement, () => {
                     console.log('key:', key)
                     this._insertChar(key);
-                });
+                }, true);
 
                 break;
         }
@@ -780,7 +780,7 @@ const Keyboard = {
                 }
                 document.body.removeChild(popup);
                 document.body.removeChild(overlay);
-            });
+            }, false);
             popup.appendChild(button);
         });
 

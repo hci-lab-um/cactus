@@ -91,10 +91,15 @@
     &:hover {
         background-color: #4acee075;
         padding: 20px;
-        animation: keydown $keyboardDwellTime cubic-bezier(0, 0, 0.2, 1) $animationIteration;
-
+        
         &:before {
             animation: keyboardDwellAnimation-circle $keyboardDwellTime ease-in $animationIteration;
+        }
+    }
+
+    &.clicked {
+        &:before {
+            animation: none !important;
         }
     }
 }
