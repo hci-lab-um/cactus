@@ -193,14 +193,15 @@ window.cactusAPI.onAsync('ipc-tabview-click-element', (elementToClick, useRobotJ
 	}
 
 	if (element) {
-		if (element.nodeName == 'A' && (element.getAttribute('href') && element.getAttribute('href') != '#' && element.getAttribute('href') != 'javascript:void(0)'))
-			window.cactusAPI.send('browse-to-url', element.getAttribute('href'));
-		else if (useRobotJS){
+		if (useRobotJS){
 			robotClick(element);
+		} else if (element.nodeName == 'A' && (element.getAttribute('href') && (element.getAttribute('href') != '#' || element.getAttribute('href') != 'javascript:void(0)'))) {
+			window.cactusAPI.send('browse-to-url', element.getAttribute('href'));
 		} else {
-			let clickableElement = getClickablePartOfElement(element);
-			if (clickableElement) clickableElement.click();
-			else robotClick(element);
+			// let clickableElement = getClickablePartOfElement(element);
+			// if (clickableElement) clickableElement.click();
+			// else robotClick(element);
+			robotClick(element);
 		}
 	} else {
 		console.error("Element to click has not been found");
