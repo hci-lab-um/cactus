@@ -7,6 +7,7 @@ const Settings = Object.freeze({
     MENU_AREA_SCROLL_DISTANCE: "menuAreaScrollDistance",
     MENU_AREA_SCROLL_INTERVAL_IN_MS: "menuAreaScrollIntervalInMs",
     ACTIVATE_NAV_AREAS: "activateNavAreas",
+    USE_ROBOT_JS: "useRobotJS",
     DEFAULT_URL: "defaultUrl",
     DEFAULT_LAYOUT: "defaultLayout"
 });

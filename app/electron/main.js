@@ -13,6 +13,7 @@ const isDevelopment = process.env.NODE_ENV === "development";
 let rangeWidth;
 let rangeHeight;
 let useNavAreas;
+let useRobotJS;
 let defaultUrl;
 let scrollDistance;
 let menuAreaScrollDistance;
@@ -358,7 +359,7 @@ ipcMain.on('ipc-mainwindow-click-sidebar-element', (event, elementToClick) => {
     //Focus on window first before going forward
     tab.webContentsView.webContents.focus();
     //Once the main page is loaded, create inner tabview and place it in the right position by getting the x,y,width,height of a positioned element in index.html
-    tab.webContentsView.webContents.send('ipc-tabview-click-element', elementToClick);
+    tab.webContentsView.webContents.send('ipc-tabview-click-element', elementToClick, useRobotJS);
 })
 
 ipcMain.on('ipc-mainwindow-highlight-elements-on-page', (event, elements) => {
@@ -545,10 +546,6 @@ ipcMain.on('ipc-overlays-refresh', (event) => {
     }
 })
 
-ipcMain.on('ipc-overlays-view-bookmarks', (event) => {
-    createOverlay('bookmarks');
-})
-
 ipcMain.on('ipc-overlays-settings', (event) => {
     // to be implemented
 });
@@ -571,6 +568,10 @@ ipcMain.on('ipc-overlays-toggle-dwell', (event) => {
 
 ipcMain.on('ipc-overlays-toggle-nav', (event) => {
     toggleNavigation();
+});
+
+ipcMain.on('ipc-overlays-toggle-useRobotJS', (event) => {
+    toggleUseRobotJS();
 });
 
 ipcMain.on('ipc-exit-browser', async(event) => {
@@ -616,6 +617,7 @@ async function initialiseVariables (){
     rangeWidth = await db.getRangeWidth();
     rangeHeight = await db.getRangeHeight();
     useNavAreas = await db.getActivateNavAreas();
+    useRobotJS = await db.getUseRobotJS();
     scrollDistance = await db.getTabScrollDistance();
     dwellTime = await db.getDwellTime();
     menuAreaScrollDistance = await db.getMenuScrollDistance();
@@ -1325,6 +1327,7 @@ async function createOverlay(overlayAreaToShow, elementProperties) {
         canGoForward: true,
         isDwellingActive: isDwellingActive,
         useNavAreas: useNavAreas,
+        useRobotJS: useRobotJS,
     };
 
     switch (overlayAreaToShow) {
@@ -1469,6 +1472,10 @@ function toggleNavigation() {
     tabList.forEach(tab => {
         tab.webContentsView.webContents.send('ipc-tabview-create-quadtree', useNavAreas);
     });
+}
+
+function toggleUseRobotJS() {
+    useRobotJS = !useRobotJS;
 }
 
 function handleZoom(direction, usedShortcut = false) {

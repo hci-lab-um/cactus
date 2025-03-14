@@ -103,7 +103,6 @@ async function setupFunctionality(dwellTime) {
 	})
 
 	let bookmarkBtn = byId('bookmarkBtn')
-	let dwellTimeout;
 
 	ipcRenderer.on('ipc-main-update-bookmark-icon', (event, isBookmark) => {
 		if (isBookmark) {
@@ -125,6 +124,11 @@ async function setupFunctionality(dwellTime) {
 			bookmarkBtn.innerHTML = roundedBookmarkFilled;
 			bookmarkBtn.classList.add('bookmarked');
 		}
+	})
+
+	let bookmarks = byId('bookmarksBtn')
+	dwell(bookmarks, () => {
+		showOverlay('bookmarks');
 	})
 
 	let tabs = byId('tabsBtn')

@@ -31,7 +31,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 10%;
+    width: 9%;
   }
   
   #tabsBtn  {
@@ -66,6 +66,15 @@
         transform: scale(1);
         transition: opacity 1ms, transform 1ms;
       }
+    }
+  }
+
+  #bookmarksBtn  {
+    @extend #accessibilityBtn;
+
+    svg {
+      fill: $blue-2;
+      transition: fill $dwellTime;
     }
   }
 

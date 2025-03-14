@@ -183,7 +183,8 @@ window.cactusAPI.on('ipc-trigger-click-under-cursor', () => {
 	}
 });
 
-window.cactusAPI.onAsync('ipc-tabview-click-element', (elementToClick) => {
+window.cactusAPI.onAsync('ipc-tabview-click-element', (elementToClick, useRobotJS) => {
+	console.log('robotjs', useRobotJS);
 	let element = document.querySelector('[data-cactus-id="' + elementToClick.id + '"]');
 
 	if (!element) {
@@ -194,11 +195,12 @@ window.cactusAPI.onAsync('ipc-tabview-click-element', (elementToClick) => {
 	if (element) {
 		if (element.nodeName == 'A' && (element.getAttribute('href') && element.getAttribute('href') != '#' && element.getAttribute('href') != 'javascript:void(0)'))
 			window.cactusAPI.send('browse-to-url', element.getAttribute('href'));
-		else {
-			// let clickableElement = getClickablePartOfElement(element);
-			// if (clickableElement) clickableElement.click();
-			// else robotClick(element);
+		else if (useRobotJS){
 			robotClick(element);
+		} else {
+			let clickableElement = getClickablePartOfElement(element);
+			if (clickableElement) clickableElement.click();
+			else robotClick(element);
 		}
 	} else {
 		console.error("Element to click has not been found");

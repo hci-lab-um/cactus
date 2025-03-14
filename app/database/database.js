@@ -182,6 +182,7 @@ function populateUserSettingsTable() {
             [Settings.MENU_AREA_SCROLL_DISTANCE]: 200,
             [Settings.MENU_AREA_SCROLL_INTERVAL_IN_MS]: 300,
             [Settings.ACTIVATE_NAV_AREAS]: false,
+            [Settings.USE_ROBOT_JS]: true,
             [Settings.DEFAULT_URL]: "https://www.google.com",
             [Settings.DEFAULT_LAYOUT]: "en"
         };
@@ -419,6 +420,10 @@ function getActivateNavAreas() {
     return getSetting(Settings.ACTIVATE_NAV_AREAS).then(value => value === 'true');
 }
 
+function getUseRobotJS() {
+    return getSetting(Settings.USE_ROBOT_JS).then(value => value === 'true');
+}
+
 function getTabScrollDistance() {
     return getSetting(Settings.TAB_VIEW_SCROLL_DISTANCE).then(value => parseInt(value, 10));
 }
@@ -463,6 +468,7 @@ module.exports = {
     getRangeWidth,
     getRangeHeight,
     getActivateNavAreas,
+    getUseRobotJS,
     getTabScrollDistance,
     getMenuScrollDistance,
     getMenuScrollInterval,

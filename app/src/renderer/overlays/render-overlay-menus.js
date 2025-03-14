@@ -16,7 +16,7 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 ipcRenderer.on('ipc-main-overlays-loaded', (event, overlaysData) => {
-	const { overlayAreaToShow, tabList, bookmarks, canGoBack, canGoForward, isDwellingActive, useNavAreas } = overlaysData;
+	const { overlayAreaToShow, tabList, bookmarks, canGoBack, canGoForward, isDwellingActive, useNavAreas, useRobotJS } = overlaysData;
 	console.log('Overlays data', overlaysData);
 
 	switch (overlayAreaToShow) {
@@ -37,7 +37,7 @@ ipcRenderer.on('ipc-main-overlays-loaded', (event, overlaysData) => {
 		}
 		case 'accessibility': {
 			byId('overlay-options').style.display = 'grid'
-			setEventHandlersForAccessibilityMenu(isDwellingActive, useNavAreas);
+			setEventHandlersForAccessibilityMenu(isDwellingActive, useNavAreas, useRobotJS);
 			break;
 		}
 		case 'bookmarks': {
@@ -239,35 +239,38 @@ function setEventHandlersForOmniMenu() {
 	// })
 }
 
-function setEventHandlersForAccessibilityMenu(isDwellingActive, useNavAreas) {
+function setEventHandlersForAccessibilityMenu(isDwellingActive, useNavAreas, useRobotJS) {
 	// =================================
 	// ======== OPTIONS OVERLAY ========
 	// =================================
 
 	const refreshBtn = byId('refreshBtn')
-	const bookmarksBtn = byId('bookmarksBtn')
 	const settingsBtn = byId('settingsBtn')
 	const zoomInBtn = byId('zoomInBtn')
 	const zoomOutBtn = byId('zoomOutBtn')
 	const resetZoomBtn = byId('resetZoomBtn')
 	const toggleDwellBtn = byId('toggleDwellBtn')
 	const toggleNavBtn = byId('toggleNavBtn')
+	const toggleLinkClickingBtn = byId('toggleClickBtn')
 	const exitBtn = byId('exitBtn')
 	const cancelOptionsBtn = byId('cancel-options')
+	// const bookmarksBtn = byId('bookmarksBtn')
 	// const aboutBtn = byId('aboutBtn')
 
 	let dwellingIcon = toggleDwellBtn.getElementsByTagName('i')[0];
 	dwellingIcon.innerText = isDwellingActive ? 'toggle_on' : 'toggle_off';
+	dwellingIcon.style.color = dwellingIcon.innerText === 'toggle_on' ? '#10468b' : '#aaacbb';
 
 	let navIcon = toggleNavBtn.getElementsByTagName('i')[0];
 	navIcon.innerText = useNavAreas ? 'toggle_on' : 'toggle_off';
+	navIcon.style.color = navIcon.innerText === 'toggle_on' ? '#10468b' : '#aaacbb';
+
+	let clickIcon = toggleLinkClickingBtn.getElementsByTagName('i')[0];
+	clickIcon.innerText = useRobotJS ? 'toggle_on' : 'toggle_off';
+	clickIcon.style.color = clickIcon.innerText === 'toggle_on' ? '#10468b' : '#aaacbb';
 
 	dwell(refreshBtn, () => {
 		ipcRenderer.send('ipc-overlays-refresh');
-	})
-
-	dwell(bookmarksBtn, () => {
-		ipcRenderer.send('ipc-overlays-view-bookmarks');
 	})
 
 	dwell(settingsBtn, () => {
@@ -290,12 +293,21 @@ function setEventHandlersForAccessibilityMenu(isDwellingActive, useNavAreas) {
 		ipcRenderer.send('ipc-overlays-toggle-dwell');
 		let icon = toggleDwellBtn.getElementsByTagName('i')[0];
 		icon.innerText = icon.innerText === 'toggle_on' ? 'toggle_off' : 'toggle_on';
+		icon.style.color = icon.innerText === 'toggle_on' ? '#10468b' : '#aaacbb';
 	})
 	
 	dwell(toggleNavBtn, () => {
 		ipcRenderer.send('ipc-overlays-toggle-nav');
 		let icon = toggleNavBtn.getElementsByTagName('i')[0];
 		icon.innerText = icon.innerText === 'toggle_on' ? 'toggle_off' : 'toggle_on';
+		icon.style.color = icon.innerText === 'toggle_on' ? '#10468b' : '#aaacbb';
+	})
+
+	dwell(toggleLinkClickingBtn, () => {
+		ipcRenderer.send('ipc-overlays-toggle-useRobotJS');
+		let icon = toggleLinkClickingBtn.getElementsByTagName('i')[0];
+		icon.innerText = icon.innerText === 'toggle_on' ? 'toggle_off' : 'toggle_on';
+		icon.style.color = icon.innerText === 'toggle_on' ? '#10468b' : '#aaacbb';
 	})
 
 	dwell(exitBtn, () => {
@@ -305,6 +317,10 @@ function setEventHandlersForAccessibilityMenu(isDwellingActive, useNavAreas) {
 	dwell(cancelOptionsBtn, () => {
 		ipcRenderer.send('ipc-overlays-remove');
 	})
+
+	// dwell(bookmarksBtn, () => {
+	// 	ipcRenderer.send('ipc-overlays-view-bookmarks');
+	// })
 
 	// dwell(aboutBtn, () => {
 	// 	ipcRenderer.send('ipc-overlays-about');

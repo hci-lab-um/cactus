@@ -85,17 +85,13 @@
   height: 100%;
   grid-template-columns: repeat(3, 1fr);
   grid-template-areas:
-    'bookmarks refresh exit'
+    'settings refresh exit'
     'zoomIn zoomOut reset'
-    'toggleDwell toggleNav settings'
+    'toggleDwell toggleNav toggleClick'
     'cancel cancel cancel';
   
     #refreshBtn {
       grid-area: refresh;
-    }
-
-    #bookmarksBtn {
-      grid-area: bookmarks;
     }
 
     #toggleDwellBtn {
@@ -106,6 +102,10 @@
       grid-area: toggleNav;
     }
 
+    #toggleClickBtn {
+      grid-area: toggleClick;
+    }
+
     #zoomInBtn {
       grid-area: zoomIn;
     }
@@ -113,16 +113,18 @@
     #zoomOutBtn {
       grid-area: zoomOut;
     }
-  #resetZoomBtn {
-    grid-area: reset;
-  }
+
+    #resetZoomBtn {
+      grid-area: reset;
+    }
 
     #settingsBtn {
       grid-area: settings;
     }
-  #aboutBtn {
-    grid-area: about;
-  }
+    
+    #aboutBtn {
+      grid-area: about;
+    }
 
     #exitBtn {
       grid-area: exit;
