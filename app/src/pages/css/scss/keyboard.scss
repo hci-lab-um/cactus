@@ -39,6 +39,21 @@ body {
         font-size: 2rem;
     }
 
+    &__input {
+        flex-grow: 0;
+        font-size: 4rem;
+        text-align: center;
+        min-width: 50%;
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator,
+    input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+    input[type="month"]::-webkit-calendar-picker-indicator, 
+    input[type="week"]::-webkit-calendar-picker-indicator {
+        display: none;
+        -webkit-appearance: none;
+    }
+
     &__arrow-keys {
         display: flex;
         flex-direction: column;

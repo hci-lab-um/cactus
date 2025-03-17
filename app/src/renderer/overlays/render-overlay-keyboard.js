@@ -19,8 +19,7 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 ipcRenderer.on('ipc-main-keyboard-loaded', async (event, elementToUpdate, keyboardLayout) => {
-    // const NUMPAD_REQUIRED_ELEMENTS = [ 'number', 'tel', 'date', 'datetime-local', 'month', 'time', 'week' ]; // revise these
-    const NUMPAD_REQUIRED_ELEMENTS = ['number', 'tel'];
+    const NUMPAD_REQUIRED_ELEMENTS = ['number', 'tel', 'date', 'datetime-local', 'month', 'time', 'week']; // revise these
     let needsNumpad = NUMPAD_REQUIRED_ELEMENTS.indexOf(elementToUpdate.type) !== -1;
 
     let fileName = needsNumpad ? "numeric" : keyboardLayout;
@@ -86,9 +85,11 @@ const Keyboard = {
             await this._updateKeys();
         }
 
-        // Set suggestions
-        this.suggestions = this._getAutocompleteSuggestions(this.elements.textarea.value);
-        this._updateAutocompleteSuggestions();
+        if (fileName !== "numeric") {
+            // Set suggestions
+            this.suggestions = this._getAutocompleteSuggestions(this.elements.textarea.value);
+            this._updateAutocompleteSuggestions();
+        }
     },
 
     _getKeyboardLayout(fileName) {
@@ -132,8 +133,16 @@ const Keyboard = {
         const textboxArea = document.createElement("div");
         textboxArea.classList.add("keyboard__textbox-area", "fadeInDown");
 
-        const textarea = document.createElement("textarea");
-        textarea.classList.add("keyboard__textbox");
+        let textarea;
+        if (this.keyboardLayout.layout === "numeric" || this.elementToUpdate.type === "password") {
+            textarea = document.createElement("input");
+            textarea.type = this.elementToUpdate.type;
+            textarea.classList.add("keyboard__input");
+        } else {
+            textarea = document.createElement("textarea");
+            textarea.classList.add("keyboard__textbox");
+        }
+
         textarea.value = unmaskedValue;
         if (this.elementToUpdate.type === "password") {
             textarea.type = "password";
@@ -162,6 +171,7 @@ const Keyboard = {
         this.elements.main.appendChild(textboxArea);
         this.elements.textarea = textarea;
         this.elements.textarea.focus();
+
         // Ensuring textarea stays focused by refocusing it if focus is lost
         this.elements.textarea.addEventListener("focusout", (event) => {
             setTimeout(() => this.elements.textarea.focus(), 0);
@@ -170,15 +180,10 @@ const Keyboard = {
 
     _createArrowKeys() {
         // If a numeric keyboard layout is used, the up and down arrow keys are not displayed
-        let arrowKeysLayout = this.keyboardLayout.layout === "numeric" ?
-            {
-                row1: ["arrow-home", "arrow-end"],
-                row2: ["arrow-left", "arrow-right"]
-            } :
-            {
-                row1: ["arrow-home", "arrow-up", "arrow-end"],
-                row2: ["arrow-left", "arrow-down", "arrow-right"]
-            };
+        let arrowKeysLayout = {
+            row1: ["arrow-home", "arrow-up", "arrow-end"],
+            row2: ["arrow-left", "arrow-down", "arrow-right"]
+        };
 
         const arrowKeysContainer = document.createElement("div");
         arrowKeysContainer.classList.add("keyboard__arrow-keys");
@@ -216,7 +221,7 @@ const Keyboard = {
         for (let i = 0; i < this.keyboardLayout.keys.length; i++) {
             const row = this.keyboardLayout.keys[i];
             const rowContainer = document.createElement("div");
-            rowContainer.classList.add("keyboard__row");
+            rowContainer.classList.add("keyboard__row", "fadeInUp");
 
             // Adding key before each row
             addKeyElement(this.properties.numpad_leftColumn[i], rowContainer, "keyboard__key--equal-width", "keyboard__key--darker");
@@ -319,11 +324,18 @@ const Keyboard = {
     },
 
     _createKeyElement(key, isUrl = false) {
+        // These input types do not work when they are updated using RobotJS. Hence the value attribute is updated instead
+        const INPUT_TYPES_NEEDING_VALUE_UPDATE = ['datetime-local', 'month', 'week'];
         const keyElement = document.createElement("button");
 
         // Add attributes/classes
         keyElement.setAttribute("type", "button");
         keyElement.classList.add("keyboard__key");
+
+        // Prevent the key from gaining focus on mousedown
+        keyElement.addEventListener("mousedown", (event) => {
+            event.preventDefault();
+        });
 
         switch (key) {
             case "arrow-home":
@@ -458,7 +470,11 @@ const Keyboard = {
                 keyElement.innerHTML = this._createMaterialIcon("backspace");
 
                 dwellInfinite(keyElement, () => {
-                    this._deleteChar();
+                    if (this.keyboardLayout.layout !== "numeric") {
+                        this._deleteChar();
+                    } else {
+                        ipcRenderer.send('robot-keyboard-backspace');
+                    }
                 }, true);
 
                 break;
@@ -491,9 +507,11 @@ const Keyboard = {
                     this.elements.textarea.value = "";
                     this.unmaskedValue = "";
 
-                    // Update autocomplete suggestions
-                    this.suggestions = this._getAutocompleteSuggestions(this.elements.textarea.value);
-                    this._updateAutocompleteSuggestions();
+                    if (this.keyboardLayout.layout !== "numeric") {
+                        // Update autocomplete suggestions
+                        this.suggestions = this._getAutocompleteSuggestions(this.elements.textarea.value);
+                        this._updateAutocompleteSuggestions();
+                    }
                 }, true);
 
                 break;
@@ -568,15 +586,21 @@ const Keyboard = {
                 keyElement.innerHTML = this._createMaterialIcon("send");
 
                 dwell(keyElement, () => {
+                    let submit = false;
+                    let updateValueAttribute = false;
+                    let valueToSend = this.elements.textarea.value
+
                     if (this.elementToUpdate) {
-                        let valueToSend = this.elements.textarea.value
                         if (this.elementToUpdate.type === "password" ) {
                             valueToSend = this.unmaskedValue ? this.unmaskedValue : valueToSend;
+                        } else if (INPUT_TYPES_NEEDING_VALUE_UPDATE.includes(this.elementToUpdate.type)) {
+                            updateValueAttribute = true;
+                        } else if (this.elementToUpdate.type === "date") {
+                            valueToSend = new Date(valueToSend).toLocaleDateString('en-GB'); // Format as DD/MM/YYYY// sending the keyboard value to render-mainwindow.js
                         }
 
-                        // sending the keyboard value to render-mainwindow.js
                         console.log("elementToUpdate", this.elementToUpdate, "with text", valueToSend);
-                        ipcRenderer.send('ipc-keyboard-input', valueToSend, this.elementToUpdate, false);
+                        ipcRenderer.send('ipc-keyboard-input', valueToSend, this.elementToUpdate, submit, updateValueAttribute);
                     }
                 }, true);
 
@@ -587,15 +611,22 @@ const Keyboard = {
                 keyElement.innerHTML = this._createMaterialIcon("send_and_archive");
 
                 dwell(keyElement, () => {
+                    let submit = true;
+                    let updateValueAttribute = false;
+                    let valueToSend = this.elements.textarea.value
+
                     if (this.elementToUpdate) {
-                        let valueToSendAndSubmit = this.elements.textarea.value;
                         if (this.elementToUpdate.type === "password" ) {
-                            valueToSendAndSubmit = this.unmaskedValue ? this.unmaskedValue : valueToSendAndSubmit;
+                            valueToSend = this.unmaskedValue ? this.unmaskedValue : valueToSend;
+                        } else if (INPUT_TYPES_NEEDING_VALUE_UPDATE.includes(this.elementToUpdate.type)) {
+                            updateValueAttribute = true;
+                        } else if (this.elementToUpdate.type === "date") {
+                            valueToSend = new Date(valueToSend).toLocaleDateString('en-GB'); // Format as DD/MM/YYYY
                         }
                         
                         // sending the keyboard value to render-mainwindow.js
-                        console.log("elementToUpdate", this.elementToUpdate, "with text", valueToSendAndSubmit);
-                        ipcRenderer.send('ipc-keyboard-input', valueToSendAndSubmit, this.elementToUpdate, true);
+                        console.log("elementToUpdate", this.elementToUpdate, "with text", valueToSend);
+                        ipcRenderer.send('ipc-keyboard-input', valueToSend, this.elementToUpdate, submit, updateValueAttribute);
                     }
                 }, true);
 
@@ -603,11 +634,32 @@ const Keyboard = {
 
             default:
                 keyElement.classList.add("keyboard__key--dwell-infinite");
-                keyElement.textContent = key;
+                // Checks if the element type is "month" and display the month name next to the key
+                if (this.elementToUpdate.type === "month") {
+                    const monthNames = [
+                        "January", "February", "March", "April", "May", "June",
+                        "July", "August", "September", "October", "November", "December"
+                    ];
+
+                    // Parses the key as a number and uses it to get the month name
+                    const monthIndex = parseInt(key, 10) - 1; // Subtract 1 because months are 0-indexed
+                    if (!isNaN(monthIndex) && monthIndex >= 0 && monthIndex < 12) {
+                        keyElement.textContent = `${key} (${monthNames[monthIndex]})`;
+                    } else {
+                        keyElement.textContent = key; // Fallback for non-numeric keys
+                    }
+                } else {
+                    keyElement.textContent = key;
+                }
 
                 dwellInfinite(keyElement, () => {
                     console.log('key:', key)
-                    this._insertChar(key);
+                    if (this.keyboardLayout.layout !== "numeric") {
+                        this._insertChar(key);
+                    } else {
+                        console.log('robot-keyboard-numpad', key)
+                        ipcRenderer.send('robot-keyboard-numpad', key);
+                    }
                 }, true);
 
                 break;
@@ -669,14 +721,12 @@ const Keyboard = {
         textarea.value = (this.properties.isPasswordHidden && this.elementToUpdate.type === "password") ? newValue.replace(/./g, '●') : newValue;
         const newCursorPos = currentPos + key.length;
         textarea.setSelectionRange(newCursorPos, newCursorPos);
-        textarea.focus();
 
         // Update autocomplete suggestions
         this.suggestions = this._getAutocompleteSuggestions(textarea.value);
         this._updateAutocompleteSuggestions();
-        console.log("textarea value:", textarea.value);
-        console.log("suggestions:", this.suggestions);
 
+        textarea.focus();
     },
 
     // Deletes the character from the textarea at the current cursor position and updates the cursor position
@@ -696,7 +746,6 @@ const Keyboard = {
             this.unmaskedValue = this.unmaskedValue.slice(0, currentPos - 1) + this.unmaskedValue.slice(currentPos);
         }
 
-        // Update the textarea value and set the new cursor position
         textarea.value = newValue;
         textarea.setSelectionRange(currentPos - 1, currentPos - 1);
         console.log("newPosition", currentPos - 1);

@@ -328,14 +328,27 @@ ipcMain.on('robot-keyboard-type', (event, { text, submit }) => {
 
 ipcMain.on('robot-keyboard-enter', (event) => {
     // Wait a short period to ensure the field is focused before performing actions
-    robot.setKeyboardDelay(300);
-    robot.keyTap("enter");
+    setTimeout(() => {
+        robot.keyTap("enter");
+    }, 500);
 })
 
 ipcMain.on('robot-keyboard-spacebar', (event) => {
     // Wait a short period to ensure the field is focused before performing actions
     robot.setKeyboardDelay(300);
     robot.keyTap("space");
+})
+
+ipcMain.on('robot-keyboard-backspace', (event) => {
+    // Wait a short period to ensure the field is focused before performing actions
+    // robot.setKeyboardDelay(300);
+    robot.keyTap("backspace");
+})
+
+ipcMain.on('robot-keyboard-numpad', (event, number) => {
+    // Wait a short period to ensure the field is focused before performing actions
+    // robot.setKeyboardDelay(50);
+    robot.typeString(number);
 })
 
 ipcMain.on('robot-keyboard-arrow-key', (event, direction) => {
@@ -584,7 +597,7 @@ ipcMain.on('ipc-exit-browser', async(event) => {
 //     // to be implemented
 // });
 
-ipcMain.on('ipc-keyboard-input', (event, value, element, submit) => {    
+ipcMain.on('ipc-keyboard-input', (event, value, element, submit, updateValueAttr = false) => {    
     removeOverlay();
 
     console.log("Keyboard value: ", value, element, submit);
@@ -596,7 +609,11 @@ ipcMain.on('ipc-keyboard-input', (event, value, element, submit) => {
 
         //Focus on window first before going forward
         tab.webContentsView.webContents.focus();
-        tab.webContentsView.webContents.send('ipc-tabview-keyboard-input', value, element, submit);
+        tab.webContentsView.webContents.send('ipc-tabview-keyboard-input', value, element, submit, updateValueAttr);
+        // After updating the value of an element, the quadtree is regenerated to reflect the changes in the sidebar element's attributes
+        setTimeout(() => {
+            tab.webContentsView.webContents.send('ipc-tabview-create-quadtree', useNavAreas);
+        }, 300);
     }
 });
 
