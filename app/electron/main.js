@@ -303,18 +303,20 @@ ipcMain.on('robot-keyboard-type', (event, { text, submit }) => {
         // Split the text into an array of words
         const wordArray = text.split(" ");
         // Iterate through each word
-        wordArray.forEach(word => {
+        wordArray.forEach((word, index) => {
             if (consecutiveCharPattern.test(word)) {
-                // If the word has consecutive characters, type each character using keyTap
-                for (let char of word) {
-                    robot.keyTap(char);
-                }
-            } else {
-                // If the word does not have consecutive characters, type the whole word using typeString
-                robot.typeString(word);
+            // If the word has consecutive characters, type each character using keyTap
+            for (let char of word) {
+                robot.keyTap(char);
             }
-            // Add a space after each word
+            } else {
+            // If the word does not have consecutive characters, type the whole word using typeString
+            robot.typeString(word);
+            }
+            // Add a space after each word except the last one
+            if (index < wordArray.length - 1) {
             robot.keyTap("space");
+            }
         });
     }
 
@@ -965,6 +967,10 @@ function setTabViewEventlisteners(tabView) {
                     case 408:
                         errorTitle.textContent = '408 Request Timeout';
                         errorMessage.textContent = 'The server timed out waiting for the request.';
+                        break;
+                    case 425:
+                        errorTitle.textContent = '425 Page Not Working';
+                        errorMessage.textContent = 'If the problem continues, contact the site owner.';
                         break;
                     case 500:
                         errorTitle.textContent = '500 Internal Server Error';
