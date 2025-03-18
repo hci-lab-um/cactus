@@ -85,7 +85,10 @@ const Keyboard = {
             await this._updateKeys();
         }
 
-        if (fileName !== "numeric") {
+        if (this.elementToUpdate.type === "password") {
+            this.suggestions = ['', '', '']
+            this._updateAutocompleteSuggestions();
+        } else if (fileName !== "numeric") {
             // Set suggestions
             this.suggestions = this._getAutocompleteSuggestions(this.elements.textarea.value);
             this._updateAutocompleteSuggestions();
@@ -129,7 +132,7 @@ const Keyboard = {
         });
     },
 
-    _createTextboxArea(unmaskedValue) {
+    _createTextboxArea(previousValue) {
         const textboxArea = document.createElement("div");
         textboxArea.classList.add("keyboard__textbox-area", "fadeInDown");
 
@@ -143,10 +146,7 @@ const Keyboard = {
             textarea.classList.add("keyboard__textbox");
         }
 
-        textarea.value = unmaskedValue;
-        if (this.elementToUpdate.type === "password") {
-            textarea.type = "password";
-        }
+        textarea.value = previousValue;
         textboxArea.appendChild(textarea);
 
         const arrowKeys = this._createArrowKeys();
@@ -332,7 +332,7 @@ const Keyboard = {
         keyElement.setAttribute("type", "button");
         keyElement.classList.add("keyboard__key");
 
-        // Prevent the key from gaining focus on mousedown
+        // Prevent the key from gaining focus on mousedown so that the focus remains on the textarea
         keyElement.addEventListener("mousedown", (event) => {
             event.preventDefault();
         });
@@ -421,10 +421,12 @@ const Keyboard = {
 
             case "toggle-password":
                 keyElement.classList.add("keyboard__key--dwell-once", "keyboard__key--equal");
-                keyElement.innerHTML = this._createMaterialIcon(this.properties.isPasswordHidden ? "visibility" : "visibility_off");
+                keyElement.innerHTML = this._createMaterialIcon(this.properties.isPasswordHidden ? "visibility_off" : "visibility");
 
                 dwell(keyElement, () => {
-                    this._togglePasswordVisibility();
+                    this.properties.isPasswordHidden = !this.properties.isPasswordHidden;
+                    this.elements.togglePasswordButton.innerHTML = this._createMaterialIcon(this.properties.isPasswordHidden ? "visibility_off" : "visibility");
+                    this.elements.textarea.type = this.properties.isPasswordHidden ? "password" : "text";
                 }, true);
 
                 break;
@@ -505,9 +507,8 @@ const Keyboard = {
 
                 dwell(keyElement, () => {
                     this.elements.textarea.value = "";
-                    this.unmaskedValue = "";
 
-                    if (this.keyboardLayout.layout !== "numeric") {
+                    if (this.keyboardLayout.layout !== "numeric" && this.elementToUpdate.type !== "password") {
                         // Update autocomplete suggestions
                         this.suggestions = this._getAutocompleteSuggestions(this.elements.textarea.value);
                         this._updateAutocompleteSuggestions();
@@ -591,9 +592,7 @@ const Keyboard = {
                     let valueToSend = this.elements.textarea.value
 
                     if (this.elementToUpdate) {
-                        if (this.elementToUpdate.type === "password" ) {
-                            valueToSend = this.unmaskedValue ? this.unmaskedValue : valueToSend;
-                        } else if (INPUT_TYPES_NEEDING_VALUE_UPDATE.includes(this.elementToUpdate.type)) {
+                        if (INPUT_TYPES_NEEDING_VALUE_UPDATE.includes(this.elementToUpdate.type)) {
                             updateValueAttribute = true;
                         } else if (this.elementToUpdate.type === "date") {
                             valueToSend = new Date(valueToSend).toLocaleDateString('en-GB'); // Format as DD/MM/YYYY// sending the keyboard value to render-mainwindow.js
@@ -616,9 +615,7 @@ const Keyboard = {
                     let valueToSend = this.elements.textarea.value
 
                     if (this.elementToUpdate) {
-                        if (this.elementToUpdate.type === "password" ) {
-                            valueToSend = this.unmaskedValue ? this.unmaskedValue : valueToSend;
-                        } else if (INPUT_TYPES_NEEDING_VALUE_UPDATE.includes(this.elementToUpdate.type)) {
+                        if (INPUT_TYPES_NEEDING_VALUE_UPDATE.includes(this.elementToUpdate.type)) {
                             updateValueAttribute = true;
                         } else if (this.elementToUpdate.type === "date") {
                             valueToSend = new Date(valueToSend).toLocaleDateString('en-GB'); // Format as DD/MM/YYYY
@@ -690,19 +687,6 @@ const Keyboard = {
         this._updateKeys();
     },
 
-    _togglePasswordVisibility() {
-        this.properties.isPasswordHidden = !this.properties.isPasswordHidden;
-        const value = this.elements.textarea.value;
-        
-        if (this.properties.isPasswordHidden) {
-            this.unmaskedValue = this.elements.textarea.value;
-            this.elements.textarea.value = value.replace(/./g, '●');
-        } else {
-            if (this.unmaskedValue) this.elements.textarea.value = this.unmaskedValue;
-        }
-        this.elements.togglePasswordButton.innerHTML = this._createMaterialIcon(this.properties.isPasswordHidden ? "visibility" : "visibility_off");
-    },
-
     // Inserts the selected key into the textarea at the current cursor position and updates the cursor position
     _insertChar(key) {
         const textarea = this.elements.textarea;
@@ -710,21 +694,17 @@ const Keyboard = {
     
         // Insert the letter(s) at the current cursor position
         const newValue = textarea.value.slice(0, currentPos) + key + textarea.value.slice(currentPos);
-    
-        // Update the previous value
-        if (!this.unmaskedValue) {
-            this.unmaskedValue = textarea.value;
-        }
-        this.unmaskedValue = this.unmaskedValue.slice(0, currentPos) + key + this.unmaskedValue.slice(currentPos);
-    
+
         // Update the textarea value and set the new cursor position
-        textarea.value = (this.properties.isPasswordHidden && this.elementToUpdate.type === "password") ? newValue.replace(/./g, '●') : newValue;
+        textarea.value = newValue;
         const newCursorPos = currentPos + key.length;
         textarea.setSelectionRange(newCursorPos, newCursorPos);
 
-        // Update autocomplete suggestions
-        this.suggestions = this._getAutocompleteSuggestions(textarea.value);
-        this._updateAutocompleteSuggestions();
+        if (this.elementToUpdate.type !== "password") {
+            // Update autocomplete suggestions
+            this.suggestions = this._getAutocompleteSuggestions(textarea.value);
+            this._updateAutocompleteSuggestions();
+        }
 
         textarea.focus();
     },
@@ -741,19 +721,16 @@ const Keyboard = {
         // Delete the character before the current cursor position
         const newValue = textarea.value.slice(0, currentPos - 1) + textarea.value.slice(currentPos);
 
-        // Update the previous value
-        if (this.unmaskedValue) {
-            this.unmaskedValue = this.unmaskedValue.slice(0, currentPos - 1) + this.unmaskedValue.slice(currentPos);
-        }
-
         textarea.value = newValue;
         textarea.setSelectionRange(currentPos - 1, currentPos - 1);
         console.log("newPosition", currentPos - 1);
         textarea.focus();
 
-        // Update autocomplete suggestions
-        this.suggestions = this._getAutocompleteSuggestions(this.elements.textarea.value);
-        this._updateAutocompleteSuggestions();
+        if (this.elementToUpdate.type !== "password") {
+            // Update autocomplete suggestions
+            this.suggestions = this._getAutocompleteSuggestions(this.elements.textarea.value);
+            this._updateAutocompleteSuggestions();
+        }
     },
 
     /**
@@ -786,11 +763,6 @@ const Keyboard = {
         const afterCursor = textarea.value.slice(currentPos);
         const newValue = beforeCursor.replace(/\S*$/, '') + afterCursor.replace(/^\S*/, '');
 
-        // Update the previous value
-        if (this.unmaskedValue) {
-            this.unmaskedValue = this.unmaskedValue.slice(0, currentPos).replace(/\S*$/, '') + this.unmaskedValue.slice(currentPos);
-        }
-
         // Update the textarea value and set the new cursor position
         const deletedLength = beforeCursor.length - beforeCursor.replace(/\S*$/, '').length;
         const newCursorPos = currentPos - deletedLength;
@@ -799,7 +771,7 @@ const Keyboard = {
         console.log("newPosition", newCursorPos);
         textarea.focus();
 
-        if (update) {
+        if (update && this.elementToUpdate.type !== "password") {
             // Update autocomplete suggestions
             this.suggestions = this._getAutocompleteSuggestions(this.elements.textarea.value);
             this._updateAutocompleteSuggestions();
@@ -855,9 +827,14 @@ const Keyboard = {
         // Update keys reference
         this.elements.keys = this.elements.keysContainer.querySelectorAll(".keyboard__key");
 
-        // Set suggestions
-        this.suggestions = this._getAutocompleteSuggestions(this.elements.textarea.value);
-        this._updateAutocompleteSuggestions();
+        if (this.elementToUpdate.type === "password") {
+            this.suggestions = ["", "", ""];
+            this._updateAutocompleteSuggestions();
+        } else if (this.keyboardLayout.layout !== "numeric") {
+            // Set suggestions
+            this.suggestions = this._getAutocompleteSuggestions(this.elements.textarea.value);
+            this._updateAutocompleteSuggestions();
+        }
     },
 
     _getAutocompleteSuggestions(value) {

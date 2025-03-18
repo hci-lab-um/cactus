@@ -34,7 +34,7 @@ body {
     }
 
     &__textbox {
-        flex-grow: 3;
+        min-width: 65%;
         resize: none;
         font-size: 2rem;
     }
@@ -43,15 +43,16 @@ body {
         flex-grow: 0;
         font-size: 4rem;
         text-align: center;
-        min-width: 50%;
-    }
+        min-width: 55%;
+        max-width: 60%;
 
-    input[type="date"]::-webkit-calendar-picker-indicator,
-    input[type="datetime-local"]::-webkit-calendar-picker-indicator,
-    input[type="month"]::-webkit-calendar-picker-indicator, 
-    input[type="week"]::-webkit-calendar-picker-indicator {
-        display: none;
-        -webkit-appearance: none;
+        &[type="date"]::-webkit-calendar-picker-indicator,
+        &[type="datetime-local"]::-webkit-calendar-picker-indicator,
+        &[type="month"]::-webkit-calendar-picker-indicator, 
+        &[type="week"]::-webkit-calendar-picker-indicator {
+            display: none;
+            -webkit-appearance: none;
+        }
     }
 
     &__arrow-keys {
