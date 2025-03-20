@@ -517,8 +517,6 @@ function setEventHandlersForTabsMenu(tabList, bookmarks, isBookmarksOverlay = fa
 		tabCloseBtn.innerHTML = '<i class="material-icons">close</i>';
 
 		dwell(tabCloseBtn, () => {
-			
-			debugger;
 			// Remove the tab from the tabList
 			const tabIndex = tabList.findIndex(t => t.tabId === tab.tabId);
 			if (tabIndex !== -1) tabList.splice(tabIndex, 1);
