@@ -406,8 +406,8 @@ function setEventHandlersForTabsMenu(tabList, bookmarks, isBookmarksOverlay = fa
 
 	// Populating the overlay with tabs or bookmarks
 	list = isBookmarksOverlay ? bookmarks : tabList;
-	list.forEach((tab, index) => {
-		const tabElement = createTabElement(tab, index);
+	list.forEach((tab) => {
+		const tabElement = createTabElement(tab);
 		tabsContainer.appendChild(tabElement);
 	});
 
@@ -429,7 +429,7 @@ function setEventHandlersForTabsMenu(tabList, bookmarks, isBookmarksOverlay = fa
 		dwellInfinite(scrollDownBtn, () => scrollByOneRow(1))
 	}
 
-	function createTabElement(tab, index) {
+	function createTabElement(tab) {
 		const tabElement = document.createElement('div');
 		tabElement.classList.add('tab', 'fadeInDown');
 		tab.isActive === true ? tabElement.classList.add('tab--active') : null;
@@ -466,7 +466,7 @@ function setEventHandlersForTabsMenu(tabList, bookmarks, isBookmarksOverlay = fa
 		if (isBookmarksOverlay) {
 			addBookmarkOverlayControls(tabElement, tab);
 		} else {
-			addTabOverlayControls(tabElement, tab, index);
+			addTabOverlayControls(tabElement, tab);
 		}
 
 		return tabElement;
@@ -507,7 +507,7 @@ function setEventHandlersForTabsMenu(tabList, bookmarks, isBookmarksOverlay = fa
 		tabElement.appendChild(deleteBookmarkBtn);
 	}
 
-	function addTabOverlayControls(tabElement, tab, index) {
+	function addTabOverlayControls(tabElement, tab) {
 		const tabBookmarkBtn = document.createElement('div');
 		tabBookmarkBtn.classList.add('overlayBtn', 'tabBottomBtn', 'tabBottomBtn--left');
 		tabBookmarkBtn.innerHTML = bookmarks.some(bookmark => bookmark.url === tab.url) ? roundedBookmarkFilled : roundedBookmark;
@@ -517,8 +517,11 @@ function setEventHandlersForTabsMenu(tabList, bookmarks, isBookmarksOverlay = fa
 		tabCloseBtn.innerHTML = '<i class="material-icons">close</i>';
 
 		dwell(tabCloseBtn, () => {
+			
+			debugger;
 			// Remove the tab from the tabList
-			tabList.splice(index, 1);
+			const tabIndex = tabList.findIndex(t => t.tabId === tab.tabId);
+			if (tabIndex !== -1) tabList.splice(tabIndex, 1);
 
 			// Remove the tab element from the DOM
 			tabElement.remove();
