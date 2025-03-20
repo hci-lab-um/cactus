@@ -1364,8 +1364,8 @@ async function createOverlay(overlayAreaToShow, elementProperties) {
                 tabId: tab.tabId,
                 isActive: tab.isActive,
                 snapshot: tab.snapshot,
-                title: tab.title ? tab.title : tab.webContentsView.webContents.getTitle(),
-                url: tab.url ? tab.url : tab.webContentsView.webContents.getURL(),
+                title: tab.webContentsView.webContents.getTitle() ? tab.webContentsView.webContents.getTitle() : tab.title,
+                url: tab.webContentsView.webContents.getURL() ? tab.webContentsView.webContents.getURL() : tab.url,
             }));
 
             overlaysData.tabList = serializableTabList;
@@ -1602,8 +1602,8 @@ async function deleteAndInsertAllTabs() {
         // Update the database with the open tabs
         for (const tab of tabList) {
             const tabData = {
-                url: !tab.isErrorPage ? (tab.url ? tab.url : tab.webContentsView.webContents.getURL()) : null,
-                title: tab.title || tab.webContentsView.webContents.getTitle(),
+                url: !tab.isErrorPage ? (tab.webContentsView.webContents.getURL() ? tab.webContentsView.webContents.getURL() : tab.url) : null,
+                title: tab.webContentsView.webContents.getTitle() ? tab.webContentsView.webContents.getTitle() : tab.title,
                 isActive: tab.isActive,
                 snapshot: tab.snapshot,
                 originalURL: tab.originalURL,
