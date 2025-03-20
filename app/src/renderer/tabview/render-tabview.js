@@ -323,7 +323,7 @@ function initScrollableElements(useNavAreas) {
 		const style = window.getComputedStyle(element);
 		return (
 			(style.overflowY === 'scroll' || style.overflowY === 'auto') &&
-			element.scrollHeight > element.clientHeight &&
+			element.scrollHeight >= element.clientHeight &&
 			style.overflowY !== 'visible'
 		);
 	});
