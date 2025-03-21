@@ -49,9 +49,13 @@ body {
         &[type="date"]::-webkit-calendar-picker-indicator,
         &[type="datetime-local"]::-webkit-calendar-picker-indicator,
         &[type="month"]::-webkit-calendar-picker-indicator, 
-        &[type="week"]::-webkit-calendar-picker-indicator {
+        &[type="week"]::-webkit-calendar-picker-indicator,
+        &[type="number"]::-webkit-inner-spin-button,
+        &[type="number"]::-webkit-outer-spin-button,
+        &[type="time"]::-webkit-calendar-picker-indicator {
             display: none;
             -webkit-appearance: none;
+            margin: 0;
         }
     }
 
