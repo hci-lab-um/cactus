@@ -255,7 +255,7 @@ ipcRenderer.on('tabview-loading-stop', (event, pageDetails) => {
 	let favicon = byId('favicon');
 	let omni = byId('url')
 
-    if (pageDetails.isErrorPage) {
+    if (pageDetails.isErrorPage || !pageDetails.successfulLoad) {
         favicon.getElementsByTagName('i')[0].innerText = 'close'; 
 		favicon.style.color = '#ba1539' // dark red
     } else {

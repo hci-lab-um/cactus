@@ -1,4 +1,4 @@
-const { app, BaseWindow, WebContentsView, ipcMain, globalShortcut, screen, session } = require('electron')
+const { app, BaseWindow, WebContentsView, ipcMain, globalShortcut, screen } = require('electron')
 const config = require('config');
 const path = require('path')
 const fs = require('fs')
@@ -29,7 +29,7 @@ let tabList = [];
 let tabsFromDatabase = [];
 let bookmarks = [];
 let isDwellingActive = true;
-
+let successfulLoad;
 
 // =================================
 // ====== APP EVENT LISTENERS ======
@@ -939,14 +939,91 @@ function setTabViewEventlisteners(tabView) {
         clearSidebarAndUpdateQuadTree();
     });
 
-    const handleLoadError = (errorCode, attemptedURL) => {
-        // Storing the active tab's original URL before the error page is loaded.
-        let activeTab = tabList.find(tab => tab.isActive === true);
-        activeTab.originalURL = attemptedURL;
-        activeTab.isErrorPage = true;
+    tabView.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL, isMainFrame) => {
+        if (isMainFrame) {
+            handleLoadError(errorCode, validatedURL);
+        }
+    });
 
-        tabView.webContents.loadURL(path.join(__dirname, '../src/pages/error.html')).then(() => {
-            tabView.webContents.executeJavaScript(`    
+    tabView.webContents.on('did-fail-provisional-load', (event, errorCode, errorDescription, validatedURL, isMainFrame) => {
+        if (isMainFrame) {
+            handleLoadError(errorCode, validatedURL);
+        }
+    });
+
+    tabView.webContents.session.webRequest.onResponseStarted(async (details) => {
+        const activeTab = tabList.find(tab => tab.isActive === true);
+        const responseWebContentsId = details.webContentsId;
+        const activeTabWebContentsId = activeTab.webContentsView.webContents.id;
+
+        let goingToLoadErrorPage = details.url.endsWith('error.html')
+
+        // The following if statement filters out the devtools URLs
+        if (details.resourceType === 'mainFrame' && !details.url.startsWith('devtools:')) {
+
+            // If the response is for the active tab
+            if (responseWebContentsId === activeTabWebContentsId) {
+                if (details.statusCode < 400 && !goingToLoadErrorPage) {
+                    // Successful page load
+                    successfulLoad = true;
+                    activeTab.isErrorPage = false;
+                    activeTab.originalURL = details.url; // Update the original URL
+                    goingToLoadErrorPage = false;
+                } else {
+                    // Error detected
+                    successfulLoad = false;
+
+                    // When an error occurs, the next page to be loaded is the error page itself which results in a false positive
+                    // To prevent this, we set a flag to indicate that the next page to be loaded is an error page
+                    if (details.statusCode < 400) {
+                        goingToLoadErrorPage = false;
+                    } else {
+                        // Check if the response body contains a custom error page
+                        await tabView.webContents.executeJavaScript(`document.documentElement.innerHTML.trim()`)
+                            .then(responseBody => {
+                                // Check if the response body contains meaningful content
+                                const isEmptyBody = responseBody === "<head></head><body></body>" || !responseBody.trim();
+
+                                if (!isEmptyBody) {
+                                    console.log("Server's custom error page detected");
+                                    handleLoadError(details.statusCode, details.url, responseBody);
+                                } else {
+                                    console.log("Browser's default error page detected");
+                                    handleLoadError(details.statusCode, details.url);
+                                }
+                            }).catch(error => {
+                                console.error("Error reading response body:", error);
+                                handleLoadError(details.statusCode, details.url);
+                            });
+                    }
+                }
+            }
+        }
+    });
+
+    //React to in-page navigation (e.g. anchor links)
+    tabView.webContents.on('did-navigate-in-page', (event, url) => {
+        const anchorTag = url.split('#')[1];
+        if (anchorTag) {
+            tabView.webContents.send('ipc-tabview-create-quadtree', useNavAreas);
+        }
+    });
+
+    tabView.webContents.setWindowOpenHandler(({ url }) => {
+        createTabview(url, isNewTab = true);
+    });
+}
+
+function handleLoadError(errorCode, attemptedURL, responseBody = null) {
+    // Storing the active tab's original URL before the error page is loaded.
+    let activeTab = tabList.find(tab => tab.isActive === true);
+    activeTab.originalURL = attemptedURL;
+    activeTab.isErrorPage = true;
+
+    if (!responseBody) {
+        // If the server does not respond with a custom error page, load the browser's error page instead
+        activeTab.webContentsView.webContents.loadURL(path.join(__dirname, '../src/pages/error.html')).then(() => {
+            activeTab.webContentsView.webContents.executeJavaScript(`    
                 // Update the content based on the error code
                 const errorTitle = document.getElementById('error-title');
                 const errorMessage = document.getElementById('error-message');
@@ -1019,63 +1096,7 @@ function setTabViewEventlisteners(tabView) {
                 }
             `);
         });
-    };
-
-    tabView.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL, isMainFrame) => {
-        if (isMainFrame) {
-            handleLoadError(errorCode, validatedURL);
-        }
-    });
-
-    tabView.webContents.on('did-fail-provisional-load', (event, errorCode, errorDescription, validatedURL, isMainFrame) => {
-        if (isMainFrame) {
-            handleLoadError(errorCode, validatedURL);
-        }
-    });
-
-    tabView.webContents.session.webRequest.onResponseStarted((details) => {
-        const activeTab = tabList.find(tab => tab.isActive === true);
-        const responseWebContentsId = details.webContentsId;
-        const activeTabWebContentsId = activeTab.webContentsView.webContents.id;
-        
-        let goingToLoadErrorPage = details.url.endsWith('error.html')
-
-        // The following if statement filters out the devtools URLs
-        if (details.resourceType === 'mainFrame' && !details.url.startsWith('devtools:')) {
-
-            // If the response is for the active tab
-            if (responseWebContentsId === activeTabWebContentsId) {
-                if (details.statusCode < 400 && !goingToLoadErrorPage) {
-                    // Successful page load
-                    activeTab.isErrorPage = false;
-                    activeTab.originalURL = details.url; // Update the original URL
-                    goingToLoadErrorPage = false;
-                } else {
-                    // Error detected
-                    // When an error occurs, the next page to be loaded is the error page itself which results in a false positive
-                    // To prevent this, we set a flag to indicate that the next page to be loaded is an error page
-                    if (details.statusCode < 400) {
-                        goingToLoadErrorPage = false;
-                    } else {
-                        handleLoadError(details.statusCode, details.url);
-                        goingToLoadErrorPage = true;
-                    }
-                }
-            }
-        }
-    });
-
-    //React to in-page navigation (e.g. anchor links)
-    tabView.webContents.on('did-navigate-in-page', (event, url) => {
-        const anchorTag = url.split('#')[1];
-        if (anchorTag) {
-            tabView.webContents.send('ipc-tabview-create-quadtree', useNavAreas);
-        }
-    });
-
-    tabView.webContents.setWindowOpenHandler(({ url }) => {
-        createTabview(url, isNewTab = true);
-    });
+    }
 }
 
 function updateOmnibox() {
@@ -1084,6 +1105,7 @@ function updateOmnibox() {
         title: activeTab.webContentsView.webContents.getTitle(),
         url: activeTab.webContentsView.webContents.getURL(),
         isErrorPage: activeTab.isErrorPage,
+        successfulLoad: successfulLoad,
     }
     mainWindowContent.webContents.send('tabview-loading-stop', pageDetails);
 }
