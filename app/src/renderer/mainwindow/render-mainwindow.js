@@ -180,13 +180,13 @@ function isValidUrl(string) {
 	}
 }
 
+// Checking for IPv4 and IPv6 and other local names
 function isLocalOrIP(hostname) {
-    // Checking for IPv4 and IPv6 and other local names
     const ipv4Regex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
     const ipv6Regex = /^\[[a-fA-F0-9:]+\]$/;
-	const localNames = new Set(["localhost", "test", "example", "invalid", "local"]);
+	const LOCAL_HOST = "localhost";
 
-    return ipv4Regex.test(hostname) || ipv6Regex.test(hostname) || localNames.has(hostname);
+    return ipv4Regex.test(hostname) || ipv6Regex.test(hostname) || hostname.toLowerCase() === LOCAL_HOST;
 }
 
 async function browseToUrl(event, input) {
