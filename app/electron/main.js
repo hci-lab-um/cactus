@@ -1074,8 +1074,8 @@ function handleLoadError(errorCode, attemptedURL, responseBody = null) {
                         errorMessage.textContent = 'It may have been moved, edited or deleted.';
                         break;
                     case -105:
-                        errorTitle.textContent = 'DNS Error';
-                        errorMessage.textContent = 'The website address could not be found.';
+                        errorTitle.textContent = 'Address Not Found';
+                        errorMessage.textContent = 'DNS Error. The website address could not be found.';
                         break;
                     case -106:
                         errorTitle.textContent = 'Network Error';
@@ -1410,7 +1410,7 @@ async function createOverlay(overlayAreaToShow, elementProperties) {
     if (!isKeyboardOverlay) overlayContent.webContents.send('ipc-main-overlays-loaded', overlaysData);
 
     if (isDevelopment) overlayContent.webContents.openDevTools();
-    overlayContent.webContents.openDevTools(); // to remove
+    // overlayContent.webContents.openDevTools(); // to remove
 }
 
 async function registerSwitchShortcutCommands() {

@@ -184,9 +184,9 @@ function isValidUrl(string) {
 function isLocalOrIP(hostname) {
     const ipv4Regex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
     const ipv6Regex = /^\[[a-fA-F0-9:]+\]$/;
-	const LOCAL_HOST = "localhost";
+	const LOCALHOST = "localhost";
 
-    return ipv4Regex.test(hostname) || ipv6Regex.test(hostname) || hostname.toLowerCase() === LOCAL_HOST;
+    return ipv4Regex.test(hostname) || ipv6Regex.test(hostname) || hostname.toLowerCase() === LOCALHOST;
 }
 
 async function browseToUrl(event, input) {

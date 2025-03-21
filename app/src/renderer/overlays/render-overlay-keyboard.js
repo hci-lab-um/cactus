@@ -254,8 +254,6 @@ const Keyboard = {
         const fragment = document.createDocumentFragment();
 
         // TOP ROW
-        // const topRow = ["mic", "facebook.com", "booking.com", "google.com", "delete letter", "delete word", "AC"]; // text would eventually be replaced with auto-complete suggestions
-        // const suggestions = ["", "", ""]
         const topRow = ["settings", "suggestion_1", "suggestion_2", "suggestion_3", "delete letter", "delete word", "AC"]; // text would eventually be replaced with auto-complete suggestions
         const topRowContainer = document.createElement("div");
         topRowContainer.classList.add("keyboard__row");
