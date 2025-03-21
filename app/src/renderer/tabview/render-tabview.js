@@ -216,6 +216,13 @@ window.cactusAPI.onAsync('ipc-tabview-click-element', (elementToClick, useRobotJ
 	}
 });
 
+window.cactusAPI.onAsync('ipc-tabview-set-native-dropdown-value', (element, value) => {
+	let dropdownElement = document.querySelector('[data-cactus-id="' + element.parentElementId + '"]');
+	if (dropdownElement) {
+		dropdownElement.value = value;
+	}
+});
+
 window.cactusAPI.onAsync('ipc-tabview-highlight-elements', (elementsToHighlight) => {
 	elementsToHighlight.forEach(el => {
 		// Each element is of type InteractiveElement whose id is set to the cactusId, hence we use el.id not el.dataset.cactusId
@@ -565,7 +572,9 @@ function serializeElement(element) {
 		})(),
 		options: element.options ? Array.from(element.options).map(option => {
 			return {
-				textContent: option.textContent
+				value: option.value,
+				textContent: option.textContent,
+				parentElementId: element.dataset.cactusId
 			};
 		}) : null,
 		nodeType: element.nodeType,

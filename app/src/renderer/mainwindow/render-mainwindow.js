@@ -401,76 +401,7 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements, tabUR
 
 	sidebarItemArea = byId('sidebar_items');
 	if (elements.length > 0) {
-		let sidebarItems = document.querySelectorAll('.sidebar_item');
-		const elementIDsToAdd = elements.map((e) => e.id);
-
-		//Check if element to add already exists and remove it from list, not to add twice
-		const existingInteractiveElementIDsOnSidebar = [];
-		sidebarItems.forEach(element => {
-			const elementId = element.getAttribute('id');
-			existingInteractiveElementIDsOnSidebar.push(elementId);
-		});
-
-		//Remove elements from the list of elements to add - in reverse order, not to affect the iteration
-		for (let i = elements.length - 1; i >= 0; i--) {
-			if (existingInteractiveElementIDsOnSidebar.includes(elements[i].id)) {
-				elements.splice(i, 1); // Remove element at index i
-			}
-		}
-
-		//Remove out of scope elements from sidebar first
-		sidebarItems.forEach(element => {
-			const elementId = element.getAttribute('id');
-			if (!elementIDsToAdd.includes(elementId)) {
-				element.remove();
-			}
-		});
-
-		elements.forEach(e => {
-			const sidebarItem = createSidebarItemElement(e, false);
-			sidebarItemArea.appendChild(sidebarItem);
-		});
-
-		//Highlight newly added elements on page
-		ipcRenderer.send('ipc-mainwindow-highlight-elements-on-page', elements);
-
-		//Attach dwell
-		sidebarItems = document.querySelectorAll('.sidebar_item')
-		sidebarItems.forEach(item => {
-			dwell(item, () => {
-				const elementId = item.getAttribute('id');
-				const elementToClick = elements.filter(e => e.id == elementId);
-
-				if (elementToClick[0]) {
-					// Show click event animation
-					item.classList.add('fadeOutDown');
-					console.log("element to click: ", elementToClick);
-
-					setTimeout(() => {
-						// After 400ms, clear the sidebar and perform the necessary action
-						sidebarItemArea.innerHTML = "";
-
-						const inputType = shouldDisplayKeyboard(elementToClick[0], false);
-						console.log("inputType", inputType);
-						if (inputType) {
-							elementToClick[0].type = inputType;
-							console.log("Identified an input element: ", elementToClick[0]);
-							showOverlay('keyboard', elementToClick[0]);
-						} else if (elementToClick[0]) {
-							if (elementToClick[0].type === 'iframe') {
-								console.log("Identified an iframe element: ", elementToClick[0]);
-								ipcRenderer.send('ipc-mainwindow-open-iframe', elementToClick[0].src);
-							} else {
-								console.log("Not an input element");
-								ipcRenderer.send('ipc-mainwindow-click-sidebar-element', elementToClick[0]);
-							}
-						}
-						// hiding the cursor in the sidebar on robot click
-						cursor.style.visibility = 'hidden';
-					}, 400); // 400 is chosen to match the fadeOutDown animation duration
-				}
-			});
-		});
+		renderElementsInSidebar(elements, sidebarItemArea);
 	}
 	else {
 		sidebarItemArea.innerHTML = "";
@@ -551,6 +482,89 @@ function renderNavItemInSidebar(navItems) {
 		menuNavLevelup.style.display = 'none'
 }
 
+function renderElementsInSidebar(elements, sidebarItemArea, isDropdownOption = false) {
+	let sidebarItems = document.querySelectorAll('.sidebar_item');
+	const elementIDsToAdd = elements.map((e) => e.id);
+
+	//Check if element to add already exists and remove it from list, not to add twice
+	const existingInteractiveElementIDsOnSidebar = [];
+	sidebarItems.forEach(element => {
+		const elementId = element.getAttribute('id');
+		existingInteractiveElementIDsOnSidebar.push(elementId);
+	});
+
+	//Remove elements from the list of elements to add - in reverse order, not to affect the iteration
+	for (let i = elements.length - 1; i >= 0; i--) {
+		if (existingInteractiveElementIDsOnSidebar.includes(elements[i].id)) {
+			elements.splice(i, 1); // Remove element at index i
+		}
+	}
+
+	//Remove out of scope elements from sidebar first
+	sidebarItems.forEach(element => {
+		const elementId = element.getAttribute('id');
+		if (!elementIDsToAdd.includes(elementId)) {
+			element.remove();
+		}
+	});
+
+	elements.forEach(e => {
+		const sidebarItem = createSidebarItemElement(e, false, isDropdownOption);
+		sidebarItemArea.appendChild(sidebarItem);
+	});
+
+	//Highlight newly added elements on page
+	ipcRenderer.send('ipc-mainwindow-highlight-elements-on-page', elements);
+
+	//Attach dwell
+	sidebarItems = document.querySelectorAll('.sidebar_item')
+	sidebarItems.forEach(item => {
+		dwell(item, () => {
+			const elementId = item.getAttribute('id');
+			const elementToClick = isDropdownOption ? elements.filter(e => e.value == elementId) : elements.filter(e => e.id == elementId);
+
+			if (elementToClick[0]) {
+				// Show click event animation
+				item.classList.add('fadeOutDown');
+				console.log("element to click: ", elementToClick);
+
+				setTimeout(() => {
+					// After 400ms, clear the sidebar and perform the necessary action
+					sidebarItemArea.innerHTML = "";
+
+					if (isDropdownOption) {
+						console.log("Identified a dropdown option: ", elementToClick[0]);
+						// Set the value of the dropdown to the value of the option
+						ipcRenderer.send('ipc-mainwindow-set-native-dropdown-value', elementToClick[0]);
+					} else {
+						const elementType = getElementType(elementToClick[0], false);
+						const inputType = shouldDisplayKeyboard(elementType);
+						console.log("element type: ", elementType);
+						console.log("input type: ", inputType);
+						
+						if (inputType) {
+							elementToClick[0].type = inputType;
+							showOverlay('keyboard', elementToClick[0]);
+						} else if (elementType === 'iframe') {
+							console.log("Identified an iframe element: ", elementToClick[0]);
+							ipcRenderer.send('ipc-mainwindow-open-iframe', elementToClick[0].src);
+						} else if (elementType === 'select') {
+							console.log("Identified a select element: ", elementToClick[0]);
+							const dropdownOptions = elementToClick[0].options;
+							renderElementsInSidebar(dropdownOptions, sidebarItemArea, true);
+						} else {
+							console.log("Not an input element");
+							ipcRenderer.send('ipc-mainwindow-click-sidebar-element', elementToClick[0]);
+						}
+						// hiding the cursor in the sidebar on robot click
+						cursor.style.visibility = 'hidden';
+					}
+				}, 400); // 400 is chosen to match the fadeOutDown animation duration
+			}
+		});
+	});
+}
+
 // Resets the navigation sidebar to its initial state
 function resetNavigationSidebar(options = {}) {
 	const { clearItems = true } = options;
@@ -574,16 +588,16 @@ function resetNavigationSidebar(options = {}) {
 	selectedNavItemTitle.style.display = 'none'
 }
 
-function createSidebarItemElement(element, isNavItem) {
+function createSidebarItemElement(element, isNavItem, isDropdownOption = false) {
 	const sidebarItem = document.createElement('div');
 	sidebarItem.className = 'sidebar_item fadeInDown';
-	sidebarItem.id = element.id;
+	sidebarItem.id = isDropdownOption ? element.value : element.id;
 
 	const itemContent = document.createElement('div');
 
 	const itemTitle = document.createElement('div');
 	itemTitle.className = 'sidebar_item_title';
-	itemTitle.textContent = isNavItem ? element.label : element.accessibleName;
+	itemTitle.textContent = isNavItem ? element.label : (element.accessibleName ? element.accessibleName : element.textContent);
 
 	const itemLink = document.createElement('div');
 	itemLink.className = 'sidebar_item_link';
@@ -692,16 +706,20 @@ function showDwellingPausedMessage() {
 // ============ Overlays ===========
 // =================================
 
-// Determines if a keyboard should be displayed based on the element type and returns the element type if a keyboard is required, otherwise false.
-function shouldDisplayKeyboard(element, isNavItem = false) {
-	console.log("should display keyboard function called with element: ", element);
+function getElementType(element, isNavItem = false) {
 	if (element) {
+		return isNavItem ? element.tag.toLowerCase() : element.type.toLowerCase();
+	}
+	return false;
+}
+
+// Determines if a keyboard should be displayed based on the element type and returns the element type if a keyboard is required, otherwise false.
+function shouldDisplayKeyboard(elementType) {
+	if (elementType) {
 		const KEYBOARD_REQUIRED_ELEMENTS = [
 			'textarea', 'text', 'search', 'password', 'email', 'number', 'tel', 'url', 'date', 'datetime-local', 'month', 'time', 'week'
 		];
-		let type = isNavItem ? element.tag.toLowerCase() : element.type.toLowerCase();
-
-		return KEYBOARD_REQUIRED_ELEMENTS.indexOf(type) !== -1 ? type : false;
+		return KEYBOARD_REQUIRED_ELEMENTS.indexOf(elementType) !== -1 ? elementType : false;
 	}
 	return false;
 }

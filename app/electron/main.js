@@ -369,6 +369,11 @@ ipcMain.on('robot-keyboard-arrow-key', (event, direction) => {
     }
 })
 
+ipcMain.on('ipc-mainwindow-set-native-dropdown-value', (event, element) => {
+    var tab = tabList.find(tab => tab.isActive === true);
+    tab.webContentsView.webContents.send('ipc-tabview-set-native-dropdown-value', element, element.value);
+});
+
 ipcMain.on('ipc-mainwindow-click-sidebar-element', (event, elementToClick) => {
     var tab = tabList.find(tab => tab.isActive === true);
     //Focus on window first before going forward
