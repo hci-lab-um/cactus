@@ -610,7 +610,7 @@ function serializeMenuElement(element) {
 	};
 }
 
-// This filters out elements that are not visible (in viewport) or have no dimensions
+// This filters out elements that are not visible (in viewport) or have no dimensions, or which are disabled
 function filterVisibleElements(elements) {
 	return elements.filter(element => {
 		const style = window.getComputedStyle(element);
@@ -628,7 +628,8 @@ function filterVisibleElements(elements) {
 				rect.y <= (window.innerHeight || document.documentElement.clientHeight) &&
 				rect.y + rect.height >= 0
 
-			)
+			) &&
+			element.disabled !== true
 		);
 	});
 }
