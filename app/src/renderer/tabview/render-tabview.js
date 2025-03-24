@@ -219,7 +219,6 @@ window.cactusAPI.onAsync('ipc-tabview-click-element', (elementToClick, useRobotJ
 window.cactusAPI.onAsync('ipc-tabview-set-native-dropdown-value', (element, value) => {
     let dropdownElement = document.querySelector('[data-cactus-id="' + element.parentElementId + '"]');
     if (dropdownElement) {
-		debugger;
         if (dropdownElement.multiple) {
             // When a select element has the multiple attribute, it is possible to select more than one option
 			Array.from(dropdownElement.options).forEach(option => {
