@@ -635,9 +635,14 @@ function createSidebarItemElement(element, isNavItem, isDropdownOption = false) 
 			case 'option':
 				iconHTML = createMaterialIcon('list'); break;
 			case 'date':
+			case 'datetime-local':
+			case 'month':
+			case 'week':
 				iconHTML = createMaterialIcon('calendar_month'); break;
+			case 'time':
+				iconHTML = createMaterialIcon('schedule'); break;
 			case 'select':
-				iconHTML = createMaterialIcon('arrow_drop_down'); break;
+				iconHTML = createMaterialIcon('stat_minus_1'); break;
 			case 'iframe':
 				iconHTML = createMaterialIcon('open_in_new'); break;
 			default:

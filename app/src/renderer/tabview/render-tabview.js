@@ -585,7 +585,8 @@ function serializeElement(element) {
 			return {
 				value: option.value,
 				textContent: option.textContent,
-				parentElementId: element.dataset.cactusId
+				parentElementId: element.dataset.cactusId,
+				type: 'option'
 			};
 		}) : null,
 		nodeType: element.nodeType,
