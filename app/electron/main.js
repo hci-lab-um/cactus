@@ -30,6 +30,7 @@ let tabsFromDatabase = [];
 let bookmarks = [];
 let isDwellingActive = true;
 let successfulLoad;
+let scrollButtonsRemoved = false;
 
 // =================================
 // ====== APP EVENT LISTENERS ======
@@ -389,29 +390,38 @@ ipcMain.on('ipc-mainwindow-highlight-elements-on-page', (event, elements) => {
 });
 
 ipcMain.on('ipc-mainwindow-show-overlay', async (event, overlayAreaToShow, elementProperties) => {
-    if (elementProperties) {
-        // If the element is the omnibox, get the current active tab's url and set it as the value
-        if (elementProperties.id === "url") {
-            let activeTab = tabList.find(tab => tab.isActive === true);
-            let pageURL = activeTab.webContentsView.webContents.getURL();
-            // if the page is an error page, get the original URL that caused the error
-            if (activeTab.isErrorPage && activeTab.originalURL) {
-                pageURL = activeTab.originalURL;
+    if (overlayAreaToShow === 'precisionClick') {
+        // remove scroll buttons on the tabview
+        var tab = tabList.find(tab => tab.isActive === true);
+        scrollButtonsRemoved = true;
+        tab.webContentsView.webContents.send('ipc-main-remove-scroll-buttons');
+
+        createOverlay(overlayAreaToShow, elementProperties, true);
+    } else {
+        if (elementProperties) {
+            // If the element is the omnibox, get the current active tab's url and set it as the value
+            if (elementProperties.id === "url") {
+                let activeTab = tabList.find(tab => tab.isActive === true);
+                let pageURL = activeTab.webContentsView.webContents.getURL();
+                // if the page is an error page, get the original URL that caused the error
+                if (activeTab.isErrorPage && activeTab.originalURL) {
+                    pageURL = activeTab.originalURL;
+                }
+                elementProperties.value = pageURL;
             }
-            elementProperties.value = pageURL;
         }
-    }
 
-    // Right before the tabs overlay is shown, capture the snapshot of the active tab to get the current state of the page
-    if (overlayAreaToShow === 'tabs') {
-        try {
-            await captureSnapshot();
-        } catch (err) {
-            log.error(err);
+        // Right before the tabs overlay is shown, capture the snapshot of the active tab to get the current state of the page
+        if (overlayAreaToShow === 'tabs') {
+            try {
+                await captureSnapshot();
+            } catch (err) {
+                log.error(err);
+            }
         }
-    }
 
-    createOverlay(overlayAreaToShow, elementProperties);
+        createOverlay(overlayAreaToShow, elementProperties);
+    }
 })
 
 // This event is triggered when the user clicks on the bookmark icon in the main window to add a bookmark
@@ -452,6 +462,13 @@ ipcMain.on('ipc-mainwindow-open-iframe', (event, src) => {
 
 ipcMain.on('ipc-overlays-remove', (event) => {
     removeOverlay();
+
+    // Adding the scroll buttons back to the tabview if they were removed
+    if (scrollButtonsRemoved) {
+        var tab = tabList.find(tab => tab.isActive === true);
+        tab.webContentsView.webContents.send('ipc-main-add-scroll-buttons');
+        scrollButtonsRemoved = false;
+    }
 })
 
 ipcMain.on('ipc-overlays-remove-and-update', (event) => {
@@ -1347,7 +1364,7 @@ function removeOverlay() {
     }
 }
 
-async function createOverlay(overlayAreaToShow, elementProperties) {
+async function createOverlay(overlayAreaToShow, elementProperties, isTransparent = false) {
     removeOverlay();
 
     let mainWindowContentBounds = mainWindow.getContentBounds();
@@ -1360,7 +1377,8 @@ async function createOverlay(overlayAreaToShow, elementProperties) {
             nodeIntegrationInWorker: true,
             contextIsolation: true,
             preload: path.join(__dirname, '../src/renderer/overlays/', renderer),
-        }
+            transparent: isTransparent,
+        },
     })
 
     mainWindow.contentView.addChildView(overlayContent)
@@ -1385,6 +1403,7 @@ async function createOverlay(overlayAreaToShow, elementProperties) {
             let keyboardLayout = await db.getDefaultLayout();
             overlayContent.webContents.send('ipc-main-keyboard-loaded', elementProperties, keyboardLayout);
             break;
+
         case 'tabs':
             // Extracting serializable properties from tabList
             const serializableTabList = tabList.map(tab => ({
@@ -1397,10 +1416,14 @@ async function createOverlay(overlayAreaToShow, elementProperties) {
 
             overlaysData.tabList = serializableTabList;
             overlaysData.bookmarks = bookmarks;
+            overlayContent.webContents.send('ipc-main-overlays-loaded', overlaysData);
             break;
+
         case 'bookmarks':
             overlaysData.bookmarks = bookmarks;
+            overlayContent.webContents.send('ipc-main-overlays-loaded', overlaysData);
             break;
+
         case 'navigation':
             // Check if the active tab can go back and forward
             let tab = tabList.find(tab => tab.isActive === true);
@@ -1409,13 +1432,16 @@ async function createOverlay(overlayAreaToShow, elementProperties) {
 
             overlaysData.canGoBack = canGoBack;
             overlaysData.canGoForward = canGoForward;
+            overlayContent.webContents.send('ipc-main-overlays-loaded', overlaysData);
+            break;
+
+        case 'precisionClick':
+            overlayContent.webContents.send('ipc-main-overlays-loaded', overlaysData);
             break;
     }
 
-    if (!isKeyboardOverlay) overlayContent.webContents.send('ipc-main-overlays-loaded', overlaysData);
-
     if (isDevelopment) overlayContent.webContents.openDevTools();
-    // overlayContent.webContents.openDevTools(); // to remove
+    overlayContent.webContents.openDevTools(); // to remove
 }
 
 async function registerSwitchShortcutCommands() {

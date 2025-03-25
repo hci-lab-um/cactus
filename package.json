@@ -4,7 +4,7 @@
 	"description": "Gaze Interaction Browser",
 	"main": "app/electron/main.js",
 	"scripts": {
-		"start": "gulp mainCss && gulp webviewCss && gulp bookmarksCss && gulp keyboardCss && electron .",
+		"start": "gulp mainCss && gulp webviewCss && gulp bookmarksCss && gulp keyboardCss && electron --enable-transparent-visuals .",
 		"build": "gulp mainCss && gulp webviewCss && gulp bookmarksCss && gulp keyboardCss",
 		"dist": "build"
 	},

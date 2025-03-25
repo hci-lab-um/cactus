@@ -86,57 +86,49 @@ body {
   text-align: left;
 
   &_header {
-    display: flex;
-    align-items: center;
+    // display: flex;
+    // align-items: center;
     border-bottom: 1px solid $lightgrey;
     width: 100%;
-    padding: 20px 30px;
+    // padding: 20px 30px;
 
-    &_icon {
-      font-size: 0.4em;
-      color: $blue-2;
-      margin-right: 20px;
-    }
+    // &_icon {
+    //   font-size: 0.4em;
+    //   color: $blue-2;
+    //   margin-right: 20px;
+    // }
 
-    &_title {
-      color: $black;
-      font-size: 1.2em;
-    }
+    // &_title {
+    //   color: $black;
+    //   font-size: 1.2em;
+    // }
+  }
+
+  &_precision,
+  &_levelup,
+  &_scrollup,
+  &_scrolldown {
+    @extend .dwellBtn;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 20px;
+    border: 15px solid white;
+    border-radius: 20px;
+  }
+
+  &_precision {
+    justify-content: center;
+    gap: 20px;
   }
 
   &_levelup {
-    @extend .dwellBtn;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    padding: 20px;
-    border: 15px solid white;
-    border-radius: 20px;
     border-bottom: 0px;
   }
 
-  &_scrollup {
-    @extend .dwellBtn;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    padding: 20px;
-    border: 15px solid white;
-    border-radius: 20px;
-  }
-
   &_scrolldown {
-    @extend .dwellBtn;
     margin-top: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    padding: 20px;
-    border: 15px solid white;
-    border-radius: 20px;
   }
 
   &_items {

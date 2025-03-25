@@ -307,10 +307,15 @@ ipcRenderer.on('ipc-trigger-click-under-cursor', (event) => {
 function setupNavigationSideBar(scrollDistance, scrollInterval) {
 	resetNavigationSidebar();
 
+	precisionClick = byId('sidebar_precision')
 	menuNavLevelup = byId('sidebar_levelup')
 	menuScrollUp = byId('sidebar_scrollup')
 	menuScrollDown = byId('sidebar_scrolldown')
 	sidebarItemArea = byId('sidebar_items')
+
+	dwell(precisionClick, () => {
+		showOverlay('precisionClick');
+	});
 
 	dwell(menuNavLevelup, () => {
 		if (navAreaStack.length) {

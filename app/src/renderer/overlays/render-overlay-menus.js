@@ -45,8 +45,12 @@ ipcRenderer.on('ipc-main-overlays-loaded', (event, overlaysData) => {
 			setEventHandlersForTabsMenu(tabList, bookmarks, true);
 			break;
 		}
+		case 'precisionClick': {
+			byId('overlay-precisionClick').style.display = 'grid'
+			setEventHandlersForPrecisionClick();
+			break;
+		}
 	}
-
 });
 
 ipcRenderer.on('ipc-trigger-click-under-cursor', (event) => {
@@ -599,4 +603,18 @@ function setEventHandlersForTabsMenu(tabList, bookmarks, isBookmarksOverlay = fa
 			setTimeout(activeTabElement.scrollIntoView({ behavior: 'smooth', block: 'center' }), 2000)
 		}
 	}
+}
+
+function setEventHandlersForPrecisionClick() {
+	// =================================
+	// ==== PRECISION CLICK OVERLAY ====
+	// =================================
+
+	let cancelPrecisionClickBtn = byId('cancel-precision-click');
+	let zoomInBtn = byId('zoomIn');
+	let zoomOutBtn = byId('zoomOut');
+
+	dwell(cancelPrecisionClickBtn, () => {
+		ipcRenderer.send('ipc-overlays-remove');
+	});
 }
