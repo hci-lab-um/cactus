@@ -16,6 +16,7 @@ let useNavAreas;
 let useRobotJS;
 let defaultUrl;
 let scrollDistance;
+let scrollInterval;
 let menuAreaScrollDistance;
 let menuAreaScrollInterval;
 let dwellTime;
@@ -568,6 +569,54 @@ ipcMain.on('ipc-overlays-forward', () => {
     var tab = tabList.find(tab => tab.isActive === true);
     tab.webContentsView.webContents.send('ipc-tabview-forward');
 })
+
+// -----------------
+// PRECISION OVERLAY
+// -----------------
+
+ipcMain.on('ipc-precision-scroll-up', (event) => {
+    let activeTab = tabList.find(tab => tab.isActive === true);
+    // Start scrolling up repeatedly
+    scrollInterval = setInterval(() => {
+        activeTab.webContentsView.webContents.executeJavaScript(`
+            window.scrollBy({
+                top: (${scrollDistance * -1}),
+                left: 0,
+                behavior: "smooth"
+            });
+        `);
+    }, 10); // Adjust the interval time (in milliseconds) as needed
+});
+
+ipcMain.on('ipc-precision-scroll-down', (event) => {
+    let activeTab = tabList.find(tab => tab.isActive === true);
+    // Start scrolling down repeatedly
+    scrollInterval = setInterval(() => {
+        activeTab.webContentsView.webContents.executeJavaScript(`
+            window.scrollBy({
+                top: ${scrollDistance},
+                left: 0,
+                behavior: "smooth"
+            });
+        `);
+    }, 10); // Adjust the interval time (in milliseconds) as needed
+});
+
+ipcMain.on('ipc-precision-scroll-stop', (event) => {
+    // Stop the scrolling
+    if (scrollInterval) {
+        clearInterval(scrollInterval);
+        scrollInterval = null;
+    }
+});
+
+ipcMain.on('ipc-precision-zoom-in', (event) => {
+    handleZoom("in", false);
+});
+
+ipcMain.on('ipc-precision-zoom-out', (event) => {
+    handleZoom("out", false);
+});
 
 // ---------------------
 // ACCESSIBILITY OVERLAY
@@ -1416,12 +1465,10 @@ async function createOverlay(overlayAreaToShow, elementProperties, isTransparent
 
             overlaysData.tabList = serializableTabList;
             overlaysData.bookmarks = bookmarks;
-            overlayContent.webContents.send('ipc-main-overlays-loaded', overlaysData);
             break;
 
         case 'bookmarks':
             overlaysData.bookmarks = bookmarks;
-            overlayContent.webContents.send('ipc-main-overlays-loaded', overlaysData);
             break;
 
         case 'navigation':
@@ -1432,13 +1479,10 @@ async function createOverlay(overlayAreaToShow, elementProperties, isTransparent
 
             overlaysData.canGoBack = canGoBack;
             overlaysData.canGoForward = canGoForward;
-            overlayContent.webContents.send('ipc-main-overlays-loaded', overlaysData);
-            break;
-
-        case 'precisionClick':
-            overlayContent.webContents.send('ipc-main-overlays-loaded', overlaysData);
             break;
     }
+
+    if (!isKeyboardOverlay) overlayContent.webContents.send('ipc-main-overlays-loaded', overlaysData);
 
     if (isDevelopment) overlayContent.webContents.openDevTools();
     overlayContent.webContents.openDevTools(); // to remove
@@ -1531,11 +1575,11 @@ function handleToggleDwellingShortcut() {
 }
 
 function handleZoomInShortcut() {
-    handleZoom("in", true);
+    handleZoom("in", false);
 }
 
 function handleZoomOutShortcut() {
-    handleZoom("out", true);
+    handleZoom("out", false);
 }
 
 function toggleDwelling() {
@@ -1554,7 +1598,7 @@ function toggleUseRobotJS() {
     useRobotJS = !useRobotJS;
 }
 
-function handleZoom(direction, usedShortcut = false) {
+function handleZoom(direction, closeOverlay = true) {
     const MIN_ZOOM_LEVEL = -7;
     const MAX_ZOOM_LEVEL = 7;
 
@@ -1565,10 +1609,10 @@ function handleZoom(direction, usedShortcut = false) {
     // This creates a loop of zooming in/out when the user keeps pressing the shortcut.
     switch (direction) {
         case "in":
-            zoomLevel = ((zoomLevel >= MAX_ZOOM_LEVEL) && usedShortcut) ? 0 : zoomLevel + 1;
+            zoomLevel = ((zoomLevel >= MAX_ZOOM_LEVEL) && closeOverlay) ? 0 : zoomLevel + 1;
             break;
         case "out":
-            zoomLevel = ((zoomLevel <= MIN_ZOOM_LEVEL) && usedShortcut) ? 0 : zoomLevel - 1;
+            zoomLevel = ((zoomLevel <= MIN_ZOOM_LEVEL) && closeOverlay) ? 0 : zoomLevel - 1;
             break;
         case "reset":
             zoomLevel = 0;
@@ -1577,7 +1621,7 @@ function handleZoom(direction, usedShortcut = false) {
 
     tab.webContentsView.webContents.setZoomLevel(zoomLevel);
     tab.webContentsView.webContents.send('ipc-tabview-create-quadtree', useNavAreas); // Updating the quadtree after zooming
-    if (!usedShortcut) removeOverlay();
+    if (closeOverlay) removeOverlay();
 }
 
 function createHTMLSerializableMenuElement(element) {

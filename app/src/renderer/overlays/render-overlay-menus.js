@@ -613,8 +613,35 @@ function setEventHandlersForPrecisionClick() {
 	let cancelPrecisionClickBtn = byId('cancel-precision-click');
 	let zoomInBtn = byId('zoomIn');
 	let zoomOutBtn = byId('zoomOut');
+	let scrollUp = byId('scrollUp');
+	let scrollDown = byId('scrollDown');
 
 	dwell(cancelPrecisionClickBtn, () => {
+		ipcRenderer.send('ipc-overlays-zoom-reset');
 		ipcRenderer.send('ipc-overlays-remove');
+	});
+
+	scrollUp.addEventListener('mouseenter', () => {
+		ipcRenderer.send('ipc-precision-scroll-up');
+	});
+
+	scrollDown.addEventListener('mouseenter', () => {
+		ipcRenderer.send('ipc-precision-scroll-down');
+	});
+
+	scrollUp.addEventListener('mouseleave', () => {
+		ipcRenderer.send('ipc-precision-scroll-stop');
+	});
+
+	scrollDown.addEventListener('mouseleave', () => {
+		ipcRenderer.send('ipc-precision-scroll-stop');
+	});
+
+	dwellInfinite(zoomInBtn, () => {
+		ipcRenderer.send('ipc-precision-zoom-in');
+	});
+
+	dwellInfinite(zoomOutBtn, () => {
+		ipcRenderer.send('ipc-precision-zoom-out');
 	});
 }
