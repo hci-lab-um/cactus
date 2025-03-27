@@ -1,6 +1,6 @@
 const { ipcRenderer } = require('electron')
 const { byId, dwell, dwellInfinite } = require('../../../src/tools/utils')
-const { createCursor, followCursor, getMouse } = require('../../../src/tools/cursor')
+const { createCursor, followCursor, startCursorAnimation, stopCursorAnimation, getMouse } = require('../../../src/tools/cursor')
 const DOMPurify = require('dompurify');
 
 // Exposes an HTML sanitizer to allow for innerHtml assignments when TrustedHTML policies are set ('This document requires 'TrustedHTML' assignment')
@@ -16,7 +16,7 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 ipcRenderer.on('ipc-main-overlays-loaded', (event, overlaysData) => {
-	const { overlayAreaToShow, tabList, bookmarks, canGoBack, canGoForward, isDwellingActive, useNavAreas, useRobotJS } = overlaysData;
+	const { overlayAreaToShow, tabList, bookmarks, canGoBack, canGoForward, isDwellingActive, useNavAreas, useRobotJS, dwellTime, dwellRange } = overlaysData;
 	console.log('Overlays data', overlaysData);
 
 	switch (overlayAreaToShow) {
@@ -47,7 +47,7 @@ ipcRenderer.on('ipc-main-overlays-loaded', (event, overlaysData) => {
 		}
 		case 'precisionClick': {
 			byId('overlay-precisionClick').style.display = 'grid'
-			setEventHandlersForPrecisionClick();
+			setEventHandlersForPrecisionClick(dwellTime, dwellRange);
 			break;
 		}
 	}
@@ -605,7 +605,7 @@ function setEventHandlersForTabsMenu(tabList, bookmarks, isBookmarksOverlay = fa
 	}
 }
 
-function setEventHandlersForPrecisionClick() {
+function setEventHandlersForPrecisionClick(dwellTime, dwellRange) {
 	// =================================
 	// ==== PRECISION CLICK OVERLAY ====
 	// =================================
@@ -615,6 +615,10 @@ function setEventHandlersForPrecisionClick() {
 	let zoomOutBtn = byId('zoomOut');
 	let scrollUp = byId('scrollUp');
 	let scrollDown = byId('scrollDown');
+	let webpage = byId('webpage');
+
+	let dwellTimeout;
+	let lastX = 0, lastY = 0;
 
 	dwell(cancelPrecisionClickBtn, () => {
 		ipcRenderer.send('ipc-overlays-zoom-reset');
@@ -644,4 +648,45 @@ function setEventHandlersForPrecisionClick() {
 	dwellInfinite(zoomOutBtn, () => {
 		ipcRenderer.send('ipc-precision-zoom-out');
 	});
+
+	webpage.addEventListener("mousemove", (event) => {
+		const { clientX: x, clientY: y } = event;
+
+		// Check if cursor movement is within range
+		if (Math.abs(x - lastX) < dwellRange && Math.abs(y - lastY) < dwellRange) {
+			startCursorAnimation(); // Show the cursor animation
+
+			if (!dwellTimeout) {
+				dwellTimeout = setTimeout(() => {
+					console.log("Dwell selection triggered!");
+					ipcRenderer.send('ipc-overlays-remove');
+					simulateClick(x, y);
+					ipcRenderer.send('ipc-overlays-zoom-reset');
+					resetDwell();
+				}, dwellTime);
+			}
+		} else {
+			stopCursorAnimation(); // Stop the cursor animation
+			resetDwell(); // Reset if movement is too large
+		}
+
+		lastX = x;
+		lastY = y;
+	});
+
+	webpage.addEventListener("mouseleave", () => {
+		stopCursorAnimation(); // Stop the cursor animation
+		resetDwell(); // Reset if movement is too large
+	});
+
+	function resetDwell() {
+		clearTimeout(dwellTimeout);
+		dwellTimeout = null;
+	}
+
+	// Simulate a click at a given coordinate
+	function simulateClick(x, y) {
+		ipcRenderer.send('ipc-precision-dwelltime-elapsed');
+	}
+
 }

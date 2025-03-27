@@ -43,7 +43,7 @@
 		cursor.style.opacity = '0.4'
 		cursor.style.width = '50px'
 		cursor.style.height = '50px'
-		cursor.style.color = '#a091eb'
+		cursor.style.color = '#4427D7'
 		cursor.style.margin = '-20px 0 0 -20px'
 
 		document.body.appendChild(cursor);

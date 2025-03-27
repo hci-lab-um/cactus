@@ -175,6 +175,7 @@ function populateUserSettingsTable() {
     return new Promise((resolve, reject) => {
         const defaultSettings = {
             [Settings.DWELL_TIME]: 1500,
+            [Settings.DWELL_RANGE]: 5,
             [Settings.KEYBOARD_DWELL_TIME]: 1000,
             [Settings.RANGE_WIDTH]: 150,
             [Settings.RANGE_HEIGHT]: 50,
@@ -436,6 +437,10 @@ function getDwellTime() {
     return getSetting(Settings.DWELL_TIME).then(value => parseInt(value, 10));
 }
 
+function getDwellRange() {
+    return getSetting(Settings.DWELL_RANGE).then(value => parseInt(value, 10));
+}
+
 function getKeyboardDwellTime() {
     return getSetting(Settings.KEYBOARD_DWELL_TIME).then(value => parseInt(value, 10));
 }
@@ -473,6 +478,7 @@ module.exports = {
     getMenuScrollDistance,
     getMenuScrollInterval,
     getDwellTime,
+    getDwellRange,
     getKeyboardDwellTime,
 
     deleteBookmarkByUrl,

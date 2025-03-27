@@ -1,5 +1,6 @@
 const Settings = Object.freeze({
     DWELL_TIME: "dwellTime",
+    DWELL_RANGE: "dwellRange",
     KEYBOARD_DWELL_TIME: "keyboardDwellTime",
     RANGE_WIDTH: "rangeWidth",
     RANGE_HEIGHT: "rangeHeight",

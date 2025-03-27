@@ -20,6 +20,7 @@ let scrollInterval;
 let menuAreaScrollDistance;
 let menuAreaScrollInterval;
 let dwellTime;
+let dwellRange;
 
 let mainWindow, splashWindow
 let mainWindowContent, overlayContent, isKeyboardOverlay
@@ -89,6 +90,8 @@ ipcMain.handle('ipc-get-user-setting', async (event, setting) => {
     switch (setting) {
         case Settings.DWELL_TIME:
             return dwellTime;
+        case Settings.DWELL_RANGE:
+            return dwellRange;
         case Settings.KEYBOARD_DWELL_TIME:
             return await db.getKeyboardDwellTime();
         case Settings.MENU_AREA_SCROLL_DISTANCE:
@@ -618,6 +621,10 @@ ipcMain.on('ipc-precision-zoom-out', (event) => {
     handleZoom("out", false);
 });
 
+ipcMain.on('ipc-precision-dwelltime-elapsed', (event) => {
+    robot.mouseClick();
+});
+
 // ---------------------
 // ACCESSIBILITY OVERLAY
 // ---------------------
@@ -710,6 +717,7 @@ async function initialiseVariables (){
     useRobotJS = await db.getUseRobotJS();
     scrollDistance = await db.getTabScrollDistance();
     dwellTime = await db.getDwellTime();
+    dwellRange = await db.getDwellRange();
     menuAreaScrollDistance = await db.getMenuScrollDistance();
     menuAreaScrollInterval = await db.getMenuScrollInterval();
 }
@@ -1307,12 +1315,13 @@ function insertRendererCSS() {
         .cactus-cursor {
             width: 50px;
             height: 50px;
-            color: #a091eb;
+            color: #bad727;
             opacity: 0.4;
             z-index: 9999999999;
             position: absolute;
             margin: -20px 0 0 -20px;
             pointer-events: none;
+            mix-blend-mode: difference; 
         }
 
         /* Scrolling buttons */
@@ -1445,6 +1454,8 @@ async function createOverlay(overlayAreaToShow, elementProperties, isTransparent
         isDwellingActive: isDwellingActive,
         useNavAreas: useNavAreas,
         useRobotJS: useRobotJS,
+        dwellTime: dwellTime,
+        dwellRange: dwellRange
     };
 
     switch (overlayAreaToShow) {

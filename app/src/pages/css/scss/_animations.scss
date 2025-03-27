@@ -148,3 +148,13 @@
     transform: scale(0);
   }
 }
+
+@keyframes overlayDwellAnimation-fillEye {
+  from {
+    clip-path: inset(100% 0 0 0);
+  }
+
+  to {
+    clip-path: inset(0% 0 0 0);
+  }
+}
