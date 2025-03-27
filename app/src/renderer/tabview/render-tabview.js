@@ -214,7 +214,7 @@ window.cactusAPI.onAsync('ipc-tabview-click-element', (elementToClick, useRobotJ
 	if (element) {
 		if (useRobotJS){
 			robotClick(element);
-		} else if (element.nodeName == 'A' && (element.getAttribute('href') && (element.getAttribute('href') != '#' || element.getAttribute('href') != 'javascript:void(0)'))) {
+		} else if (element.nodeName == 'A' && element.getAttribute('href') && element.getAttribute('href') != '#' && element.getAttribute('href') != 'javascript:void(0)') {
 			window.cactusAPI.send('browse-to-url', element.getAttribute('href'));
 		} else {
 			// let clickableElement = getClickablePartOfElement(element);
@@ -344,7 +344,7 @@ function generateUUID() {
 	});
 }
 
-function initScrollableElements(useNavAreas) {
+function initScrollableElements() {
 	if (displayScrollButtons) {
 		removeExistingScrollButtons();
 
@@ -362,7 +362,6 @@ function initScrollableElements(useNavAreas) {
 
 		scrollableElements.forEach(element => {
 			const targetZIndex = getZIndex(element);
-			let quadtreeGeneratorTimer = null;
 
 			// Scroll up button
 			let scrollUpButton_outerDiv = document.createElement('div');
