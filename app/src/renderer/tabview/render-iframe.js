@@ -1,19 +1,12 @@
 (function () {
 	console.log('------------------ WE DID IT! 🥳 ------------------');
 
-	// Inject script to hide the native mouse in the iframe
-	document.body.style.cursor = "none";
-	const style = document.createElement('style');
-	style.innerHTML = 'a, input, textarea, button, div { cursor: none !important; }';
-	document.head.appendChild(style);
-
 	var mousePos = { x: 0, y: 0 }
 	var cursorPos = { x: 0, y: 0 }
 	let cursor;
 	let cursorInterval;
 	let scrollDistance;
 	let isScrolling = false;
-	let iterator = 0;
 
 	// Create a Trusted Types policy for innerHtml assignments when TrustedHTML policies are set ('This document requires 'TrustedHTML' assignment')
 	const policy = window.trustedTypes.createPolicy('defaultPolicy', {
@@ -23,9 +16,23 @@
 	});
 
 	// Init cursor
+	hideNativeCursor();
 	createCursor('cactus_cursor');
 	cursor = document.getElementById('cactus_cursor');
 	followMouse('cactus_cursor');
+
+	function hideNativeCursor() {
+		try {
+			// Inject script to hide the native mouse in the iframe
+			document.body.style.cursor = "none";
+			const style = document.createElement('style');
+			const trustedHTML = policy.createHTML('a, input, textarea, button, div { cursor: none !important; }');
+			style.innerHTML = trustedHTML;
+			document.head.appendChild(style);
+		} catch (e) {
+			console.error('Error hiding native mouse cursor', e);
+		}
+	}
 
 	function createCursor(id) {
 		var cursor = document.createElement('div')
