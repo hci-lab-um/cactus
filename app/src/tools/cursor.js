@@ -37,7 +37,8 @@ exports.createCursor = (id) => {
       </path>
 
       <!-- Filling Eye Effect -->
-      <path fill="white" id="animatedEye" style="clip-path: inset(100% 0 0 0); mix-blend-mode: difference;"
+      <path fill="white" id="animatedEye" style="clip-path: inset(100% 0 0 0);" 
+        stroke="#a091eb" stroke-width="20"
         d="M288 144a110.94 110.94 0 0 0-31.24 5 55.4 55.4 0 0 1 7.24 27 56 56 0 0 1-56 56
            55.4 55.4 0 0 1-27-7.24A111.71 111.71 0 1 0 288 144zm284.52 97.4C518.29 135.59 
            410.93 64 288 64S57.68 135.64 3.48 241.41a32.35 32.35 0 0 0 0 29.19C57.71 376.41
@@ -52,7 +53,7 @@ exports.createCursor = (id) => {
   cursor.setAttribute('id', id);
   cursor.style.width = '50px';
   cursor.style.height = '50px';
-  cursor.style.color = "#4427D7";
+  cursor.style.color = "#a091eb";
   cursor.style.opacity = '0.4';
   cursor.style.zIndex = '9999999999';
   cursor.style.position = 'absolute';
