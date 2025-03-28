@@ -623,6 +623,7 @@ function setEventHandlersForPrecisionClick(dwellTime, dwellRange) {
 	dwell(cancelPrecisionClickBtn, () => {
 		ipcRenderer.send('ipc-overlays-zoom-reset');
 		ipcRenderer.send('ipc-overlays-remove');
+		ipcRenderer.send('ipc-precision-add-scroll-buttons');
 	});
 
 	scrollUp.addEventListener('mouseenter', () => {
