@@ -227,12 +227,12 @@ window.cactusAPI.onAsync('ipc-tabview-click-element', (elementToClick, useRobotJ
 	}
 });
 
-window.cactusAPI.onAsync('ipc-tabview-set-native-dropdown-value', (element, value) => {
-    let dropdownElement = document.querySelector('[data-cactus-id="' + element.parentElementId + '"]');
-    if (dropdownElement) {
-        if (dropdownElement.multiple) {
+window.cactusAPI.onAsync('ipc-tabview-set-element-value', (element, value) => {
+    let parentElement = document.querySelector('[data-cactus-id="' + element.parentElementId + '"]');
+    if (parentElement) {
+        if (parentElement.multiple) {
             // When a select element has the multiple attribute, it is possible to select more than one option
-			Array.from(dropdownElement.options).forEach(option => {
+			Array.from(parentElement.options).forEach(option => {
 				if (value === option.value) {
 					// If the option is already selected, deselect it
 					option.selected = !option.selected; 
@@ -240,7 +240,7 @@ window.cactusAPI.onAsync('ipc-tabview-set-native-dropdown-value', (element, valu
 			});
         } else {
             // Handle single selection
-            dropdownElement.value = value;
+            parentElement.value = value;
         }
     }
 });
@@ -572,6 +572,20 @@ function serializeElement(element) {
 		textContent: element.textContent,
 		innerText: element.innerText,
 		value: element.value,
+		rangeValues: (() => {
+			const min = parseFloat(element.getAttribute("min") || element.getAttribute("ariaValueMin") || "0");
+			const max = parseFloat(element.getAttribute("max") || element.getAttribute("ariaValueMax") || "100");
+			const step = parseFloat(element.getAttribute("step") || "1");
+			const values = [];
+			for (let i = min; i <= max; i += step) {
+				values.push({
+					value: i.toString(),
+					textContent: i,
+					parentElementId: element.dataset.cactusId,
+				});
+			}
+			return values;
+		})(),
 		title: element.title,
 		href: element.getAttribute('href'),
 		src: element.getAttribute('src'),

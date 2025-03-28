@@ -661,6 +661,7 @@ function setEventHandlersForPrecisionClick(dwellTime, dwellRange) {
 					console.log("Dwell selection triggered!");
 					ipcRenderer.send('ipc-overlays-remove');
 					simulateClick(x, y);
+					ipcRenderer.send('ipc-precision-add-scroll-buttons');
 					ipcRenderer.send('ipc-overlays-zoom-reset');
 					resetDwell();
 				}, dwellTime);

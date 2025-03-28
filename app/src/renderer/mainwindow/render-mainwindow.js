@@ -487,7 +487,7 @@ function renderNavItemInSidebar(navItems) {
 		menuNavLevelup.style.display = 'none'
 }
 
-function renderElementsInSidebar(elements, sidebarItemArea, isDropdownOption = false) {
+function renderElementsInSidebar(elements, sidebarItemArea, isSubOption = false) {
 	let sidebarItems = document.querySelectorAll('.sidebar_item');
 	const elementIDsToAdd = elements.map((e) => e.id);
 
@@ -514,7 +514,7 @@ function renderElementsInSidebar(elements, sidebarItemArea, isDropdownOption = f
 	});
 
 	elements.forEach(e => {
-		const sidebarItem = createSidebarItemElement(e, false, isDropdownOption);
+		const sidebarItem = createSidebarItemElement(e, false, isSubOption);
 		sidebarItemArea.appendChild(sidebarItem);
 	});
 
@@ -526,7 +526,7 @@ function renderElementsInSidebar(elements, sidebarItemArea, isDropdownOption = f
 	sidebarItems.forEach(item => {
 		dwell(item, () => {
 			const elementId = item.getAttribute('id');
-			const elementToClick = isDropdownOption ? elements.filter(e => e.value == elementId) : elements.filter(e => e.id == elementId);
+			const elementToClick = isSubOption ? elements.filter(e => e.value == elementId) : elements.filter(e => e.id == elementId);
 
 			if (elementToClick[0]) {
 				// Show click event animation
@@ -537,10 +537,10 @@ function renderElementsInSidebar(elements, sidebarItemArea, isDropdownOption = f
 					// After 400ms, clear the sidebar and perform the necessary action
 					sidebarItemArea.innerHTML = "";
 
-					if (isDropdownOption) {
+					if (isSubOption) {
 						console.log("Identified a dropdown option: ", elementToClick[0]);
 						// Set the value of the dropdown to the value of the option
-						ipcRenderer.send('ipc-mainwindow-set-native-dropdown-value', elementToClick[0]);
+						ipcRenderer.send('ipc-mainwindow-set-element-value', elementToClick[0]);
 					} else {
 						const elementType = getElementType(elementToClick[0], false);
 						const inputType = shouldDisplayKeyboard(elementType);
@@ -557,6 +557,10 @@ function renderElementsInSidebar(elements, sidebarItemArea, isDropdownOption = f
 							console.log("Identified a select element: ", elementToClick[0]);
 							const dropdownOptions = elementToClick[0].options;
 							renderElementsInSidebar(dropdownOptions, sidebarItemArea, true);
+						} else if (elementType === 'range') {
+							// Display all the range values in the sidebar
+							console.log("Identified a range element: ", elementToClick[0]);
+							renderElementsInSidebar(elementToClick[0].rangeValues, sidebarItemArea, true);
 						} else {
 							console.log("Not an input element");
 							ipcRenderer.send('ipc-mainwindow-click-sidebar-element', elementToClick[0]);
@@ -593,10 +597,10 @@ function resetNavigationSidebar(options = {}) {
 	selectedNavItemTitle.style.display = 'none'
 }
 
-function createSidebarItemElement(element, isNavItem, isDropdownOption = false) {
+function createSidebarItemElement(element, isNavItem, isSubOption = false) {
 	const sidebarItem = document.createElement('div');
 	sidebarItem.className = 'sidebar_item fadeInDown';
-	sidebarItem.id = isDropdownOption ? element.value : element.id;
+	sidebarItem.id = isSubOption ? element.value : element.id;
 
 	const itemContent = document.createElement('div');
 

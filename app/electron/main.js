@@ -374,9 +374,9 @@ ipcMain.on('robot-keyboard-arrow-key', (event, direction) => {
     }
 })
 
-ipcMain.on('ipc-mainwindow-set-native-dropdown-value', (event, element) => {
+ipcMain.on('ipc-mainwindow-set-element-value', (event, element) => {
     var tab = tabList.find(tab => tab.isActive === true);
-    tab.webContentsView.webContents.send('ipc-tabview-set-native-dropdown-value', element, element.value);
+    tab.webContentsView.webContents.send('ipc-tabview-set-element-value', element, element.value);
 });
 
 ipcMain.on('ipc-mainwindow-click-sidebar-element', (event, elementToClick) => {
@@ -466,13 +466,6 @@ ipcMain.on('ipc-mainwindow-open-iframe', (event, src) => {
 
 ipcMain.on('ipc-overlays-remove', (event) => {
     removeOverlay();
-
-    // Adding the scroll buttons back to the tabview if they were removed
-    if (scrollButtonsRemoved) {
-        var tab = tabList.find(tab => tab.isActive === true);
-        tab.webContentsView.webContents.send('ipc-main-add-scroll-buttons');
-        scrollButtonsRemoved = false;
-    }
 })
 
 ipcMain.on('ipc-overlays-remove-and-update', (event) => {
@@ -624,6 +617,15 @@ ipcMain.on('ipc-precision-zoom-out', (event) => {
 ipcMain.on('ipc-precision-dwelltime-elapsed', (event) => {
     robot.mouseClick();
 });
+
+ipcMain.on('ipc-precision-add-scroll-buttons', (event) => {
+    // Adding the scroll buttons back to the tabview if they were removed
+    if (scrollButtonsRemoved) {
+        var tab = tabList.find(tab => tab.isActive === true);
+        tab.webContentsView.webContents.send('ipc-main-add-scroll-buttons');
+        scrollButtonsRemoved = false;
+    }
+})
 
 // ---------------------
 // ACCESSIBILITY OVERLAY

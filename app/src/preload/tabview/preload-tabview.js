@@ -28,7 +28,7 @@ contextBridge.exposeInMainWorld('cactusAPI', {
     onAsync: (channel, func) => {
         const validChannels = [
             'ipc-tabview-click-element',
-            'ipc-tabview-set-native-dropdown-value',
+            'ipc-tabview-set-element-value',
             'ipc-tabview-highlight-elements'
         ];
 
