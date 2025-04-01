@@ -9,7 +9,7 @@
 	let isScrolling = false;
 
 	// Create a Trusted Types policy for innerHtml assignments when TrustedHTML policies are set ('This document requires 'TrustedHTML' assignment')
-	const policy = window.trustedTypes.createPolicy('defaultPolicy', {
+	const policy = window.trustedTypes.createPolicy('cactus_iframe_defaultPolicy', {
 		// This method returns the input as is, without any sanitization
 		// but adds a TrustedHTML wrapper around the content
 		createHTML: (input) => input

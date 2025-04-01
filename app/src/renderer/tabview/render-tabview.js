@@ -12,7 +12,7 @@ let mutationObserverOptions;
 let displayScrollButtons = true;
 
 // Create a Trusted Types policy for innerHtml assignments when TrustedHTML policies are set ('This document requires 'TrustedHTML' assignment')
-const policy = window.trustedTypes.createPolicy('default', {
+const policy = window.trustedTypes.createPolicy('cactus_defaultPolicy', {
 	// This method returns the input as is, without any sanitization
 	// but adds a TrustedHTML wrapper around the content
 	createHTML: (input) => input
@@ -238,7 +238,18 @@ window.cactusAPI.onAsync('ipc-tabview-set-element-value', (element, value) => {
 					option.selected = !option.selected; 
 				}
 			});
-        } else {
+		} else if (parentElement.tagName.toLowerCase() === 'video') {
+			// If the element is a video, update the video attributes accordingly
+			if (value === 'pausePlay') {
+				parentElement.paused = parentElement.paused ? parentElement.play() : parentElement.pause();
+			} else if (value === 'muteUnmute') {
+				parentElement.muted = !parentElement.muted;
+			} else if (element.parentValue === 'volume') {
+				parentElement.volume = parseFloat(value);
+			} else if (element.parentValue === 'seek') {
+				parentElement.currentTime = parseFloat(value);
+			}
+		} else {
             // Handle single selection
             parentElement.value = value;
         }
@@ -512,9 +523,9 @@ function removeExistingScrollButtons() {
 }
 
 // Gets the contents needed from the renderer process and sends them to the main process for generating the QuadTree
-function generateQuadTree() {
+async function generateQuadTree() {
 	const clickableSelectors = [
-		'button', 'a', 'textarea', 'input', 'select', 'date', 
+		'button', 'a', 'textarea', 'input', 'select', 'date', 'video',
 		'[role="button"]', 'div[role="link"]', 'span[role="link"]',
 		'[role="checkbox"]', '[role="textbox"]', '[role="radio"]', '[role="option"]', '[role="tab"]',
 		'[role="menu"]', '[role="switch"]', '[role="slider"]', '[role="combobox"], iframe[src]', '[aria-selected]'
@@ -616,7 +627,65 @@ function serializeElement(element) {
 			};
 		}) : null,
 		nodeType: element.nodeType,
-		childNodes: element.childNodes ? Array.from(element.childNodes).map(serializeChildNode) : null
+		childNodes: element.childNodes ? Array.from(element.childNodes).map(serializeChildNode) : null,
+		videoOptions: [
+			{
+				value: 'pausePlay',
+				textContent: 'Pause/Play',
+				parentElementId: element.dataset.cactusId,
+				type: 'pausePlay',
+			},
+			{
+				value: 'muteUnmute',
+				textContent: 'Mute/Unmute',
+				parentElementId: element.dataset.cactusId,
+				type: 'muteUnmute',
+			},
+			{
+				value: 'volume',
+				textContent: 'Volume',
+				parentElementId: element.dataset.cactusId,
+				type: 'range',
+				rangeValues: (() => {
+					const min = parseFloat(element.getAttribute("min") || "0");
+					const max = parseFloat(element.getAttribute("max") || "1.01");
+					const step = parseFloat(element.getAttribute("step") || "0.01");
+					const values = [];
+					for (let i = min; i <= max; i += step) {
+						values.push({
+							value: i.toFixed(2),
+							textContent: (i * 100).toFixed(0).toString() + "%",
+							parentElementId: element.dataset.cactusId,
+							parentValue: 'volume',
+						});
+					}
+					return values;
+				})(),
+			},
+			{
+				value: 'seek',
+				textContent: 'Seek Video',
+				parentElementId: element.dataset.cactusId,
+				type: 'range',
+				rangeValues: (() => {
+					const duration = element.duration;
+					const step = 60.0; // 60 seconds
+					const values = [];
+
+					if (duration && element.tagName === 'VIDEO') {
+						for (let i = 0; i <= duration; i += step) {
+							values.push({
+								value: i,
+								textContent: new Date(i * 1000).toISOString().slice(11, 19), // Convert seconds to HH:mm:ss
+								parentElementId: element.dataset.cactusId,
+								parentValue: 'seek',
+							});
+						}
+						return values;
+					}
+				})(),
+			}
+		]
 	};
 }
 

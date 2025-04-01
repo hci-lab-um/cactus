@@ -538,9 +538,13 @@ function renderElementsInSidebar(elements, sidebarItemArea, isSubOption = false)
 					sidebarItemArea.innerHTML = "";
 
 					if (isSubOption) {
-						console.log("Identified a dropdown option: ", elementToClick[0]);
-						// Set the value of the dropdown to the value of the option
-						ipcRenderer.send('ipc-mainwindow-set-element-value', elementToClick[0]);
+						if (elementToClick[0].value !== 'volume' && elementToClick[0].value !== 'seek') {
+							console.log("Identified a dropdown option: ", elementToClick[0]);
+							// Set the value of the dropdown to the value of the option
+							ipcRenderer.send('ipc-mainwindow-set-element-value', elementToClick[0]);
+						} else {
+							renderElementsInSidebar(elementToClick[0].rangeValues, sidebarItemArea, true);
+						}
 					} else {
 						const elementType = getElementType(elementToClick[0], false);
 						const inputType = shouldDisplayKeyboard(elementType);
@@ -561,6 +565,9 @@ function renderElementsInSidebar(elements, sidebarItemArea, isSubOption = false)
 							// Display all the range values in the sidebar
 							console.log("Identified a range element: ", elementToClick[0]);
 							renderElementsInSidebar(elementToClick[0].rangeValues, sidebarItemArea, true);
+						} else if (elementType === 'video') {
+							console.log("Identified a video element: ", elementToClick[0]);
+							renderElementsInSidebar(elementToClick[0].videoOptions, sidebarItemArea, true);
 						} else {
 							console.log("Not an input element");
 							ipcRenderer.send('ipc-mainwindow-click-sidebar-element', elementToClick[0]);
@@ -651,9 +658,16 @@ function createSidebarItemElement(element, isNavItem, isSubOption = false) {
 			case 'time':
 				iconHTML = createMaterialIcon('schedule'); break;
 			case 'select':
+			case 'range':
 				iconHTML = createMaterialIcon('stat_minus_1'); break;
 			case 'iframe':
 				iconHTML = createMaterialIcon('open_in_new'); break;
+			case 'video':
+				iconHTML = createMaterialIcon('live_tv'); break;
+			case 'pausePlay':
+				iconHTML = createMaterialIcon('play_pause'); break;
+			case 'muteUnmute':
+				iconHTML = createMaterialIcon('volume_off'); break;
 			default:
 				iconHTML = element.children ? createMaterialIcon('menu') : createMaterialIcon('chevron_right'); break;
 		}
