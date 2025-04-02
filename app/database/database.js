@@ -470,7 +470,7 @@ function updateUserSetting(setting, value) {
         }
 
         const query = `UPDATE user_settings SET value = ? WHERE setting = ?`;
-        db.run(query, [value.toString(), setting], function (err) {
+        db.run(query, [value, setting], function (err) {
             if (err) {
                 console.error(`Error updating setting ${setting}:`, err.message);
                 reject(err);
@@ -484,12 +484,103 @@ function updateUserSetting(setting, value) {
     });
 }
 
+function updateDefaultURL(value) {
+    if (typeof value !== 'string') {
+        throw new Error('Default URL must be a string');
+    }
+    return updateUserSetting(Settings.DEFAULT_URL, value);
+}
+
+function updateRangeWidth(value) {
+    if (typeof value !== 'number') {
+        throw new Error('Range width must be a number');
+    }
+    return updateUserSetting(Settings.RANGE_WIDTH, value);
+}
+
+function updateRangeHeight(value) {
+    if (typeof value !== 'number') {
+        throw new Error('Range height must be a number');
+    }
+    return updateUserSetting(Settings.RANGE_HEIGHT, value);
+}
+
+function updateActivateNavAreas(value) {
+    if (typeof value !== 'boolean') {
+        throw new Error('Activate Nav Areas must be a boolean');
+    }
+    return updateUserSetting(Settings.ACTIVATE_NAV_AREAS, value ? 'true' : 'false');
+}
+
+function updateUseRobotJS(value) {
+    if (typeof value !== 'boolean') {
+        throw new Error('Use RobotJS must be a boolean');
+    }
+    return updateUserSetting(Settings.USE_ROBOT_JS, value ? 'true' : 'false');
+}
+
+function updateIsDwellingActive(value) {
+    if (typeof value !== 'boolean') {
+        throw new Error('Is Dwelling Active must be a boolean');
+    }
+    return updateUserSetting(Settings.IS_DWELLING_ACTIVE, value ? 'true' : 'false');
+}
+
+function updateTabScrollDistance(value) {
+    if (typeof value !== 'number') {
+        throw new Error('Tab Scroll Distance must be a number');
+    }
+    return updateUserSetting(Settings.TAB_VIEW_SCROLL_DISTANCE, value);
+}
+
+function updateMenuScrollDistance(value) {
+    if (typeof value !== 'number') {
+        throw new Error('Menu Scroll Distance must be a number');
+    }
+    return updateUserSetting(Settings.MENU_AREA_SCROLL_DISTANCE, value);
+}
+
+function updateDwellTime(value) {
+    if (typeof value !== 'number') {
+        throw new Error('Dwell Time must be a number');
+    }
+    return updateUserSetting(Settings.DWELL_TIME, value);
+}
+
+function updateDwellRange(value) {
+    if (typeof value !== 'number') {
+        throw new Error('Dwell Range must be a number');
+    }
+    return updateUserSetting(Settings.DWELL_RANGE, value);
+}
+
+function updateKeyboardDwellTime(value) {
+    if (typeof value !== 'number') {
+        throw new Error('Keyboard Dwell Time must be a number');
+    }
+    return updateUserSetting(Settings.KEYBOARD_DWELL_TIME, value);
+}
+
+function updateMenuScrollInterval(value) {
+    if (typeof value !== 'number') {
+        throw new Error('Menu Scroll Interval must be a number');
+    }
+    return updateUserSetting(Settings.MENU_AREA_SCROLL_INTERVAL_IN_MS, value);
+}
+
+function updateDefaultLayout(value) {
+    if (typeof value !== 'string') {
+        throw new Error('Default Layout must be a string');
+    }
+    return updateUserSetting(Settings.DEFAULT_LAYOUT, value);
+}
+
 
 module.exports = {
     connect,
     close,
     createTables,
-    
+
     addBookmark,
     addTab,
 
@@ -514,4 +605,17 @@ module.exports = {
     deleteAllTabs,
 
     updateUserSetting,
+    updateDefaultURL,
+    updateRangeWidth,
+    updateRangeHeight,
+    updateActivateNavAreas,
+    updateUseRobotJS,
+    updateIsDwellingActive,
+    updateTabScrollDistance,
+    updateMenuScrollDistance,
+    updateDwellTime,
+    updateDwellRange,
+    updateKeyboardDwellTime,
+    updateMenuScrollInterval,
+    updateDefaultLayout,
 };

@@ -20,6 +20,7 @@ let scrollDistance;
 let scrollInterval;
 let menuAreaScrollDistance;
 let menuAreaScrollInterval;
+let keyboardDwellTime;
 let dwellTime;
 let dwellRange;
 
@@ -93,7 +94,7 @@ ipcMain.handle('ipc-get-user-setting', async (event, setting) => {
         case Settings.DWELL_RANGE:
             return dwellRange;
         case Settings.KEYBOARD_DWELL_TIME:
-            return await db.getKeyboardDwellTime();
+            return keyboardDwellTime;
         case Settings.MENU_AREA_SCROLL_DISTANCE:
             return menuAreaScrollDistance;
         case Settings.MENU_AREA_SCROLL_INTERVAL_IN_MS:
@@ -725,6 +726,7 @@ async function initialiseVariables (){
     useRobotJS = await db.getUseRobotJS();
     isDwellingActive = await db.getIsDwellingActive();
     scrollDistance = await db.getTabScrollDistance();
+    keyboardDwellTime = await db.getKeyboardDwellTime();
     dwellTime = await db.getDwellTime();
     dwellRange = await db.getDwellRange();
     menuAreaScrollDistance = await db.getMenuScrollDistance();
