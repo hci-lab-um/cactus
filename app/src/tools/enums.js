@@ -9,6 +9,7 @@ const Settings = Object.freeze({
     MENU_AREA_SCROLL_INTERVAL_IN_MS: "menuAreaScrollIntervalInMs",
     ACTIVATE_NAV_AREAS: "activateNavAreas",
     USE_ROBOT_JS: "useRobotJS",
+    IS_DWELLING_ACTIVE: "isDwellingActive",
     DEFAULT_URL: "defaultUrl",
     DEFAULT_LAYOUT: "defaultLayout"
 });

@@ -14,6 +14,7 @@ let rangeWidth;
 let rangeHeight;
 let useNavAreas;
 let useRobotJS;
+let isDwellingActive;
 let defaultUrl;
 let scrollDistance;
 let scrollInterval;
@@ -30,7 +31,6 @@ let timeoutCursorHovering
 let tabList = [];
 let tabsFromDatabase = [];
 let bookmarks = [];
-let isDwellingActive = true;
 let successfulLoad;
 let scrollButtonsRemoved = false;
 
@@ -106,6 +106,8 @@ ipcMain.handle('ipc-get-user-setting', async (event, setting) => {
             return rangeHeight;
         case Settings.ACTIVATE_NAV_AREAS:
             return useNavAreas;
+        case Settings.IS_DWELLING_ACTIVE:
+            return isDwellingActive;
         default:
             throw new Error(`Unknown setting: ${setting}`);
     }
@@ -717,6 +719,7 @@ async function initialiseVariables (){
     rangeHeight = await db.getRangeHeight();
     useNavAreas = await db.getActivateNavAreas();
     useRobotJS = await db.getUseRobotJS();
+    isDwellingActive = await db.getIsDwellingActive();
     scrollDistance = await db.getTabScrollDistance();
     dwellTime = await db.getDwellTime();
     dwellRange = await db.getDwellRange();
@@ -765,7 +768,7 @@ function createMainWindow() {
         mainWindowContent.setBounds({ x: 0, y: 0, width: mainWindow.getContentBounds().width, height: mainWindow.getContentBounds().height })
 
         mainWindowContent.webContents.loadURL(path.join(__dirname, '../src/pages/index.html')).then(() => {
-            mainWindowContent.webContents.send('mainWindowLoaded', dwellTime, menuAreaScrollDistance, menuAreaScrollInterval);
+            mainWindowContent.webContents.send('mainWindowLoaded', dwellTime, menuAreaScrollDistance, menuAreaScrollInterval, isDwellingActive);
             // if (isDevelopment) mainWindowContent.webContents.openDevTools();
             mainWindowContent.webContents.openDevTools(); // to remove
 
@@ -1595,9 +1598,10 @@ function handleZoomOutShortcut() {
     handleZoom("out", false);
 }
 
-function toggleDwelling() {
+async function toggleDwelling() {
     isDwellingActive = !isDwellingActive
     mainWindowContent.webContents.send('ipc-mainwindow-handle-dwell-events', isDwellingActive);
+    await db.updateUserSetting(Settings.IS_DWELLING_ACTIVE, isDwellingActive);
 }
 
 function toggleNavigation() {

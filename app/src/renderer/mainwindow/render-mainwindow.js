@@ -10,6 +10,7 @@ let cursor;
 let timeoutScroll;
 let navAreaStack = [];
 let url;
+let isDwellingActive;
 
 // Exposes an HTML sanitizer to allow for innerHtml assignments when TrustedHTML policies are set ('This document requires 'TrustedHTML' assignment')
 window.addEventListener('DOMContentLoaded', () => {
@@ -19,7 +20,9 @@ window.addEventListener('DOMContentLoaded', () => {
 	};
 });
 
-ipcRenderer.on('mainWindowLoaded', (event, dwellTime, menuAreaScrollDistance, menuAreaScrollIntervalInMs) => {
+ipcRenderer.on('mainWindowLoaded', (event, dwellTime, menuAreaScrollDistance, menuAreaScrollIntervalInMs, isDwelling) => {
+	isDwellingActive = isDwelling;
+
 	//Setup cursors
 	setupCursor();
 	//Setup browser functionality events 
@@ -28,9 +31,10 @@ ipcRenderer.on('mainWindowLoaded', (event, dwellTime, menuAreaScrollDistance, me
 	setupNavigationSideBar(menuAreaScrollDistance, menuAreaScrollIntervalInMs);
 })
 
-ipcRenderer.on('ipc-mainwindow-handle-dwell-events', (event, isDwellingActive) => {
+ipcRenderer.on('ipc-mainwindow-handle-dwell-events', (event, isDwelling) => {
 	// When dwelling is off, the sidebar is not populated with elements, but if there are still elements in the sidebar, they are removed. 
 	// Therefore, resetNavigationSidebar() is called to clear the sidebar either from the previous elements, or from the dwelling message.
+	isDwellingActive = isDwelling;
 	resetNavigationSidebar();
 	if (!isDwellingActive) showDwellingPausedMessage();
 });
@@ -602,6 +606,8 @@ function resetNavigationSidebar(options = {}) {
 	selectedNavItemTitle = byId('sidebar_selected-navitem-title');
 	selectedNavItemTitle.textContent = ""
 	selectedNavItemTitle.style.display = 'none'
+	
+	if (!isDwellingActive) showDwellingPausedMessage();
 }
 
 function createSidebarItemElement(element, isNavItem, isSubOption = false) {

@@ -184,6 +184,7 @@ function populateUserSettingsTable() {
             [Settings.MENU_AREA_SCROLL_INTERVAL_IN_MS]: 300,
             [Settings.ACTIVATE_NAV_AREAS]: false,
             [Settings.USE_ROBOT_JS]: true,
+            [Settings.IS_DWELLING_ACTIVE]: true,
             [Settings.DEFAULT_URL]: "https://www.google.com",
             [Settings.DEFAULT_LAYOUT]: "en"
         };
@@ -425,6 +426,10 @@ function getUseRobotJS() {
     return getSetting(Settings.USE_ROBOT_JS).then(value => value === 'true');
 }
 
+function getIsDwellingActive() {
+    return getSetting(Settings.IS_DWELLING_ACTIVE).then(value => value === 'true');
+}
+
 function getTabScrollDistance() {
     return getSetting(Settings.TAB_VIEW_SCROLL_DISTANCE).then(value => parseInt(value, 10));
 }
@@ -454,8 +459,31 @@ function getDefaultLayout() {
 }
 
 // =================================
-// =========== SETTERS =============
+// =========== UPDATING ============
 // =================================
+
+function updateUserSetting(setting, value) {
+    return new Promise((resolve, reject) => {
+        if (!db) {
+            reject(new Error('Database not initialized'));
+            return;
+        }
+
+        const query = `UPDATE user_settings SET value = ? WHERE setting = ?`;
+        db.run(query, [value.toString(), setting], function (err) {
+            if (err) {
+                console.error(`Error updating setting ${setting}:`, err.message);
+                reject(err);
+            } else {
+                console.log(`Setting ${setting} updated successfully to ${value}`);
+                resolve();
+            }
+        });
+    }).catch(err => {
+        console.error(`Error in updateUserSetting for ${setting}:`, err.message);
+    });
+}
+
 
 module.exports = {
     connect,
@@ -474,6 +502,7 @@ module.exports = {
     getRangeHeight,
     getActivateNavAreas,
     getUseRobotJS,
+    getIsDwellingActive,
     getTabScrollDistance,
     getMenuScrollDistance,
     getMenuScrollInterval,
@@ -482,5 +511,7 @@ module.exports = {
     getKeyboardDwellTime,
 
     deleteBookmarkByUrl,
-    deleteAllTabs
+    deleteAllTabs,
+
+    updateUserSetting,
 };
