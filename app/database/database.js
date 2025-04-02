@@ -1,6 +1,6 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
-const { Settings, Shortcuts } = require('../src/tools/enums.js');
+const { Settings, Shortcuts, KeyboardLayouts } = require('../src/tools/enums.js');
 const dbPath = path.join(__dirname, 'cactus.db');
 
 let db;
@@ -186,7 +186,7 @@ function populateUserSettingsTable() {
             [Settings.USE_ROBOT_JS]: true,
             [Settings.IS_DWELLING_ACTIVE]: true,
             [Settings.DEFAULT_URL]: "https://www.google.com",
-            [Settings.DEFAULT_LAYOUT]: "en"
+            [Settings.DEFAULT_LAYOUT]: KeyboardLayouts.ENGLISH
         };
         const insertSetting = `
             INSERT OR IGNORE INTO user_settings (setting, value)

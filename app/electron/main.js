@@ -701,6 +701,10 @@ ipcMain.on('ipc-keyboard-input', (event, value, element, submit, updateValueAttr
     }
 });
 
+ipcMain.on('ipc-keyboard-update-language', async (event, language) => {
+    await db.updateUserSetting(Settings.DEFAULT_LAYOUT, language);
+})
+
 ipcMain.on('log', (event, loggedItem) => {
     log.info(event);
     log.info(loggedItem);
@@ -1604,15 +1608,17 @@ async function toggleDwelling() {
     await db.updateUserSetting(Settings.IS_DWELLING_ACTIVE, isDwellingActive);
 }
 
-function toggleNavigation() {
+async function toggleNavigation() {
     useNavAreas = !useNavAreas;
     tabList.forEach(tab => {
         tab.webContentsView.webContents.send('ipc-tabview-create-quadtree', useNavAreas);
     });
+    await db.updateUserSetting(Settings.ACTIVATE_NAV_AREAS, useNavAreas);
 }
 
-function toggleUseRobotJS() {
+async function toggleUseRobotJS() {
     useRobotJS = !useRobotJS;
+    await db.updateUserSetting(Settings.USE_ROBOT_JS, useRobotJS);
 }
 
 function handleZoom(direction, closeOverlay = true) {

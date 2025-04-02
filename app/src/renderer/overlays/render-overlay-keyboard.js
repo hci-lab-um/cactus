@@ -5,6 +5,7 @@ const { dwell, dwellInfinite } = require('../../tools/utils');
 const { createCursor, followCursor, getMouse } = require('../../tools/cursor')
 const DOMPurify = require('dompurify');
 const csv = require('csv-parser');
+const { KeyboardLayouts } = require('../../tools/enums.js');
 
 // Exposes an HTML sanitizer to allow for innerHtml assignments when TrustedHTML policies are set ('This document requires 'TrustedHTML' assignment')
 window.addEventListener('DOMContentLoaded', () => {
@@ -22,7 +23,7 @@ ipcRenderer.on('ipc-main-keyboard-loaded', async (event, elementToUpdate, keyboa
     const NUMPAD_REQUIRED_ELEMENTS = ['number', 'tel', 'date', 'datetime-local', 'month', 'time', 'week']; // revise these
     let needsNumpad = NUMPAD_REQUIRED_ELEMENTS.indexOf(elementToUpdate.type) !== -1;
 
-    let fileName = needsNumpad ? "numeric" : keyboardLayout;
+    let fileName = needsNumpad ? KeyboardLayouts.NUMERIC : keyboardLayout;
     let pathToLayouts = path.join(__dirname, '../../pages/json/keyboard/');
     let pathToWordFrequencyCSVs = path.join(__dirname, '../../../resources/frequency_lists/');
 
@@ -53,7 +54,7 @@ const Keyboard = {
         // numpad_rightColumn: ["mic", "backspace", "AC", "send"],
         numpad_rightColumn: ["backspace", "AC", "send", "submit"],
         isPasswordHidden: true,
-        languages: ["en", "mt", "it", "fr"]
+        languages: [KeyboardLayouts.ENGLISH, KeyboardLayouts.MALTESE, KeyboardLayouts.ITALIAN, KeyboardLayouts.FRENCH]
     },
 
     async init(pathToLayouts, pathToWordFrequencyCSVs, fileName, elementToUpdate) {
@@ -61,7 +62,7 @@ const Keyboard = {
         this.keyboardLayout = await this._getKeyboardLayout(fileName);
 
         // If the keyboard is not numeric, get the frequency map for automplete suggestions
-        if (fileName !== "numeric") {
+        if (fileName !== KeyboardLayouts.NUMERIC) {
             this.pathToWordFrequencyCSVs = pathToWordFrequencyCSVs;
             this.frequencyMap = await this._getFrequencyMap(fileName);
         }
@@ -74,7 +75,7 @@ const Keyboard = {
 
         this._createTextboxArea(elementToUpdate.value);
 
-        if (this.keyboardLayout.layout === "numeric") {
+        if (this.keyboardLayout.layout === KeyboardLayouts.NUMERIC) {
             this._createNumpadArea();
         } else {
             this.elements.keysContainer = document.createElement("div");
@@ -88,7 +89,7 @@ const Keyboard = {
         if (this.elementToUpdate.type === "password") {
             this.suggestions = ['', '', '']
             this._updateAutocompleteSuggestions();
-        } else if (fileName !== "numeric") {
+        } else if (fileName !== KeyboardLayouts.NUMERIC) {
             // Set suggestions
             this.suggestions = this._getAutocompleteSuggestions(this.elements.textarea.value);
             this._updateAutocompleteSuggestions();
@@ -137,7 +138,7 @@ const Keyboard = {
         textboxArea.classList.add("keyboard__textbox-area", "fadeInDown");
 
         let textarea;
-        if (this.keyboardLayout.layout === "numeric" || this.elementToUpdate.type === "password") {
+        if (this.keyboardLayout.layout === KeyboardLayouts.NUMERIC || this.elementToUpdate.type === "password") {
             textarea = document.createElement("input");
             textarea.type = this.elementToUpdate.type;
             textarea.classList.add("keyboard__input");
@@ -470,7 +471,7 @@ const Keyboard = {
                 keyElement.innerHTML = this._createMaterialIcon("backspace");
 
                 dwellInfinite(keyElement, () => {
-                    if (this.keyboardLayout.layout !== "numeric") {
+                    if (this.keyboardLayout.layout !== KeyboardLayouts.NUMERIC) {
                         this._deleteChar();
                     } else {
                         ipcRenderer.send('robot-keyboard-backspace');
@@ -506,7 +507,7 @@ const Keyboard = {
                 dwell(keyElement, () => {
                     this.elements.textarea.value = "";
 
-                    if (this.keyboardLayout.layout !== "numeric" && this.elementToUpdate.type !== "password") {
+                    if (this.keyboardLayout.layout !== KeyboardLayouts.NUMERIC && this.elementToUpdate.type !== "password") {
                         // Update autocomplete suggestions
                         this.suggestions = this._getAutocompleteSuggestions(this.elements.textarea.value);
                         this._updateAutocompleteSuggestions();
@@ -517,7 +518,7 @@ const Keyboard = {
 
             case "caps":
                 keyElement.classList.add("keyboard__key--darker", "keyboard__key--activatable", "keyboard__key--dwell-infinite");
-                if (this.keyboardLayout.layout !== "numeric") keyElement.classList.add("keyboard__key--wide");
+                if (this.keyboardLayout.layout !== KeyboardLayouts.NUMERIC) keyElement.classList.add("keyboard__key--wide");
                 keyElement.classList.toggle("keyboard__key--active", this.properties.capsLock);
 
                 /**
@@ -539,7 +540,7 @@ const Keyboard = {
 
             case "enter":
                 keyElement.classList.add("keyboard__key--darker", "keyboard__key--dwell-infinite");
-                if (this.keyboardLayout.layout !== "numeric") keyElement.classList.add("keyboard__key--wide");
+                if (this.keyboardLayout.layout !== KeyboardLayouts.NUMERIC) keyElement.classList.add("keyboard__key--wide");
                 keyElement.innerHTML = this._createMaterialIcon("keyboard_return");
 
                 dwellInfinite(keyElement, () => {
@@ -570,7 +571,7 @@ const Keyboard = {
 
             case "space":
                 keyElement.classList.add("keyboard__key--dwell-infinite");
-                if (this.keyboardLayout.layout !== "numeric") keyElement.classList.add("keyboard__key--widest");
+                if (this.keyboardLayout.layout !== KeyboardLayouts.NUMERIC) keyElement.classList.add("keyboard__key--widest");
                 keyElement.innerHTML = this._createMaterialIcon("space_bar");
 
                 dwellInfinite(keyElement, () => {
@@ -649,7 +650,7 @@ const Keyboard = {
 
                 dwellInfinite(keyElement, () => {
                     console.log('key:', key)
-                    if (this.keyboardLayout.layout !== "numeric") {
+                    if (this.keyboardLayout.layout !== KeyboardLayouts.NUMERIC) {
                         this._insertChar(key);
                     } else {
                         console.log('robot-keyboard-numpad', key)
@@ -794,6 +795,7 @@ const Keyboard = {
                     this.keyboardLayout = await this._getKeyboardLayout(language);
                     this.frequencyMap = await this._getFrequencyMap(language);
                     await this._updateKeys();
+                    ipcRenderer.send('ipc-keyboard-update-language', language);
                 } catch (error) {
                     console.error('Failed to load keyboard layout:', error);
                 }
@@ -828,7 +830,7 @@ const Keyboard = {
         if (this.elementToUpdate.type === "password") {
             this.suggestions = ["", "", ""];
             this._updateAutocompleteSuggestions();
-        } else if (this.keyboardLayout.layout !== "numeric") {
+        } else if (this.keyboardLayout.layout !== KeyboardLayouts.NUMERIC) {
             // Set suggestions
             this.suggestions = this._getAutocompleteSuggestions(this.elements.textarea.value);
             this._updateAutocompleteSuggestions();

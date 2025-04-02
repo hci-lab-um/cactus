@@ -26,7 +26,16 @@ const Shortcuts = Object.freeze({
     NAVIGATE_BACK: "navigateBack"
 });
 
+const KeyboardLayouts = Object.freeze({
+    ENGLISH: "en",
+    FRENCH: "fr",
+    ITALIAN: "it",
+    MALTESE: "mt",
+    NUMERIC: "numeric"
+});
+
 module.exports = {
     Settings,
-    Shortcuts
+    Shortcuts,
+    KeyboardLayouts
 };
