@@ -16,7 +16,7 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 ipcRenderer.on('ipc-main-overlays-loaded', (event, overlaysData) => {
-	const { overlayAreaToShow, tabList, bookmarks, canGoBack, canGoForward, isDwellingActive, useNavAreas, useRobotJS, dwellTime, dwellRange } = overlaysData;
+	const { overlayAreaToShow, tabList, bookmarks, settings, canGoBack, canGoForward, isDwellingActive, useNavAreas, useRobotJS, dwellTime, precisionDwellRange } = overlaysData;
 	console.log('Overlays data', overlaysData);
 
 	switch (overlayAreaToShow) {
@@ -32,7 +32,7 @@ ipcRenderer.on('ipc-main-overlays-loaded', (event, overlaysData) => {
 		}
 		case 'tabs': {
 			byId('overlay-tabs').style.display = 'grid'
-			setEventHandlersForTabsMenu(tabList, bookmarks);
+			setEventHandlersForTabsMenu(tabList, bookmarks, 'tabs');
 			break;
 		}
 		case 'accessibility': {
@@ -42,12 +42,17 @@ ipcRenderer.on('ipc-main-overlays-loaded', (event, overlaysData) => {
 		}
 		case 'bookmarks': {
 			byId('overlay-tabs').style.display = 'grid'
-			setEventHandlersForTabsMenu(tabList, bookmarks, true);
+			setEventHandlersForTabsMenu(tabList, bookmarks, 'bookmarks');
 			break;
 		}
 		case 'precisionClick': {
 			byId('overlay-precisionClick').style.display = 'grid'
-			setEventHandlersForPrecisionClick(dwellTime, dwellRange);
+			setEventHandlersForPrecisionClick(dwellTime, precisionDwellRange);
+			break;
+		}
+		case 'settings': {
+			byId('overlay-settings').style.display = 'grid'
+			setEventHandlersForSettingsMenu(settings);
 			break;
 		}
 	}
@@ -382,11 +387,11 @@ function setEventHandlersForNavigationMenu(canGoBack, canGoForward) {
 	}
 }
 
-function setEventHandlersForTabsMenu(tabList, bookmarks, isBookmarksOverlay = false) {
+function setEventHandlersForTabsMenu(tabList, bookmarks, overlay) {
 	// =================================
 	// ======== TABS OVERLAY ===========
 	// =================================		
-
+	isBookmarksOverlay = overlay === 'bookmarks';
 	let cancelTabsBtn = byId('cancel-tabs')
 	let tabsContainer = byId('tabsContainer');
 	let tabCounter = byId('tabCounter');
@@ -605,7 +610,7 @@ function setEventHandlersForTabsMenu(tabList, bookmarks, isBookmarksOverlay = fa
 	}
 }
 
-function setEventHandlersForPrecisionClick(dwellTime, dwellRange) {
+function setEventHandlersForPrecisionClick(dwellTime, precisionDwellRange) {
 	// =================================
 	// ==== PRECISION CLICK OVERLAY ====
 	// =================================
@@ -654,7 +659,7 @@ function setEventHandlersForPrecisionClick(dwellTime, dwellRange) {
 		const { clientX: x, clientY: y } = event;
 
 		// Check if cursor movement is within range
-		if (Math.abs(x - lastX) < dwellRange && Math.abs(y - lastY) < dwellRange) {
+		if (Math.abs(x - lastX) < precisionDwellRange && Math.abs(y - lastY) < precisionDwellRange) {
 			startCursorAnimation(); // Show the cursor animation
 
 			if (!dwellTimeout) {
@@ -691,4 +696,72 @@ function setEventHandlersForPrecisionClick(dwellTime, dwellRange) {
 		ipcRenderer.send('ipc-precision-dwelltime-elapsed');
 	}
 
+}
+
+function setEventHandlersForSettingsMenu(settings) {
+	const settingsCardsContainer = byId('settingsCardsContainer');
+	const scrollUpBtn = byId('scrollUpBtn');
+	const scrollDownBtn = byId('scrollDownBtn');
+	const cancelSettingsBtn = byId('cancel-settings');
+
+	// Clear existing settings cards
+	settingsCardsContainer.innerHTML = '';
+
+	// Populate settings cards
+	Object.keys(settings).forEach(key => {
+		const setting = settings[key];
+		if (shouldIncludeSetting(setting)) { // Filter settings to include
+			const card = createSettingCard(setting);
+			settingsCardsContainer.appendChild(card);
+		}
+	});
+
+	// Scroll functionality
+	dwellInfinite(scrollUpBtn, () => scrollByOneRow(-1, settingsCardsContainer));
+	dwellInfinite(scrollDownBtn, () => scrollByOneRow(1, settingsCardsContainer));
+
+	// Close button functionality
+	dwell(cancelSettingsBtn, () => {
+		ipcRenderer.send('ipc-overlays-remove');
+	});
+
+	function scrollByOneRow(direction, container) {
+		const rowHeight = 150 + 20; // Height of a card + gap
+		container.scrollBy({
+			top: direction * rowHeight,
+			behavior: 'smooth'
+		});
+	}
+
+	function createSettingCard(setting) {
+		const card = document.createElement('div');
+		card.classList.add('settingCard', 'fadeInUp');
+
+		const title = document.createElement('h3');
+		title.textContent = setting.name;
+
+		const toggle = document.createElement('button');
+		toggle.textContent = setting.enabled ? 'Disable' : 'Enable';
+		toggle.classList.add('toggleButton');
+		toggle.addEventListener('click', () => {
+			setting.enabled = !setting.enabled;
+			toggle.textContent = setting.enabled ? 'Disable' : 'Enable';
+			ipcRenderer.send('ipc-settings-updated', setting);
+		});
+
+		card.appendChild(title);
+		card.appendChild(description);
+		card.appendChild(toggle);
+
+		return card;
+	}
+
+	function shouldIncludeSetting(setting) {
+		// Add logic to filter which settings to include
+		return setting.includeInOverlay;
+	}
+
+	dwell(cancelSettingsBtn, () => {
+		ipcRenderer.send('ipc-overlays-remove');
+	})
 }

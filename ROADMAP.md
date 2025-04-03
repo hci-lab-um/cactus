@@ -8,8 +8,8 @@
 4. Integrate multi-modal interaction (i.e. custom cursor responding to click events - configurable to respond to any key or key combination which could be programmed into Hitch 2.0 or any adaptive swtich)
 5. Integrate with WebGazer for cursor control without the need for an eye tracker (configurable)
 6. Add Configuration screens 
-7. Make all parameterized via Config (e.g. rangeWidth/rangeHeight)
-8. config.get('dwelling.activateNavAreas'); should be provided as a quick user setting (e.g. UI toggle), allowing users to toggle between nav area navigation mode and not (i.e. normal QT approach). Sometimes, nav areas are either not marked up properly (e.g. large number of elements on one level), or have a with no hrefs. 
+7. Make all parameterized via Config (e.g. dwellRangeWidth/dwellRangeHeight)
+8. config.get('dwelling.useNavAreas'); should be provided as a quick user setting (e.g. UI toggle), allowing users to toggle between nav area navigation mode and not (i.e. normal QT approach). Sometimes, nav areas are either not marked up properly (e.g. large number of elements on one level), or have a with no hrefs. 
 9. Create constants for ipcChannels etc...
 10. Logging and exception handling
 

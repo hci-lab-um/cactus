@@ -43,10 +43,10 @@ document.addEventListener('DOMContentLoaded', () => {
   createCursor('cursor')
   c = document.getElementById('cursor')
   // c.style['border-color'] = 'red'
-  // c.style['border-left'] = `${Config.rangeWidth/2}px`
-  // c.style['border-right'] = `${Config.rangeWidth/2}px`
-  // c.style['border-top'] = `${Config.rangeHeight/2}px`
-  // c.style['border-bottom'] = `${Config.rangeHeight/2}px`
+  // c.style['border-left'] = `${Config.dwellRangeWidth/2}px`
+  // c.style['border-right'] = `${Config.dwellRangeWidth/2}px`
+  // c.style['border-top'] = `${Config.dwellRangeHeight/2}px`
+  // c.style['border-bottom'] = `${Config.dwellRangeHeight/2}px`
   // c.style['border-style'] = 'solid'
   followCursor('cursor')
 
@@ -180,7 +180,7 @@ function populateQuadTree() {
 function getLinksFromQuadTree(cursorLocation) {
   let posX = window.scrollX + cursorLocation.x
   let posY = window.scrollY + cursorLocation.y
-  let range = new Rectangle(posX, posY, Config.rangeWidth, Config.rangeHeight)
+  let range = new Rectangle(posX, posY, Config.dwellRangeWidth, Config.dwellRangeHeight)
   let points = qTree.query(range)
 
   if (Array.isArray(points) && points.length) {

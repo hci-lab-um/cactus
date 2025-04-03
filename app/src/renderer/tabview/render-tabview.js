@@ -143,9 +143,9 @@ window.cactusAPI.on('ipc-clear-highlighted-elements', () => {
 });
 
 window.cactusAPI.on('ipc-highlight-available-elements', (contents) => {
-	const { elementsInView, rangeWidth, rangeHeight, color } = contents;
+	const { elementsInView, dwellRangeWidth, dwellRangeHeight, color } = contents;
 	elementsInView.forEach(ve => {
-		highlightAvailableElements(ve.x, ve.y, ve.width, ve.height, color, rangeWidth, rangeHeight);
+		highlightAvailableElements(ve.x, ve.y, ve.width, ve.height, color, dwellRangeWidth, dwellRangeHeight);
 	});
 });
 
@@ -275,7 +275,6 @@ window.cactusAPI.onAsync('ipc-tabview-highlight-elements', (elementsToHighlight)
 
 window.cactusAPI.on('ipc-tabview-create-quadtree', (useNavAreas) => {
 	// //ISSUES: Node-Config is required by Cactus, and the config/default.json file would need to be recreated on cactus itself, rather than just the builder code. Which might not be a bad idea. Think about it.
-	// let useNavAreas = config.get('dwelling.activateNavAreas');
 	console.log("Creating QuadTree and NavAreasTree");
 	generateQuadTree();
 	if (useNavAreas) generateNavAreasTree();

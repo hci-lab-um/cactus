@@ -10,8 +10,8 @@ const db = require('../database/database.js');
 const { Settings } = require('../src/tools/enums.js');
 
 const isDevelopment = process.env.NODE_ENV === "development";
-let rangeWidth;
-let rangeHeight;
+let dwellRangeWidth;
+let dwellRangeHeight;
 let useNavAreas;
 let useRobotJS;
 let isDwellingActive;
@@ -22,7 +22,7 @@ let menuAreaScrollDistance;
 let menuAreaScrollInterval;
 let keyboardDwellTime;
 let dwellTime;
-let dwellRange;
+let precisionDwellRange;
 
 let mainWindow, splashWindow
 let mainWindowContent, overlayContent, isKeyboardOverlay
@@ -89,25 +89,25 @@ ipcMain.handle('tabview-can-go-back-or-forward', (event) => {
 
 ipcMain.handle('ipc-get-user-setting', async (event, setting) => {
     switch (setting) {
-        case Settings.DWELL_TIME:
+        case Settings.DWELL_TIME.NAME:
             return dwellTime;
-        case Settings.DWELL_RANGE:
-            return dwellRange;
-        case Settings.KEYBOARD_DWELL_TIME:
+        case Settings.DWELL_RANGE.NAME:
+            return precisionDwellRange;
+        case Settings.KEYBOARD_DWELL_TIME.NAME:
             return keyboardDwellTime;
-        case Settings.MENU_AREA_SCROLL_DISTANCE:
+        case Settings.MENU_AREA_SCROLL_DISTANCE.NAME:
             return menuAreaScrollDistance;
-        case Settings.MENU_AREA_SCROLL_INTERVAL_IN_MS:
+        case Settings.MENU_AREA_SCROLL_INTERVAL_IN_MS.NAME:
             return menuAreaScrollInterval;
-        case Settings.TAB_VIEW_SCROLL_DISTANCE:
+        case Settings.TAB_VIEW_SCROLL_DISTANCE.NAME:
             return scrollDistance;
-        case Settings.RANGE_WIDTH:
-            return rangeWidth;
-        case Settings.RANGE_HEIGHT:
-            return rangeHeight;
-        case Settings.ACTIVATE_NAV_AREAS:
+        case Settings.RANGE_WIDTH.NAME:
+            return dwellRangeWidth;
+        case Settings.RANGE_HEIGHT.NAME:
+            return dwellRangeHeight;
+        case Settings.USE_NAV_AREAS.NAME:
             return useNavAreas;
-        case Settings.IS_DWELLING_ACTIVE:
+        case Settings.IS_DWELLING_ACTIVE.NAME:
             return isDwellingActive;
         default:
             throw new Error(`Unknown setting: ${setting}`);
@@ -142,8 +142,8 @@ ipcMain.on('ipc-tabview-generateQuadTree', (event, contents) => {
 
             contents = {
                 elementsInView: elementsInView,
-                rangeWidth: rangeWidth,
-                rangeHeight: rangeHeight,
+                dwellRangeWidth: dwellRangeWidth,
+                dwellRangeHeight: dwellRangeHeight,
                 color: '#702963'
             };
 
@@ -177,8 +177,8 @@ ipcMain.on('ipc-tabview-generateNavAreasTree', (event, contents) => {
 
             contents = {
                 elementsInView: elementsInView,
-                rangeWidth: rangeWidth,
-                rangeHeight: rangeHeight,
+                dwellRangeWidth: dwellRangeWidth,
+                dwellRangeHeight: dwellRangeHeight,
                 color: '#E34234'
             };
 
@@ -195,8 +195,8 @@ ipcMain.on('ipc-tabview-cursor-mouseover', (event, mouseData) => {
         if (isDwellingActive) {
             const { x, y } = mouseData;
 
-            const qtRangeToQuery = new QtRange(x - (rangeWidth / 2), y - (rangeHeight / 2), rangeWidth, rangeHeight);
-            const menuRangeToQuery = new MenuRange(x - (rangeWidth / 2), y - (rangeHeight / 2), rangeWidth, rangeHeight);
+            const qtRangeToQuery = new QtRange(x - (dwellRangeWidth / 2), y - (dwellRangeHeight / 2), dwellRangeWidth, dwellRangeHeight);
+            const menuRangeToQuery = new MenuRange(x - (dwellRangeWidth / 2), y - (dwellRangeHeight / 2), dwellRangeWidth, dwellRangeHeight);
 
             const elementsInQueryRange = currentQt ? currentQt.queryRange(qtRangeToQuery) : [];
             const navAreasInQueryRange = useNavAreas ? (currentNavAreaTree ? currentNavAreaTree.queryRange(menuRangeToQuery, true) : []) : [];
@@ -645,7 +645,7 @@ ipcMain.on('ipc-overlays-refresh', (event) => {
 })
 
 ipcMain.on('ipc-overlays-settings', (event) => {
-    // to be implemented
+    createOverlay("settings", null, false);
 });
 
 ipcMain.on('ipc-overlays-zoom-in', (event) => {
@@ -703,7 +703,7 @@ ipcMain.on('ipc-keyboard-input', (event, value, element, submit, updateValueAttr
 });
 
 ipcMain.on('ipc-keyboard-update-language', async (event, language) => {
-    await db.updateUserSetting(Settings.DEFAULT_LAYOUT, language);
+    await db.updateUserSetting(Settings.DEFAULT_LAYOUT.NAME, language);
 })
 
 ipcMain.on('log', (event, loggedItem) => {
@@ -720,15 +720,15 @@ async function initialiseVariables (){
     bookmarks = await db.getBookmarks();
     tabsFromDatabase = await db.getTabs();
     defaultUrl = await db.getDefaultURL();
-    rangeWidth = await db.getRangeWidth();
-    rangeHeight = await db.getRangeHeight();
+    dwellRangeWidth = await db.getDwellRangeWidth();
+    dwellRangeHeight = await db.getDwellRangeHeight();
     useNavAreas = await db.getActivateNavAreas();
     useRobotJS = await db.getUseRobotJS();
     isDwellingActive = await db.getIsDwellingActive();
     scrollDistance = await db.getTabScrollDistance();
     keyboardDwellTime = await db.getKeyboardDwellTime();
     dwellTime = await db.getDwellTime();
-    dwellRange = await db.getDwellRange();
+    precisionDwellRange = await db.getPrecisionDwellRange();
     menuAreaScrollDistance = await db.getMenuScrollDistance();
     menuAreaScrollInterval = await db.getMenuScrollInterval();
 }
@@ -1466,7 +1466,8 @@ async function createOverlay(overlayAreaToShow, elementProperties, isTransparent
         useNavAreas: useNavAreas,
         useRobotJS: useRobotJS,
         dwellTime: dwellTime,
-        dwellRange: dwellRange
+        precisionDwellRange: precisionDwellRange,
+        settings: [],
     };
 
     switch (overlayAreaToShow) {
@@ -1501,6 +1502,17 @@ async function createOverlay(overlayAreaToShow, elementProperties, isTransparent
 
             overlaysData.canGoBack = canGoBack;
             overlaysData.canGoForward = canGoForward;
+            break;
+
+        case 'settings':
+            overlaysData.settings = {
+                dwellTime: dwellTime,
+                keyboardDwellTime: keyboardDwellTime,
+                scrollDistance: scrollDistance,
+                menuAreaScrollDistance: menuAreaScrollDistance,
+                defaultUrl: defaultUrl,
+                defaultLanguage: await db.getDefaultLayout()
+            }
             break;
     }
 
@@ -1607,7 +1619,7 @@ function handleZoomOutShortcut() {
 async function toggleDwelling() {
     isDwellingActive = !isDwellingActive
     mainWindowContent.webContents.send('ipc-mainwindow-handle-dwell-events', isDwellingActive);
-    await db.updateUserSetting(Settings.IS_DWELLING_ACTIVE, isDwellingActive);
+    await db.updateUserSetting(Settings.IS_DWELLING_ACTIVE.NAME, isDwellingActive);
 }
 
 async function toggleNavigation() {
@@ -1615,12 +1627,12 @@ async function toggleNavigation() {
     tabList.forEach(tab => {
         tab.webContentsView.webContents.send('ipc-tabview-create-quadtree', useNavAreas);
     });
-    await db.updateUserSetting(Settings.ACTIVATE_NAV_AREAS, useNavAreas);
+    await db.updateUserSetting(Settings.USE_NAV_AREAS.NAME, useNavAreas);
 }
 
 async function toggleUseRobotJS() {
     useRobotJS = !useRobotJS;
-    await db.updateUserSetting(Settings.USE_ROBOT_JS, useRobotJS);
+    await db.updateUserSetting(Settings.USE_ROBOT_JS.NAME, useRobotJS);
 }
 
 function handleZoom(direction, closeOverlay = true) {

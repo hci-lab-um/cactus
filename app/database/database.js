@@ -174,19 +174,19 @@ function createUserSettingsTable() {
 function populateUserSettingsTable() {
     return new Promise((resolve, reject) => {
         const defaultSettings = {
-            [Settings.DWELL_TIME]: 1500,
-            [Settings.DWELL_RANGE]: 5,
-            [Settings.KEYBOARD_DWELL_TIME]: 1000,
-            [Settings.RANGE_WIDTH]: 150,
-            [Settings.RANGE_HEIGHT]: 50,
-            [Settings.TAB_VIEW_SCROLL_DISTANCE]: 10,
-            [Settings.MENU_AREA_SCROLL_DISTANCE]: 200,
-            [Settings.MENU_AREA_SCROLL_INTERVAL_IN_MS]: 300,
-            [Settings.ACTIVATE_NAV_AREAS]: false,
-            [Settings.USE_ROBOT_JS]: true,
-            [Settings.IS_DWELLING_ACTIVE]: true,
-            [Settings.DEFAULT_URL]: "https://www.google.com",
-            [Settings.DEFAULT_LAYOUT]: KeyboardLayouts.ENGLISH
+            [Settings.DWELL_TIME.NAME]: Settings.DWELL_TIME.NORMAL,
+            [Settings.DWELL_RANGE.NAME]: Settings.DWELL_RANGE.DEFAULT,
+            [Settings.KEYBOARD_DWELL_TIME.NAME]: Settings.KEYBOARD_DWELL_TIME.SHORT,
+            [Settings.RANGE_WIDTH.NAME]: Settings.RANGE_WIDTH.DEFAULT,
+            [Settings.RANGE_HEIGHT.NAME]: Settings.RANGE_HEIGHT.DEFAULT,
+            [Settings.TAB_VIEW_SCROLL_DISTANCE.NAME]: Settings.TAB_VIEW_SCROLL_DISTANCE.NORMAL,
+            [Settings.MENU_AREA_SCROLL_DISTANCE.NAME]: Settings.MENU_AREA_SCROLL_DISTANCE.NORMAL,
+            [Settings.MENU_AREA_SCROLL_INTERVAL_IN_MS.NAME]: Settings.MENU_AREA_SCROLL_INTERVAL_IN_MS.DEFAULT,
+            [Settings.USE_NAV_AREAS.NAME]: Settings.USE_NAV_AREAS.DEFAULT,
+            [Settings.USE_ROBOT_JS.NAME]: Settings.USE_ROBOT_JS.DEFAULT,
+            [Settings.IS_DWELLING_ACTIVE.NAME]: Settings.IS_DWELLING_ACTIVE.DEFAULT,
+            [Settings.DEFAULT_URL.NAME]: Settings.DEFAULT_URL.DEFAULT,
+            [Settings.DEFAULT_LAYOUT.NAME]: Settings.DEFAULT_LAYOUT.DEFAULT
         };
         const insertSetting = `
             INSERT OR IGNORE INTO user_settings (setting, value)
@@ -407,55 +407,55 @@ function getSetting(setting) {
 }
 
 function getDefaultURL() {
-    return getSetting(Settings.DEFAULT_URL);
+    return getSetting(Settings.DEFAULT_URL.NAME);
 }
 
-function getRangeWidth() {
-    return getSetting(Settings.RANGE_WIDTH).then(value => parseInt(value, 10));
+function getDwellRangeWidth() {
+    return getSetting(Settings.RANGE_WIDTH.NAME).then(value => parseInt(value, 10));
 }
 
-function getRangeHeight() {
-    return getSetting(Settings.RANGE_HEIGHT).then(value => parseInt(value, 10));
+function getDwellRangeHeight() {
+    return getSetting(Settings.RANGE_HEIGHT.NAME).then(value => parseInt(value, 10));
 }
 
 function getActivateNavAreas() {
-    return getSetting(Settings.ACTIVATE_NAV_AREAS).then(value => value === 'true');
+    return getSetting(Settings.USE_NAV_AREAS.NAME).then(value => value === 'true');
 }
 
 function getUseRobotJS() {
-    return getSetting(Settings.USE_ROBOT_JS).then(value => value === 'true');
+    return getSetting(Settings.USE_ROBOT_JS.NAME).then(value => value === 'true');
 }
 
 function getIsDwellingActive() {
-    return getSetting(Settings.IS_DWELLING_ACTIVE).then(value => value === 'true');
+    return getSetting(Settings.IS_DWELLING_ACTIVE.NAME).then(value => value === 'true');
 }
 
 function getTabScrollDistance() {
-    return getSetting(Settings.TAB_VIEW_SCROLL_DISTANCE).then(value => parseInt(value, 10));
+    return getSetting(Settings.TAB_VIEW_SCROLL_DISTANCE.NAME).then(value => parseInt(value, 10));
 }
 
 function getMenuScrollDistance() {
-    return getSetting(Settings.MENU_AREA_SCROLL_DISTANCE).then(value => parseInt(value, 10));
+    return getSetting(Settings.MENU_AREA_SCROLL_DISTANCE.NAME).then(value => parseInt(value, 10));
 }
 
 function getDwellTime() {
-    return getSetting(Settings.DWELL_TIME).then(value => parseInt(value, 10));
+    return getSetting(Settings.DWELL_TIME.NAME).then(value => parseInt(value, 10));
 }
 
-function getDwellRange() {
-    return getSetting(Settings.DWELL_RANGE).then(value => parseInt(value, 10));
+function getPrecisionDwellRange() {
+    return getSetting(Settings.DWELL_RANGE.NAME).then(value => parseInt(value, 10));
 }
 
 function getKeyboardDwellTime() {
-    return getSetting(Settings.KEYBOARD_DWELL_TIME).then(value => parseInt(value, 10));
+    return getSetting(Settings.KEYBOARD_DWELL_TIME.NAME).then(value => parseInt(value, 10));
 }
 
 function getMenuScrollInterval() {
-    return getSetting(Settings.MENU_AREA_SCROLL_INTERVAL_IN_MS).then(value => parseInt(value, 10));
+    return getSetting(Settings.MENU_AREA_SCROLL_INTERVAL_IN_MS.NAME).then(value => parseInt(value, 10));
 }
 
 function getDefaultLayout() {
-    return getSetting(Settings.DEFAULT_LAYOUT);
+    return getSetting(Settings.DEFAULT_LAYOUT.NAME);
 }
 
 // =================================
@@ -488,91 +488,91 @@ function updateDefaultURL(value) {
     if (typeof value !== 'string') {
         throw new Error('Default URL must be a string');
     }
-    return updateUserSetting(Settings.DEFAULT_URL, value);
+    return updateUserSetting(Settings.DEFAULT_URL.NAME, value);
 }
 
-function updateRangeWidth(value) {
+function updateDwellRangeWidth(value) {
     if (typeof value !== 'number') {
         throw new Error('Range width must be a number');
     }
-    return updateUserSetting(Settings.RANGE_WIDTH, value);
+    return updateUserSetting(Settings.RANGE_WIDTH.NAME, value);
 }
 
-function updateRangeHeight(value) {
+function updateDwellRangeHeight(value) {
     if (typeof value !== 'number') {
         throw new Error('Range height must be a number');
     }
-    return updateUserSetting(Settings.RANGE_HEIGHT, value);
+    return updateUserSetting(Settings.RANGE_HEIGHT.NAME, value);
 }
 
 function updateActivateNavAreas(value) {
     if (typeof value !== 'boolean') {
         throw new Error('Activate Nav Areas must be a boolean');
     }
-    return updateUserSetting(Settings.ACTIVATE_NAV_AREAS, value ? 'true' : 'false');
+    return updateUserSetting(Settings.USE_NAV_AREAS.NAME, value ? 'true' : 'false');
 }
 
 function updateUseRobotJS(value) {
     if (typeof value !== 'boolean') {
         throw new Error('Use RobotJS must be a boolean');
     }
-    return updateUserSetting(Settings.USE_ROBOT_JS, value ? 'true' : 'false');
+    return updateUserSetting(Settings.USE_ROBOT_JS.NAME, value ? 'true' : 'false');
 }
 
 function updateIsDwellingActive(value) {
     if (typeof value !== 'boolean') {
         throw new Error('Is Dwelling Active must be a boolean');
     }
-    return updateUserSetting(Settings.IS_DWELLING_ACTIVE, value ? 'true' : 'false');
+    return updateUserSetting(Settings.IS_DWELLING_ACTIVE.NAME, value ? 'true' : 'false');
 }
 
 function updateTabScrollDistance(value) {
     if (typeof value !== 'number') {
         throw new Error('Tab Scroll Distance must be a number');
     }
-    return updateUserSetting(Settings.TAB_VIEW_SCROLL_DISTANCE, value);
+    return updateUserSetting(Settings.TAB_VIEW_SCROLL_DISTANCE.NAME, value);
 }
 
 function updateMenuScrollDistance(value) {
     if (typeof value !== 'number') {
         throw new Error('Menu Scroll Distance must be a number');
     }
-    return updateUserSetting(Settings.MENU_AREA_SCROLL_DISTANCE, value);
+    return updateUserSetting(Settings.MENU_AREA_SCROLL_DISTANCE.NAME, value);
 }
 
 function updateDwellTime(value) {
     if (typeof value !== 'number') {
         throw new Error('Dwell Time must be a number');
     }
-    return updateUserSetting(Settings.DWELL_TIME, value);
+    return updateUserSetting(Settings.DWELL_TIME.NAME, value);
 }
 
-function updateDwellRange(value) {
+function updatePrecisionDwellRange(value) {
     if (typeof value !== 'number') {
         throw new Error('Dwell Range must be a number');
     }
-    return updateUserSetting(Settings.DWELL_RANGE, value);
+    return updateUserSetting(Settings.DWELL_RANGE.NAME, value);
 }
 
 function updateKeyboardDwellTime(value) {
     if (typeof value !== 'number') {
         throw new Error('Keyboard Dwell Time must be a number');
     }
-    return updateUserSetting(Settings.KEYBOARD_DWELL_TIME, value);
+    return updateUserSetting(Settings.KEYBOARD_DWELL_TIME.NAME, value);
 }
 
 function updateMenuScrollInterval(value) {
     if (typeof value !== 'number') {
         throw new Error('Menu Scroll Interval must be a number');
     }
-    return updateUserSetting(Settings.MENU_AREA_SCROLL_INTERVAL_IN_MS, value);
+    return updateUserSetting(Settings.MENU_AREA_SCROLL_INTERVAL_IN_MS.NAME, value);
 }
 
 function updateDefaultLayout(value) {
     if (typeof value !== 'string') {
         throw new Error('Default Layout must be a string');
     }
-    return updateUserSetting(Settings.DEFAULT_LAYOUT, value);
+    return updateUserSetting(Settings.DEFAULT_LAYOUT.NAME, value);
 }
 
 
@@ -589,8 +589,8 @@ module.exports = {
     getShortcuts,
     getDefaultURL,
     getDefaultLayout,
-    getRangeWidth,
-    getRangeHeight,
+    getDwellRangeWidth,
+    getDwellRangeHeight,
     getActivateNavAreas,
     getUseRobotJS,
     getIsDwellingActive,
@@ -598,7 +598,7 @@ module.exports = {
     getMenuScrollDistance,
     getMenuScrollInterval,
     getDwellTime,
-    getDwellRange,
+    getPrecisionDwellRange,
     getKeyboardDwellTime,
 
     deleteBookmarkByUrl,
@@ -606,15 +606,15 @@ module.exports = {
 
     updateUserSetting,
     updateDefaultURL,
-    updateRangeWidth,
-    updateRangeHeight,
+    updateDwellRangeWidth,
+    updateDwellRangeHeight,
     updateActivateNavAreas,
     updateUseRobotJS,
     updateIsDwellingActive,
     updateTabScrollDistance,
     updateMenuScrollDistance,
     updateDwellTime,
-    updateDwellRange,
+    updatePrecisionDwellRange,
     updateKeyboardDwellTime,
     updateMenuScrollInterval,
     updateDefaultLayout,
