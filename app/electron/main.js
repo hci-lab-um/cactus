@@ -7,7 +7,7 @@ const { MenuBuilder, NavArea, HTMLSerializableMenuElement, MenuPageDocument, Men
 const { log } = require('electron-log');
 const robot = require("robotjs_addon");
 const db = require('../database/database.js');
-const { Settings } = require('../src/tools/enums.js');
+const { Settings, KeyboardLayouts } = require('../src/tools/enums.js');
 
 const isDevelopment = process.env.NODE_ENV === "development";
 let dwellRangeWidth;
@@ -1506,12 +1506,63 @@ async function createOverlay(overlayAreaToShow, elementProperties, isTransparent
 
         case 'settings':
             overlaysData.settings = {
-                dwellTime: dwellTime,
-                keyboardDwellTime: keyboardDwellTime,
-                scrollDistance: scrollDistance,
-                menuAreaScrollDistance: menuAreaScrollDistance,
-                defaultUrl: defaultUrl,
-                defaultLanguage: await db.getDefaultLayout()
+                dwellTime: {
+                    value: dwellTime, 
+                    label: Settings.DWELL_TIME.LABEL, 
+                    description: Settings.DWELL_TIME.DESCRIPTION, 
+                    options: [
+                        Settings.DWELL_TIME.SHORT, 
+                        Settings.DWELL_TIME.NORMAL, 
+                        Settings.DWELL_TIME.LONG
+                    ]
+                },
+                keyboardDwellTime: {
+                    value: keyboardDwellTime, 
+                    label: Settings.KEYBOARD_DWELL_TIME.LABEL, 
+                    description: Settings.KEYBOARD_DWELL_TIME.DESCRIPTION, 
+                    options: [
+                        Settings.KEYBOARD_DWELL_TIME.SHORT, 
+                        Settings.KEYBOARD_DWELL_TIME.NORMAL, 
+                        Settings.KEYBOARD_DWELL_TIME.LONG
+                    ]
+                },
+                scrollDistance: {
+                    value: scrollDistance, 
+                    label: Settings.TAB_VIEW_SCROLL_DISTANCE.LABEL,
+                    description: Settings.TAB_VIEW_SCROLL_DISTANCE.DESCRIPTION, 
+                    options: [
+                        Settings.TAB_VIEW_SCROLL_DISTANCE.SLOW, 
+                        Settings.TAB_VIEW_SCROLL_DISTANCE.NORMAL, 
+                        Settings.TAB_VIEW_SCROLL_DISTANCE.FAST
+                    ]
+                },
+                
+                menuAreaScrollDistance: {
+                    value: menuAreaScrollDistance, 
+                    label: Settings.MENU_AREA_SCROLL_DISTANCE.LABEL,
+                    description: Settings.MENU_AREA_SCROLL_DISTANCE.DESCRIPTION, 
+                    options: [
+                        Settings.MENU_AREA_SCROLL_DISTANCE.SLOW, 
+                        Settings.MENU_AREA_SCROLL_DISTANCE.NORMAL, 
+                        Settings.MENU_AREA_SCROLL_DISTANCE.FAST
+                    ]
+                },
+                defaultUrl: {
+                    value: defaultUrl, 
+                    label: Settings.DEFAULT_URL.LABEL,
+                    description: Settings.DEFAULT_URL.DESCRIPTION
+                },
+                defaultLanguage: {
+                    value: await db.getDefaultLayout(), 
+                    label: Settings.DEFAULT_LAYOUT.LABEL,
+                    description: Settings.DEFAULT_LAYOUT.DESCRIPTION,
+                    options: [
+                        KeyboardLayouts.ENGLISH, 
+                        KeyboardLayouts.FRENCH,
+                        KeyboardLayouts.ITALIAN,
+                        KeyboardLayouts.MALTESE
+                    ]
+                },
             }
             break;
     }

@@ -21,6 +21,8 @@ const KeyboardLayouts = Object.freeze({
 const Settings = Object.freeze({
     DWELL_TIME: {
         NAME: "dwellTime",
+        LABEL: "Dwelling Duration",
+        DESCRIPTION: "The time in milliseconds that the mouse pointer must stay over an item before it is selected.",
         SHORT: 1000,
         NORMAL: 1500,
         LONG: 2000,
@@ -31,6 +33,8 @@ const Settings = Object.freeze({
     },
     KEYBOARD_DWELL_TIME: {
         NAME: "keyboardDwellTime",
+        LABEL: "Key Tap Duration",
+        DESCRIPTION: "The time in milliseconds that the mouse pointer must stay over a keyboard key before it is selected.",
         SHORT: 1000,
         NORMAL: 1500,
         LONG: 2000,
@@ -45,12 +49,16 @@ const Settings = Object.freeze({
     },
     TAB_VIEW_SCROLL_DISTANCE: {
         NAME: "tabViewScrollDistance",
+        LABEL: "Web Page Scroll Speed",
+        DESCRIPTION: "The speed at which the web page scrolls when using the arrow buttons.",
         SLOW: 5,
         NORMAL: 10,
         FAST: 15,
     },
     MENU_AREA_SCROLL_DISTANCE: {
         NAME: "menuAreaScrollDistance",
+        LABEL: "Sidebar Scroll Speed",
+        DESCRIPTION: "The speed at which the elements in the sidebar menu are scrolled when using the arrow buttons.",
         SLOW: 100,
         NORMAL: 200,
         FAST: 300,
@@ -61,22 +69,26 @@ const Settings = Object.freeze({
     },
     USE_NAV_AREAS: {
         NAME: "useNavAreas",
-        DEFAULT: false,
+        DEFAULT: 0,
     },
     USE_ROBOT_JS: {
         NAME: "useRobotJS",
-        DEFAULT: true,
+        DEFAULT: 1,
     },
     IS_DWELLING_ACTIVE: {
         NAME: "isDwellingActive",
-        DEFAULT: true,
+        DEFAULT: 1,
     },
     DEFAULT_URL: {
         NAME: "defaultUrl",
+        LABEL: "Home Page",
+        DESCRIPTION: "The URL that will be opened when the application starts and a new tab is opened.",
         DEFAULT: "https://www.google.com",
     },
     DEFAULT_LAYOUT: {
         NAME: "defaultLayout",
+        LABEL: "Keyboard Language",
+        DESCRIPTION: "The keyboard language that will be used as a default, unless it is changed from the keyboard itself.",
         DEFAULT: KeyboardLayouts.ENGLISH,
     }
 });

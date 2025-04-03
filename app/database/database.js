@@ -419,15 +419,15 @@ function getDwellRangeHeight() {
 }
 
 function getActivateNavAreas() {
-    return getSetting(Settings.USE_NAV_AREAS.NAME).then(value => value === 'true');
+    return getSetting(Settings.USE_NAV_AREAS.NAME).then(value => value === '1');
 }
 
 function getUseRobotJS() {
-    return getSetting(Settings.USE_ROBOT_JS.NAME).then(value => value === 'true');
+    return getSetting(Settings.USE_ROBOT_JS.NAME).then(value => value === '1');
 }
 
 function getIsDwellingActive() {
-    return getSetting(Settings.IS_DWELLING_ACTIVE.NAME).then(value => value === 'true');
+    return getSetting(Settings.IS_DWELLING_ACTIVE.NAME).then(value => value === '1');
 }
 
 function getTabScrollDistance() {
@@ -509,21 +509,21 @@ function updateActivateNavAreas(value) {
     if (typeof value !== 'boolean') {
         throw new Error('Activate Nav Areas must be a boolean');
     }
-    return updateUserSetting(Settings.USE_NAV_AREAS.NAME, value ? 'true' : 'false');
+    return updateUserSetting(Settings.USE_NAV_AREAS.NAME, value ? 1 : 0);
 }
 
 function updateUseRobotJS(value) {
     if (typeof value !== 'boolean') {
         throw new Error('Use RobotJS must be a boolean');
     }
-    return updateUserSetting(Settings.USE_ROBOT_JS.NAME, value ? 'true' : 'false');
+    return updateUserSetting(Settings.USE_ROBOT_JS.NAME, value ? 1 : 0);
 }
 
 function updateIsDwellingActive(value) {
     if (typeof value !== 'boolean') {
         throw new Error('Is Dwelling Active must be a boolean');
     }
-    return updateUserSetting(Settings.IS_DWELLING_ACTIVE.NAME, value ? 'true' : 'false');
+    return updateUserSetting(Settings.IS_DWELLING_ACTIVE.NAME, value ? 1 : 0);
 }
 
 function updateTabScrollDistance(value) {
