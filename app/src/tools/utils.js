@@ -90,8 +90,11 @@ module.exports = {
     // Since this is only used in the render-keyboard.js, it can be removed from here
     dwellInfinite: async (elem, callback, isKeyboardBtn = false) => {
         try {
-            dwellTime = isKeyboardBtn ? await ipcRenderer.invoke('ipc-get-user-setting', Settings.KEYBOARD_DWELL_TIME.NAME) :
-                                        await ipcRenderer.invoke('ipc-get-user-setting', Settings.DWELL_TIME.NAME)
+            dwellTime = await ipcRenderer.invoke('ipc-get-user-setting', Settings.DWELL_TIME.NAME);
+            keyboardDwellTime = await ipcRenderer.invoke('ipc-get-user-setting', Settings.KEYBOARD_DWELL_TIME.NAME);
+
+            // If the dwelling is for a keyboard button, use the keyboard dwell time, otherwise use the default dwell time
+            let dwellTimeToUse = isKeyboardBtn ? keyboardDwellTime : dwellTime;                      
 
             // Bypass dwelling in case a switch is being used
             elem.addEventListener('click', () => {
@@ -113,10 +116,11 @@ module.exports = {
                         clearInterval(intervalId);
                     });
                 }
+
                 intervalIds.push(setInterval(() => {
                     callback();
                     if (isKeyboardBtn) updateAnimations(elem);  
-                }, dwellTime));
+                }, dwellTimeToUse));
             });
 
             // Stop dwelling on mouse leave
