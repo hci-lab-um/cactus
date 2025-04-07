@@ -1506,63 +1506,68 @@ async function createOverlay(overlayAreaToShow, elementProperties, isTransparent
 
         case 'settings':
             overlaysData.settings = {
+                defaultUrl: {
+                    value: defaultUrl,
+                    label: Settings.DEFAULT_URL.LABEL,
+                    description: Settings.DEFAULT_URL.DESCRIPTION,
+                    category: 'General Settings'
+                },
+                defaultLanguage: {
+                    value: await db.getDefaultLayout(),
+                    label: Settings.DEFAULT_LAYOUT.LABEL,
+                    description: Settings.DEFAULT_LAYOUT.DESCRIPTION,
+                    options: [
+                        { label: 'ENGLISH', value: KeyboardLayouts.ENGLISH },
+                        { label: 'FRENCH', value: KeyboardLayouts.FRENCH },
+                        { label: 'ITALIAN', value: KeyboardLayouts.ITALIAN },
+                        { label: 'MALTESE', value: KeyboardLayouts.MALTESE }
+                    ],
+                    category: 'General Settings'
+                },
                 dwellTime: {
                     value: dwellTime, 
                     label: Settings.DWELL_TIME.LABEL, 
                     description: Settings.DWELL_TIME.DESCRIPTION, 
                     options: [
-                        Settings.DWELL_TIME.SHORT, 
-                        Settings.DWELL_TIME.NORMAL, 
-                        Settings.DWELL_TIME.LONG
-                    ]
+                        { label: 'SHORT', value: Settings.DWELL_TIME.SHORT },
+                        { label: 'NORMAL', value: Settings.DWELL_TIME.NORMAL },
+                        { label: 'LONG', value: Settings.DWELL_TIME.LONG }
+                    ],
+                    category: 'Dwell Settings'
                 },
                 keyboardDwellTime: {
                     value: keyboardDwellTime, 
                     label: Settings.KEYBOARD_DWELL_TIME.LABEL, 
                     description: Settings.KEYBOARD_DWELL_TIME.DESCRIPTION, 
                     options: [
-                        Settings.KEYBOARD_DWELL_TIME.SHORT, 
-                        Settings.KEYBOARD_DWELL_TIME.NORMAL, 
-                        Settings.KEYBOARD_DWELL_TIME.LONG
-                    ]
+                        { label: 'SHORT', value: Settings.KEYBOARD_DWELL_TIME.SHORT },
+                        { label: 'NORMAL', value: Settings.KEYBOARD_DWELL_TIME.NORMAL },
+                        { label: 'LONG', value: Settings.KEYBOARD_DWELL_TIME.LONG }
+                    ],
+                    category: 'Dwell Settings'
                 },
                 scrollDistance: {
                     value: scrollDistance, 
                     label: Settings.TAB_VIEW_SCROLL_DISTANCE.LABEL,
                     description: Settings.TAB_VIEW_SCROLL_DISTANCE.DESCRIPTION, 
                     options: [
-                        Settings.TAB_VIEW_SCROLL_DISTANCE.SLOW, 
-                        Settings.TAB_VIEW_SCROLL_DISTANCE.NORMAL, 
-                        Settings.TAB_VIEW_SCROLL_DISTANCE.FAST
-                    ]
+                        { label: 'SLOW', value: Settings.TAB_VIEW_SCROLL_DISTANCE.SLOW },
+                        { label: 'NORMAL', value: Settings.TAB_VIEW_SCROLL_DISTANCE.NORMAL },
+                        { label: 'FAST', value: Settings.TAB_VIEW_SCROLL_DISTANCE.FAST }
+                    ],
+                    category: 'Scrolling Settings'
                 },
-                
                 menuAreaScrollDistance: {
                     value: menuAreaScrollDistance, 
                     label: Settings.MENU_AREA_SCROLL_DISTANCE.LABEL,
                     description: Settings.MENU_AREA_SCROLL_DISTANCE.DESCRIPTION, 
                     options: [
-                        Settings.MENU_AREA_SCROLL_DISTANCE.SLOW, 
-                        Settings.MENU_AREA_SCROLL_DISTANCE.NORMAL, 
-                        Settings.MENU_AREA_SCROLL_DISTANCE.FAST
-                    ]
-                },
-                defaultUrl: {
-                    value: defaultUrl, 
-                    label: Settings.DEFAULT_URL.LABEL,
-                    description: Settings.DEFAULT_URL.DESCRIPTION
-                },
-                defaultLanguage: {
-                    value: await db.getDefaultLayout(), 
-                    label: Settings.DEFAULT_LAYOUT.LABEL,
-                    description: Settings.DEFAULT_LAYOUT.DESCRIPTION,
-                    options: [
-                        KeyboardLayouts.ENGLISH, 
-                        KeyboardLayouts.FRENCH,
-                        KeyboardLayouts.ITALIAN,
-                        KeyboardLayouts.MALTESE
-                    ]
-                },
+                        { label: 'SLOW', value: Settings.MENU_AREA_SCROLL_DISTANCE.SLOW },
+                        { label: 'NORMAL', value: Settings.MENU_AREA_SCROLL_DISTANCE.NORMAL },
+                        { label: 'FAST', value: Settings.MENU_AREA_SCROLL_DISTANCE.FAST }
+                    ],
+                    category: 'Scrolling Settings'
+                },                
             }
             break;
     }

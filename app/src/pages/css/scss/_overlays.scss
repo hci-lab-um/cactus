@@ -299,35 +299,90 @@
 #overlay-settings {
   @extend #overlay-tabs;
 
-  .settingCard {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1rem;
-    margin: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    background-color: #f9f9f9;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  #settingsCardsContainer {
+    padding: 1rem 2.5rem;
+    overflow-y: auto;
 
-    &h3 {
-      margin: 0;
-      font-size: 1.2rem;
-      color: #333;
+    /* width */
+    &::-webkit-scrollbar {
+      width: 5px;
+    }
+    
+    /* Track */
+    &::-webkit-scrollbar-track {
+      box-shadow: inset 0 0 5px grey;
+      border-radius: 2px;
+    }
+    
+    /* Handle */
+    &::-webkit-scrollbar-thumb {
+      background: #10468b;
+      border-radius: 2px;
+    }
+    
+    /* Handle on hover */
+    &::-webkit-scrollbar-thumb:hover {
+      background: #638eec;
     }
 
-    .toggleButton {
-      padding: 0.5rem 1rem;
-      font-size: 0.9rem;
-      color: #fff;
-      background-color: #007bff;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
+    .settingCategory{
+      margin: 2rem 0;
+      font-size: 2rem;
+      font-weight: bold;
+      color: #0E315D;
+    }
 
-      &:hover {
-        background-color: #0056b3;
+    .settingCard {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 2.25rem 2.75rem;
+      margin: 1rem 0;
+      border-radius: 15px;
+      background-color: #e9eaf1;
+      gap: 5px;
+
+      h3 {
+        margin: 0;
+        font-size: 1.9rem;
+        color: #0E315D;
+      }
+
+      p {
+        margin: 1rem 0;
+        font-size: 1.5rem;
+        color: #0E315D;
+        line-height: 30px;
+      }
+
+      .optionsContainer {
+        display: flex;
+        width: 100%;
+        justify-content: space-between;
+        gap: 2%;
+        margin-top: 10px;
+        
+        .option {
+          flex: 1;
+          padding: 30px;
+          background-color: #f9faff;
+          border-radius: 15px;
+          text-align: center;
+          font-size: 1.5rem;
+          color: $blue-2;
+
+          &--selected {
+            border: 3px solid #2571D3;
+            background: #E1F0FF;
+          }
+        }
+        
+        &--fourOptions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-gap: 20px;
+        }
       }
     }
   }
@@ -336,6 +391,7 @@
     @extend #tabsSidebar;
   }
 }
+
 #overlay-precisionClick {
   background-color: transparent;
   

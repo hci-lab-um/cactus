@@ -699,21 +699,31 @@ function setEventHandlersForPrecisionClick(dwellTime, precisionDwellRange) {
 }
 
 function setEventHandlersForSettingsMenu(settings) {
+	console.log('settings: ', settings);
 	const settingsCardsContainer = byId('settingsCardsContainer');
-	const scrollUpBtn = byId('scrollUpBtn');
-	const scrollDownBtn = byId('scrollDownBtn');
+	const scrollUpBtn = byId('settingsScrollUpBtn');
+	const scrollDownBtn = byId('settingsScrollDownBtn');
 	const cancelSettingsBtn = byId('cancel-settings');
 
 	// Clear existing settings cards
 	settingsCardsContainer.innerHTML = '';
 
-	// Populate settings cards
-	Object.keys(settings).forEach(key => {
-		const setting = settings[key];
-		if (shouldIncludeSetting(setting)) { // Filter settings to include
+	// Group settings by category
+	const groupedSettings = groupSettingsByCategory(settings);
+
+	// Populate settings cards grouped by category
+	Object.keys(groupedSettings).forEach(category => {
+		// Create and append category title
+		const categoryTitle = document.createElement('h2');
+		categoryTitle.textContent = category;
+		categoryTitle.classList.add('settingCategory');
+		settingsCardsContainer.appendChild(categoryTitle);
+
+		// Create and append settings cards for the category
+		groupedSettings[category].forEach(setting => {
 			const card = createSettingCard(setting);
 			settingsCardsContainer.appendChild(card);
-		}
+		});
 	});
 
 	// Scroll functionality
@@ -725,8 +735,20 @@ function setEventHandlersForSettingsMenu(settings) {
 		ipcRenderer.send('ipc-overlays-remove');
 	});
 
+	function groupSettingsByCategory(settings) {
+		return Object.values(settings).reduce((grouped, setting) => {
+			const category = setting.category || 'General Settings';
+			if (!grouped[category]) {
+				grouped[category] = [];
+			}
+			grouped[category].push(setting);
+			return grouped;
+		}, {});
+	}
+
 	function scrollByOneRow(direction, container) {
-		const rowHeight = 150 + 20; // Height of a card + gap
+		console.log('scrolling by one row', direction);
+		const rowHeight = 400;
 		container.scrollBy({
 			top: direction * rowHeight,
 			behavior: 'smooth'
@@ -738,27 +760,54 @@ function setEventHandlersForSettingsMenu(settings) {
 		card.classList.add('settingCard', 'fadeInUp');
 
 		const title = document.createElement('h3');
-		title.textContent = setting.name;
-
-		const toggle = document.createElement('button');
-		toggle.textContent = setting.enabled ? 'Disable' : 'Enable';
-		toggle.classList.add('toggleButton');
-		toggle.addEventListener('click', () => {
-			setting.enabled = !setting.enabled;
-			toggle.textContent = setting.enabled ? 'Disable' : 'Enable';
-			ipcRenderer.send('ipc-settings-updated', setting);
-		});
-
+		title.textContent = setting.label;
 		card.appendChild(title);
+
+		const description = document.createElement('p');
+		description.textContent = setting.description;
 		card.appendChild(description);
-		card.appendChild(toggle);
+
+		// Add options container for settings with multiple options
+		const optionsContainer = document.createElement('div');
+		optionsContainer.classList.add('optionsContainer');
+
+		// Add toggle button for settings with a single option
+		if (!setting.options || setting.options.length === 1) {
+			const defaultValue = document.createElement('div');
+			defaultValue.classList.add('option', 'overlayBtn');
+			defaultValue.textContent = setting.value
+
+			dwell(defaultValue, () => {
+				ipcRenderer.send('ipc-settings-updated', setting);
+			});
+
+			optionsContainer.appendChild(defaultValue);
+		} else {
+			// Adjust layout based on the number of options
+			if (setting.options.length === 4) {
+				optionsContainer.classList.add('optionsContainer--fourOptions');
+			}
+
+			setting.options.forEach(option => {
+				const optionElement = document.createElement('div');
+				optionElement.classList.add('option', 'overlayBtn');
+
+				if (option.value == setting.value) {
+					optionElement.classList.add('option--selected');
+				}
+				optionElement.textContent = option.label;
+
+				dwell(optionElement, () => {
+					ipcRenderer.send('ipc-settings-option-selected', setting, option.value);
+				});
+
+				optionsContainer.appendChild(optionElement);
+			});
+		}
+
+		card.appendChild(optionsContainer);
 
 		return card;
-	}
-
-	function shouldIncludeSetting(setting) {
-		// Add logic to filter which settings to include
-		return setting.includeInOverlay;
 	}
 
 	dwell(cancelSettingsBtn, () => {
