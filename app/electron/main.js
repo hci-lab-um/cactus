@@ -53,7 +53,7 @@ app.whenReady().then(async () => {
     // Show splash screen for a short while
     setTimeout(() => {
         createMainWindow();
-    }, 2000);
+    }, 3000); // This is the duration of the splash screen gif
 
     registerSwitchShortcutCommands();
 });
@@ -744,7 +744,7 @@ function createSplashWindow() {
     });
 
     // Load the splash screen HTML file
-    const splashWindowContent = new WebContentsView()
+    const splashWindowContent = new WebContentsView({webPreferences: { transparent: true}});
     splashWindow.contentView.addChildView(splashWindowContent)
     splashWindowContent.setBounds({ x: 0, y: 0, width: splashWindow.getBounds().width, height: splashWindow.getBounds().height })
     splashWindowContent.webContents.loadURL(path.join(__dirname, '../src/pages/splash.html'));

@@ -12,9 +12,9 @@ html {
 
     .error-box {
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         background: white;
-        padding: 60px 100px;
+        padding: 60px;
         border-radius: 10px;
         box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
         min-width: 700px;
@@ -22,36 +22,44 @@ html {
         gap: 25px;
         align-items: center;
 
-        img {
-            width: 100px;
+        &_logo {
+            width: 235px;
             height: auto;
-            margin-bottom: 20px;
+            margin: -30px;
+            margin-left: -23px;
         }
 
-        h1 {
-            font-size: 3.75rem;
-            color: $darkred;
-        }
+        &_text {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            align-items: center;
 
-        p {
-            font-size: 1.6rem;
-            color: #6c757d;
-            margin-bottom: 25px;
-            line-height: 1.8rem;
-        }
+            h1 {
+                font-size: 3.75rem;
+                color: $darkred;
+            }
 
-        button {
-            width: 70%;
-            background-color: $blue-light;
-            color: $blue-2;
-            border: none;
-            padding: 20px 20px;
-            font-size: 1.75rem;
-            border-radius: 5px;
-            transition: background-color 0.3s;
+            p {
+                font-size: 1.6rem;
+                color: #6c757d;
+                margin-bottom: 25px;
+                line-height: 1.8rem;
+            }
 
-            &:hover {
-                background-color: darken($blue-light, 10%);
+            button {
+                width: 70%;
+                background-color: $blue-light;
+                color: $blue-2;
+                border: none;
+                padding: 20px 20px;
+                font-size: 1.75rem;
+                border-radius: 5px;
+                transition: background-color 0.3s;
+
+                &:hover {
+                    background-color: darken($blue-light, 10%);
+                }
             }
         }
     }
