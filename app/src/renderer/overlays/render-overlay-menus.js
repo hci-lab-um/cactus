@@ -774,11 +774,18 @@ function setEventHandlersForSettingsMenu(settings) {
 		// Add toggle button for settings with a single option
 		if (!setting.options || setting.options.length === 1) {
 			const defaultValue = document.createElement('div');
+			defaultValue.id = 'url'
 			defaultValue.classList.add('option', 'overlayBtn');
 			defaultValue.textContent = setting.value
 
 			dwell(defaultValue, () => {
-				ipcRenderer.send('ipc-settings-updated', setting);
+				let elementProperties = {
+					id: 'url',
+					value: setting.value,
+					type: 'text',
+					isSetting: true,
+				}
+				ipcRenderer.send('ipc-overlay-show-keyboard', elementProperties);
 			});
 
 			optionsContainer.appendChild(defaultValue);

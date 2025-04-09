@@ -25,11 +25,12 @@ let dwellTime;
 let precisionDwellRange;
 
 let mainWindow, splashWindow
-let mainWindowContent, overlayContent, isKeyboardOverlay
+let mainWindowContent, isKeyboardOverlay
 let webpageBounds = {}
 let currentQt, currentNavAreaTree
 let timeoutCursorHovering
 let tabList = [];
+let overlayList = [];
 let tabsFromDatabase = [];
 let bookmarks = [];
 let successfulLoad;
@@ -431,6 +432,10 @@ ipcMain.on('ipc-mainwindow-show-overlay', async (event, overlayAreaToShow, eleme
     }
 })
 
+ipcMain.on('ipc-overlay-show-keyboard', (event, elementProperties) => {
+    createOverlay('keyboard', elementProperties);
+});
+
 // This event is triggered when the user clicks on the bookmark icon in the main window to add a bookmark
 ipcMain.on('ipc-mainwindow-add-bookmark', async (event) => {
     // Capturing the current state of the page before bookmarking
@@ -688,7 +693,13 @@ ipcMain.on('ipc-keyboard-input', (event, value, element, submit, updateValueAttr
     console.log("Keyboard value: ", value, element, submit);
     // If the input is for the omnibox, send it to the main window, else send it to the active tab
     if (element.id === "url") { // "url" is the id of the omni box 
-        mainWindowContent.webContents.send('ipc-mainwindow-keyboard-input', value);
+        if (element.isSetting) {
+            defaultUrl = value;
+            db.updateDefaultURL(value);
+            overlayList[overlayList.length - 1].webContents.send('ipc-setting-keyboard-input', value);
+        } else {
+            mainWindowContent.webContents.send('ipc-mainwindow-keyboard-input', value);
+        }
     } else {
         var tab = tabList.find(tab => tab.isActive === true);
 
@@ -854,7 +865,11 @@ function createMainWindow() {
 
 function resizeMainWindow() {
     mainWindowContent.setBounds({ x: 0, y: 0, width: mainWindow.getContentBounds().width, height: mainWindow.getContentBounds().height })
-    if (overlayContent) overlayContent.setBounds({ x: 0, y: 0, width: mainWindow.getContentBounds().width, height: mainWindow.getContentBounds().height });
+    if (overlayList.length > 0) {
+        overlayList.forEach(overlay => {
+            overlay.webContents.setBounds({ x: 0, y: 0, width: mainWindow.getContentBounds().width, height: mainWindow.getContentBounds().height });
+        });
+    }
 
     mainWindowContent.webContents.executeJavaScript(`
             (() => {
@@ -1426,21 +1441,19 @@ async function captureSnapshot() {
 }
 
 function removeOverlay() {
-    if (overlayContent) {
-        mainWindow.contentView.removeChildView(overlayContent);
-        overlayContent = null;
+    if (overlayList.length > 0) {
+        mainWindow.contentView.removeChildView(overlayList[overlayList.length - 1]);
+        overlayList.pop();
         isKeyboardOverlay = null;
     }
 }
 
 async function createOverlay(overlayAreaToShow, elementProperties, isTransparent = false) {
-    removeOverlay();
-
     let mainWindowContentBounds = mainWindow.getContentBounds();
     let renderer = overlayAreaToShow === 'keyboard' ? 'render-overlay-keyboard.js' : 'render-overlay-menus.js';
     let htmlPage = overlayAreaToShow === 'keyboard' ? 'keyboard.html' : 'overlays.html';
 
-    overlayContent = new WebContentsView({
+    let overlayContent = new WebContentsView({
         //https://www.electronjs.org/docs/latest/tutorial/security
         webPreferences: {
             nodeIntegrationInWorker: true,
@@ -1449,6 +1462,7 @@ async function createOverlay(overlayAreaToShow, elementProperties, isTransparent
             transparent: isTransparent,
         },
     })
+    overlayList.push(overlayContent);
 
     mainWindow.contentView.addChildView(overlayContent)
     overlayContent.setBounds({ x: 0, y: 0, width: mainWindowContentBounds.width, height: mainWindowContentBounds.height })
@@ -1614,8 +1628,8 @@ function handleClickShortcut() {
         );
     };
 
-    if (overlayContent && isCursorWithinBounds(overlayContent.getBounds())) {
-        overlayContent.webContents.send('ipc-trigger-click-under-cursor');
+    if (overlayList.length > 0 && isCursorWithinBounds(overlayList[overlayList.length - 1].getBounds())) {
+        overlayList[overlayList.length - 1].webContents.send('ipc-trigger-click-under-cursor');
         return;
     }
 
@@ -1633,7 +1647,7 @@ function handleClickShortcut() {
 }
 
 function handleToggleOmniBoxShortcut() {
-    if (overlayContent && isKeyboardOverlay) {
+    if (overlayList.length > 0 && isKeyboardOverlay) {
         removeOverlay();
     } else {
         mainWindowContent.webContents.send('ipc-mainwindow-load-omnibox');
