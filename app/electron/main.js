@@ -1,5 +1,4 @@
 const { app, BaseWindow, WebContentsView, ipcMain, globalShortcut, screen } = require('electron')
-const config = require('config');
 const path = require('path')
 const fs = require('fs')
 const { QuadtreeBuilder, InteractiveElement, HTMLSerializableElement, QtPageDocument, QtBuilderOptions, QtRange } = require('cactus-quadtree-builder');

@@ -65,6 +65,17 @@
             transform: scale(0);
         }
     }
+
+    &--withoutAnimation {
+        transition: 700ms;
+
+        &:hover {
+            &:before {
+                opacity: 0;
+                transform: scale(1);
+            }
+        }
+    }
 }
 
 @mixin keyboardDwellBtn($animationIteration) {

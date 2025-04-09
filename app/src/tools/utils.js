@@ -5,6 +5,7 @@ const { Settings } = require('./enums.js');
 let dwellTime;
 let keyboardDwellTime;
 let intervalIds = []; // this is needed because some keys create multiple intervals and hence all of them need to be cleared on mouseout
+let eventListeners = new Map(); // Store event listeners for detachment
 
 function updateAnimations(elem, isClicked = false) {
     elem.classList.add('keydown');
@@ -13,6 +14,23 @@ function updateAnimations(elem, isClicked = false) {
     setTimeout(() => {
         elem.classList.remove('keydown');
     }, 300);
+}
+
+function addEventListenerWithTracking(elem, event, listener) {
+    if (!eventListeners.has(elem)) {
+        eventListeners.set(elem, []);
+    }
+    eventListeners.get(elem).push({ event, listener });
+    elem.addEventListener(event, listener);
+}
+
+function removeEventListeners(elem) {
+    if (eventListeners.has(elem)) {
+        eventListeners.get(elem).forEach(({ event, listener }) => {
+            elem.removeEventListener(event, listener);
+        });
+        eventListeners.delete(elem);
+    }
 }
 
 module.exports = {
@@ -34,27 +52,6 @@ module.exports = {
         rawFile.send(null)
     },
 
-    // dwell: (elem, callback) => {
-    //   var timeout = 0
-    //   elem.onmouseover = () => {
-    //     timeout = setTimeout(callback, dwellTime)
-    //   };
-
-    //   elem.onmouseout = () => {
-    //     clearTimeout(timeout)
-    //   }
-    // },
-
-    // dwell: (elem, callback) => {
-    //   elem.onmouseover = () => {
-    //     Timeout.set(callback, dwellTime)
-    //   }
-
-    //   elem.onmouseout = () => {
-    //     Timeout.clear(callback)
-    //   }
-    // },
-
     dwell: async (elem, callback, isKeyboardBtn = false) => {
         try {
             dwellTime = await ipcRenderer.invoke('ipc-get-user-setting', Settings.DWELL_TIME.NAME);
@@ -62,23 +59,25 @@ module.exports = {
 
             // If the dwelling is for a keyboard button, use the keyboard dwell time, otherwise use the default dwell time
             let dwellTimeToUse = isKeyboardBtn ? keyboardDwellTime : dwellTime;
+
             let throttledFunction = throttle(() => {
                 callback();
                 if (isKeyboardBtn) updateAnimations(elem);
             }, dwellTimeToUse, { leading: false, trailing: true });
 
-            // Bypass dwelling in case a switch is being used
-            elem.addEventListener('click', () => {
+            // Click Event - Bypasses dwelling in case a switch is being used
+            addEventListenerWithTracking(elem, 'click', () => {
                 throttledFunction.cancel();
                 callback();
                 if (isKeyboardBtn) updateAnimations(elem, true);
             });
 
-            // Dwelling
-            elem.addEventListener('mouseenter', () => {
+            // Mouse enter and mouse leave - Through which the dwelling functonality is implemented
+            addEventListenerWithTracking(elem, 'mouseenter', () => {
                 throttledFunction();
             });
-            elem.addEventListener('mouseleave', () => {
+
+            addEventListenerWithTracking(elem, 'mouseleave', () => {
                 throttledFunction.cancel();
                 if (isKeyboardBtn) elem.classList.remove('clicked');
             });
@@ -88,16 +87,22 @@ module.exports = {
     },
 
     // Since this is only used in the render-keyboard.js, it can be removed from here
-    dwellInfinite: async (elem, callback, isKeyboardBtn = false) => {
+    dwellInfinite: async (elem, callback, isKeyboardBtn = false, sidebarInterval = null) => {
         try {
-            dwellTime = await ipcRenderer.invoke('ipc-get-user-setting', Settings.DWELL_TIME.NAME);
-            keyboardDwellTime = await ipcRenderer.invoke('ipc-get-user-setting', Settings.KEYBOARD_DWELL_TIME.NAME);
+            let dwellTimeToUse = null; // This will be set based on the context (keyboard or sidebar)
+            
+            if (!sidebarInterval) {
+                dwellTime = await ipcRenderer.invoke('ipc-get-user-setting', Settings.DWELL_TIME.NAME);
+                keyboardDwellTime = await ipcRenderer.invoke('ipc-get-user-setting', Settings.KEYBOARD_DWELL_TIME.NAME);
 
-            // If the dwelling is for a keyboard button, use the keyboard dwell time, otherwise use the default dwell time
-            let dwellTimeToUse = isKeyboardBtn ? keyboardDwellTime : dwellTime;                      
+                // If the dwelling is for a keyboard button, use the keyboard dwell time, otherwise use the default dwell time
+                dwellTimeToUse = isKeyboardBtn ? keyboardDwellTime : dwellTime;       
+            } else {
+                dwellTimeToUse = sidebarInterval;
+            }            
 
-            // Bypass dwelling in case a switch is being used
-            elem.addEventListener('click', () => {
+            // Click Event - Bypasses dwelling in case a switch is being used
+            addEventListenerWithTracking(elem, 'click', () => {
                 if (intervalIds.length !== 0) {
                     intervalIds.forEach(intervalId => {
                         clearInterval(intervalId);
@@ -109,7 +114,7 @@ module.exports = {
             });
 
             // Start dwelling on mouseover
-            elem.addEventListener('mouseenter', () => {
+            addEventListenerWithTracking(elem, 'mouseenter', () => {
                 // Clears any existing intervals to avoid multiple intervals running simultaneously
                 if (intervalIds.length !== 0) {
                     intervalIds.forEach(intervalId => {
@@ -124,7 +129,7 @@ module.exports = {
             });
 
             // Stop dwelling on mouse leave
-            elem.addEventListener('mouseleave', () => {
+            addEventListenerWithTracking(elem, 'mouseleave', () => {
                 if (intervalIds.length !== 0) {
                     intervalIds.forEach(intervalId => {
                         clearInterval(intervalId);
@@ -137,6 +142,19 @@ module.exports = {
         } catch (err) {
             console.error('Error getting keyboard dwell time:', err.message);
         }
+    },
+
+    detachDwellListeners: (elem) => {
+        removeEventListeners(elem);
+    },
+
+    detachAllDwellListeners: () => {
+        eventListeners.forEach((listeners, elem) => {
+            listeners.forEach(({ event, listener }) => {
+                elem.removeEventListener(event, listener);
+            });
+        });
+        eventListeners.clear();
     },
 
     genId: () => {

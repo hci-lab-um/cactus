@@ -1,16 +1,17 @@
 const fs = require('original-fs')
 const path = require('path')
 const { ipcRenderer } = require('electron')
-const { byId, dwell } = require('../../tools/utils')
+const { byId, dwell, detachAllDwellListeners, dwellInfinite } = require('../../tools/utils')
 const { createCursor, followCursor, getMouse } = require('../../tools/cursor')
 const DOMPurify = require('dompurify');
 
 let omni, navbar, sidebar, sidebarItemArea, selectedNavItemTitle, menuNavLevelup, menuScrollUp, menuScrollDown;
 let cursor;
-let timeoutScroll;
 let navAreaStack = [];
 let url;
 let isDwellingActive;
+let scrollDistance;
+let scrollIntervalInMs;
 
 // Exposes an HTML sanitizer to allow for innerHtml assignments when TrustedHTML policies are set ('This document requires 'TrustedHTML' assignment')
 window.addEventListener('DOMContentLoaded', () => {
@@ -22,6 +23,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
 ipcRenderer.on('mainWindowLoaded', (event, dwellTime, menuAreaScrollDistance, menuAreaScrollIntervalInMs, isDwelling) => {
 	isDwellingActive = isDwelling;
+	scrollDistance = menuAreaScrollDistance;
+	scrollIntervalInMs = menuAreaScrollIntervalInMs;
 	// Setting the dwell time in CSS variable
 	document.documentElement.style.setProperty('--dwell-time', `${dwellTime}ms`);
 
@@ -30,7 +33,7 @@ ipcRenderer.on('mainWindowLoaded', (event, dwellTime, menuAreaScrollDistance, me
 	//Setup browser functionality events 
 	setupFunctionality();
 	//Setup navigation sidebar
-	setupNavigationSideBar(menuAreaScrollDistance, menuAreaScrollIntervalInMs);
+	setupNavigationSideBar();
 })
 
 ipcRenderer.on('ipc-mainwindow-handle-dwell-events', (event, isDwelling) => {
@@ -41,10 +44,15 @@ ipcRenderer.on('ipc-mainwindow-handle-dwell-events', (event, isDwelling) => {
 	if (!isDwellingActive) showDwellingPausedMessage();
 });
 
-ipcRenderer.on('ipc-mainwindow-update-dwell-time-css', (event, optionValue) => {
+ipcRenderer.on('ipc-mainwindow-update-dwell-time-css', async (event, optionValue) => {
 	// Update the CSS variable for dwell time in the main window
 	const root = document.documentElement;
 	root.style.setProperty('--dwell-time', `${optionValue}ms`);
+
+	// Remving and reattaching dwell listeners to all elements in the mainwindow
+	detachAllDwellListeners();
+	setupFunctionality(true);
+	setupNavigationSideBar(true);
 });
 
 // =================================
@@ -83,7 +91,7 @@ function setupCursor() {
 // ==== Browser Functionality ======
 // =================================
 
-async function setupFunctionality() {
+async function setupFunctionality(reattachListeners = false) {
 	let roundedBookmark = '<svg xmlns="http://www.w3.org/2000/svg" height="2.1rem" viewBox="0 -960 960 960" width="2.1rem"><path d="M333.33-259 480-347l146.67 89-39-166.67 129-112-170-15L480-709l-66.67 156.33-170 15 129 112.34-39 166.33ZM480-269 300.67-161q-9 5.67-19 5-10-.67-17.67-6.33-7.67-5.67-11.67-14.5-4-8.84-1.66-19.84L298-401 139.67-538.67q-8.67-7.66-10.5-17.16-1.84-9.5.83-18.5t10-15q7.33-6 18.67-7.34L368-615l81-192.67q4.33-10 13.17-15 8.83-5 17.83-5 9 0 17.83 5 8.84 5 13.17 15L592-615l209.33 18.33q11.34 1.34 18.67 7.34 7.33 6 10 15t.83 18.5q-1.83 9.5-10.5 17.16L662-401l47.33 204.33q2.34 11-1.66 19.84-4 8.83-11.67 14.5-7.67 5.66-17.67 6.33-10 .67-19-5L480-269Zm0-204.33Z"/></svg>';
 	let roundedBookmarkFilled = '<svg xmlns="http://www.w3.org/2000/svg" height="2.1rem" viewBox="0 -960 960 960" width="2.1rem"><path d="M480-269 294-157q-8 5-17 4.5t-16-5.5q-7-5-10.5-13t-1.5-18l49-212-164-143q-8-7-9.5-15.5t.5-16.5q2-8 9-13.5t17-6.5l217-19 84-200q4-9 12-13.5t16-4.5q8 0 16 4.5t12 13.5l84 200 217 19q10 1 17 6.5t9 13.5q2 8 .5 16.5T826-544L662-401l49 212q2 10-1.5 18T699-158q-7 5-16 5.5t-17-4.5L480-269Z"/></svg>';
 
@@ -94,7 +102,20 @@ async function setupFunctionality() {
 	let tabs = byId('tabsBtn')
 	let accessibility = byId('accessibilityBtn')
 
-	omni.addEventListener('keydown', (event) => browseToUrl(event, omni.value));
+	if (!reattachListeners) {
+		omni.addEventListener('keydown', (event) => browseToUrl(event, omni.value));
+
+		ipcRenderer.on('ipc-main-update-bookmark-icon', (event, isBookmark) => {
+			if (isBookmark) {
+				bookmarkBtn.innerHTML = roundedBookmarkFilled;
+				bookmarkBtn.classList.add('bookmarked');
+			} else {
+				bookmarkBtn.innerHTML = roundedBookmark;
+				bookmarkBtn.classList.remove('bookmarked');
+			}
+		});
+	}
+
 	dwell(omni, () => {
 		let elementProperties = {
 			id: 'url',
@@ -118,16 +139,6 @@ async function setupFunctionality() {
 			}
 		});
 	})
-
-	ipcRenderer.on('ipc-main-update-bookmark-icon', (event, isBookmark) => {
-		if (isBookmark) {
-			bookmarkBtn.innerHTML = roundedBookmarkFilled;
-			bookmarkBtn.classList.add('bookmarked');
-		} else {
-			bookmarkBtn.innerHTML = roundedBookmark;
-			bookmarkBtn.classList.remove('bookmarked');
-		}
-	});
 
 	dwell(bookmarkBtn, () => {
 		if (bookmarkBtn.classList.contains('bookmarked')) {
@@ -316,14 +327,29 @@ ipcRenderer.on('ipc-trigger-click-under-cursor', (event) => {
 // == Sidebar element management ===
 // =================================
 
-function setupNavigationSideBar(scrollDistance, scrollInterval) {
-	resetNavigationSidebar();
+function setupNavigationSideBar(reattachListeners = false) {
+	if (!reattachListeners) resetNavigationSidebar();
 
 	precisionClick = byId('sidebar_precision')
 	menuNavLevelup = byId('sidebar_levelup')
 	menuScrollUp = byId('sidebar_scrollup')
 	menuScrollDown = byId('sidebar_scrolldown')
 	sidebarItemArea = byId('sidebar_items')
+	
+	function sidebarScroll(direction) {
+		sidebarItemArea.scrollBy({
+			top: scrollDistance * direction,
+			behavior: "smooth"
+		});
+	}
+
+	ipcRenderer.on('ipc-main-sidebar-scrollup', () => {
+		sidebarScroll(-1);
+	});
+
+	ipcRenderer.on('ipc-main-sidebar-scrolldown', () => {
+		sidebarScroll(1);
+	});
 
 	dwell(precisionClick, () => {
 		showOverlay('precisionClick');
@@ -338,54 +364,9 @@ function setupNavigationSideBar(scrollDistance, scrollInterval) {
 		}
 	});
 
-	function sidebarScrollUp() {
-		sidebarItemArea.scrollBy({
-			top: (scrollDistance * -1),
-			left: 0,
-			behavior: "smooth"
-		});
-	}
-
-	function sidebarScrollDown() {
-		sidebarItemArea.scrollBy({
-			top: scrollDistance,
-			left: 0,
-			behavior: "smooth"
-		});
-	}
-
-	menuScrollUp.addEventListener('mouseenter', () => {
-		// Clear any existing interval to avoid multiple intervals running simultaneously
-		clearInterval(timeoutScroll);
-		// Start a new interval to execute the code every x ms
-		timeoutScroll = setInterval(sidebarScrollUp, scrollInterval);
-	});
-
-	menuScrollDown.addEventListener('mouseenter', () => {
-		// Clear any existing interval to avoid multiple intervals running simultaneously
-		clearInterval(timeoutScroll);
-
-		// Start a new interval to execute the code every x ms
-		timeoutScroll = setInterval(sidebarScrollDown, scrollInterval);
-	});
-
-	menuScrollUp.addEventListener('mouseleave', () => {
-		// Clear the interval when the mouse leaves the element
-		clearInterval(timeoutScroll);
-	});
-
-	menuScrollDown.addEventListener('mouseleave', () => {
-		// Clear the interval when the mouse leaves the element
-		clearInterval(timeoutScroll);
-	});
-
-	ipcRenderer.on('ipc-main-sidebar-scrollup', () => {
-		sidebarScrollUp();
-	});
-
-	ipcRenderer.on('ipc-main-sidebar-scrolldown', () => {
-		sidebarScrollDown();
-	});
+	// Scroll functionality
+	dwellInfinite(menuScrollUp, () => sidebarScroll(-1), false, scrollIntervalInMs);
+	dwellInfinite(menuScrollDown, () => sidebarScroll(1), false, scrollIntervalInMs);
 }
 
 ipcRenderer.on('ipc-mainwindow-clear-sidebar', () => {

@@ -108,7 +108,6 @@ body {
   &_levelup,
   &_scrollup,
   &_scrolldown {
-    @extend .dwellBtn;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -119,15 +118,24 @@ body {
   }
 
   &_precision {
+    @extend .dwellBtn;
     justify-content: center;
     gap: 20px;
   }
 
   &_levelup {
+    @extend .dwellBtn;
     border-bottom: 0px;
   }
 
+  &_scrollup {
+    @extend .dwellBtn;
+    @extend .dwellBtn--withoutAnimation;
+  }
+
   &_scrolldown {
+    @extend .dwellBtn;
+    @extend .dwellBtn--withoutAnimation;
     margin-top: auto;
   }
 
