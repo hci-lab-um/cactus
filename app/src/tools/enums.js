@@ -22,7 +22,7 @@ const Settings = Object.freeze({
     DWELL_TIME: {
         NAME: "dwellTime",
         LABEL: "Dwelling Duration",
-        DESCRIPTION: "The time in milliseconds that the mouse pointer must stay over an item before it is selected.",
+        DESCRIPTION: "The time in seconds that the cursor must remain over an item before it is selected.",
         SHORT: 1000,
         NORMAL: 1500,
         LONG: 2000,
@@ -34,7 +34,7 @@ const Settings = Object.freeze({
     KEYBOARD_DWELL_TIME: {
         NAME: "keyboardDwellTime",
         LABEL: "Key Tap Duration",
-        DESCRIPTION: "The time in milliseconds that the mouse pointer must stay over a keyboard key before it is selected.",
+        DESCRIPTION: "The time in seconds that the cursor must remain over a keyboard key before it is selected.",
         SHORT: 1000,
         NORMAL: 1500,
         LONG: 2000,

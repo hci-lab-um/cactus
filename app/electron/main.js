@@ -1529,9 +1529,9 @@ async function createOverlay(overlayAreaToShow, elementProperties, isTransparent
                     label: Settings.DWELL_TIME.LABEL, 
                     description: Settings.DWELL_TIME.DESCRIPTION, 
                     options: [
-                        { label: 'SHORT', value: Settings.DWELL_TIME.SHORT },
-                        { label: 'NORMAL', value: Settings.DWELL_TIME.NORMAL },
-                        { label: 'LONG', value: Settings.DWELL_TIME.LONG }
+                        { label: `${Settings.DWELL_TIME.SHORT / 1000} s`, value: Settings.DWELL_TIME.SHORT },
+                        { label: `${Settings.DWELL_TIME.NORMAL / 1000} s`, value: Settings.DWELL_TIME.NORMAL },
+                        { label: `${Settings.DWELL_TIME.LONG / 1000} s`, value: Settings.DWELL_TIME.LONG }
                     ],
                     category: 'Dwell Settings'
                 },
@@ -1540,9 +1540,9 @@ async function createOverlay(overlayAreaToShow, elementProperties, isTransparent
                     label: Settings.KEYBOARD_DWELL_TIME.LABEL, 
                     description: Settings.KEYBOARD_DWELL_TIME.DESCRIPTION, 
                     options: [
-                        { label: 'SHORT', value: Settings.KEYBOARD_DWELL_TIME.SHORT },
-                        { label: 'NORMAL', value: Settings.KEYBOARD_DWELL_TIME.NORMAL },
-                        { label: 'LONG', value: Settings.KEYBOARD_DWELL_TIME.LONG }
+                        { label: `${Settings.KEYBOARD_DWELL_TIME.SHORT / 1000} s`, value: Settings.KEYBOARD_DWELL_TIME.SHORT },
+                        { label: `${Settings.KEYBOARD_DWELL_TIME.NORMAL / 1000} s`, value: Settings.KEYBOARD_DWELL_TIME.NORMAL },
+                        { label: `${Settings.KEYBOARD_DWELL_TIME.LONG / 1000} s`, value: Settings.KEYBOARD_DWELL_TIME.LONG }
                     ],
                     category: 'Dwell Settings'
                 },
