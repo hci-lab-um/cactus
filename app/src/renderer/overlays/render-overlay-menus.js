@@ -1,5 +1,5 @@
 const { ipcRenderer } = require('electron')
-const { byId, dwell, dwellInfinite } = require('../../../src/tools/utils')
+const { byId, dwell, dwellInfinite, detachAllDwellListeners } = require('../../../src/tools/utils')
 const { createCursor, followCursor, startCursorAnimation, stopCursorAnimation, getMouse } = require('../../../src/tools/cursor')
 const DOMPurify = require('dompurify');
 
@@ -76,10 +76,16 @@ ipcRenderer.on('ipc-setting-keyboard-input', (event, value) => {
 	}
 })
 
-ipcRenderer.on('ipc-setting-update-dwell-time-css', (event, optionValue) => {
-	console.log('ipc-setting-update-dwell-time-css', optionValue);
+ipcRenderer.on('ipc-setting-update-dwell-time', (event, optionValue,) => {
+	console.log('ipc-setting-update-dwell-time', optionValue);
 	const root = document.documentElement;
 	root.style.setProperty('--dwell-time', `${optionValue}ms`);
+
+	detachAllDwellListeners();
+	// When a setting is changed, the only open overlays are the settings overlay and the accessibility menu.
+	// Therefore, we only need to reattach the listeners for these two overlays. However, changes made in the settings
+	// overlay are not aplied until the overlay is closed. This means only the accessibility menu needs updating.
+	setEventHandlersForAccessibilityMenu(null, null, null, true);
 })
 
 function setEventHandlersForOmniMenu() {
@@ -264,7 +270,7 @@ function setEventHandlersForOmniMenu() {
 	// })
 }
 
-function setEventHandlersForAccessibilityMenu(isDwellingActive, useNavAreas, useRobotJS) {
+function setEventHandlersForAccessibilityMenu(isDwellingActive = null, useNavAreas = null, useRobotJS = null, reattachListeners = false) {
 	// =================================
 	// ======== OPTIONS OVERLAY ========
 	// =================================
@@ -282,17 +288,19 @@ function setEventHandlersForAccessibilityMenu(isDwellingActive, useNavAreas, use
 	// const bookmarksBtn = byId('bookmarksBtn')
 	// const aboutBtn = byId('aboutBtn')
 
-	let dwellingIcon = toggleDwellBtn.getElementsByTagName('i')[0];
-	dwellingIcon.innerText = isDwellingActive ? 'toggle_on' : 'toggle_off';
-	dwellingIcon.style.color = dwellingIcon.innerText === 'toggle_on' ? '#10468b' : '#aaacbb';
+	if (!reattachListeners) {
+		let dwellingIcon = toggleDwellBtn.getElementsByTagName('i')[0];
+		dwellingIcon.innerText = isDwellingActive ? 'toggle_on' : 'toggle_off';
+		dwellingIcon.style.color = dwellingIcon.innerText === 'toggle_on' ? '#10468b' : '#aaacbb';
 
-	let navIcon = toggleNavBtn.getElementsByTagName('i')[0];
-	navIcon.innerText = useNavAreas ? 'toggle_on' : 'toggle_off';
-	navIcon.style.color = navIcon.innerText === 'toggle_on' ? '#10468b' : '#aaacbb';
+		let navIcon = toggleNavBtn.getElementsByTagName('i')[0];
+		navIcon.innerText = useNavAreas ? 'toggle_on' : 'toggle_off';
+		navIcon.style.color = navIcon.innerText === 'toggle_on' ? '#10468b' : '#aaacbb';
 
-	let clickIcon = toggleLinkClickingBtn.getElementsByTagName('i')[0];
-	clickIcon.innerText = useRobotJS ? 'toggle_on' : 'toggle_off';
-	clickIcon.style.color = clickIcon.innerText === 'toggle_on' ? '#10468b' : '#aaacbb';
+		let clickIcon = toggleLinkClickingBtn.getElementsByTagName('i')[0];
+		clickIcon.innerText = useRobotJS ? 'toggle_on' : 'toggle_off';
+		clickIcon.style.color = clickIcon.innerText === 'toggle_on' ? '#10468b' : '#aaacbb';
+	}
 
 	dwell(refreshBtn, () => {
 		ipcRenderer.send('ipc-overlays-refresh');
@@ -342,10 +350,6 @@ function setEventHandlersForAccessibilityMenu(isDwellingActive, useNavAreas, use
 	dwell(cancelOptionsBtn, () => {
 		ipcRenderer.send('ipc-overlays-remove');
 	})
-
-	// dwell(bookmarksBtn, () => {
-	// 	ipcRenderer.send('ipc-overlays-view-bookmarks');
-	// })
 
 	// dwell(aboutBtn, () => {
 	// 	ipcRenderer.send('ipc-overlays-about');
@@ -714,7 +718,7 @@ function setEventHandlersForPrecisionClick(dwellTime, precisionDwellRange) {
 
 }
 
-function setEventHandlersForSettingsMenu(settings) {
+function setEventHandlersForSettingsMenu(settings = null) {
 	console.log('settings: ', settings);
 	const settingsCardsContainer = byId('settingsCardsContainer');
 	const scrollUpBtn = byId('settingsScrollUpBtn');
@@ -723,6 +727,12 @@ function setEventHandlersForSettingsMenu(settings) {
 
 	// Clear existing settings cards
 	settingsCardsContainer.innerHTML = '';
+
+	// A note for the user
+	const settingsNote = document.createElement('p');
+	settingsNote.classList.add('settingsNote');
+	settingsNote.innerHTML = 'Changes made to the settings will not take effect in this window until it is closed.';
+	settingsCardsContainer.appendChild(settingsNote);
 
 	// Group settings by category
 	const groupedSettings = groupSettingsByCategory(settings);
@@ -747,9 +757,7 @@ function setEventHandlersForSettingsMenu(settings) {
 	dwellInfinite(scrollDownBtn, () => scrollByOneRow(1, settingsCardsContainer));
 
 	// Close button functionality
-	dwell(cancelSettingsBtn, () => {
-		ipcRenderer.send('ipc-overlays-remove');
-	});
+	dwell(cancelSettingsBtn, () => ipcRenderer.send('ipc-overlays-remove'));
 
 	function groupSettingsByCategory(settings) {
 		return Object.values(settings).reduce((grouped, setting) => {

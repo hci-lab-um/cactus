@@ -730,16 +730,16 @@ ipcMain.on('ipc-settings-option-selected', (event, setting, optionValue) => {
         case Settings.DWELL_TIME.LABEL:
             dwellTime = optionValue;
             db.updateDwellTime(optionValue);
-            mainWindowContent.webContents.send('ipc-mainwindow-update-dwell-time-css', optionValue);
-            overlayList.forEach(overlay => {
-                overlay.webContents.send('ipc-setting-update-dwell-time-css', optionValue);
+            mainWindowContent.webContents.send('ipc-mainwindow-update-dwell-time', optionValue);
+            overlayList.slice(0, -1).forEach(overlay => {
+                overlay.webContents.send('ipc-setting-update-dwell-time', optionValue);
             });
             break;
         case Settings.KEYBOARD_DWELL_TIME.LABEL:
             keyboardDwellTime = optionValue;
             db.updateKeyboardDwellTime(optionValue);
             overlayList.forEach(overlay => {
-                overlay.webContents.send('ipc-setting-update-keyboard-dwell-time-css', optionValue);
+                overlay.webContents.send('ipc-setting-update-keyboard-dwell-time', optionValue);
             });
             break;
         case Settings.TAB_VIEW_SCROLL_DISTANCE.LABEL:

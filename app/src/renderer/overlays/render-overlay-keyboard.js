@@ -41,7 +41,7 @@ ipcRenderer.on('ipc-trigger-click-under-cursor', (event) => {
     }
 });
 
-ipcRenderer.on('ipc-setting-update-keyboard-dwell-time-css', (event, optionValue) => {
+ipcRenderer.on('ipc-setting-update-keyboard-dwell-time', (event, optionValue) => {
 	const root = document.documentElement;
 	root.style.setProperty('--keyboard-dwell-time', `${optionValue}ms`);
 })
