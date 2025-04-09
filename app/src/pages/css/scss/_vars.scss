@@ -34,5 +34,5 @@ $darkred: #ba1539;
 // VARIABLES //
 
 $navHeight: 110px;
-$dwellTime: 1.5s;
-$keyboardDwellTime: 1s;
+$dwellTime: var(--dwell-time, 1.5s); // Default to 1.5s if not set
+$keyboardDwellTime: var(--keyboard-dwell-time, 1s);

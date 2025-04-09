@@ -22,11 +22,13 @@ window.addEventListener('DOMContentLoaded', () => {
 
 ipcRenderer.on('mainWindowLoaded', (event, dwellTime, menuAreaScrollDistance, menuAreaScrollIntervalInMs, isDwelling) => {
 	isDwellingActive = isDwelling;
+	// Setting the dwell time in CSS variable
+	document.documentElement.style.setProperty('--dwell-time', `${dwellTime}ms`);
 
 	//Setup cursors
 	setupCursor();
 	//Setup browser functionality events 
-	setupFunctionality(dwellTime);
+	setupFunctionality();
 	//Setup navigation sidebar
 	setupNavigationSideBar(menuAreaScrollDistance, menuAreaScrollIntervalInMs);
 })
@@ -37,6 +39,12 @@ ipcRenderer.on('ipc-mainwindow-handle-dwell-events', (event, isDwelling) => {
 	isDwellingActive = isDwelling;
 	resetNavigationSidebar();
 	if (!isDwellingActive) showDwellingPausedMessage();
+});
+
+ipcRenderer.on('ipc-mainwindow-update-dwell-time-css', (event, optionValue) => {
+	// Update the CSS variable for dwell time in the main window
+	const root = document.documentElement;
+	root.style.setProperty('--dwell-time', `${optionValue}ms`);
 });
 
 // =================================
@@ -75,11 +83,17 @@ function setupCursor() {
 // ==== Browser Functionality ======
 // =================================
 
-async function setupFunctionality(dwellTime) {
+async function setupFunctionality() {
 	let roundedBookmark = '<svg xmlns="http://www.w3.org/2000/svg" height="2.1rem" viewBox="0 -960 960 960" width="2.1rem"><path d="M333.33-259 480-347l146.67 89-39-166.67 129-112-170-15L480-709l-66.67 156.33-170 15 129 112.34-39 166.33ZM480-269 300.67-161q-9 5.67-19 5-10-.67-17.67-6.33-7.67-5.67-11.67-14.5-4-8.84-1.66-19.84L298-401 139.67-538.67q-8.67-7.66-10.5-17.16-1.84-9.5.83-18.5t10-15q7.33-6 18.67-7.34L368-615l81-192.67q4.33-10 13.17-15 8.83-5 17.83-5 9 0 17.83 5 8.84 5 13.17 15L592-615l209.33 18.33q11.34 1.34 18.67 7.34 7.33 6 10 15t.83 18.5q-1.83 9.5-10.5 17.16L662-401l47.33 204.33q2.34 11-1.66 19.84-4 8.83-11.67 14.5-7.67 5.66-17.67 6.33-10 .67-19-5L480-269Zm0-204.33Z"/></svg>';
 	let roundedBookmarkFilled = '<svg xmlns="http://www.w3.org/2000/svg" height="2.1rem" viewBox="0 -960 960 960" width="2.1rem"><path d="M480-269 294-157q-8 5-17 4.5t-16-5.5q-7-5-10.5-13t-1.5-18l49-212-164-143q-8-7-9.5-15.5t.5-16.5q2-8 9-13.5t17-6.5l217-19 84-200q4-9 12-13.5t16-4.5q8 0 16 4.5t12 13.5l84 200 217 19q10 1 17 6.5t9 13.5q2 8 .5 16.5T826-544L662-401l49 212q2 10-1.5 18T699-158q-7 5-16 5.5t-17-4.5L480-269Z"/></svg>';
 
 	omni = byId('omnibox')
+	let backOrForward = byId('backOrForwardBtn')
+	let bookmarkBtn = byId('bookmarkBtn')
+	let bookmarks = byId('bookmarksBtn')
+	let tabs = byId('tabsBtn')
+	let accessibility = byId('accessibilityBtn')
+
 	omni.addEventListener('keydown', (event) => browseToUrl(event, omni.value));
 	dwell(omni, () => {
 		let elementProperties = {
@@ -90,7 +104,6 @@ async function setupFunctionality(dwellTime) {
 		showOverlay('keyboard', elementProperties);
 	});
 
-	let backOrForward = byId('backOrForwardBtn')
 	dwell(backOrForward, () => {
 		// invoke an ipc call to get the tabView.canGoBack() and tabView.canGoForward() and then show the overlay if either is true
 		ipcRenderer.invoke('tabview-can-go-back-or-forward').then((hasNavigationHistory) => {
@@ -105,8 +118,6 @@ async function setupFunctionality(dwellTime) {
 			}
 		});
 	})
-
-	let bookmarkBtn = byId('bookmarkBtn')
 
 	ipcRenderer.on('ipc-main-update-bookmark-icon', (event, isBookmark) => {
 		if (isBookmark) {
@@ -130,17 +141,14 @@ async function setupFunctionality(dwellTime) {
 		}
 	})
 
-	let bookmarks = byId('bookmarksBtn')
 	dwell(bookmarks, () => {
 		showOverlay('bookmarks');
 	})
 
-	let tabs = byId('tabsBtn')
 	dwell(tabs, () => {
 		showOverlay('tabs');
 	})
 
-	let accessibility = byId('accessibilityBtn')
 	dwell(accessibility, () => {
 		showOverlay('accessibility');
 	})

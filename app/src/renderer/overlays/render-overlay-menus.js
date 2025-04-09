@@ -18,6 +18,9 @@ window.addEventListener('DOMContentLoaded', () => {
 ipcRenderer.on('ipc-main-overlays-loaded', (event, overlaysData) => {
 	const { overlayAreaToShow, tabList, bookmarks, settings, canGoBack, canGoForward, isDwellingActive, useNavAreas, useRobotJS, dwellTime, precisionDwellRange } = overlaysData;
 	console.log('Overlays data', overlaysData);
+	
+	// Setting the dwell time in CSS variable
+	document.documentElement.style.setProperty('--dwell-time', `${dwellTime}ms`);
 
 	switch (overlayAreaToShow) {
 		case 'omni': {
@@ -65,6 +68,19 @@ ipcRenderer.on('ipc-trigger-click-under-cursor', (event) => {
 		element.click();
 	}
 });
+
+ipcRenderer.on('ipc-setting-keyboard-input', (event, value) => {
+	const inputField = byId('url');
+	if (inputField) {
+		inputField.textContent = value;
+	}
+})
+
+ipcRenderer.on('ipc-setting-update-dwell-time-css', (event, optionValue) => {
+	console.log('ipc-setting-update-dwell-time-css', optionValue);
+	const root = document.documentElement;
+	root.style.setProperty('--dwell-time', `${optionValue}ms`);
+})
 
 function setEventHandlersForOmniMenu() {
 	// =================================
@@ -827,8 +843,4 @@ function setEventHandlersForSettingsMenu(settings) {
 
 		return card;
 	}
-
-	dwell(cancelSettingsBtn, () => {
-		ipcRenderer.send('ipc-overlays-remove');
-	})
 }

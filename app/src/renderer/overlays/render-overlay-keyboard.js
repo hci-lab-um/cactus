@@ -19,7 +19,10 @@ window.addEventListener('DOMContentLoaded', () => {
     followCursor('cactus_cursor');
 });
 
-ipcRenderer.on('ipc-main-keyboard-loaded', async (event, elementToUpdate, keyboardLayout) => {
+ipcRenderer.on('ipc-main-keyboard-loaded', async (event, elementToUpdate, keyboardLayout, keyboardDwellTime) => {
+    // Setting the keyboard dwell time in CSS variable  
+	document.documentElement.style.setProperty('--keyboard-dwell-time', `${keyboardDwellTime}ms`);
+
     const NUMPAD_REQUIRED_ELEMENTS = ['number', 'tel', 'date', 'datetime-local', 'month', 'time', 'week']; // revise these
     let needsNumpad = NUMPAD_REQUIRED_ELEMENTS.indexOf(elementToUpdate.type) !== -1;
 
@@ -37,6 +40,11 @@ ipcRenderer.on('ipc-trigger-click-under-cursor', (event) => {
         element.click();
     }
 });
+
+ipcRenderer.on('ipc-setting-update-keyboard-dwell-time-css', (event, optionValue) => {
+	const root = document.documentElement;
+	root.style.setProperty('--keyboard-dwell-time', `${optionValue}ms`);
+})
 
 const Keyboard = {
     elements: {
@@ -801,7 +809,7 @@ const Keyboard = {
                 }
                 document.body.removeChild(popup);
                 document.body.removeChild(overlay);
-            }, false);
+            }, true);
             popup.appendChild(button);
         });
 

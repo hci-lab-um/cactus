@@ -1533,7 +1533,7 @@ async function createOverlay(overlayAreaToShow, elementProperties, isTransparent
     switch (overlayAreaToShow) {
         case 'keyboard':
             let keyboardLayout = await db.getDefaultLayout();
-            overlayContent.webContents.send('ipc-main-keyboard-loaded', elementProperties, keyboardLayout);
+            overlayContent.webContents.send('ipc-main-keyboard-loaded', elementProperties, keyboardLayout, keyboardDwellTime);
             break;
 
         case 'tabs':
