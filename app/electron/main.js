@@ -432,10 +432,6 @@ ipcMain.on('ipc-mainwindow-show-overlay', async (event, overlayAreaToShow, eleme
     }
 })
 
-ipcMain.on('ipc-overlay-show-keyboard', (event, elementProperties) => {
-    createOverlay('keyboard', elementProperties);
-});
-
 // This event is triggered when the user clicks on the bookmark icon in the main window to add a bookmark
 ipcMain.on('ipc-mainwindow-add-bookmark', async (event) => {
     // Capturing the current state of the page before bookmarking
@@ -574,6 +570,59 @@ ipcMain.on('ipc-overlays-forward', () => {
     tab.webContentsView.webContents.send('ipc-tabview-forward');
 })
 
+// ---------------------
+// ACCESSIBILITY OVERLAY
+// ---------------------
+
+ipcMain.on('ipc-overlays-refresh', (event) => {
+    removeOverlay();
+    var tab = tabList.find(tab => tab.isActive === true);
+    if (tab.isErrorPage) {
+        tab.webContentsView.webContents.loadURL(tab.originalURL);
+    } else {
+        tab.webContentsView.webContents.reload();
+    }
+})
+
+ipcMain.on('ipc-overlays-settings', (event) => {
+    createOverlay("settings", null, false);
+});
+
+ipcMain.on('ipc-overlays-zoom-in', (event) => {
+    handleZoom("in");
+});
+
+ipcMain.on('ipc-overlays-zoom-out', (event) => {
+    handleZoom("out");
+});
+
+ipcMain.on('ipc-overlays-zoom-reset', (event) => {
+    handleZoom("reset");
+});
+
+ipcMain.on('ipc-overlays-toggle-dwell', (event) => {
+    toggleDwelling();
+});
+
+ipcMain.on('ipc-overlays-toggle-nav', (event) => {
+    toggleNavigation();
+});
+
+ipcMain.on('ipc-overlays-toggle-useRobotJS', (event) => {
+    toggleUseRobotJS();
+});
+
+ipcMain.on('ipc-exit-browser', async (event) => {
+    removeOverlay();
+    await deleteAndInsertAllTabs();
+    app.quit();
+});
+
+// ipcMain.on('ipc-overlays-about', (event) => {
+//     // to be implemented
+// });
+
+
 // -----------------
 // PRECISION OVERLAY
 // -----------------
@@ -635,57 +684,9 @@ ipcMain.on('ipc-precision-add-scroll-buttons', (event) => {
     }
 })
 
-// ---------------------
-// ACCESSIBILITY OVERLAY
-// ---------------------
-
-ipcMain.on('ipc-overlays-refresh', (event) => {
-    removeOverlay();
-    var tab = tabList.find(tab => tab.isActive === true);
-    if (tab.isErrorPage) {
-        tab.webContentsView.webContents.loadURL(tab.originalURL);
-    } else {
-        tab.webContentsView.webContents.reload();
-    }
-})
-
-ipcMain.on('ipc-overlays-settings', (event) => {
-    createOverlay("settings", null, false);
-});
-
-ipcMain.on('ipc-overlays-zoom-in', (event) => {
-    handleZoom("in");
-});
-
-ipcMain.on('ipc-overlays-zoom-out', (event) => {
-    handleZoom("out");
-});
-
-ipcMain.on('ipc-overlays-zoom-reset', (event) => {
-    handleZoom("reset");
-});
-
-ipcMain.on('ipc-overlays-toggle-dwell', (event) => {
-    toggleDwelling();
-});
-
-ipcMain.on('ipc-overlays-toggle-nav', (event) => {
-    toggleNavigation();
-});
-
-ipcMain.on('ipc-overlays-toggle-useRobotJS', (event) => {
-    toggleUseRobotJS();
-});
-
-ipcMain.on('ipc-exit-browser', async(event) => {
-    removeOverlay();
-    await deleteAndInsertAllTabs();
-    app.quit();
-});
-
-// ipcMain.on('ipc-overlays-about', (event) => {
-//     // to be implemented
-// });
+// -----------------
+// KEYBOARD OVERLAY
+// -----------------
 
 ipcMain.on('ipc-keyboard-input', (event, value, element, submit, updateValueAttr = false) => {    
     removeOverlay();
@@ -716,6 +717,51 @@ ipcMain.on('ipc-keyboard-input', (event, value, element, submit, updateValueAttr
 ipcMain.on('ipc-keyboard-update-language', async (event, language) => {
     await db.updateUserSetting(Settings.DEFAULT_LAYOUT.NAME, language);
 })
+
+// ------------------
+//  SETTINGS OVERLAY
+// ------------------
+
+ipcMain.on('ipc-settings-show-keyboard', (event, elementProperties) => {
+    createOverlay('keyboard', elementProperties);
+});
+
+ipcMain.on('ipc-settings-option-selected', (event, setting, optionValue) => {
+    switch (setting.label) {
+        case Settings.DWELL_TIME.LABEL:
+            dwellTime = optionValue;
+            db.updateDwellTime(optionValue);
+            mainWindowContent.webContents.send('ipc-mainwindow-update-dwell-time-css', optionValue);
+            overlayList.forEach(overlay => {
+                overlay.webContents.send('ipc-setting-update-dwell-time-css', optionValue);
+            });
+            break;
+        case Settings.KEYBOARD_DWELL_TIME.LABEL:
+            keyboardDwellTime = optionValue;
+            db.updateKeyboardDwellTime(optionValue);
+            overlayList.forEach(overlay => {
+                overlay.webContents.send('ipc-setting-update-keyboard-dwell-time-css', optionValue);
+            });
+            break;
+        case Settings.TAB_VIEW_SCROLL_DISTANCE.LABEL:
+            scrollDistance = optionValue;
+            db.updateTabScrollDistance(optionValue);
+            break;
+        case Settings.MENU_AREA_SCROLL_DISTANCE.LABEL:
+            menuAreaScrollDistance = optionValue;
+            db.updateMenuScrollDistance(optionValue);
+            break;
+        case Settings.DEFAULT_LAYOUT.LABEL:
+            db.updateDefaultLayout(optionValue);
+            break;
+        default:
+            throw new Error(`Unknown setting: ${setting.label}`);
+    }
+});
+
+// --------
+//  OTHERS
+// --------
 
 ipcMain.on('log', (event, loggedItem) => {
     log.info(event);

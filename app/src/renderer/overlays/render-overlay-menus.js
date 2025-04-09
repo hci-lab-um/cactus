@@ -785,7 +785,7 @@ function setEventHandlersForSettingsMenu(settings) {
 					type: 'text',
 					isSetting: true,
 				}
-				ipcRenderer.send('ipc-overlay-show-keyboard', elementProperties);
+				ipcRenderer.send('ipc-settings-show-keyboard', elementProperties);
 			});
 
 			optionsContainer.appendChild(defaultValue);
@@ -806,6 +806,17 @@ function setEventHandlersForSettingsMenu(settings) {
 
 				dwell(optionElement, () => {
 					ipcRenderer.send('ipc-settings-option-selected', setting, option.value);
+					
+					// Updating css for the selected option
+					optionElement.classList.add('option--selected');
+
+					// Removing css from all other options
+					const allOptions = optionsContainer.querySelectorAll('.option');
+					allOptions.forEach(opt => {
+						if (opt !== optionElement) {
+							opt.classList.remove('option--selected');
+						}
+					});
 				});
 
 				optionsContainer.appendChild(optionElement);
