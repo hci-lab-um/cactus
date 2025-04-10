@@ -80,22 +80,23 @@
 
 @mixin keyboardDwellBtn($animationIteration) {
     transition: $keyboardDwellTime;
+    overflow: hidden;
 
     &:before {
         content: '';
         background: #4acbe0;
-        width: 5em;
-        height: 5em;
+        width: 10em;
+        height: 10em;
+        z-index: 25;
         display: inline-block;
         position: absolute;
         top: 50%;
         left: 50%;
-        overflow: hidden;
         border-radius: 50%;
         opacity: 0;
         margin: {
-            left: (5em / -2);
-            top: (5em / -2);
+            left: (10em / -2);
+            top: (10em / -2);
         }
     }
 
