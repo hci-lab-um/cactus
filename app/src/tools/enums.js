@@ -21,11 +21,13 @@ const KeyboardLayouts = Object.freeze({
 const Settings = Object.freeze({
     DWELL_TIME: {
         NAME: "dwellTime",
-        LABEL: "Dwelling Duration",
+        LABEL: "General Dwelling Duration",
         DESCRIPTION: "The time in seconds that the cursor must remain over an item before it is selected.",
-        SHORT: 1000,
-        NORMAL: 1500,
-        LONG: 2000,
+        VERY_SHORT: 600,
+        SHORT: 800,
+        NORMAL: 1000,
+        LONG: 1500,
+        VERY_LONG: 2000,
     },
     DWELL_RANGE: {
         NAME: "precisionDwellRange",
@@ -33,11 +35,13 @@ const Settings = Object.freeze({
     },
     KEYBOARD_DWELL_TIME: {
         NAME: "keyboardDwellTime",
-        LABEL: "Key Tap Duration",
+        LABEL: "Keyboard Key Dwelling Duration",
         DESCRIPTION: "The time in seconds that the cursor must remain over a keyboard key before it is selected.",
-        SHORT: 1000,
-        NORMAL: 1500,
-        LONG: 2000,
+        VERY_SHORT: 600,
+        SHORT: 800,
+        NORMAL: 1000,
+        LONG: 1500,
+        VERY_LONG: 2000,
     },
     RANGE_WIDTH: {
         NAME: "dwellRangeWidth",

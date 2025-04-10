@@ -694,9 +694,9 @@ ipcMain.on('ipc-keyboard-input', (event, value, element, submit, updateValueAttr
     // If the input is for the omnibox, send it to the main window, else send it to the active tab
     if (element.id === "url") { // "url" is the id of the omni box 
         if (element.isSetting) {
-            defaultUrl = value;
-            db.updateDefaultURL(value);
-            overlayList[overlayList.length - 1].webContents.send('ipc-setting-keyboard-input', value);
+            defaultUrl = `https://${value}/`;
+            db.updateDefaultURL(defaultUrl);
+            overlayList[overlayList.length - 1].webContents.send('ipc-setting-keyboard-input', defaultUrl);
         } else {
             mainWindowContent.webContents.send('ipc-mainwindow-keyboard-input', value);
         }
@@ -916,7 +916,7 @@ function resizeMainWindow() {
     mainWindowContent.setBounds({ x: 0, y: 0, width: mainWindow.getContentBounds().width, height: mainWindow.getContentBounds().height })
     if (overlayList.length > 0) {
         overlayList.forEach(overlay => {
-            overlay.webContents.setBounds({ x: 0, y: 0, width: mainWindow.getContentBounds().width, height: mainWindow.getContentBounds().height });
+            overlay.setBounds({ x: 0, y: 0, width: mainWindow.getContentBounds().width, height: mainWindow.getContentBounds().height });
         });
     }
 
@@ -1592,9 +1592,11 @@ async function createOverlay(overlayAreaToShow, elementProperties, isTransparent
                     label: Settings.DWELL_TIME.LABEL, 
                     description: Settings.DWELL_TIME.DESCRIPTION, 
                     options: [
+                        { label: `${Settings.DWELL_TIME.VERY_SHORT / 1000} s`, value: Settings.DWELL_TIME.VERY_SHORT },
                         { label: `${Settings.DWELL_TIME.SHORT / 1000} s`, value: Settings.DWELL_TIME.SHORT },
                         { label: `${Settings.DWELL_TIME.NORMAL / 1000} s`, value: Settings.DWELL_TIME.NORMAL },
-                        { label: `${Settings.DWELL_TIME.LONG / 1000} s`, value: Settings.DWELL_TIME.LONG }
+                        { label: `${Settings.DWELL_TIME.LONG / 1000} s`, value: Settings.DWELL_TIME.LONG },
+                        { label: `${Settings.DWELL_TIME.VERY_LONG / 1000} s`, value: Settings.DWELL_TIME.VERY_LONG }
                     ],
                     category: 'Dwell Settings'
                 },
@@ -1603,9 +1605,11 @@ async function createOverlay(overlayAreaToShow, elementProperties, isTransparent
                     label: Settings.KEYBOARD_DWELL_TIME.LABEL, 
                     description: Settings.KEYBOARD_DWELL_TIME.DESCRIPTION, 
                     options: [
+                        { label: `${Settings.KEYBOARD_DWELL_TIME.VERY_SHORT / 1000} s`, value: Settings.KEYBOARD_DWELL_TIME.VERY_SHORT },
                         { label: `${Settings.KEYBOARD_DWELL_TIME.SHORT / 1000} s`, value: Settings.KEYBOARD_DWELL_TIME.SHORT },
                         { label: `${Settings.KEYBOARD_DWELL_TIME.NORMAL / 1000} s`, value: Settings.KEYBOARD_DWELL_TIME.NORMAL },
-                        { label: `${Settings.KEYBOARD_DWELL_TIME.LONG / 1000} s`, value: Settings.KEYBOARD_DWELL_TIME.LONG }
+                        { label: `${Settings.KEYBOARD_DWELL_TIME.LONG / 1000} s`, value: Settings.KEYBOARD_DWELL_TIME.LONG },
+                        { label: `${Settings.KEYBOARD_DWELL_TIME.VERY_LONG / 1000} s`, value: Settings.KEYBOARD_DWELL_TIME.VERY_LONG }
                     ],
                     category: 'Dwell Settings'
                 },
