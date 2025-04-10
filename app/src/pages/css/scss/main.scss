@@ -104,7 +104,7 @@ body {
     // }
   }
 
-  &_precision,
+  &_quick,
   &_levelup,
   &_scrollup,
   &_scrolldown {
@@ -117,7 +117,7 @@ body {
     border-radius: 20px;
   }
 
-  &_precision {
+  &_quick {
     @extend .dwellBtn;
     justify-content: center;
     gap: 20px;

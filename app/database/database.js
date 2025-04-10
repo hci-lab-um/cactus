@@ -442,7 +442,7 @@ function getDwellTime() {
     return getSetting(Settings.DWELL_TIME.NAME).then(value => parseInt(value, 10));
 }
 
-function getPrecisionDwellRange() {
+function getQuickDwellRange() {
     return getSetting(Settings.DWELL_RANGE.NAME).then(value => parseInt(value, 10));
 }
 
@@ -547,7 +547,7 @@ function updateDwellTime(value) {
     return updateUserSetting(Settings.DWELL_TIME.NAME, value);
 }
 
-function updatePrecisionDwellRange(value) {
+function updateQuickDwellRange(value) {
     if (typeof value !== 'number') {
         throw new Error('Dwell Range must be a number');
     }
@@ -598,7 +598,7 @@ module.exports = {
     getMenuScrollDistance,
     getMenuScrollInterval,
     getDwellTime,
-    getPrecisionDwellRange,
+    getQuickDwellRange,
     getKeyboardDwellTime,
 
     deleteBookmarkByUrl,
@@ -614,7 +614,7 @@ module.exports = {
     updateTabScrollDistance,
     updateMenuScrollDistance,
     updateDwellTime,
-    updatePrecisionDwellRange,
+    updateQuickDwellRange,
     updateKeyboardDwellTime,
     updateMenuScrollInterval,
     updateDefaultLayout,

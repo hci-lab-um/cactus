@@ -21,7 +21,7 @@ let menuAreaScrollDistance;
 let menuAreaScrollInterval;
 let keyboardDwellTime;
 let dwellTime;
-let precisionDwellRange;
+let quickDwellRange;
 
 let mainWindow, splashWindow
 let mainWindowContent, isKeyboardOverlay
@@ -92,7 +92,7 @@ ipcMain.handle('ipc-get-user-setting', async (event, setting) => {
         case Settings.DWELL_TIME.NAME:
             return dwellTime;
         case Settings.DWELL_RANGE.NAME:
-            return precisionDwellRange;
+            return quickDwellRange;
         case Settings.KEYBOARD_DWELL_TIME.NAME:
             return keyboardDwellTime;
         case Settings.MENU_AREA_SCROLL_DISTANCE.NAME:
@@ -397,7 +397,7 @@ ipcMain.on('ipc-mainwindow-highlight-elements-on-page', (event, elements) => {
 });
 
 ipcMain.on('ipc-mainwindow-show-overlay', async (event, overlayAreaToShow, elementProperties) => {
-    if (overlayAreaToShow === 'precisionClick') {
+    if (overlayAreaToShow === 'quickClick') {
         // remove scroll buttons on the tabview
         var tab = tabList.find(tab => tab.isActive === true);
         scrollButtonsRemoved = true;
@@ -626,7 +626,7 @@ ipcMain.on('ipc-exit-browser', async (event) => {
 // PRECISION OVERLAY
 // -----------------
 
-ipcMain.on('ipc-precision-scroll-up', (event) => {
+ipcMain.on('ipc-quick-click-scroll-up', (event) => {
     let activeTab = tabList.find(tab => tab.isActive === true);
     // Start scrolling up repeatedly
     scrollInterval = setInterval(() => {
@@ -640,7 +640,7 @@ ipcMain.on('ipc-precision-scroll-up', (event) => {
     }, 10); // Adjust the interval time (in milliseconds) as needed
 });
 
-ipcMain.on('ipc-precision-scroll-down', (event) => {
+ipcMain.on('ipc-quick-click-scroll-down', (event) => {
     let activeTab = tabList.find(tab => tab.isActive === true);
     // Start scrolling down repeatedly
     scrollInterval = setInterval(() => {
@@ -654,7 +654,7 @@ ipcMain.on('ipc-precision-scroll-down', (event) => {
     }, 10); // Adjust the interval time (in milliseconds) as needed
 });
 
-ipcMain.on('ipc-precision-scroll-stop', (event) => {
+ipcMain.on('ipc-quick-click-scroll-stop', (event) => {
     // Stop the scrolling
     if (scrollInterval) {
         clearInterval(scrollInterval);
@@ -662,19 +662,19 @@ ipcMain.on('ipc-precision-scroll-stop', (event) => {
     }
 });
 
-ipcMain.on('ipc-precision-zoom-in', (event) => {
+ipcMain.on('ipc-quick-click-zoom-in', (event) => {
     handleZoom("in", false);
 });
 
-ipcMain.on('ipc-precision-zoom-out', (event) => {
+ipcMain.on('ipc-quick-click-zoom-out', (event) => {
     handleZoom("out", false);
 });
 
-ipcMain.on('ipc-precision-dwelltime-elapsed', (event) => {
+ipcMain.on('ipc-quick-click-dwelltime-elapsed', (event) => {
     robot.mouseClick();
 });
 
-ipcMain.on('ipc-precision-add-scroll-buttons', (event) => {
+ipcMain.on('ipc-quick-click-add-scroll-buttons', (event) => {
     // Adding the scroll buttons back to the tabview if they were removed
     if (scrollButtonsRemoved) {
         var tab = tabList.find(tab => tab.isActive === true);
@@ -788,7 +788,7 @@ async function initialiseVariables (){
     scrollDistance = await db.getTabScrollDistance();
     keyboardDwellTime = await db.getKeyboardDwellTime();
     dwellTime = await db.getDwellTime();
-    precisionDwellRange = await db.getPrecisionDwellRange();
+    quickDwellRange = await db.getQuickDwellRange();
     menuAreaScrollDistance = await db.getMenuScrollDistance();
     menuAreaScrollInterval = await db.getMenuScrollInterval();
 }
@@ -1529,7 +1529,7 @@ async function createOverlay(overlayAreaToShow, elementProperties, isTransparent
         useNavAreas: useNavAreas,
         useRobotJS: useRobotJS,
         dwellTime: dwellTime,
-        precisionDwellRange: precisionDwellRange,
+        quickDwellRange: quickDwellRange,
         settings: [],
     };
 

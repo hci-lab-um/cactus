@@ -30,7 +30,7 @@ const Settings = Object.freeze({
         VERY_LONG: 2500,
     },
     DWELL_RANGE: {
-        NAME: "precisionDwellRange",
+        NAME: "quickDwellRange",
         DEFAULT: 5
     },
     KEYBOARD_DWELL_TIME: {

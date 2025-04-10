@@ -16,7 +16,7 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 ipcRenderer.on('ipc-main-overlays-loaded', (event, overlaysData) => {
-	const { overlayAreaToShow, tabList, bookmarks, settings, canGoBack, canGoForward, isDwellingActive, useNavAreas, useRobotJS, dwellTime, precisionDwellRange } = overlaysData;
+	const { overlayAreaToShow, tabList, bookmarks, settings, canGoBack, canGoForward, isDwellingActive, useNavAreas, useRobotJS, dwellTime, quickDwellRange } = overlaysData;
 	console.log('Overlays data', overlaysData);
 	
 	// Setting the dwell time in CSS variable
@@ -48,9 +48,9 @@ ipcRenderer.on('ipc-main-overlays-loaded', (event, overlaysData) => {
 			setEventHandlersForTabsMenu(tabList, bookmarks, 'bookmarks');
 			break;
 		}
-		case 'precisionClick': {
-			byId('overlay-precisionClick').style.display = 'grid'
-			setEventHandlersForPrecisionClick(dwellTime, precisionDwellRange);
+		case 'quickClick': {
+			byId('overlay-quickClick').style.display = 'grid'
+			setEventHandlersForQuickClick(dwellTime, quickDwellRange);
 			break;
 		}
 		case 'settings': {
@@ -630,12 +630,12 @@ function setEventHandlersForTabsMenu(tabList, bookmarks, overlay) {
 	}
 }
 
-function setEventHandlersForPrecisionClick(dwellTime, precisionDwellRange) {
+function setEventHandlersForQuickClick(dwellTime, quickDwellRange) {
 	// =================================
 	// ==== PRECISION CLICK OVERLAY ====
 	// =================================
 
-	let cancelPrecisionClickBtn = byId('cancel-precision-click');
+	let cancelQuickClickBtn = byId('cancel-quick-click');
 	let zoomInBtn = byId('zoomIn');
 	let zoomOutBtn = byId('zoomOut');
 	let scrollUp = byId('scrollUp');
@@ -645,41 +645,41 @@ function setEventHandlersForPrecisionClick(dwellTime, precisionDwellRange) {
 	let dwellTimeout;
 	let lastX = 0, lastY = 0;
 
-	dwell(cancelPrecisionClickBtn, () => {
+	dwell(cancelQuickClickBtn, () => {
 		ipcRenderer.send('ipc-overlays-zoom-reset');
 		ipcRenderer.send('ipc-overlays-remove');
-		ipcRenderer.send('ipc-precision-add-scroll-buttons');
+		ipcRenderer.send('ipc-quick-click-add-scroll-buttons');
 	});
 
 	scrollUp.addEventListener('mouseenter', () => {
-		ipcRenderer.send('ipc-precision-scroll-up');
+		ipcRenderer.send('ipc-quick-click-scroll-up');
 	});
 
 	scrollDown.addEventListener('mouseenter', () => {
-		ipcRenderer.send('ipc-precision-scroll-down');
+		ipcRenderer.send('ipc-quick-click-scroll-down');
 	});
 
 	scrollUp.addEventListener('mouseleave', () => {
-		ipcRenderer.send('ipc-precision-scroll-stop');
+		ipcRenderer.send('ipc-quick-click-scroll-stop');
 	});
 
 	scrollDown.addEventListener('mouseleave', () => {
-		ipcRenderer.send('ipc-precision-scroll-stop');
+		ipcRenderer.send('ipc-quick-click-scroll-stop');
 	});
 
 	dwellInfinite(zoomInBtn, () => {
-		ipcRenderer.send('ipc-precision-zoom-in');
+		ipcRenderer.send('ipc-quick-click-zoom-in');
 	});
 
 	dwellInfinite(zoomOutBtn, () => {
-		ipcRenderer.send('ipc-precision-zoom-out');
+		ipcRenderer.send('ipc-quick-click-zoom-out');
 	});
 
 	webpage.addEventListener("mousemove", (event) => {
 		const { clientX: x, clientY: y } = event;
 
 		// Check if cursor movement is within range
-		if (Math.abs(x - lastX) < precisionDwellRange && Math.abs(y - lastY) < precisionDwellRange) {
+		if (Math.abs(x - lastX) < quickDwellRange && Math.abs(y - lastY) < quickDwellRange) {
 			startCursorAnimation(); // Show the cursor animation
 
 			if (!dwellTimeout) {
@@ -687,7 +687,7 @@ function setEventHandlersForPrecisionClick(dwellTime, precisionDwellRange) {
 					console.log("Dwell selection triggered!");
 					ipcRenderer.send('ipc-overlays-remove');
 					simulateClick(x, y);
-					ipcRenderer.send('ipc-precision-add-scroll-buttons');
+					ipcRenderer.send('ipc-quick-click-add-scroll-buttons');
 					ipcRenderer.send('ipc-overlays-zoom-reset');
 					resetDwell();
 				}, dwellTime);
@@ -713,7 +713,7 @@ function setEventHandlersForPrecisionClick(dwellTime, precisionDwellRange) {
 
 	// Simulate a click at a given coordinate
 	function simulateClick(x, y) {
-		ipcRenderer.send('ipc-precision-dwelltime-elapsed');
+		ipcRenderer.send('ipc-quick-click-dwelltime-elapsed');
 	}
 
 }

@@ -400,16 +400,16 @@
   }
 }
 
-#overlay-precisionClick {
+#overlay-quickClick {
   background-color: transparent;
   
-  #precisionNavbar {
+  #quickNavbar {
     background-color: $darkengrey;
     height: $navHeight;
     width: 100%;
   }
 
-  #precisionSidebar {
+  #quickSidebar {
     flex: calc(20% - 2px);
     background-color: $darkengrey;
     display: flex;

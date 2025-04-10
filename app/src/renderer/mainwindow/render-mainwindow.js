@@ -337,7 +337,7 @@ ipcRenderer.on('ipc-trigger-click-under-cursor', (event) => {
 function setupNavigationSideBar(reattachListeners = false) {
 	if (!reattachListeners) resetNavigationSidebar();
 
-	precisionClick = byId('sidebar_precision')
+	quickClick = byId('sidebar_quick')
 	menuNavLevelup = byId('sidebar_levelup')
 	menuScrollUp = byId('sidebar_scrollup')
 	menuScrollDown = byId('sidebar_scrolldown')
@@ -358,8 +358,8 @@ function setupNavigationSideBar(reattachListeners = false) {
 		sidebarScroll(1);
 	});
 
-	dwell(precisionClick, () => {
-		showOverlay('precisionClick');
+	dwell(quickClick, () => {
+		showOverlay('quickClick');
 	});
 
 	dwell(menuNavLevelup, () => {
