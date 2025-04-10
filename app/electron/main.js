@@ -745,10 +745,14 @@ ipcMain.on('ipc-settings-option-selected', (event, setting, optionValue) => {
         case Settings.TAB_VIEW_SCROLL_DISTANCE.LABEL:
             scrollDistance = optionValue;
             db.updateTabScrollDistance(optionValue);
+            tabList.forEach(tab=> {
+                tab.webContentsView.webContents.send('ipc-tabview-update-scroll-distance', optionValue);
+            });
             break;
         case Settings.MENU_AREA_SCROLL_DISTANCE.LABEL:
             menuAreaScrollDistance = optionValue;
             db.updateMenuScrollDistance(optionValue);
+            mainWindowContent.webContents.send('ipc-mainwindow-update-scroll-distance', optionValue);
             break;
         case Settings.DEFAULT_LAYOUT.LABEL:
             db.updateDefaultLayout(optionValue);

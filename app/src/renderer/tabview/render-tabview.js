@@ -30,7 +30,7 @@ window.cactusAPI.on('ipc-iframes-loaded', (scrollDist) => {
 window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist, isActive) => {
 	useNavAreas = useNavAreas;
 	scrollDistance = scrollDist;
-	initScrollableElements(useNavAreas);
+	initScrollableElements();
 
 	// Setup the QuadTree and NavAreasTree
 	generateQuadTree();
@@ -74,7 +74,7 @@ window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist, isActiv
 
 				// If the mutation is a simple data-cactus-id attribute change, then scroll buttons are not updated
 				if (mutation.type !== "attributes" || mutation.attributeName !== "data-cactus-id") {
-					initScrollableElements(useNavAreas);
+					initScrollableElements();
 				} else {
 					console.log("Mutation is data-cactus-id attribute change, skipping scrollable elements check");
 				}
@@ -128,7 +128,7 @@ window.cactusAPI.on('ipc-main-reconnect-mutation-observer', () => {
 
 window.cactusAPI.on('ipc-main-add-scroll-buttons', () => {
 	displayScrollButtons = true;
-	initScrollableElements(useNavAreas);
+	initScrollableElements();
 });
 
 window.cactusAPI.on('ipc-main-remove-scroll-buttons', () => {
@@ -147,6 +147,11 @@ window.cactusAPI.on('ipc-highlight-available-elements', (contents) => {
 	elementsInView.forEach(ve => {
 		highlightAvailableElements(ve.x, ve.y, ve.width, ve.height, color, dwellRangeWidth, dwellRangeHeight);
 	});
+});
+
+window.cactusAPI.on('ipc-tabview-update-scroll-distance', (newScrollDistance) => {
+	scrollDistance = newScrollDistance;
+	initScrollableElements();
 });
 
 window.cactusAPI.on('ipc-tabview-back', () => {

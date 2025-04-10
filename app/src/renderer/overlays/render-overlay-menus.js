@@ -76,10 +76,10 @@ ipcRenderer.on('ipc-setting-keyboard-input', (event, value) => {
 	}
 })
 
-ipcRenderer.on('ipc-setting-update-dwell-time', (event, optionValue,) => {
-	console.log('ipc-setting-update-dwell-time', optionValue);
+ipcRenderer.on('ipc-setting-update-dwell-time', (event, newDwellTime,) => {
+	console.log('ipc-setting-update-dwell-time', newDwellTime);
 	const root = document.documentElement;
-	root.style.setProperty('--dwell-time', `${optionValue}ms`);
+	root.style.setProperty('--dwell-time', `${newDwellTime}ms`);
 
 	detachAllDwellListeners();
 	// When a setting is changed, the only open overlays are the settings overlay and the accessibility menu.

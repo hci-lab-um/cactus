@@ -44,12 +44,19 @@ ipcRenderer.on('ipc-mainwindow-handle-dwell-events', (event, isDwelling) => {
 	if (!isDwellingActive) showDwellingPausedMessage();
 });
 
-ipcRenderer.on('ipc-mainwindow-update-dwell-time', async (event, optionValue) => {
+ipcRenderer.on('ipc-mainwindow-update-dwell-time', async (event, newDwellTime) => {
 	// Update the CSS variable for dwell time in the main window
 	const root = document.documentElement;
-	root.style.setProperty('--dwell-time', `${optionValue}ms`);
+	root.style.setProperty('--dwell-time', `${newDwellTime}ms`);
 
 	// Removing and reattaching dwell listeners to all elements in the mainwindow
+	detachAllDwellListeners();
+	setupFunctionality(true);
+	setupNavigationSideBar(true);
+});
+
+ipcRenderer.on('ipc-mainwindow-update-scroll-distance', (event, newScrollDistance) => {
+	scrollDistance = newScrollDistance;
 	detachAllDwellListeners();
 	setupFunctionality(true);
 	setupNavigationSideBar(true);
