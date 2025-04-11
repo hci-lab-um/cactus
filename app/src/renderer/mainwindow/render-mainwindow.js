@@ -367,7 +367,8 @@ function setupNavigationSideBar(reattachListeners = false) {
 			const previousLevel = navAreaStack.pop();
 			selectedNavItemTitle.textContent = previousLevel.title;
 			if (selectedNavItemTitle.textContent == "") selectedNavItemTitle.style.display = 'none';
-			renderNavItemInSidebar(previousLevel.items);
+			if (!previousLevel.isNavItem) renderElementsInSidebar(previousLevel.items, sidebarItemArea, previousLevel.isSubOption);
+			else renderNavItemInSidebar(previousLevel.items);
 		}
 	});
 
@@ -460,16 +461,8 @@ function renderNavItemInSidebar(navItems) {
 
 					resetNavigationSidebar();
 				} else {
-					//Set current level in stack
-					navAreaStack.push({
-						title: selectedNavItemTitle.textContent,
-						items: navItems
-					});
-
-					// Update the title to the clicked nav item
-					selectedNavItemTitle = byId('sidebar_selected-navitem-title');
-					selectedNavItemTitle.style.display = 'block';
-					selectedNavItemTitle.textContent = elementToClick[0].label;
+					//Setting the current level in stack and updating the title to the clicked nav item
+					handleSidebarStack(selectedNavItemTitle.textContent, navItems, true, false, elementToClick[0].label);				
 
 					//Go down one level
 					renderNavItemInSidebar(elementToClick[0].children);
@@ -477,14 +470,8 @@ function renderNavItemInSidebar(navItems) {
 			}
 		}, false)
 	});
-	// });
 
-	//Set up hierarchical navigation controls in sidebar
-	menuNavLevelup = byId('sidebar_levelup')
-	if (navAreaStack.length > 0)
-		menuNavLevelup.style.display = 'flex';
-	else
-		menuNavLevelup.style.display = 'none'
+	setMenuLevelUpButtonVisibility();
 }
 
 function renderElementsInSidebar(elements, sidebarItemArea, isSubOption = false) {
@@ -540,9 +527,13 @@ function renderElementsInSidebar(elements, sidebarItemArea, isSubOption = false)
 					if (isSubOption) {
 						if (elementToClick[0].value !== 'volume' && elementToClick[0].value !== 'seek') {
 							console.log("Identified a dropdown option: ", elementToClick[0]);
+							resetNavigationSidebar();
+
 							// Set the value of the dropdown to the value of the option
 							ipcRenderer.send('ipc-mainwindow-set-element-value', elementToClick[0]);
 						} else {
+							let navTitle = elementToClick[0].value.charAt(0).toUpperCase() + elementToClick[0].value.slice(1);
+							handleSidebarStack("Video", elements, false, true, navTitle);
 							renderElementsInSidebar(elementToClick[0].rangeValues, sidebarItemArea, true);
 						}
 					} else {
@@ -550,7 +541,7 @@ function renderElementsInSidebar(elements, sidebarItemArea, isSubOption = false)
 						const inputType = shouldDisplayKeyboard(elementType);
 						console.log("element type: ", elementType);
 						console.log("input type: ", inputType);
-						
+
 						if (inputType) {
 							elementToClick[0].type = inputType;
 							showOverlay('keyboard', elementToClick[0]);
@@ -560,14 +551,20 @@ function renderElementsInSidebar(elements, sidebarItemArea, isSubOption = false)
 						} else if (elementType === 'select') {
 							console.log("Identified a select element: ", elementToClick[0]);
 							const dropdownOptions = elementToClick[0].options;
+							handleSidebarStack("", elements, false, false, elementToClick[0].accessibleName);
 							renderElementsInSidebar(dropdownOptions, sidebarItemArea, true);
 						} else if (elementType === 'range') {
 							// Display all the range values in the sidebar
 							console.log("Identified a range element: ", elementToClick[0]);
+							handleSidebarStack("", elements, false, false, elementToClick[0].accessibleName);
 							renderElementsInSidebar(elementToClick[0].rangeValues, sidebarItemArea, true);
 						} else if (elementType === 'video') {
 							console.log("Identified a video element: ", elementToClick[0]);
+							handleSidebarStack("", elements, false, false, elementToClick[0].accessibleName);
 							renderElementsInSidebar(elementToClick[0].videoOptions, sidebarItemArea, true);
+
+							// Show the level up button when a video element is clicked
+							setMenuLevelUpButtonVisibility();
 						} else {
 							console.log("Not an input element");
 							ipcRenderer.send('ipc-mainwindow-click-sidebar-element', elementToClick[0]);
@@ -579,6 +576,8 @@ function renderElementsInSidebar(elements, sidebarItemArea, isSubOption = false)
 			}
 		});
 	});
+
+	setMenuLevelUpButtonVisibility();
 }
 
 // Resets the navigation sidebar to its initial state
@@ -595,8 +594,7 @@ function resetNavigationSidebar(options = {}) {
 	navAreaStack = [];
 
 	//Hide nav level up button
-	menuNavLevelup = byId('sidebar_levelup')
-	menuNavLevelup.style.display = 'none'
+	setMenuLevelUpButtonVisibility();
 
 	//Clear the submenu showing the selection history
 	selectedNavItemTitle = byId('sidebar_selected-navitem-title');
@@ -604,6 +602,24 @@ function resetNavigationSidebar(options = {}) {
 	selectedNavItemTitle.style.display = 'none'
 	
 	if (!isDwellingActive) showDwellingPausedMessage();
+}
+
+function setMenuLevelUpButtonVisibility() {
+	//Set up hierarchical navigation controls in sidebar
+	menuNavLevelup = byId('sidebar_levelup')
+	if (navAreaStack.length > 0)
+		menuNavLevelup.style.display = 'flex';
+	else
+		menuNavLevelup.style.display = 'none'
+}
+
+function handleSidebarStack(title = "", items = {}, isNavItem = false, isSubOption = false, navTitle) {
+	navAreaStack.push({ title, items, isNavItem, isSubOption });
+
+	// Update the title to the clicked nav item
+	selectedNavItemTitle = byId('sidebar_selected-navitem-title');
+	selectedNavItemTitle.style.display = 'block';
+	selectedNavItemTitle.textContent = navTitle;
 }
 
 function createSidebarItemElement(element, isNavItem, isSubOption = false) {
