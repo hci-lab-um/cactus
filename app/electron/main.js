@@ -858,7 +858,7 @@ ipcMain.on('ipc-keyboard-input', (event, value, element, submit, updateValueAttr
         // If the input is for the omnibox, send it to the main window, else send it to the active tab
         if (element.id === "url") { // "url" is the id of the omni box 
             if (element.isSetting) {
-                defaultUrl = `https://${value}/`;
+                defaultUrl = value.includes('.') ? new URL(value.startsWith('http') ? value : `https://${value}`).href : new URL(`https://www.${value}.com`).href;
                 db.updateDefaultURL(defaultUrl);
                 overlayList[overlayList.length - 1].webContents.send('ipc-setting-keyboard-input', defaultUrl);
             } else {
