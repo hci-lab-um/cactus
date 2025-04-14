@@ -6,7 +6,7 @@ const { MenuBuilder, NavArea, HTMLSerializableMenuElement, MenuPageDocument, Men
 const { log } = require('electron-log');
 const robot = require("robotjs_addon");
 const db = require('../database/database.js');
-const { Settings, KeyboardLayouts } = require('../src/tools/enums.js');
+const { Settings, KeyboardLayouts, Shortcuts } = require('../src/tools/enums.js');
 
 const isDevelopment = process.env.NODE_ENV === "development";
 let dwellRangeWidth;
@@ -1956,15 +1956,15 @@ async function registerSwitchShortcutCommands() {
         const shortcuts = await db.getShortcuts();
 
         const shortcutActions = [
-            { action: "click", handler: () => handleClickShortcut() },
-            { action: "toggleOmniBox", handler: () => handleToggleOmniBoxShortcut() },
-            { action: "sidebarScrollUp", handler: () => handleSidebarScrollUpShortcut() },
-            { action: "sidebarScrollDown", handler: () => handleSidebarScrollDownShortcut() },
-            { action: "navigateForward", handler: () => handleNavigateForwardShortcut() },
-            { action: "navigateBack", handler: () => handleNavigateBackShortcut() },
-            { action: "toggleDwelling", handler: () => handleToggleDwellingShortcut() },
-            { action: "zoomIn", handler: () => handleZoomInShortcut() },
-            { action: "zoomOut", handler: () => handleZoomOutShortcut() },
+            { action: Shortcuts.CLICK, handler: () => handleClickShortcut() },
+            { action: Shortcuts.TOGGLE_OMNI_BOX, handler: () => handleToggleOmniBoxShortcut() },
+            { action: Shortcuts.SIDEBAR_SCROLL_UP, handler: () => handleSidebarScrollUpShortcut() },
+            { action: Shortcuts.SIDEBAR_SCROLL_DOWN, handler: () => handleSidebarScrollDownShortcut() },
+            { action: Shortcuts.NAVIGATE_FORWARD, handler: () => handleNavigateForwardShortcut() },
+            { action: Shortcuts.NAVIGATE_BACK, handler: () => handleNavigateBackShortcut() },
+            { action: Shortcuts.TOGGLE_DWELLING, handler: () => handleToggleDwellingShortcut() },
+            { action: Shortcuts.ZOOM_IN, handler: () => handleZoomInShortcut() },
+            { action: Shortcuts.ZOOM_OUT, handler: () => handleZoomOutShortcut() },
         ];
 
         shortcutActions.forEach(({ action, handler }) => {
@@ -1980,34 +1980,7 @@ async function registerSwitchShortcutCommands() {
 
 function handleClickShortcut() {
     try {
-        console.log("Clicking shortcut triggered");
-        const cursorPosition = screen.getCursorScreenPoint();
-
-        const isCursorWithinBounds = (bounds) => {
-            return (
-                cursorPosition.x >= bounds.x &&
-                cursorPosition.x <= bounds.x + bounds.width &&
-                cursorPosition.y >= bounds.y &&
-                cursorPosition.y <= bounds.y + bounds.height
-            );
-        };
-
-        if (overlayList.length > 0 && isCursorWithinBounds(overlayList[overlayList.length - 1].getBounds())) {
-            overlayList[overlayList.length - 1].webContents.send('ipc-trigger-click-under-cursor');
-            return;
-        }
-
-        const activeTab = tabList.find(tab => tab.isActive);
-
-        if (activeTab && isCursorWithinBounds(activeTab.webContentsView.getBounds())) {
-            activeTab.webContentsView.webContents.send('ipc-trigger-click-under-cursor');
-            console.log("Clicking on active tab");
-            return;
-        }
-
-        if (isCursorWithinBounds(mainWindowContent.getBounds())) {
-            mainWindowContent.webContents.send('ipc-trigger-click-under-cursor');
-        }
+        robot.mouseClick();
     } catch (err) {
         console.error('Error handling click shortcut:', err.message);
     }
@@ -2218,7 +2191,6 @@ function getFullURL(url) {
             var tab = tabList.find(tab => tab.isActive === true);
             const currentURL = new URL(tab.webContentsView.webContents.getURL());
             const protocol = currentURL.protocol;
-            const host = currentURL.host;
 
             //Handle URLs without protocol (e.g. //www.google.com)
             if (url.startsWith('//')) {

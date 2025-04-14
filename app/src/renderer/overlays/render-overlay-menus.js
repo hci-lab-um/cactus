@@ -69,18 +69,6 @@ ipcRenderer.on('ipc-main-overlays-loaded', (event, overlaysData) => {
 	}
 });
 
-ipcRenderer.on('ipc-trigger-click-under-cursor', (event) => {
-	try {
-		const mouse = getMouse();
-		const element = document.elementFromPoint(mouse.x, mouse.y);
-		if (element) {
-			element.click();
-		}
-	} catch (error) {
-		console.error('Error handling ipc-trigger-click-under-cursor:', error);
-	}
-});
-
 ipcRenderer.on('ipc-setting-keyboard-input', (event, value) => {
 	try {
 		const inputField = byId('url');

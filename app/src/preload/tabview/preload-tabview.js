@@ -13,7 +13,6 @@ contextBridge.exposeInMainWorld('cactusAPI', {
             'ipc-highlight-available-elements',
             'ipc-tabview-update-scroll-distance',
             'ipc-tabview-keyboard-input',
-            'ipc-trigger-click-under-cursor',
             'ipc-tabview-scrolldown',
             'ipc-tabview-scrollup',
             'ipc-tabview-create-quadtree',

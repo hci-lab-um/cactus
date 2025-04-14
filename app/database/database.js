@@ -475,7 +475,7 @@ function updateUserSetting(setting, value) {
                 console.error(`Error updating setting ${setting}:`, err.message);
                 reject(err);
             } else {
-                console.log(`Setting ${setting} updated successfully to ${value}`);
+                console.log(`The setting '${setting}' has been successfully updated to ${value}`);
                 resolve();
             }
         });

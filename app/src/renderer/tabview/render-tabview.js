@@ -259,24 +259,6 @@ window.cactusAPI.on('ipc-tabview-keyboard-input', (text, elementToUpdate, submit
 	}
 });
 
-window.cactusAPI.on('ipc-trigger-click-under-cursor', () => {
-	try {
-		const element = document.elementFromPoint(mousePos.x, mousePos.y);
-
-		if (element) {
-			//focusOnClickablePartOfElement(element);
-			// //JS is restricted when it comes to interacting with elements on remote pages - therefore, Robotjs is used to emulate the keyboard and mouse
-			// window.cactusAPI.send('robot-keyboard-enter');
-			let clickableElement = getClickablePartOfElement(element);
-			if (clickableElement) clickableElement.click();
-		} else {
-			console.error("Element to click under cursor has not been found");
-		}
-	} catch (error) {
-		console.error("Error triggering click under cursor:", error);
-	}
-});
-
 window.cactusAPI.onAsync('ipc-tabview-set-element-value', (element, value) => {
 	try {
 		let parentElement = document.querySelector('[data-cactus-id="' + element.parentElementId + '"]');
@@ -972,103 +954,103 @@ function getEditablePartOfElement(element) {
 	}
 }
 
-function getClickablePartOfElement(element) {
-	try {
-		if (!element) return; // No element found at the point
+// function getClickablePartOfElement(element) {
+// 	try {
+// 		if (!element) return; // No element found at the point
 
-		// Define reusable constants
-		const interactiveTags = [
-			'BUTTON', 'A', 'INPUT', 'SELECT', 'TEXTAREA', 'LABEL',
-			'DETAILS', 'SUMMARY', 'DIALOG', 'OPTION', 'LEGEND', 'OUTPUT'
-		];
-		const interactiveRoles = [
-			'button', 'link', 'checkbox', 'radio', 'tab', 'switch', 'menuitem',
-			'treeitem', 'combobox', 'slider', 'progressbar', 'menu',
-			'menubar', 'toolbar', 'option'
-		];
+// 		// Define reusable constants
+// 		const interactiveTags = [
+// 			'BUTTON', 'A', 'INPUT', 'SELECT', 'TEXTAREA', 'LABEL',
+// 			'DETAILS', 'SUMMARY', 'DIALOG', 'OPTION', 'LEGEND', 'OUTPUT'
+// 		];
+// 		const interactiveRoles = [
+// 			'button', 'link', 'checkbox', 'radio', 'tab', 'switch', 'menuitem',
+// 			'treeitem', 'combobox', 'slider', 'progressbar', 'menu',
+// 			'menubar', 'toolbar', 'option'
+// 		];
 
-		// Helper to check if an element is inherently clickable or interactive
-		const isClickable = (el) => {
-			return (
-				interactiveTags.includes(el.tagName) || // Common interactive HTML tags
-				(interactiveRoles.includes(el.getAttribute('role'))) || // ARIA roles for interactivity
-				el.hasAttribute('aria-haspopup') || // Indicates a popup trigger
-				el.hasAttribute('aria-expanded') || // Accordion or dropdown control
-				el.hasAttribute('aria-labelledby') || // Interactive labelled control
-				typeof el.onclick === 'function' || // Inline click handler
-				//el.hasAttribute('tabindex') || // Explicitly focusable, including tabindex = -1
-				el.hasAttribute('jsaction') // Google's interactive action attributes
-			);
-		};
+// 		// Helper to check if an element is inherently clickable or interactive
+// 		const isClickable = (el) => {
+// 			return (
+// 				interactiveTags.includes(el.tagName) || // Common interactive HTML tags
+// 				(interactiveRoles.includes(el.getAttribute('role'))) || // ARIA roles for interactivity
+// 				el.hasAttribute('aria-haspopup') || // Indicates a popup trigger
+// 				el.hasAttribute('aria-expanded') || // Accordion or dropdown control
+// 				el.hasAttribute('aria-labelledby') || // Interactive labelled control
+// 				typeof el.onclick === 'function' || // Inline click handler
+// 				//el.hasAttribute('tabindex') || // Explicitly focusable, including tabindex = -1
+// 				el.hasAttribute('jsaction') // Google's interactive action attributes
+// 			);
+// 		};
 
-		// Generate a selector string based on interactive tags and roles
-		const generateSelector = () => {
-			const tagSelector = interactiveTags.map((tag) => tag.toLowerCase()).join(', ');
-			const roleSelector = interactiveRoles.map((role) => `[role="${role}"]`).join(', ');
-			const ariaSelector = '[aria-haspopup], [aria-expanded], [aria-labelledby]';
-			// Include elements with tabindex
-			//const tabindexSelector = '[tabindex]';
-			const jsactionSelector = '[jsaction]'; // Add jsaction to the selector
-			//return `${tagSelector}, ${roleSelector}, ${ariaSelector}, ${tabindexSelector}, ${jsactionSelector}`;
-			return `${tagSelector}, ${roleSelector}, ${ariaSelector}, ${jsactionSelector}`;
-		};
+// 		// Generate a selector string based on interactive tags and roles
+// 		const generateSelector = () => {
+// 			const tagSelector = interactiveTags.map((tag) => tag.toLowerCase()).join(', ');
+// 			const roleSelector = interactiveRoles.map((role) => `[role="${role}"]`).join(', ');
+// 			const ariaSelector = '[aria-haspopup], [aria-expanded], [aria-labelledby]';
+// 			// Include elements with tabindex
+// 			//const tabindexSelector = '[tabindex]';
+// 			const jsactionSelector = '[jsaction]'; // Add jsaction to the selector
+// 			//return `${tagSelector}, ${roleSelector}, ${ariaSelector}, ${tabindexSelector}, ${jsactionSelector}`;
+// 			return `${tagSelector}, ${roleSelector}, ${ariaSelector}, ${jsactionSelector}`;
+// 		};
 
-		const clickableSelector = generateSelector();
+// 		const clickableSelector = generateSelector();
 
-		//Sometimes, certain selectable elements, such as 'option', might have clickable descendants (e.g. div role=button)
-		const clickableChild = element.querySelector(clickableSelector);
-		console.log('Clickable child:', clickableChild);
-		if (clickableChild) {
-			return clickableChild;
-		}
+// 		//Sometimes, certain selectable elements, such as 'option', might have clickable descendants (e.g. div role=button)
+// 		const clickableChild = element.querySelector(clickableSelector);
+// 		console.log('Clickable child:', clickableChild);
+// 		if (clickableChild) {
+// 			return clickableChild;
+// 		}
 
-		// If the element itself is clickable, click it
-		if (isClickable(element)) {
-			console.log('Element is clickable:', element);
-			return element;
-		}
+// 		// If the element itself is clickable, click it
+// 		if (isClickable(element)) {
+// 			console.log('Element is clickable:', element);
+// 			return element;
+// 		}
 
-		// Check the closest clickable ancestor
-		const clickableAncestor = element.closest(clickableSelector);
-		console.log('Clickable ancestor:', clickableAncestor);
-		if (clickableAncestor) {
-			return clickableAncestor;
-		}
+// 		// Check the closest clickable ancestor
+// 		const clickableAncestor = element.closest(clickableSelector);
+// 		console.log('Clickable ancestor:', clickableAncestor);
+// 		if (clickableAncestor) {
+// 			return clickableAncestor;
+// 		}
 
-		// Checking for the presence of a dynamic onclick event handler
-		const elementWithClickEvent = getElementWithClickEvent(element);
-		if (elementWithClickEvent) {
-			return elementWithClickEvent;
-		}
+// 		// Checking for the presence of a dynamic onclick event handler
+// 		const elementWithClickEvent = getElementWithClickEvent(element);
+// 		if (elementWithClickEvent) {
+// 			return elementWithClickEvent;
+// 		}
 
-		console.log('No clickable or interactive element found.');
-	} catch (error) {
-		console.error("Error getting clickable part of element:", error);
-	}
-}
+// 		console.log('No clickable or interactive element found.');
+// 	} catch (error) {
+// 		console.error("Error getting clickable part of element:", error);
+// 	}
+// }
 
-function getElementWithClickEvent(element) {
-	try {
-		// Checking if the current element has an onclick event attached
-		if (!!element.onclick) {
-			console.log("We found the element by its onclick event");
-			return element;
-		}
+// function getElementWithClickEvent(element) {
+// 	try {
+// 		// Checking if the current element has an onclick event attached
+// 		if (!!element.onclick) {
+// 			console.log("We found the element by its onclick event");
+// 			return element;
+// 		}
 
-		// Recursively checking child elements
-		for (const child of element.children) {
-			const clickableChild = getElementWithClickEvent(child);
-			if (clickableChild) {
-				return clickableChild;
-			}
-		}
+// 		// Recursively checking child elements
+// 		for (const child of element.children) {
+// 			const clickableChild = getElementWithClickEvent(child);
+// 			if (clickableChild) {
+// 				return clickableChild;
+// 			}
+// 		}
 
-		// Return null if no element with onclick is found
-		return null;
-	} catch (error) {
-		console.error("Error getting element with click event:", error);
-	}
-}
+// 		// Return null if no element with onclick is found
+// 		return null;
+// 	} catch (error) {
+// 		console.error("Error getting element with click event:", error);
+// 	}
+// }
 
 function sendMessageToIframes(message, contents = {}) {
 	try {

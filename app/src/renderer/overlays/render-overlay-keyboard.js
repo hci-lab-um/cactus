@@ -41,18 +41,6 @@ ipcRenderer.on('ipc-main-keyboard-loaded', async (event, elementToUpdate, keyboa
     }
 });
 
-ipcRenderer.on('ipc-trigger-click-under-cursor', (event) => {
-    try {
-        const mouse = getMouse();
-        const element = document.elementFromPoint(mouse.x, mouse.y);
-        if (element) {
-            element.click();
-        }
-    } catch (error) {
-        console.error('Error in ipc-trigger-click-under-cursor handler:', error);
-    }
-});
-
 ipcRenderer.on('ipc-setting-update-keyboard-dwell-time', (event, newDwellTime) => {
     try {
         const root = document.documentElement;

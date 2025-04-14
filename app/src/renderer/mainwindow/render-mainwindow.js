@@ -384,18 +384,6 @@ ipcRenderer.on('ipc-mainwindow-load-omnibox', (event) => {
 	}
 });
 
-ipcRenderer.on('ipc-trigger-click-under-cursor', (event) => {
-	try {
-		const mouse = getMouse();
-		const element = document.elementFromPoint(mouse.x, mouse.y);
-		if (element) {
-			element.click();
-		}
-	} catch (error) {
-		console.error("Error in ipc-trigger-click-under-cursor handler:", error);
-	}
-});
-
 
 // =================================
 // == Sidebar element management ===
