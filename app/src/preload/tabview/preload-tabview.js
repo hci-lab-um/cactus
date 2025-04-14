@@ -28,7 +28,6 @@ contextBridge.exposeInMainWorld('cactusAPI', {
 
     onAsync: (channel, func) => {
         const validChannels = [
-            'ipc-tabview-click-element',
             'ipc-tabview-set-element-value',
             'ipc-tabview-highlight-elements'
         ];
@@ -46,8 +45,6 @@ contextBridge.exposeInMainWorld('cactusAPI', {
             'ipc-tabview-cursor-mouseout',
             'ipc-tabview-visible-clickable-elements',
             'ipc-tabview-document-info',
-            'browse-to-url',
-            'robot-mouse-click',
             'robot-keyboard-type',
             'robot-keyboard-enter',
             'robot-keyboard-spacebar'

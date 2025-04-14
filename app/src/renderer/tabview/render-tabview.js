@@ -277,35 +277,6 @@ window.cactusAPI.on('ipc-trigger-click-under-cursor', () => {
 	}
 });
 
-window.cactusAPI.onAsync('ipc-tabview-click-element', (elementToClick, useRobotJS) => {
-	try {
-		console.log('robotjs', useRobotJS);
-		let element = document.querySelector('[data-cactus-id="' + elementToClick.id + '"]');
-
-		if (!element) {
-			console.log("Element to click not found by cactus id");
-			element = document.elementFromPoint(elementToClick.insertionPointX, elementToClick.insertionPointY);
-		}
-
-		if (element) {
-			if (useRobotJS) {
-				robotClick(element);
-			} else if (element.nodeName == 'A' && element.getAttribute('href') && element.getAttribute('href') != '#' && element.getAttribute('href') != 'javascript:void(0)') {
-				window.cactusAPI.send('browse-to-url', element.getAttribute('href'));
-			} else {
-				// let clickableElement = getClickablePartOfElement(element);
-				// if (clickableElement) clickableElement.click();
-				// else robotClick(element);
-				robotClick(element);
-			}
-		} else {
-			console.error("Element to click has not been found");
-		}
-	} catch (error) {
-		console.error("Error clicking element:", error);
-	}
-});
-
 window.cactusAPI.onAsync('ipc-tabview-set-element-value', (element, value) => {
 	try {
 		let parentElement = document.querySelector('[data-cactus-id="' + element.parentElementId + '"]');
@@ -1096,21 +1067,6 @@ function getElementWithClickEvent(element) {
 		return null;
 	} catch (error) {
 		console.error("Error getting element with click event:", error);
-	}
-}
-
-// Simulate a real user click
-function robotClick(element) {
-	try {
-		if (!element) return;
-
-		const rect = element.getBoundingClientRect();
-		const x = rect.left + (rect.width / 2);
-		const y = rect.top + (rect.height / 2);
-
-		window.cactusAPI.send('robot-mouse-click', { x, y });
-	} catch (error) {
-		console.error("Error simulating robot click:", error);
 	}
 }
 

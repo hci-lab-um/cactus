@@ -297,55 +297,7 @@ ipcMain.on('ipc-tabview-cursor-mouseout', (event) => {
 });
 
 ipcMain.on('browse-to-url', (event, url) => {
-    try {
-        const fullUrl = getFullURL(url);
-        let tab = tabList.find(tab => tab.isActive === true);
-        tab.webContentsView.webContents.loadURL(fullUrl);
-    } catch (err) {
-        console.error('Error browsing to URL:', err.message);
-    }
-});
-
-ipcMain.on('robot-mouse-click', async (event, { x, y }) => {
-    try {
-        const win = BaseWindow.getFocusedWindow();
-        const bounds = win.getBounds();
-        const contentBounds = win.getContentBounds();
-        const display = screen.getDisplayMatching(bounds);
-        const scaleFactor = display.scaleFactor;
-
-        // Correct for frame offset
-        const frameOffsetX = contentBounds.x - bounds.x;
-        const frameOffsetY = contentBounds.y - bounds.y;
-
-        // Get global screen coordinates of window
-        const windowScreenX = bounds.x + frameOffsetX;
-        const windowScreenY = bounds.y + frameOffsetY;
-
-        // Get the webpage's position within the window
-        const tabX = windowScreenX + webpageBounds.x;
-        const tabY = windowScreenY + webpageBounds.y;
-
-        // Get the active tab and its zoom factor
-        const tab = tabList.find(tab => tab.isActive === true);
-        const zoomFactor = await tab.webContentsView.webContents.getZoomFactor();
-
-        // Get the element's position within the tab
-        const elementX = tabX + (x * zoomFactor);
-        const elementY = tabY + (y * zoomFactor);
-
-        // Convert to physical pixels if needed
-        const finalX = elementX * scaleFactor;
-        const finalY = elementY * scaleFactor;
-
-        console.log(`Final Element Position: (${finalX}, ${finalY})`);
-
-        // Move mouse to the top-left corner of the window
-        robot.moveMouse(finalX, finalY);
-        robot.mouseClick();
-    } catch (err) {
-        console.error('Error during robot mouse click:', err.message);
-    }
+    browseToUrl(url);
 });
 
 ipcMain.on('robot-keyboard-type', (event, { text, submit }) => {
@@ -470,11 +422,17 @@ ipcMain.on('ipc-mainwindow-set-element-value', (event, element) => {
 
 ipcMain.on('ipc-mainwindow-click-sidebar-element', (event, elementToClick) => {
     try {
-        var tab = tabList.find(tab => tab.isActive === true);
-        //Focus on window first before going forward
-        tab.webContentsView.webContents.focus();
-        //Once the main page is loaded, create inner tabview and place it in the right position by getting the x,y,width,height of a positioned element in index.html
-        tab.webContentsView.webContents.send('ipc-tabview-click-element', elementToClick, useRobotJS);
+        if (elementToClick) {
+            if (useRobotJS) {
+				robotClick(elementToClick.insertionPointX, elementToClick.insertionPointY);
+			} else if ((elementToClick.type === 'a' || elementToClick.tag === 'a') && elementToClick.href && elementToClick.href != '#' && elementToClick.href != 'javascript:void(0)') {
+				browseToUrl(elementToClick.href);
+			} else {
+				robotClick(elementToClick.insertionPointX, elementToClick.insertionPointY);
+			}
+        } else {
+            console.error("Element to click has not been found");
+        }
     } catch (err) {
         console.error('Error clicking sidebar element:', err.message);
     }
@@ -2195,6 +2153,58 @@ function createHTMLSerializableMenuElement(element) {
         return new HTMLSerializableMenuElement(element);
     } catch (err) {
         console.error('Error creating HTML serializable menu element:', err.message);
+    }
+}
+
+async function robotClick(x, y) {
+    try {
+        const win = BaseWindow.getFocusedWindow();
+        const bounds = win.getBounds();
+        const contentBounds = win.getContentBounds();
+        const display = screen.getDisplayMatching(bounds);
+        const scaleFactor = display.scaleFactor;
+
+        // Correct for frame offset
+        const frameOffsetX = contentBounds.x - bounds.x;
+        const frameOffsetY = contentBounds.y - bounds.y;
+
+        // Get global screen coordinates of window
+        const windowScreenX = bounds.x + frameOffsetX;
+        const windowScreenY = bounds.y + frameOffsetY;
+
+        // Get the webpage's position within the window
+        const tabX = windowScreenX + webpageBounds.x;
+        const tabY = windowScreenY + webpageBounds.y;
+
+        // Get the active tab and its zoom factor
+        const tab = tabList.find(tab => tab.isActive === true);
+        const zoomFactor = await tab.webContentsView.webContents.getZoomFactor();
+
+        // Get the element's position within the tab
+        const elementX = tabX + (x * zoomFactor);
+        const elementY = tabY + (y * zoomFactor);
+
+        // Convert to physical pixels if needed
+        const finalX = elementX * scaleFactor;
+        const finalY = elementY * scaleFactor;
+
+        console.log(`Final Element Position: (${finalX}, ${finalY})`);
+
+        // Move mouse to the top-left corner of the window
+        robot.moveMouse(finalX, finalY);
+        robot.mouseClick();
+    } catch (err) {
+        console.error('Error during robot mouse click:', err.message);
+    }
+}
+
+function browseToUrl(url) {
+    try {
+        const fullUrl = getFullURL(url);
+        let tab = tabList.find(tab => tab.isActive === true);
+        tab.webContentsView.webContents.loadURL(fullUrl);
+    } catch (err) {
+        console.error('Error browsing to URL:', err.message);
     }
 }
 

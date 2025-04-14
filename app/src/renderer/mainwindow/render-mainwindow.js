@@ -537,9 +537,12 @@ function renderNavItemInSidebar(navItems) {
 								elementToClick[0].value = elementToClick[0].value ? elementToClick[0].value : ""; // This prevents the value from being undefined
 								console.log("Identified input navitem: ", elementToClick[0]);
 								showOverlay('keyboard', elementToClick[0]);
-							} else {
-								console.log("Not an input navitem");
+							} else if (elementToClick[0].href) {
+								// href attribute is a truthy value, therefore we navigate to the URL
 								ipcRenderer.send('browse-to-url', elementToClick[0].href);
+							} else {
+								// href is not valid, hence we click on the element instead
+								ipcRenderer.send('ipc-mainwindow-click-sidebar-element', elementToClick[0]);
 							}
 						}, 400); // 400 is chosen to match the fadeOutDown animation duration
 
