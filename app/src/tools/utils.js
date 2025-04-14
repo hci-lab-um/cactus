@@ -8,48 +8,68 @@ let intervalIds = []; // this is needed because some keys create multiple interv
 let eventListeners = new Map(); // Store event listeners for detachment
 
 function updateAnimations(elem, isClicked = false) {
-    elem.classList.add('keydown');
-    if (isClicked) elem.classList.add('clicked');
+    try {
+        elem.classList.add('keydown');
+        if (isClicked) elem.classList.add('clicked');
 
-    setTimeout(() => {
-        elem.classList.remove('keydown');
-    }, 300);
+        setTimeout(() => {
+            elem.classList.remove('keydown');
+        }, 300);
+    } catch (err) {
+        console.error('Error updating animations:', err.message);
+    }
 }
 
 function addEventListenerWithTracking(elem, event, listener) {
-    if (!eventListeners.has(elem)) {
-        eventListeners.set(elem, []);
+    try {
+        if (!eventListeners.has(elem)) {
+            eventListeners.set(elem, []);
+        }
+        eventListeners.get(elem).push({ event, listener });
+        elem.addEventListener(event, listener);
+    } catch (err) {
+        console.error('Error adding event listener with tracking:', err.message);
     }
-    eventListeners.get(elem).push({ event, listener });
-    elem.addEventListener(event, listener);
 }
 
 function removeEventListeners(elem) {
-    if (eventListeners.has(elem)) {
-        eventListeners.get(elem).forEach(({ event, listener }) => {
-            elem.removeEventListener(event, listener);
-        });
-        eventListeners.delete(elem);
+    try {
+        if (eventListeners.has(elem)) {
+            eventListeners.get(elem).forEach(({ event, listener }) => {
+                elem.removeEventListener(event, listener);
+            });
+            eventListeners.delete(elem);
+        }
+    } catch (err) {
+        console.error('Error in removeEventListeners:', err.message);
     }
 }
 
 module.exports = {
     byId: (id) => {
-        return document.getElementById(id);
+        try {
+            return document.getElementById(id);
+        } catch (err) {
+            console.error('Error in byId:', err.message);
+        }
     },
 
     readFile: (file, callback) => {
-        var rawFile = new XMLHttpRequest()
-        rawFile.open("GET", file, true)
+        try {
+            var rawFile = new XMLHttpRequest()
+            rawFile.open("GET", file, true)
 
-        rawFile.onreadystatechange = () => {
-            if (rawFile.readyState === 4) {
-                if (rawFile.status === 200 || rawFile.status == 0) {
-                    callback(rawFile.responseText, null)
+            rawFile.onreadystatechange = () => {
+                if (rawFile.readyState === 4) {
+                    if (rawFile.status === 200 || rawFile.status == 0) {
+                        callback(rawFile.responseText, null)
+                    }
                 }
             }
+            rawFile.send(null)
+        } catch (err) {
+            console.error('Error in readFile:', err.message);
         }
-        rawFile.send(null)
     },
 
     dwell: async (elem, callback, isKeyboardBtn = false) => {
@@ -82,7 +102,7 @@ module.exports = {
                 if (isKeyboardBtn) elem.classList.remove('clicked');
             });
         } catch (err) {
-            console.error('Error getting dwell time:', err.message);
+            console.error('Error in dwell:', err.message);
         }
     },
 
@@ -140,25 +160,37 @@ module.exports = {
                 if (isKeyboardBtn) elem.classList.remove('clicked');
             });
         } catch (err) {
-            console.error('Error getting keyboard dwell time:', err.message);
+            console.error('Error in dwellInfinite:', err.message);
         }
     },
 
     detachDwellListeners: (elem) => {
-        removeEventListeners(elem);
+        try {
+            removeEventListeners(elem);
+        } catch (err) {
+            console.error('Error in detachDwellListeners:', err.message);
+        }
     },
 
     detachAllDwellListeners: () => {
-        eventListeners.forEach((listeners, elem) => {
-            listeners.forEach(({ event, listener }) => {
-                elem.removeEventListener(event, listener);
+        try {
+            eventListeners.forEach((listeners, elem) => {
+                listeners.forEach(({ event, listener }) => {
+                    elem.removeEventListener(event, listener);
+                });
             });
-        });
-        eventListeners.clear();
+            eventListeners.clear();
+        } catch (err) {
+            console.error('Error in detachAllDwellListeners:', err.message);
+        }
     },
 
     genId: () => {
-    return '_' + Math.random().toString(36).substr(2, 9)
+        try {
+            return '_' + Math.random().toString(36).substr(2, 9)
+        } catch (err) {
+            console.error('Error in genId:', err.message);
+        }
     },
 
     // The following method is duplicated in the render-tabview.js - the only place that uses it, hence it can be removed from here
@@ -171,10 +203,14 @@ module.exports = {
     // },
 
     isElementANavElement: element => {
-        var parentNav = element.closest('nav')
-        var parentRoleNav = element.closest('div[role="navigation"]')
+        try {
+            var parentNav = element.closest('nav')
+            var parentRoleNav = element.closest('div[role="navigation"]')
 
-        return (parentNav || parentRoleNav) ? true : false
+            return (parentNav || parentRoleNav) ? true : false
+        } catch (err) {
+            console.error('Error in isElementANavElement:', err.message);
+        }
     },
 
     // This function was only used in the render-browserview, hence it can be removed from here as it is now placed in render-tabview
