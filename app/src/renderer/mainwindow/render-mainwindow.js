@@ -135,7 +135,7 @@ async function setupFunctionality(reattachListeners = false) {
 		let accessibility = byId('accessibilityBtn')
 
 		if (!reattachListeners) {
-			omni.addEventListener('keydown', (event) => browseToUrl(event, omni.value));
+			omni.addEventListener('keydown', (event) => processUrlInput(event, omni.value));
 
 			ipcRenderer.on('ipc-main-update-bookmark-icon', (event, isBookmark) => {
 				if (isBookmark) {
@@ -203,7 +203,7 @@ async function setupFunctionality(reattachListeners = false) {
 ipcRenderer.on('ipc-mainwindow-keyboard-input', (event, input) => {
 	try {
 		omni = byId('url')
-		browseToUrl({ keyCode: 13 }, input);
+		processUrlInput({ keyCode: 13 }, input);
 	} catch (error) {
 		console.error("Error in ipc-mainwindow-keyboard-input handler:", error);
 	}
@@ -262,7 +262,7 @@ function isLocalOrIP(hostname) {
 	}
 }
 
-async function browseToUrl(event, input) {
+async function processUrlInput(event, input) {
 	try {
 		if (event.keyCode === 13) {
 			const VALID_TLDs = await fetchValidTLDs();
