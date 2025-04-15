@@ -6,6 +6,7 @@ const { createCursor, followCursor, getMouse } = require('../../tools/cursor')
 const DOMPurify = require('dompurify');
 const csv = require('csv-parser');
 const { KeyboardLayouts } = require('../../tools/enums.js');
+const logger = require('../../tools/logger.js');
 
 // Exposes an HTML sanitizer to allow for innerHtml assignments when TrustedHTML policies are set ('This document requires 'TrustedHTML' assignment')
 window.addEventListener('DOMContentLoaded', () => {
@@ -19,7 +20,7 @@ window.addEventListener('DOMContentLoaded', () => {
         createCursor('cactus_cursor');
         followCursor('cactus_cursor');
     } catch (error) {
-        console.error('Error during keyboard DOMContentLoaded event:', error);
+        logger.error('Error during keyboard DOMContentLoaded event:', error.message);
     }
 });
 
@@ -37,7 +38,7 @@ ipcRenderer.on('ipc-main-keyboard-loaded', async (event, elementToUpdate, keyboa
 
         await Keyboard.init(pathToLayouts, pathToWordFrequencyCSVs, fileName, elementToUpdate);
     } catch (error) {
-        console.error('Error in ipc-main-keyboard-loaded handler:', error);
+        logger.error('Error in ipc-main-keyboard-loaded handler:', error.message);
     }
 });
 
@@ -46,7 +47,7 @@ ipcRenderer.on('ipc-setting-update-keyboard-dwell-time', (event, newDwellTime) =
         const root = document.documentElement;
         root.style.setProperty('--keyboard-dwell-time', `${newDwellTime}ms`);
     } catch (error) {
-        console.error('Error in ipc-setting-update-keyboard-dwell-time handler:', error);
+        logger.error('Error in ipc-setting-update-keyboard-dwell-time handler:', error.message);
     }
 })
 
@@ -108,7 +109,7 @@ const Keyboard = {
                 this._updateAutocompleteSuggestions();
             }
         } catch (error) {
-            console.error('Error initializing keyboard:', error);
+            logger.error('Error initializing keyboard:', error.message);
         }
     },
 
@@ -118,7 +119,7 @@ const Keyboard = {
             return new Promise((resolve, reject) => {
                 fs.readFile(layoutPath, 'utf8', (err, data) => {
                     if (err) {
-                        console.error('Error loading keyboard layout:', err);
+                        logger.error('Error loading keyboard layout:', err);
                         reject(err);
                         return;
                     }
@@ -126,7 +127,7 @@ const Keyboard = {
                 });
             });
         } catch (error) {
-            console.error('Error in _getKeyboardLayout:', error);
+            logger.error('Error in _getKeyboardLayout:', error.message);
             throw error;
         }
     },
@@ -150,12 +151,12 @@ const Keyboard = {
                         resolve(frequencyMap);
                     })
                     .on('error', (err) => {
-                        console.error('Error reading frequency map CSV:', err);
+                        logger.error('Error reading frequency map CSV:', err);
                         reject(err);
                     });
             });
         } catch (error) {
-            console.error('Error in _getFrequencyMap:', error);
+            logger.error('Error in _getFrequencyMap:', error.message);
             throw error;
         }
     },
@@ -206,7 +207,7 @@ const Keyboard = {
                 setTimeout(() => this.elements.textarea.focus(), 0);
             });
         } catch (error) {
-            console.error('Error creating textbox area:', error);
+            logger.error('Error creating textbox area:', error.message);
         }
     },
 
@@ -243,7 +244,7 @@ const Keyboard = {
 
             return arrowKeysContainer;
         } catch (error) {
-            console.error('Error creating arrow keys:', error);
+            logger.error('Error creating arrow keys:', error.message);
         }
     },
 
@@ -273,7 +274,7 @@ const Keyboard = {
                 this.elements.main.appendChild(rowContainer);
             }
         } catch (error) {
-            console.error('Error creating numpad area:', error);
+            logger.error('Error creating numpad area:', error.message);
         }
     },
 
@@ -361,7 +362,7 @@ const Keyboard = {
 
             return fragment;
         } catch (error) {
-            console.error('Error creating keys:', error);
+            logger.error('Error creating keys:', error.message);
         }
     },
 
@@ -707,7 +708,7 @@ const Keyboard = {
 
             return keyElement;
         } catch (error) {
-            console.error('Error creating key element:', error);
+            logger.error('Error creating key element:', error.message);
         }
     },
 
@@ -724,7 +725,7 @@ const Keyboard = {
             this.properties.capsLock = !this.properties.capsLock;
             this._updateKeys();
         } catch (error) {
-            console.error('Error toggling caps lock:', error);
+            logger.error('Error toggling caps lock:', error.message);
         }
     },
 
@@ -737,7 +738,7 @@ const Keyboard = {
 
             this._updateKeys();
         } catch (error) {
-            console.error('Error toggling special keys:', error);
+            logger.error('Error toggling special keys:', error.message);
         }
     },
 
@@ -763,7 +764,7 @@ const Keyboard = {
 
             textarea.focus();
         } catch (error) {
-            console.error('Error inserting character in the textarea:', error);
+            logger.error('Error inserting character in the textarea:', error.message);
         }
     },
 
@@ -791,7 +792,7 @@ const Keyboard = {
                 this._updateAutocompleteSuggestions();
             }
         } catch (error) {
-            console.error('Error deleting character:', error);
+            logger.error('Error deleting character:', error.message);
         }
     },
 
@@ -840,7 +841,7 @@ const Keyboard = {
                 this._updateAutocompleteSuggestions();
             }
         } catch (error) {
-            console.error('Error deleting word:', error);
+            logger.error('Error deleting word:', error.message);
         }
     },
 
@@ -865,7 +866,7 @@ const Keyboard = {
                         await this._updateKeys();
                         ipcRenderer.send('ipc-keyboard-update-language', language);
                     } catch (error) {
-                        console.error('Failed to load keyboard layout:', error);
+                        logger.error('Failed to load keyboard layout:', error.message);
                     }
                     document.body.removeChild(popup);
                     document.body.removeChild(overlay);
@@ -876,7 +877,7 @@ const Keyboard = {
             document.body.appendChild(overlay);
             document.body.appendChild(popup);
         } catch (error) {
-            console.error('Error opening settings overlay:', error);
+            logger.error('Error opening settings overlay:', error.message);
         }
     },
 
@@ -908,7 +909,7 @@ const Keyboard = {
                 this._updateAutocompleteSuggestions();
             }
         } catch (error) {
-            console.error('Error updating keys:', error);
+            logger.error('Error updating keys:', error.message);
         }
     },
 
@@ -931,7 +932,7 @@ const Keyboard = {
 
             return suggestions;
         } catch (error) {
-            console.error('Error getting autocomplete suggestions:', error);
+            logger.error('Error getting autocomplete suggestions:', error.message);
         }
     },
 
@@ -951,7 +952,7 @@ const Keyboard = {
             }
             return suggestedWord;
         } catch (error) {
-            console.error('Error matching case for suggested word:', error);
+            logger.error('Error matching case for suggested word:', error.message);
         }
     },
 
@@ -980,7 +981,7 @@ const Keyboard = {
                 }
             }
         } catch (error) {
-            console.error('Error updating autocomplete suggestions:', error);
+            logger.error('Error updating autocomplete suggestions:', error.message);
         }
     }
 };

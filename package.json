@@ -63,6 +63,8 @@
 		"original-fs": "^1.0.0",
 		"path": "^0.12.7",
 		"robotjs_addon": "^0.6.4",
-		"sqlite3": "^5.1.7"
+		"sqlite3": "^5.1.7",
+		"winston": "^3.17.0",
+		"winston-daily-rotate-file": "^5.0.0"
 	}
 }

@@ -24,14 +24,14 @@ try {
 	cursor = document.getElementById('cactus_cursor');
 	followMouse('cactus_cursor');
 } catch (error) {
-	console.error("Error initializing cursor:", error);
+	window.cactusAPI.logError(`Error initializing cursor: ${error.message}`);
 }
 
 window.cactusAPI.on('ipc-iframes-loaded', (scrollDist) => {
 	try {
 		sendMessageToIframes('ipc-iframes-loaded', { scrollDist });
 	} catch (error) {
-		console.error("Error handling 'ipc-iframes-loaded':", error);
+		window.cactusAPI.logError(`Error handling 'ipc-iframes-loaded': ${error.message}`);
 	}
 });
 
@@ -80,7 +80,7 @@ window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist, isActiv
 								if (useNavAreas) generateNavAreasTree();
 								sendMessageToIframes('ipc-iframes-loaded', { scrollDist });
 							} catch (error) {
-								console.error("Error generating QuadTree/NavAreasTree:", error);
+								window.cactusAPI.logError(`Error generating QuadTree/NavAreasTree: ${error.message}`);
 							}
 						}, 1000);
 
@@ -101,7 +101,7 @@ window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist, isActiv
 					}
 				}
 			} catch (error) {
-				console.error("Error in mutation observer callback:", error);
+				window.cactusAPI.logError(`Error in mutation observer callback: ${error.message}`);
 			}
 		});
 
@@ -116,7 +116,7 @@ window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist, isActiv
 			try {
 				mutationObserver.observe(document.body, mutationObserverOptions);
 			} catch (error) {
-				console.error("Error starting mutation observer:", error);
+				window.cactusAPI.logError(`Error starting mutation observer: ${error.message}`);
 			}
 		}
 
@@ -137,7 +137,7 @@ window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist, isActiv
 			window.cactusAPI.send('ipc-tabview-cursor-mouseout');
 		})
 	} catch (error) {
-		console.error("Error in 'ipc-main-tabview-loaded':", error);
+		window.cactusAPI.logError(`Error in 'ipc-main-tabview-loaded': ${error.message}`);
 	}
 });
 
@@ -146,7 +146,7 @@ window.cactusAPI.on('ipc-main-disconnect-mutation-observer', () => {
 		console.log("============= Mutation observer disconnected ==================");
 		mutationObserver.disconnect();
 	} catch (error) {
-		console.error("Error disconnecting mutation observer:", error);
+		window.cactusAPI.logError(`Error disconnecting mutation observer: ${error.message}`);
 	}
 });
 
@@ -156,7 +156,7 @@ window.cactusAPI.on('ipc-main-reconnect-mutation-observer', () => {
 		console.log("============= Mutation observer reconnected ==================");
 		mutationObserver.observe(document.body, mutationObserverOptions);
 	} catch (error) {
-		console.error("Error reconnecting mutation observer:", error);
+		window.cactusAPI.logError(`Error reconnecting mutation observer: ${error.message}`);
 	}
 });
 
@@ -165,7 +165,7 @@ window.cactusAPI.on('ipc-main-add-scroll-buttons', () => {
 		displayScrollButtons = true;
 		initScrollableElements();
 	} catch (error) {
-		console.error("Error adding scroll buttons:", error);
+		window.cactusAPI.logError(`Error adding scroll buttons: ${error.message}`);
 	}
 });
 
@@ -174,7 +174,7 @@ window.cactusAPI.on('ipc-main-remove-scroll-buttons', () => {
 		displayScrollButtons = false;
 		removeExistingScrollButtons();
 	} catch (error) {
-		console.error("Error removing scroll buttons:", error);
+		window.cactusAPI.logError(`Error removing scroll buttons: ${error.message}`);
 	}
 });
 
@@ -184,7 +184,7 @@ window.cactusAPI.on('ipc-clear-highlighted-elements', () => {
 		const previousPoints = document.querySelectorAll('.cactus-element-highlight');
 		previousPoints.forEach(point => point.remove());
 	} catch (error) {
-		console.error("Error clearing highlighted elements:", error);
+		window.cactusAPI.logError(`Error clearing highlighted elements: ${error.message}`);
 	}
 });
 
@@ -195,7 +195,7 @@ window.cactusAPI.on('ipc-highlight-available-elements', (contents) => {
 			highlightAvailableElements(ve.x, ve.y, ve.width, ve.height, color, dwellRangeWidth, dwellRangeHeight);
 		});
 	} catch (error) {
-		console.error("Error highlighting available elements:", error);
+		window.cactusAPI.logError(`Error highlighting available elements: ${error.message}`);
 	}
 });
 
@@ -204,7 +204,7 @@ window.cactusAPI.on('ipc-tabview-update-scroll-distance', (newScrollDistance) =>
 		scrollDistance = newScrollDistance;
 		initScrollableElements();
 	} catch (error) {
-		console.error("Error updating scroll distance:", error);
+		window.cactusAPI.logError(`Error updating scroll distance: ${error.message}`);
 	}
 });
 
@@ -212,7 +212,7 @@ window.cactusAPI.on('ipc-tabview-back', () => {
 	try {
 		window.history.back();
 	} catch (error) {
-		console.error("Error navigating back:", error);
+		window.cactusAPI.logError(`Error navigating back: ${error.message}`);
 	}
 });
 
@@ -220,7 +220,7 @@ window.cactusAPI.on('ipc-tabview-forward', () => {
 	try {
 		window.history.forward();
 	} catch (error) {
-		console.error("Error navigating forward:", error);
+		window.cactusAPI.logError(`Error navigating forward: ${error.message}`);
 	}
 });
 
@@ -252,10 +252,10 @@ window.cactusAPI.on('ipc-tabview-keyboard-input', (text, elementToUpdate, submit
 				window.cactusAPI.send('robot-keyboard-type', { text, submit });
 			}
 		} else {
-			console.error("Element to update not found: ", elementToUpdate);
+			window.cactusAPI.logError(`Element to update not found: ${elementToUpdate}`);
 		}
 	} catch (error) {
-		console.error("Error handling keyboard input:", error);
+		window.cactusAPI.logError(`Error handling keyboard input: ${error.message}`);
 	}
 });
 
@@ -288,7 +288,7 @@ window.cactusAPI.onAsync('ipc-tabview-set-element-value', (element, value) => {
 			}
 		}
 	} catch (error) {
-		console.error("Error setting element value:", error);
+		window.cactusAPI.logError(`Error setting element value: ${error.message}`);
 	}
 });
 
@@ -309,7 +309,7 @@ window.cactusAPI.onAsync('ipc-tabview-highlight-elements', (elementsToHighlight)
 			}
 		});
 	} catch (error) {
-		console.error("Error highlighting elements:", error);
+		window.cactusAPI.logError(`Error highlighting elements: ${error.message}`);
 	}
 });
 
@@ -320,7 +320,7 @@ window.cactusAPI.on('ipc-tabview-create-quadtree', (useNavAreas) => {
 		generateQuadTree();
 		if (useNavAreas) generateNavAreasTree();
 	} catch (error) {
-		console.error("Error creating QuadTree/NavAreasTree:", error);
+		window.cactusAPI.logError(`Error creating QuadTree/NavAreasTree: ${error.message}`);
 	}
 });
 
@@ -337,7 +337,7 @@ window.addEventListener('message', (event) => {
 			window.cactusAPI.send('ipc-iframe-cursor-mouseleave');
 		}
 	} catch (error) {
-		console.error("Error handling iframe message:", error);
+		window.cactusAPI.logError(`Error handling iframe message: ${error.message}`);
 	}
 });
 
@@ -353,7 +353,7 @@ window.addEventListener('scroll', () => {
 			if (window.useNavAreas) generateNavAreasTree();
 		}, 1000);
 	} catch (error) {
-		console.error("Error handling scroll event:", error);
+		window.cactusAPI.logError(`Error handling scroll event: ${error.message}`);
 	}
 });
 
@@ -375,7 +375,7 @@ function createCursor(id) {
 
 		document.body.appendChild(cursor);
 	} catch (error) {
-		console.error("Error creating cursor:", error);
+		window.cactusAPI.logError(`Error creating cursor: ${error.message}`);
 	}
 }
 
@@ -390,7 +390,7 @@ function updateCursorPos() {
 		cursor.style.left = cursorPos.x + 'px'
 		cursor.style.top = cursorPos.y + 'px'
 	} catch (error) {
-		console.error("Error updating cursor position:", error);
+		window.cactusAPI.logError(`Error updating cursor position: ${error.message}`);
 	}
 }
 
@@ -406,7 +406,7 @@ function followMouse() {
 		// Increase interval to make it slower
 		cursorInterval = setInterval(updateCursorPos, 20);
 	} catch (error) {
-		console.error("Error following mouse:", error);
+		window.cactusAPI.logError(`Error following mouse: ${error.message}`);
 	}
 }
 
@@ -418,7 +418,7 @@ function generateUUID() {
 			return v.toString(16);
 		});
 	} catch (error) {
-		console.error("Error generating UUID:", error);
+		window.cactusAPI.logError(`Error generating UUID: ${error.message}`);
 	}
 }
 
@@ -574,7 +574,7 @@ function initScrollableElements() {
 			}
 		}
 	} catch (error) {
-		console.error("Error initializing scrollable elements:", error);
+		window.cactusAPI.logError(`Error initializing scrollable elements: ${error.message}`);
 	}
 }
 
@@ -583,7 +583,7 @@ function getZIndex(element) {
 	try {
 		return parseInt(window.getComputedStyle(element).zIndex, 10) || 2147483648; // Default to 99999997 if no z-index is set
 	} catch (error) {
-		console.error("Error getting z-index:", error);
+		window.cactusAPI.logError(`Error getting z-index: ${error.message}`);
 	}
 }
 
@@ -597,7 +597,7 @@ function removeExistingScrollButtons() {
 		iterator++;
 		if (existingScrollButtons) console.log("Removed existing scroll buttons for the " + iterator + " time");
 	} catch (error) {
-		console.error("Error removing existing scroll buttons:", error);
+		window.cactusAPI.logError(`Error removing existing scroll buttons: ${error.message}`);
 	}
 }
 
@@ -649,7 +649,7 @@ async function generateQuadTree() {
 							window.cactusAPI.send('ipc-tabview-generateQuadTree', quadTreeContents);
 						}
 					} catch (error) {
-						console.error("Error handling video duration change:", error);
+						window.cactusAPI.logError(`Error handling video duration change: ${error.message}`);
 					}
 				});
 			}
@@ -666,7 +666,7 @@ async function generateQuadTree() {
 		};
 		window.cactusAPI.send('ipc-tabview-generateQuadTree', quadTreeContents);
 	} catch (error) {
-		console.error("Error generating QuadTree:", error);
+		window.cactusAPI.logError(`Error generating QuadTree: ${error.message}`);
 	}
 }
 
@@ -690,7 +690,7 @@ function generateNavAreasTree() {
 		};
 		window.cactusAPI.send('ipc-tabview-generateNavAreasTree', navAreasTreeContents);
 	} catch (error) {
-		console.error("Error generating NavAreasTree:", error);
+		window.cactusAPI.logError(`Error generating NavAreasTree: ${error.message}`);
 	}
 }
 
@@ -814,7 +814,7 @@ function serializeElement(element) {
 			]
 		};
 	} catch (error) {
-		console.error("Error serializing element:", error);
+		window.cactusAPI.logError(`Error serializing element: ${error.message}`);
 	}
 }
 
@@ -828,7 +828,7 @@ function serializeChildNode(node) {
 			childNodes: node.childNodes ? Array.from(node.childNodes).map(serializeChildNode) : null
 		};
 	} catch (error) {
-		console.error("Error serializing child node:", error);
+		window.cactusAPI.logError(`Error serializing child node: ${error.message}`);
 	}
 }
 
@@ -850,7 +850,7 @@ function serializeMenuElement(element) {
 			children: element.children ? Array.from(element.children).map(serializeMenuElement) : null
 		};
 	} catch (error) {
-		console.error("Error serializing menu element:", error);
+		window.cactusAPI.logError(`Error serializing menu element: ${error.message}`);
 	}
 }
 
@@ -878,7 +878,7 @@ function filterVisibleElements(elements) {
 			);
 		});
 	} catch (error) {
-		console.error("Error filtering visible elements:", error);
+		window.cactusAPI.logError(`Error filtering visible elements: ${error.message}`);
 	}
 }
 
@@ -914,7 +914,7 @@ function highlightAvailableElements(x, y, width, height, color, dwellingRangeWid
 		cursor.style.height = dwellingRangeHeight + 'px';
 		cursor.style.border = '2px solid red';
 	} catch (error) {
-		console.error("Error highlighting available elements:", error);
+		window.cactusAPI.logError(`Error highlighting available elements: ${error.message}`);
 	}
 }
 
@@ -950,7 +950,7 @@ function getEditablePartOfElement(element) {
 
 		console.log('No editable element found at the given point.');
 	} catch (error) {
-		console.error("Error getting editable part of element:", error);
+		window.cactusAPI.logError(`Error getting editable part of element: ${error.message}`);
 	}
 }
 
@@ -1025,7 +1025,7 @@ function getEditablePartOfElement(element) {
 
 // 		console.log('No clickable or interactive element found.');
 // 	} catch (error) {
-// 		console.error("Error getting clickable part of element:", error);
+// 		window.cactusAPI.logError(`Error getting clickable part of element: ${error.message}`);
 // 	}
 // }
 
@@ -1048,7 +1048,7 @@ function getEditablePartOfElement(element) {
 // 		// Return null if no element with onclick is found
 // 		return null;
 // 	} catch (error) {
-// 		console.error("Error getting element with click event:", error);
+// 		window.cactusAPI.logError(`Error getting element with click event: ${error.message}`);
 // 	}
 // }
 
@@ -1061,6 +1061,6 @@ function sendMessageToIframes(message, contents = {}) {
 			}
 		});
 	} catch (error) {
-		console.error("Error sending message to iframes:", error);
+		window.cactusAPI.logError(`Error sending message to iframes: ${error.message}`);
 	}
 }

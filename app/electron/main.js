@@ -7,6 +7,7 @@ const { log } = require('electron-log');
 const robot = require("robotjs_addon");
 const db = require('../database/database.js');
 const { Settings, KeyboardLayouts, Shortcuts } = require('../src/tools/enums.js');
+const logger = require('../src/tools/logger.js');
 
 const isDevelopment = process.env.NODE_ENV === "development";
 let dwellRangeWidth;
@@ -35,6 +36,20 @@ let bookmarks = [];
 let successfulLoad;
 let scrollButtonsRemoved = false;
 
+
+// =========================================
+// === UNCAUGHT EXCEPTION AND REJECTIONS ===
+// =========================================
+
+process.on('uncaughtException', (error) => {
+    logger.error(`Uncaught Exception: ${error.message}`);
+    logger.error(error.stack);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    logger.error(`Unhandled Rejection: ${reason}`);
+});
+
 // =================================
 // ====== APP EVENT LISTENERS ======
 // =================================
@@ -45,7 +60,7 @@ app.whenReady().then(async () => {
         await db.createTables();
         await initialiseVariables();
     } catch (err) {
-        console.error('Error initializing database:', err.message);
+        logger.error('Error initializing database:', err.message);
     }
 
     try {
@@ -54,13 +69,13 @@ app.whenReady().then(async () => {
             try {
                 createMainWindow();
             } catch (err) {
-                console.error('Error creating main window:', err.message);
+                logger.error('Error creating main window:', err.message);
             }
         }, 3000); // This is the duration of the splash screen gif
 
         registerSwitchShortcutCommands();
     } catch (err) {
-        console.error('Error during app initialization:', err.message);
+        logger.error('Error during app initialization:', err.message);
     }
 });
 
@@ -73,7 +88,7 @@ app.on('window-all-closed', async () => {
             app.quit()
         }
     } catch (err) {
-        console.error('Error during app closure:', err.message);
+        logger.error('Error during app closure:', err.message);
     }
 });
 
@@ -84,7 +99,7 @@ app.on('activate', () => {
             createMainWindow();
         }
     } catch (err) {
-        console.error('Error during app activation:', err.message);
+        logger.error('Error during app activation:', err.message);
     }
 })
 
@@ -92,6 +107,17 @@ app.on('activate', () => {
 // =================================
 // ======= IPC COMMUNICATION =======
 // =================================
+
+
+// ---------
+//  LOGGING
+// ---------
+
+ipcMain.on('ipc-log-error-message', (event, message) => {
+    logger.error(message);
+});
+
+// ---------
 
 ipcMain.handle('tabview-can-go-back-or-forward', (event) => {
     try {
@@ -101,7 +127,7 @@ ipcMain.handle('tabview-can-go-back-or-forward', (event) => {
         var canGoForward = tab.webContentsView.webContents.canGoForward();
         if (canGoBack || canGoForward) return true;
     } catch (err) {
-        console.error('Error checking tab navigation:', err.message);
+        logger.error('Error checking tab navigation:', err.message);
         return false;
     }
 });
@@ -133,7 +159,7 @@ ipcMain.handle('ipc-get-user-setting', async (event, setting) => {
                 throw new Error(`Unknown setting: ${setting}`);
         }
     } catch (err) {
-        console.error('Error fetching user setting:', err.message);
+        logger.error('Error fetching user setting:', err.message);
         throw err;
     }
 });
@@ -156,7 +182,7 @@ ipcMain.on('ipc-tabview-generateQuadTree', (event, contents) => {
                 let htmlSerializableElement = new HTMLSerializableElement(e);
                 return InteractiveElement.fromHTMLElement(htmlSerializableElement);
             } catch (err) {
-                console.error('Error processing visible element:', err.message);
+                logger.error('Error processing visible element:', err.message);
                 return null;
             }
         }).filter(Boolean);
@@ -183,13 +209,13 @@ ipcMain.on('ipc-tabview-generateQuadTree', (event, contents) => {
                     tab.webContentsView.webContents.send('ipc-highlight-available-elements', contents);
                 }
             } catch (err) {
-                console.error('Error during quadtree processing:', err.message);
+                logger.error('Error during quadtree processing:', err.message);
             }
         }).catch(err => {
-            console.error("Error building quadtree: ", err.message);
+            logger.error("Error building quadtree: ", err.message);
         });
     } catch (err) {
-        console.error("Error generating quadtree: ", err.message);
+        logger.error("Error generating quadtree: ", err.message);
     }
 });
 
@@ -206,7 +232,7 @@ ipcMain.on('ipc-tabview-generateNavAreasTree', (event, contents) => {
                 let htmlSerializableMenuElement = createHTMLSerializableMenuElement(e);
                 return NavArea.fromHTMLElement(htmlSerializableMenuElement);
             } catch (err) {
-                console.error('Error processing visible menu element:', err.message);
+                logger.error('Error processing visible menu element:', err.message);
                 return null;
             }
         }).filter(Boolean);
@@ -232,13 +258,13 @@ ipcMain.on('ipc-tabview-generateNavAreasTree', (event, contents) => {
                     tab.webContentsView.webContents.send('ipc-highlight-available-elements', contents);
                 }
             } catch (err) {
-                console.error('Error during menu tree processing:', err.message);
+                logger.error('Error during menu tree processing:', err.message);
             }
         }).catch(err => {
-            console.error("Error building menu tree: ", err.message);
+            logger.error("Error building menu tree: ", err.message);
         });
     } catch (err) {
-        console.error("Error generating menu tree: ", err.message);
+        logger.error("Error generating menu tree: ", err.message);
     }
 });
 
@@ -280,11 +306,11 @@ ipcMain.on('ipc-tabview-cursor-mouseover', (event, mouseData) => {
                     }
                 }
             } catch (err) {
-                console.error('Error during cursor mouseover processing:', err.message);
+                logger.error('Error during cursor mouseover processing:', err.message);
             }
         }, 500);
     } catch (err) {
-        console.error('Error setting cursor mouseover interval:', err.message);
+        logger.error('Error setting cursor mouseover interval:', err.message);
     }
 });
 
@@ -292,7 +318,7 @@ ipcMain.on('ipc-tabview-cursor-mouseout', (event) => {
     try {
         clearInterval(timeoutCursorHovering);
     } catch (err) {
-        console.error('Error clearing cursor mouseout interval:', err.message);
+        logger.error('Error clearing cursor mouseout interval:', err.message);
     }
 });
 
@@ -348,7 +374,7 @@ ipcMain.on('robot-keyboard-type', (event, { text, submit }) => {
             }, 500);
         }
     } catch (err) {
-        console.error('Error during robot keyboard type:', err.message);
+        logger.error('Error during robot keyboard type:', err.message);
     }
 })
 
@@ -359,7 +385,7 @@ ipcMain.on('robot-keyboard-enter', (event) => {
             robot.keyTap("enter");
         }, 500);
     } catch (err) {
-        console.error('Error during robot keyboard enter:', err.message);
+        logger.error('Error during robot keyboard enter:', err.message);
     }
 })
 
@@ -369,7 +395,7 @@ ipcMain.on('robot-keyboard-spacebar', (event) => {
         robot.setKeyboardDelay(300);
         robot.keyTap("space");
     } catch (err) {
-        console.error('Error during robot keyboard spacebar:', err.message);
+        logger.error('Error during robot keyboard spacebar:', err.message);
     }
 })
 
@@ -378,7 +404,7 @@ ipcMain.on('robot-keyboard-backspace', (event) => {
         // Wait a short period to ensure the field is focused before performing actions
         robot.keyTap("backspace");
     } catch (err) {
-        console.error('Error during robot keyboard backspace:', err.message);
+        logger.error('Error during robot keyboard backspace:', err.message);
     }
 })
 
@@ -387,7 +413,7 @@ ipcMain.on('robot-keyboard-numpad', (event, number) => {
         // Wait a short period to ensure the field is focused before performing actions
         robot.typeString(number);
     } catch (err) {
-        console.error('Error during robot keyboard numpad:', err.message);
+        logger.error('Error during robot keyboard numpad:', err.message);
     }
 })
 
@@ -407,7 +433,7 @@ ipcMain.on('robot-keyboard-arrow-key', (event, direction) => {
             robot.keyTap("end");
         }
     } catch (err) {
-        console.error('Error during robot keyboard arrow key:', err.message);
+        logger.error('Error during robot keyboard arrow key:', err.message);
     }
 })
 
@@ -416,7 +442,7 @@ ipcMain.on('ipc-mainwindow-set-element-value', (event, element) => {
         var tab = tabList.find(tab => tab.isActive === true);
         tab.webContentsView.webContents.send('ipc-tabview-set-element-value', element, element.value);
     } catch (err) {
-        console.error('Error setting element value:', err.message);
+        logger.error('Error setting element value:', err.message);
     }
 });
 
@@ -431,10 +457,10 @@ ipcMain.on('ipc-mainwindow-click-sidebar-element', (event, elementToClick) => {
 				robotClick(elementToClick.insertionPointX, elementToClick.insertionPointY);
 			}
         } else {
-            console.error("Element to click has not been found");
+            logger.error("Element to click has not been found");
         }
     } catch (err) {
-        console.error('Error clicking sidebar element:', err.message);
+        logger.error('Error clicking sidebar element:', err.message);
     }
 })
 
@@ -444,7 +470,7 @@ ipcMain.on('ipc-mainwindow-highlight-elements-on-page', (event, elements) => {
         var tab = tabList.find(tab => tab.isActive === true);
         tab.webContentsView.webContents.send('ipc-tabview-highlight-elements', elements);
     } catch (err) {
-        console.error('Error highlighting elements on page:', err.message);
+        logger.error('Error highlighting elements on page:', err.message);
     }
 });
 
@@ -483,7 +509,7 @@ ipcMain.on('ipc-mainwindow-show-overlay', async (event, overlayAreaToShow, eleme
             createOverlay(overlayAreaToShow, elementProperties);
         }
     } catch (err) {
-        console.error('Error showing overlay:', err.message);
+        logger.error('Error showing overlay:', err.message);
     }
 })
 
@@ -508,7 +534,7 @@ ipcMain.on('ipc-mainwindow-add-bookmark', async (event) => {
 
         addBookmarkToDatabase(bookmark);
     } catch (err) {
-        console.error('Error adding bookmark:', err.message);
+        logger.error('Error adding bookmark:', err.message);
     }
 });
 
@@ -521,7 +547,7 @@ ipcMain.on('ipc-mainwindow-remove-bookmark', async (event) => {
         bookmarks = bookmarks.filter(bookmark => bookmark.url !== activeURL);
         deleteBookmarkByUrl(activeURL);
     } catch (err) {
-        console.error('Error removing bookmark:', err.message);
+        logger.error('Error removing bookmark:', err.message);
     }
 });
 
@@ -531,7 +557,7 @@ ipcMain.on('ipc-mainwindow-open-iframe', (event, src) => {
             createTabview(getFullURL(src), newTab = true);
         }
     } catch (err) {
-        console.error('Error opening iframe:', err.message);
+        logger.error('Error opening iframe:', err.message);
     }
 })
 
@@ -539,7 +565,7 @@ ipcMain.on('ipc-overlays-remove', (event) => {
     try {
         removeOverlay();
     } catch (err) {
-        console.error('Error removing overlay:', err.message);
+        logger.error('Error removing overlay:', err.message);
     }
 })
 
@@ -555,7 +581,7 @@ ipcMain.on('ipc-overlays-remove-and-update', (event) => {
         // In case the active tab has been updated, reconnect the mutation observer of the newly active tab
         newActiveTab.webContentsView.webContents.send('ipc-main-reconnect-mutation-observer');
     } catch (err) {
-        console.error('Error removing and updating overlay:', err.message);
+        logger.error('Error removing and updating overlay:', err.message);
     }
 })
 
@@ -570,7 +596,7 @@ ipcMain.on('ipc-overlays-newTab', (event) => {
         createTabview(defaultUrl, newTab = true);
         clearSidebarAndUpdateQuadTree();
     } catch (err) {
-        console.error('Error creating new tab:', err.message);
+        logger.error('Error creating new tab:', err.message);
     }
 })
 
@@ -599,7 +625,7 @@ ipcMain.on('ipc-overlays-tab-selected', (event, tabId) => {
         mainWindow.contentView.addChildView(selectedTab.webContentsView);
         removeOverlay();
     } catch (err) {
-        console.error('Error selecting tab:', err.message);
+        logger.error('Error selecting tab:', err.message);
     }
 })
 
@@ -620,7 +646,7 @@ ipcMain.on('ipc-overlays-tab-deleted', (event, tabId) => {
             tabList[tabList.length - 1].isActive = true;
         }
     } catch (err) {
-        console.error('Error deleting tab:', err.message);
+        logger.error('Error deleting tab:', err.message);
     }
 })
 
@@ -630,7 +656,7 @@ ipcMain.on('ipc-overlays-bookmark-selected', (event, url) => {
         tab.webContentsView.webContents.loadURL(url);
         removeOverlay();
     } catch (err) {
-        console.error('Error selecting bookmark:', err.message);
+        logger.error('Error selecting bookmark:', err.message);
     }
 })
 
@@ -645,7 +671,7 @@ ipcMain.on('ipc-overlays-bookmarks-updated', async (event, updatedBookmarks, del
         // If the bookmark has been deleted, remove the bookmark from the database
         else if (deletedURL) deleteBookmarkByUrl(deletedURL);
     } catch (err) {
-        console.error('Error updating bookmarks:', err.message);
+        logger.error('Error updating bookmarks:', err.message);
     }
 })
 
@@ -659,7 +685,7 @@ ipcMain.on('ipc-overlays-back', () => {
         var tab = tabList.find(tab => tab.isActive === true);
         tab.webContentsView.webContents.send('ipc-tabview-back');
     } catch (err) {
-        console.error('Error navigating back:', err.message);
+        logger.error('Error navigating back:', err.message);
     }
 })
 
@@ -669,7 +695,7 @@ ipcMain.on('ipc-overlays-forward', () => {
         var tab = tabList.find(tab => tab.isActive === true);
         tab.webContentsView.webContents.send('ipc-tabview-forward');
     } catch (err) {
-        console.error('Error navigating forward:', err.message);
+        logger.error('Error navigating forward:', err.message);
     }
 })
 
@@ -687,7 +713,7 @@ ipcMain.on('ipc-overlays-refresh', (event) => {
             tab.webContentsView.webContents.reload();
         }
     } catch (err) {
-        console.error('Error refreshing overlay:', err.message);
+        logger.error('Error refreshing overlay:', err.message);
     }
 })
 
@@ -695,7 +721,7 @@ ipcMain.on('ipc-overlays-settings', (event) => {
     try {
         createOverlay("settings", null, false);
     } catch (err) {
-        console.error('Error opening settings overlay:', err.message);
+        logger.error('Error opening settings overlay:', err.message);
     }
 });
 
@@ -703,7 +729,7 @@ ipcMain.on('ipc-overlays-zoom-in', (event) => {
     try {
         handleZoom("in");
     } catch (err) {
-        console.error('Error zooming in:', err.message);
+        logger.error('Error zooming in:', err.message);
     }
 });
 
@@ -711,7 +737,7 @@ ipcMain.on('ipc-overlays-zoom-out', (event) => {
     try {
         handleZoom("out");
     } catch (err) {
-        console.error('Error zooming out:', err.message);
+        logger.error('Error zooming out:', err.message);
     }
 });
 
@@ -719,7 +745,7 @@ ipcMain.on('ipc-overlays-zoom-reset', (event) => {
     try {
         handleZoom("reset");
     } catch (err) {
-        console.error('Error resetting zoom:', err.message);
+        logger.error('Error resetting zoom:', err.message);
     }
 });
 
@@ -727,7 +753,7 @@ ipcMain.on('ipc-overlays-toggle-dwell', (event) => {
     try {
         toggleDwelling();
     } catch (err) {
-        console.error('Error toggling dwell:', err.message);
+        logger.error('Error toggling dwell:', err.message);
     }
 });
 
@@ -735,7 +761,7 @@ ipcMain.on('ipc-overlays-toggle-nav', (event) => {
     try {
         toggleNavigation();
     } catch (err) {
-        console.error('Error toggling navigation:', err.message);
+        logger.error('Error toggling navigation:', err.message);
     }
 });
 
@@ -743,7 +769,7 @@ ipcMain.on('ipc-overlays-toggle-useRobotJS', (event) => {
     try {
         toggleUseRobotJS();
     } catch (err) {
-        console.error('Error toggling RobotJS:', err.message);
+        logger.error('Error toggling RobotJS:', err.message);
     }
 });
 
@@ -753,7 +779,7 @@ ipcMain.on('ipc-exit-browser', async (event) => {
         await deleteAndInsertAllTabs();
         app.quit();
     } catch (err) {
-        console.error('Error exiting browser:', err.message);
+        logger.error('Error exiting browser:', err.message);
     }
 });
 
@@ -775,7 +801,7 @@ ipcMain.on('ipc-quick-click-scroll-up', (event) => {
             `);
         }, 10); // Adjust the interval time (in milliseconds) as needed
     } catch (err) {
-        console.error('Error scrolling up:', err.message);
+        logger.error('Error scrolling up:', err.message);
     }
 });
 
@@ -793,7 +819,7 @@ ipcMain.on('ipc-quick-click-scroll-down', (event) => {
             `);
         }, 10); // Adjust the interval time (in milliseconds) as needed
     } catch (err) {
-        console.error('Error scrolling down:', err.message);
+        logger.error('Error scrolling down:', err.message);
     }
 });
 
@@ -805,7 +831,7 @@ ipcMain.on('ipc-quick-click-scroll-stop', (event) => {
             scrollInterval = null;
         }
     } catch (err) {
-        console.error('Error stopping scroll:', err.message);
+        logger.error('Error stopping scroll:', err.message);
     }
 });
 
@@ -813,7 +839,7 @@ ipcMain.on('ipc-quick-click-zoom-in', (event) => {
     try {
         handleZoom("in", false);
     } catch (err) {
-        console.error('Error zooming in:', err.message);
+        logger.error('Error zooming in:', err.message);
     }
 });
 
@@ -821,7 +847,7 @@ ipcMain.on('ipc-quick-click-zoom-out', (event) => {
     try {
         handleZoom("out", false);
     } catch (err) {
-        console.error('Error zooming out:', err.message);
+        logger.error('Error zooming out:', err.message);
     }
 });
 
@@ -829,7 +855,7 @@ ipcMain.on('ipc-quick-click-dwelltime-elapsed', (event) => {
     try {
         robot.mouseClick();
     } catch (err) {
-        console.error('Error during dwell time elapsed:', err.message);
+        logger.error('Error during dwell time elapsed:', err.message);
     }
 });
 
@@ -842,7 +868,7 @@ ipcMain.on('ipc-quick-click-add-scroll-buttons', (event) => {
             scrollButtonsRemoved = false;
         }
     } catch (err) {
-        console.error('Error adding scroll buttons:', err.message);
+        logger.error('Error adding scroll buttons:', err.message);
     }
 })
 
@@ -876,7 +902,7 @@ ipcMain.on('ipc-keyboard-input', (event, value, element, submit, updateValueAttr
             }, 300);
         }
     } catch (err) {
-        console.error('Error during keyboard input:', err.message);
+        logger.error('Error during keyboard input:', err.message);
     }
 });
 
@@ -884,7 +910,7 @@ ipcMain.on('ipc-keyboard-update-language', async (event, language) => {
     try {
         await db.updateUserSetting(Settings.DEFAULT_LAYOUT.NAME, language);
     } catch (err) {
-        console.error('Error updating keyboard language:', err.message);
+        logger.error('Error updating keyboard language:', err.message);
     }
 })
 
@@ -896,7 +922,7 @@ ipcMain.on('ipc-settings-show-keyboard', (event, elementProperties) => {
     try {
         createOverlay('keyboard', elementProperties);
     } catch (err) {
-        console.error('Error showing keyboard overlay:', err.message);
+        logger.error('Error showing keyboard overlay:', err.message);
     }
 });
 
@@ -937,7 +963,7 @@ ipcMain.on('ipc-settings-option-selected', (event, setting, optionValue) => {
                 throw new Error(`Unknown setting: ${setting.label}`);
         }
     } catch (err) {
-        console.error('Error selecting settings option:', err.message);
+        logger.error('Error selecting settings option:', err.message);
     }
 });
 
@@ -950,7 +976,7 @@ ipcMain.on('log', (event, loggedItem) => {
         log.info(event);
         log.info(loggedItem);
     } catch (err) {
-        console.error('Error logging item:', err.message);
+        logger.error('Error logging item:', err.message);
     }
 });
 
@@ -976,7 +1002,7 @@ async function initialiseVariables() {
         menuAreaScrollDistance = await db.getMenuScrollDistance();
         menuAreaScrollInterval = await db.getMenuScrollInterval();
     } catch (err) {
-        console.error("Error initializing variables: ", err);
+        logger.error("Error initializing variables: ", err);
     }
 }
 
@@ -994,7 +1020,7 @@ function createSplashWindow() {
         splashWindowContent.setBounds({ x: 0, y: 0, width: splashWindow.getBounds().width, height: splashWindow.getBounds().height });
         splashWindowContent.webContents.loadURL(path.join(__dirname, '../src/pages/splash.html'));
     } catch (err) {
-        console.error('Error creating splash window:', err.message);
+        logger.error('Error creating splash window:', err.message);
     }
 }
 
@@ -1066,13 +1092,13 @@ function createMainWindow() {
                             mainWindow.contentView.addChildView(activeTab.webContentsView);
                         }
                     } catch (err) {
-                        console.error('Error processing webpage bounds:', err.message);
+                        logger.error('Error processing webpage bounds:', err.message);
                     }
                 }).catch(err => {
-                    console.error('Error executing JavaScript in main window:', err.message);
+                    logger.error('Error executing JavaScript in main window:', err.message);
                 });
             } catch (err) {
-                console.error('Error loading main window content:', err.message);
+                logger.error('Error loading main window content:', err.message);
             }
         });
 
@@ -1080,7 +1106,7 @@ function createMainWindow() {
             try {
                 resizeMainWindow();
             } catch (err) {
-                console.error('Error resizing main window:', err.message);
+                logger.error('Error resizing main window:', err.message);
             }
         });
 
@@ -1088,7 +1114,7 @@ function createMainWindow() {
             try {
                 resizeMainWindow();
             } catch (err) {
-                console.error('Error maximizing main window:', err.message);
+                logger.error('Error maximizing main window:', err.message);
             }
         });
 
@@ -1100,7 +1126,7 @@ function createMainWindow() {
                 }
                 if (isDevelopment) mainWindowContent.webContents.openDevTools();
             } catch (err) {
-                console.error('Error showing main window:', err.message);
+                logger.error('Error showing main window:', err.message);
             }
         });
 
@@ -1108,7 +1134,7 @@ function createMainWindow() {
             mainWindow = null;
         });
     } catch (err) {
-        console.error('Error creating main window:', err.message);
+        logger.error('Error creating main window:', err.message);
     }
 }
 
@@ -1151,14 +1177,14 @@ function resizeMainWindow() {
                         tab.webContentsView.setBounds(webpageBounds);
                     });
                 } catch (err) {
-                    console.error('Error updating webpage bounds:', err.message);
+                    logger.error('Error updating webpage bounds:', err.message);
                 }
             })
             .catch(err => {
                 log.error(err);
             });
     } catch (err) {
-        console.error('Error resizing main window:', err.message);
+        logger.error('Error resizing main window:', err.message);
     }
 }
 
@@ -1231,7 +1257,7 @@ async function createTabview(url, isNewTab = false, tabFromDatabase = null) {
             }
         }
     } catch (err) {
-        console.error('Error creating tabview:', err.message);
+        logger.error('Error creating tabview:', err.message);
     }
 }
 
@@ -1264,21 +1290,21 @@ function setTabViewEventlisteners(tabView) {
                                 try {
                                     await frame.executeJavaScript(iframeScriptContent)
                                 } catch (error) {
-                                    console.error("Error injecting into iframe:", error);
+                                    logger.error("Error injecting into iframe:", error);
                                 }
                             }
                         });
 
                         tabView.webContents.send('ipc-iframes-loaded', scrollDistance);
                     } catch (err) {
-                        console.error('Error during tabview DOM ready processing:', err.message);
+                        logger.error('Error during tabview DOM ready processing:', err.message);
                     }
                 });
 
                 tabView.webContents.openDevTools(); // to remove
                 if (isDevelopment) tabView.webContents.openDevTools();
             } catch (err) {
-                console.error('Error during tabview DOM ready:', err.message);
+                logger.error('Error during tabview DOM ready:', err.message);
             }
         });
 
@@ -1291,7 +1317,7 @@ function setTabViewEventlisteners(tabView) {
                     mainWindowContent.webContents.send('tabview-loading-start');
                 }
             } catch (err) {
-                console.error('Error during tabview start loading:', err.message);
+                logger.error('Error during tabview start loading:', err.message);
             }
         });
 
@@ -1303,7 +1329,7 @@ function setTabViewEventlisteners(tabView) {
                     updateOmnibox();
                 }
             } catch (err) {
-                console.error('Error during tabview stop loading:', err.message);
+                logger.error('Error during tabview stop loading:', err.message);
             }
         });
 
@@ -1313,7 +1339,7 @@ function setTabViewEventlisteners(tabView) {
                 updateBookmarksIcon();
                 clearSidebarAndUpdateQuadTree();
             } catch (err) {
-                console.error('Error during tabview finish load:', err.message);
+                logger.error('Error during tabview finish load:', err.message);
             }
         });
 
@@ -1323,7 +1349,7 @@ function setTabViewEventlisteners(tabView) {
                     handleLoadError(errorCode, validatedURL);
                 }
             } catch (err) {
-                console.error('Error during tabview fail load:', err.message);
+                logger.error('Error during tabview fail load:', err.message);
             }
         });
 
@@ -1333,7 +1359,7 @@ function setTabViewEventlisteners(tabView) {
                     handleLoadError(errorCode, validatedURL);
                 }
             } catch (err) {
-                console.error('Error during tabview fail provisional load:', err.message);
+                logger.error('Error during tabview fail provisional load:', err.message);
             }
         });
 
@@ -1380,10 +1406,10 @@ function setTabViewEventlisteners(tabView) {
                                                 handleLoadError(details.statusCode, details.url);
                                             }
                                         } catch (err) {
-                                            console.error('Error processing response body:', err.message);
+                                            logger.error('Error processing response body:', err.message);
                                         }
                                     }).catch(error => {
-                                        console.error("Error reading response body:", error);
+                                        logger.error("Error reading response body:", error);
                                         handleLoadError(details.statusCode, details.url);
                                     });
                             }
@@ -1391,7 +1417,7 @@ function setTabViewEventlisteners(tabView) {
                     }
                 }
             } catch (err) {
-                console.error('Error during response started:', err.message);
+                logger.error('Error during response started:', err.message);
             }
         });
 
@@ -1403,7 +1429,7 @@ function setTabViewEventlisteners(tabView) {
                     tabView.webContents.send('ipc-tabview-create-quadtree', useNavAreas);
                 }
             } catch (err) {
-                console.error('Error during in-page navigation:', err.message);
+                logger.error('Error during in-page navigation:', err.message);
             }
         });
 
@@ -1411,11 +1437,11 @@ function setTabViewEventlisteners(tabView) {
             try {
                 createTabview(url, isNewTab = true);
             } catch (err) {
-                console.error('Error during window open handler:', err.message);
+                logger.error('Error during window open handler:', err.message);
             }
         });
     } catch (err) {
-        console.error('Error setting tabview event listeners:', err.message);
+        logger.error('Error setting tabview event listeners:', err.message);
     }
 }
 
@@ -1503,12 +1529,12 @@ function handleLoadError(errorCode, attemptedURL, responseBody = null) {
                         }
                     `);
                 } catch (err) {
-                    console.error('Error during error page processing:', err.message);
+                    logger.error('Error during error page processing:', err.message);
                 }
             });
         }
     } catch (err) {
-        console.error('Error handling load error:', err.message);
+        logger.error('Error handling load error:', err.message);
     }
 }
 
@@ -1523,7 +1549,7 @@ function updateOmnibox() {
         }
         mainWindowContent.webContents.send('tabview-loading-stop', pageDetails);
     } catch (err) {
-        console.error('Error updating omnibox:', err.message);
+        logger.error('Error updating omnibox:', err.message);
     }
 }
 
@@ -1534,7 +1560,7 @@ function updateBookmarksIcon() {
         let isBookmark = bookmarks.some(bookmark => bookmark.url === activeURL);
         mainWindowContent.webContents.send('ipc-main-update-bookmark-icon', isBookmark);
     } catch (err) {
-        console.error('Error updating bookmarks icon:', err.message);
+        logger.error('Error updating bookmarks icon:', err.message);
     }
 }
 
@@ -1543,7 +1569,7 @@ function clearSidebarAndUpdateQuadTree() {
         mainWindowContent.webContents.send('ipc-mainwindow-clear-sidebar');
         tabList.find(tab => tab.isActive === true).webContentsView.webContents.send('ipc-tabview-create-quadtree', useNavAreas);
     } catch (err) {
-        console.error('Error clearing sidebar and updating quadtree:', err.message);
+        logger.error('Error clearing sidebar and updating quadtree:', err.message);
     }
 }
 
@@ -1562,7 +1588,7 @@ function setTabViewEventlistenersAndLoadURL(tab) {
             }
         }
     } catch (err) {
-        console.error('Error setting tabview event listeners and loading URL:', err.message);
+        logger.error('Error setting tabview event listeners and loading URL:', err.message);
     }
 }
 
@@ -1598,11 +1624,11 @@ function slideUpView(view, duration = 170) {
                     view.setBounds(webpageBounds); // Ensure final bounds are set
                 }
             } catch (err) {
-                console.error('Error during slide up view:', err.message);
+                logger.error('Error during slide up view:', err.message);
             }
         }, interval);
     } catch (err) {
-        console.error('Error sliding up view:', err.message);
+        logger.error('Error sliding up view:', err.message);
     }
 }
 
@@ -1637,11 +1663,11 @@ function slideInView(view, duration = 200) {
                     view.setBounds(webpageBounds); // Ensure final bounds are set
                 }
             } catch (err) {
-                console.error('Error during slide in view:', err.message);
+                logger.error('Error during slide in view:', err.message);
             }
         }, interval);
     } catch (err) {
-        console.error('Error sliding in view:', err.message);
+        logger.error('Error sliding in view:', err.message);
     }
 }
 
@@ -1760,7 +1786,7 @@ function insertRendererCSS() {
             }
         `);
     } catch (err) {
-        console.error('Error inserting renderer CSS:', err.message);
+        logger.error('Error inserting renderer CSS:', err.message);
     }
 }
 
@@ -1773,17 +1799,17 @@ async function captureSnapshot() {
                     tab.snapshot = snapshot.toDataURL();
                     resolve();
                 }).catch(err => {
-                    console.error('Error capturing snapshot:', err.message);
+                    logger.error('Error capturing snapshot:', err.message);
                     reject(err);
                 });
             } else {
                 reject(new Error('Active tab or webContents not available for capture'));
             }
         }).catch(err => {
-            console.error('Error in captureSnapshot:', err.message);
+            logger.error('Error in captureSnapshot:', err.message);
         });
     } catch (err) {
-        console.error('Error capturing snapshot:', err.message);
+        logger.error('Error capturing snapshot:', err.message);
     }
 }
 
@@ -1795,7 +1821,7 @@ function removeOverlay() {
             isKeyboardOverlay = null;
         }
     } catch (err) {
-        console.error('Error removing overlay:', err.message);
+        logger.error('Error removing overlay:', err.message);
     }
 }
 
@@ -1947,7 +1973,7 @@ async function createOverlay(overlayAreaToShow, elementProperties, isTransparent
         if (isDevelopment) overlayContent.webContents.openDevTools();
         overlayContent.webContents.openDevTools(); // to remove
     } catch (err) {
-        console.error('Error creating overlay:', err.message);
+        logger.error('Error creating overlay:', err.message);
     }
 }
 
@@ -1974,7 +2000,7 @@ async function registerSwitchShortcutCommands() {
             }
         });
     } catch (err) {
-        console.error('Error registering shortcut commands:', err.message);
+        logger.error('Error registering shortcut commands:', err.message);
     }
 }
 
@@ -1982,7 +2008,7 @@ function handleClickShortcut() {
     try {
         robot.mouseClick();
     } catch (err) {
-        console.error('Error handling click shortcut:', err.message);
+        logger.error('Error handling click shortcut:', err.message);
     }
 }
 
@@ -1994,7 +2020,7 @@ function handleToggleOmniBoxShortcut() {
             mainWindowContent.webContents.send('ipc-mainwindow-load-omnibox');
         }
     } catch (err) {
-        console.error('Error toggling omnibox shortcut:', err.message);
+        logger.error('Error toggling omnibox shortcut:', err.message);
     }
 }
 
@@ -2002,7 +2028,7 @@ function handleSidebarScrollUpShortcut() {
     try {
         mainWindowContent.webContents.send('ipc-main-sidebar-scrollup');
     } catch (err) {
-        console.error('Error handling sidebar scroll up shortcut:', err.message);
+        logger.error('Error handling sidebar scroll up shortcut:', err.message);
     }
 }
 
@@ -2010,7 +2036,7 @@ function handleSidebarScrollDownShortcut() {
     try {
         mainWindowContent.webContents.send('ipc-main-sidebar-scrolldown');
     } catch (err) {
-        console.error('Error handling sidebar scroll down shortcut:', err.message);
+        logger.error('Error handling sidebar scroll down shortcut:', err.message);
     }
 }
 
@@ -2020,7 +2046,7 @@ function handleNavigateForwardShortcut() {
         var tab = tabList.find(tab => tab.isActive === true);
         tab.webContentsView.webContents.send('ipc-tabview-forward');
     } catch (err) {
-        console.error('Error handling navigate forward shortcut:', err.message);
+        logger.error('Error handling navigate forward shortcut:', err.message);
     }
 }
 
@@ -2030,7 +2056,7 @@ function handleNavigateBackShortcut() {
         var tab = tabList.find(tab => tab.isActive === true);
         tab.webContentsView.webContents.send('ipc-tabview-back');
     } catch (err) {
-        console.error('Error handling navigate back shortcut:', err.message);
+        logger.error('Error handling navigate back shortcut:', err.message);
     }
 }
 
@@ -2038,7 +2064,7 @@ function handleToggleDwellingShortcut() {
     try {
         toggleDwelling();
     } catch (err) {
-        console.error('Error handling toggle dwelling shortcut:', err.message);
+        logger.error('Error handling toggle dwelling shortcut:', err.message);
     }
 }
 
@@ -2046,7 +2072,7 @@ function handleZoomInShortcut() {
     try {
         handleZoom("in", false);
     } catch (err) {
-        console.error('Error handling zoom in shortcut:', err.message);
+        logger.error('Error handling zoom in shortcut:', err.message);
     }
 }
 
@@ -2054,7 +2080,7 @@ function handleZoomOutShortcut() {
     try {
         handleZoom("out", false);
     } catch (err) {
-        console.error('Error handling zoom out shortcut:', err.message);
+        logger.error('Error handling zoom out shortcut:', err.message);
     }
 }
 
@@ -2064,7 +2090,7 @@ async function toggleDwelling() {
         mainWindowContent.webContents.send('ipc-mainwindow-handle-dwell-events', isDwellingActive);
         await db.updateUserSetting(Settings.IS_DWELLING_ACTIVE.NAME, isDwellingActive);
     } catch (err) {
-        console.error('Error toggling dwelling:', err.message);
+        logger.error('Error toggling dwelling:', err.message);
     }
 }
 
@@ -2076,7 +2102,7 @@ async function toggleNavigation() {
         });
         await db.updateUserSetting(Settings.USE_NAV_AREAS.NAME, useNavAreas);
     } catch (err) {
-        console.error('Error toggling navigation:', err.message);
+        logger.error('Error toggling navigation:', err.message);
     }
 }
 
@@ -2085,7 +2111,7 @@ async function toggleUseRobotJS() {
         useRobotJS = !useRobotJS;
         await db.updateUserSetting(Settings.USE_ROBOT_JS.NAME, useRobotJS);
     } catch (err) {
-        console.error('Error toggling RobotJS:', err.message);
+        logger.error('Error toggling RobotJS:', err.message);
     }
 }
 
@@ -2115,7 +2141,7 @@ function handleZoom(direction, closeOverlay = true) {
         tab.webContentsView.webContents.send('ipc-tabview-create-quadtree', useNavAreas); // Updating the quadtree after zooming
         if (closeOverlay) removeOverlay();
     } catch (err) {
-        console.error('Error handling zoom:', err.message);
+        logger.error('Error handling zoom:', err.message);
     }
 }
 
@@ -2125,7 +2151,7 @@ function createHTMLSerializableMenuElement(element) {
         element.children = element.children.map(child => createHTMLSerializableMenuElement(child));
         return new HTMLSerializableMenuElement(element);
     } catch (err) {
-        console.error('Error creating HTML serializable menu element:', err.message);
+        logger.error('Error creating HTML serializable menu element:', err.message);
     }
 }
 
@@ -2167,7 +2193,7 @@ async function robotClick(x, y) {
         robot.moveMouse(finalX, finalY);
         robot.mouseClick();
     } catch (err) {
-        console.error('Error during robot mouse click:', err.message);
+        logger.error('Error during robot mouse click:', err.message);
     }
 }
 
@@ -2177,7 +2203,7 @@ function browseToUrl(url) {
         let tab = tabList.find(tab => tab.isActive === true);
         tab.webContentsView.webContents.loadURL(fullUrl);
     } catch (err) {
-        console.error('Error browsing to URL:', err.message);
+        logger.error('Error browsing to URL:', err.message);
     }
 }
 
@@ -2219,7 +2245,7 @@ function getFullURL(url) {
 
         return fullUrl;
     } catch (err) {
-        console.error('Error getting full URL:', err.message);
+        logger.error('Error getting full URL:', err.message);
     }
 }
 
@@ -2232,7 +2258,7 @@ async function addBookmarkToDatabase(bookmark){
     try {
         await db.addBookmark(bookmark);
     } catch (err) {
-        console.error('Error adding bookmark to database:', err.message);
+        logger.error('Error adding bookmark to database:', err.message);
     }
 }
 
@@ -2240,7 +2266,7 @@ async function deleteBookmarkByUrl(url){
     try {
         await db.deleteBookmarkByUrl(url);
     } catch (err) {
-        console.error('Error removing bookmark from database:', err.message);
+        logger.error('Error removing bookmark from database:', err.message);
     }
 }
 
@@ -2263,6 +2289,6 @@ async function deleteAndInsertAllTabs() {
             await db.addTab(tabData);
         }
     } catch (err) {
-        console.error('Error updating database with open tabs:', err.message);
+        logger.error('Error updating database with open tabs:', err.message);
     }
 }

@@ -4,6 +4,7 @@ const { ipcRenderer } = require('electron')
 const { byId, dwell, detachAllDwellListeners, dwellInfinite } = require('../../tools/utils')
 const { createCursor, followCursor, getMouse } = require('../../tools/cursor')
 const DOMPurify = require('dompurify');
+const logger = require('../../tools/logger')
 
 let omni, navbar, sidebar, sidebarItemArea, selectedNavItemTitle, menuNavLevelup, menuScrollUp, menuScrollDown;
 let cursor;
@@ -21,7 +22,7 @@ window.addEventListener('DOMContentLoaded', () => {
 			return DOMPurify.sanitize(html, { RETURN_TRUSTED_TYPE: true });
 		};
 	} catch (error) {
-		console.error("Error during DOMContentLoaded:", error);
+		logger.error("Error during DOMContentLoaded:", error.message);
 	}
 });
 
@@ -40,7 +41,7 @@ ipcRenderer.on('mainWindowLoaded', (event, dwellTime, menuAreaScrollDistance, me
 		//Setup navigation sidebar
 		setupNavigationSideBar();
 	} catch (error) {
-		console.error("Error in mainWindowLoaded handler:", error);
+		logger.error("Error in mainWindowLoaded handler:", error.message);
 	}
 });
 
@@ -52,7 +53,7 @@ ipcRenderer.on('ipc-mainwindow-handle-dwell-events', (event, isDwelling) => {
 		resetNavigationSidebar();
 		if (!isDwellingActive) showDwellingPausedMessage();
 	} catch (error) {
-		console.error("Error in ipc-mainwindow-handle-dwell-events handler:", error);
+		logger.error("Error in ipc-mainwindow-handle-dwell-events handler:", error.message);
 	}
 });
 
@@ -67,7 +68,7 @@ ipcRenderer.on('ipc-mainwindow-update-dwell-time', async (event, newDwellTime) =
 		setupFunctionality(true);
 		setupNavigationSideBar(true);
 	} catch (error) {
-		console.error("Error in ipc-mainwindow-update-dwell-time handler:", error);
+		logger.error("Error in ipc-mainwindow-update-dwell-time handler:", error.message);
 	}
 });
 
@@ -78,7 +79,7 @@ ipcRenderer.on('ipc-mainwindow-update-scroll-distance', (event, newScrollDistanc
 		setupFunctionality(true);
 		setupNavigationSideBar(true);
 	} catch (error) {
-		console.error("Error in ipc-mainwindow-update-scroll-distance handler:", error);
+		logger.error("Error in ipc-mainwindow-update-scroll-distance handler:", error.message);
 	}
 });
 
@@ -113,7 +114,7 @@ function setupCursor() {
 			cursor.style.visibility = 'visible'
 		})
 	} catch (error) {
-		console.error("Error in setupCursor:", error);
+		logger.error("Error in setupCursor:", error.message);
 	}
 }
 
@@ -196,7 +197,7 @@ async function setupFunctionality(reattachListeners = false) {
 			showOverlay('accessibility');
 		})
 	} catch (error) {
-		console.error("Error in setupFunctionality:", error);
+		logger.error("Error in setupFunctionality:", error.message);
 	}
 }
 
@@ -205,7 +206,7 @@ ipcRenderer.on('ipc-mainwindow-keyboard-input', (event, input) => {
 		omni = byId('url')
 		processUrlInput({ keyCode: 13 }, input);
 	} catch (error) {
-		console.error("Error in ipc-mainwindow-keyboard-input handler:", error);
+		logger.error("Error in ipc-mainwindow-keyboard-input handler:", error.message);
 	}
 });
 
@@ -221,7 +222,7 @@ async function fetchValidTLDs() {
 		}
 		return new Set();
 	} catch (error) {
-		console.error("Failed to fetch TLD list:", error);
+		logger.error("Failed to fetch TLD list:", error.message);
 		return new Set();
 	}
 }
@@ -232,7 +233,7 @@ async function isValidTLD(domain, validTLDs) {
 		const tld = domainParts[domainParts.length - 1].toLowerCase();
 		return validTLDs.has(tld);
 	} catch (error) {
-		console.error("Error in isValidTLD:", error);
+		logger.error("Error in isValidTLD:", error.message);
 		return false;
 	}
 }
@@ -243,7 +244,7 @@ function isValidUrl(string) {
 		new URL(string);
 		return true;
 	} catch (error) {
-		console.error("Error in isValidUrl:", error);
+		logger.error("Error in isValidUrl:", error.message);
 		return false;
 	}
 }
@@ -257,7 +258,7 @@ function isLocalOrIP(hostname) {
 
 		return ipv4Regex.test(hostname) || ipv6Regex.test(hostname) || hostname.toLowerCase() === LOCALHOST;
 	} catch (error) {
-		console.error("Error in isLocalOrIP:", error);
+		logger.error("Error in isLocalOrIP:", error.message);
 		return false;
 	}
 }
@@ -312,7 +313,7 @@ async function processUrlInput(event, input) {
 			ipcRenderer.send('browse-to-url', url);
 		}
 	} catch (error) {
-		console.error("Error in browseToUrl:", error);
+		logger.error("Error in browseToUrl:", error.message);
 	}
 }
 
@@ -327,7 +328,7 @@ ipcRenderer.on('tabview-loading-start', () => {
 		loader.style.display = "block";
 		omni.value = 'Loading..';
 	} catch (error) {
-		console.error("Error in tabview-loading-start handler:", error);
+		logger.error("Error in tabview-loading-start handler:", error.message);
 	}
 });
 
@@ -352,7 +353,7 @@ ipcRenderer.on('tabview-loading-stop', (event, pageDetails) => {
 		omni.addEventListener('click', () => displayOmni(pageDetails.url), { once: true });
 		omni.addEventListener('blur', () => displayOmni(pageDetails.title), { once: true });
 	} catch (error) {
-		console.error("Error in tabview-loading-stop handler:", error);
+		logger.error("Error in tabview-loading-stop handler:", error.message);
 	}
 });
 
@@ -366,7 +367,7 @@ function displayOmni(value) {
 			omni.classList.add('fadeInUp')
 		}, 200);
 	} catch (error) {
-		console.error("Error in displayOmni:", error);
+		logger.error("Error in displayOmni:", error.message);
 	}
 }
 
@@ -380,7 +381,7 @@ ipcRenderer.on('ipc-mainwindow-load-omnibox', (event) => {
 		}
 		showOverlay('keyboard', elementProperties);
 	} catch (error) {
-		console.error("Error in ipc-mainwindow-load-omnibox handler:", error);
+		logger.error("Error in ipc-mainwindow-load-omnibox handler:", error.message);
 	}
 });
 
@@ -432,7 +433,7 @@ function setupNavigationSideBar(reattachListeners = false) {
 		dwellInfinite(menuScrollUp, () => sidebarScroll(-1), false, scrollIntervalInMs);
 		dwellInfinite(menuScrollDown, () => sidebarScroll(1), false, scrollIntervalInMs);
 	} catch (error) {
-		console.error("Error in setupNavigationSideBar:", error);
+		logger.error("Error in setupNavigationSideBar:", error.message);
 	}
 }
 
@@ -440,7 +441,7 @@ ipcRenderer.on('ipc-mainwindow-clear-sidebar', () => {
 	try {
 		resetNavigationSidebar();
 	} catch (error) {
-		console.error("Error in ipc-mainwindow-clear-sidebar handler:", error);
+		logger.error("Error in ipc-mainwindow-clear-sidebar handler:", error.message);
 	}
 });
 
@@ -462,7 +463,7 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-navareas', (event, navAreas, tabUR
 
 		}
 	} catch (error) {
-		console.error("Error in ipc-mainwindow-sidebar-render-navareas handler:", error);
+		logger.error("Error in ipc-mainwindow-sidebar-render-navareas handler:", error.message);
 	}
 })
 
@@ -481,7 +482,7 @@ ipcRenderer.on('ipc-mainwindow-sidebar-render-elements', (event, elements, tabUR
 			sidebarItemArea.innerHTML = "";
 		}
 	} catch (error) {
-		console.error("Error in ipc-mainwindow-sidebar-render-elements handler:", error);
+		logger.error("Error in ipc-mainwindow-sidebar-render-elements handler:", error.message);
 	}
 });
 
@@ -548,7 +549,7 @@ function renderNavItemInSidebar(navItems) {
 
 		setMenuLevelUpButtonVisibility();
 	} catch (error) {
-		console.error("Error in renderNavItemInSidebar:", error);
+		logger.error("Error in renderNavItemInSidebar:", error.message);
 	}
 }
 
@@ -658,7 +659,7 @@ function renderElementsInSidebar(elements, sidebarItemArea, isSubOption = false)
 
 		setMenuLevelUpButtonVisibility();
 	} catch (error) {
-		console.error("Error in renderElementsInSidebar:", error);
+		logger.error("Error in renderElementsInSidebar:", error.message);
 	}
 }
 
@@ -686,7 +687,7 @@ function resetNavigationSidebar(options = {}) {
 		
 		if (!isDwellingActive) showDwellingPausedMessage();
 	} catch (error) {
-		console.error("Error in resetNavigationSidebar:", error);
+		logger.error("Error in resetNavigationSidebar:", error.message);
 	}
 }
 
@@ -699,7 +700,7 @@ function setMenuLevelUpButtonVisibility() {
 		else
 			menuNavLevelup.style.display = 'none'
 	} catch (error) {
-		console.error("Error in setMenuLevelUpButtonVisibility:", error);
+		logger.error("Error in setMenuLevelUpButtonVisibility:", error.message);
 	}
 }
 
@@ -712,7 +713,7 @@ function handleSidebarStack(title = "", items = {}, isNavItem = false, isSubOpti
 		selectedNavItemTitle.style.display = 'block';
 		selectedNavItemTitle.textContent = navTitle;
 	} catch (error) {
-		console.error("Error in handleSidebarStack:", error);
+		logger.error("Error in handleSidebarStack:", error.message);
 	}
 }
 
@@ -793,7 +794,7 @@ function createSidebarItemElement(element, isNavItem, isSubOption = false) {
 
 		return sidebarItem;
 	} catch (error) {
-		console.error("Error in createSidebarItemElement:", error);
+		logger.error("Error in createSidebarItemElement:", error.message);
 	}
 }
 
@@ -830,7 +831,7 @@ function getFullURL(href) {
 
 		return fullUrl;
 	} catch (error) {
-		console.error("Error in getFullURL:", error);
+		logger.error("Error in getFullURL:", error.message);
 		return href;
 	}
 }
@@ -840,7 +841,7 @@ function createMaterialIcon(icon_name) {
 	try {
 		return `<i class="material-icons--smaller">${icon_name}</i>`;
 	} catch (error) {
-		console.error("Error in createMaterialIcon:", error);
+		logger.error("Error in createMaterialIcon:", error.message);
 		return "";
 	}
 }
@@ -855,7 +856,7 @@ function showDwellingPausedMessage() {
 
 		sidebarItemArea.appendChild(messageDiv);
 	} catch (error) {
-		console.error("Error in showDwellingPausedMessage:", error);
+		logger.error("Error in showDwellingPausedMessage:", error.message);
 	}
 }
 
@@ -871,7 +872,7 @@ function getElementType(element, isNavItem = false) {
 		}
 		return false;
 	} catch (error) {
-		console.error("Error in getElementType:", error);
+		logger.error("Error in getElementType:", error.message);
 		return false;
 	}
 }
@@ -887,7 +888,7 @@ function shouldDisplayKeyboard(elementType) {
 		}
 		return false;
 	} catch (error) {
-		console.error("Error in shouldDisplayKeyboard:", error);
+		logger.error("Error in shouldDisplayKeyboard:", error.message);
 		return false;
 	}
 }
@@ -896,6 +897,6 @@ function showOverlay(overlayAreaToShow, elementProperties = null) {
 	try {
 		ipcRenderer.send('ipc-mainwindow-show-overlay', overlayAreaToShow, elementProperties);
 	} catch (error) {
-		console.error("Error in showOverlay:", error);
+		logger.error("Error in showOverlay:", error.message);
 	}
 }

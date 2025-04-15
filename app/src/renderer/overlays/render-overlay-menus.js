@@ -2,6 +2,7 @@ const { ipcRenderer } = require('electron')
 const { byId, dwell, dwellInfinite, detachAllDwellListeners } = require('../../../src/tools/utils')
 const { createCursor, followCursor, startCursorAnimation, stopCursorAnimation, getMouse } = require('../../../src/tools/cursor')
 const DOMPurify = require('dompurify');
+const logger = require('../../../src/tools/logger')
 
 // Exposes an HTML sanitizer to allow for innerHtml assignments when TrustedHTML policies are set ('This document requires 'TrustedHTML' assignment')
 window.addEventListener('DOMContentLoaded', () => {
@@ -15,7 +16,7 @@ window.addEventListener('DOMContentLoaded', () => {
 		createCursor('cactus_cursor');
 		followCursor('cactus_cursor');
 	} catch (error) {
-		console.error('Error during overlay DOMContentLoaded event:', error);
+		logger.error('Error during overlay DOMContentLoaded event:', error.message);
 	}
 });
 
@@ -65,7 +66,7 @@ ipcRenderer.on('ipc-main-overlays-loaded', (event, overlaysData) => {
 			}
 		}
 	} catch (error) {
-		console.error('Error handling ipc-main-overlays-loaded:', error);
+		logger.error('Error handling ipc-main-overlays-loaded:', error.message);
 	}
 });
 
@@ -76,7 +77,7 @@ ipcRenderer.on('ipc-setting-keyboard-input', (event, value) => {
 			inputField.textContent = value;
 		}
 	} catch (error) {
-		console.error('Error handling ipc-setting-keyboard-input:', error);
+		logger.error('Error handling ipc-setting-keyboard-input:', error.message);
 	}
 })
 
@@ -92,7 +93,7 @@ ipcRenderer.on('ipc-setting-update-dwell-time', (event, newDwellTime,) => {
 		// overlay are not aplied until the overlay is closed. This means only the accessibility menu needs updating.
 		setEventHandlersForAccessibilityMenu(null, null, null, true);
 	} catch (error) {
-		console.error('Error handling ipc-setting-update-dwell-time:', error);
+		logger.error('Error handling ipc-setting-update-dwell-time:', error.message);
 	}
 })
 
@@ -116,7 +117,7 @@ function setEventHandlersForOmniMenu() {
 			ipcRenderer.send('ipc-overlays-remove');
 		})
 	} catch (error) {
-		console.error('Error in setEventHandlersForOmniMenu:', error);
+		logger.error('Error in setEventHandlersForOmniMenu:', error.message);
 	}
 }
 
@@ -206,7 +207,7 @@ function setEventHandlersForAccessibilityMenu(isDwellingActive = null, useNavAre
 		// 	ipcRenderer.send('ipc-overlays-about');
 		// })
 	} catch (error) {
-		console.error('Error in setEventHandlersForAccessibilityMenu:', error);
+		logger.error('Error in setEventHandlersForAccessibilityMenu:', error.message);
 	}
 }
 
@@ -261,7 +262,7 @@ function setEventHandlersForNavigationMenu(canGoBack, canGoForward) {
 
 		}
 	} catch (error) {
-		console.error('Error in setEventHandlersForNavigationMenu:', error);
+		logger.error('Error in setEventHandlersForNavigationMenu:', error.message);
 	}
 }
 
@@ -488,7 +489,7 @@ function setEventHandlersForTabsMenu(tabList, bookmarks, overlay) {
 			}
 		}
 	} catch (error) {
-		console.error('Error in setEventHandlersForTabsMenu:', error);
+		logger.error('Error in setEventHandlersForTabsMenu:', error.message);
 	}
 }
 
@@ -579,7 +580,7 @@ function setEventHandlersForQuickClick(dwellTime, quickDwellRange) {
 			ipcRenderer.send('ipc-quick-click-dwelltime-elapsed');
 		}
 	} catch (error) {
-		console.error('Error in setEventHandlersForQuickClick:', error);
+		logger.error('Error in setEventHandlersForQuickClick:', error.message);
 	}
 }
 
@@ -718,6 +719,6 @@ function setEventHandlersForSettingsMenu(settings = null) {
 			return card;
 		}
 	} catch (error) {
-		console.error('Error in setEventHandlersForSettingsMenu:', error);
+		logger.error('Error in setEventHandlersForSettingsMenu:', error.message);
 	}
 }

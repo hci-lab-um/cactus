@@ -52,5 +52,9 @@ contextBridge.exposeInMainWorld('cactusAPI', {
         if (validChannels.includes(channel)) {
             ipcRenderer.send(channel, data);
         }
+    },
+
+    logError: (message) => {
+        ipcRenderer.send('ipc-log-error-message', message);
     }
 });
