@@ -612,7 +612,6 @@ function renderElementsInSidebar(elements, sidebarItemArea, isSubOption = false)
 								// Set the value of the dropdown to the value of the option
 								ipcRenderer.send('ipc-mainwindow-set-element-value', elementToClick[0]);
 							} else {
-								debugger;
 								const navTitle = elementToClick[0].value.charAt(0).toUpperCase() + elementToClick[0].value.slice(1);
 								const title = elementToClick[0].parentType.charAt(0).toUpperCase() + elementToClick[0].parentType.slice(1);
 								handleSidebarStack(title, elements, false, true, navTitle);
