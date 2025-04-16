@@ -268,6 +268,10 @@ ipcMain.on('ipc-tabview-generateNavAreasTree', (event, contents) => {
     }
 });
 
+ipcMain.on('ipc-tabview-clear-sidebar', (event) => {
+    mainWindowContent.webContents.send('ipc-mainwindow-clear-sidebar');
+});
+
 ipcMain.on('ipc-tabview-cursor-mouseover', (event, mouseData) => {
     try {
         clearInterval(timeoutCursorHovering);

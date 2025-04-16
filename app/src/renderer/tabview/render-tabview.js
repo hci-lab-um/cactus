@@ -628,14 +628,14 @@ async function generateQuadTree() {
 							// Update rangeValues for the serialized element
 							previousDuration = e.duration;
 							const duration = e.duration;
-							const step = 60.0; // 60 seconds
 							const updatedRangeValues = [];
 
 							if (duration) {
-								for (let i = 0; i <= duration; i += step) {
+								for (let i = 1; i <= 10; i++) { // Loop from 10% to 100%
+									const time = (i / 10) * duration; // Calculate the time for each percentile
 									updatedRangeValues.push({
-										value: i,
-										textContent: new Date(i * 1000).toISOString().slice(11, 19), // Convert seconds to HH:mm:ss
+										value: time.toFixed(2), // Keep precision for fractional seconds
+										textContent: new Date(time * 1000).toISOString().slice(11, 19), // Convert seconds to HH:mm:ss
 										parentElementId: e.dataset.cactusId,
 										parentValue: 'seek',
 									});
@@ -645,9 +645,11 @@ async function generateQuadTree() {
 							// Find the corresponding serialized element and update its rangeValues
 							const serializedElement = serializedElements.find(el => el.cactusId === e.dataset.cactusId);
 							if (serializedElement) {
+								console.log('Duration changed for video - Found serialized element:', serializedElement);
 								serializedElement.videoOptions[3].rangeValues = updatedRangeValues;
 								console.log(`Updated serialized elements for video with cactusId: ${e.dataset.cactusId}`, serializedElements);
 								console.log("Quadtree contents", quadTreeContents);
+								window.cactusAPI.send('ipc-tabview-clear-sidebar');
 								window.cactusAPI.send('ipc-tabview-generateQuadTree', quadTreeContents);
 							}
 						}
@@ -798,14 +800,14 @@ function serializeElement(element) {
 					type: 'range',
 					rangeValues: (() => {
 						const duration = element.duration;
-						const step = 60.0; // 60 seconds
 						const values = [];
 
 						if (duration && element.tagName === 'VIDEO') {
-							for (let i = 0; i <= duration; i += step) {
+							for (let i = 1; i <= 10; i++) { 
+								const time = (i / 10) * duration; 
 								values.push({
-									value: i,
-									textContent: new Date(i * 1000).toISOString().slice(11, 19), // Convert seconds to HH:mm:ss
+									value: time.toFixed(2), 
+									textContent: new Date(time * 1000).toISOString().slice(11, 19),
 									parentElementId: element.dataset.cactusId,
 									parentValue: 'seek',
 								});

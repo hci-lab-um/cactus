@@ -40,6 +40,7 @@ contextBridge.exposeInMainWorld('cactusAPI', {
         const validChannels = [
             'ipc-tabview-generateQuadTree',
             'ipc-tabview-generateNavAreasTree',
+            'ipc-tabview-clear-sidebar',
             'ipc-tabview-cursor-mouseover',
             'ipc-tabview-cursor-mouseout',
             'ipc-tabview-visible-clickable-elements',
