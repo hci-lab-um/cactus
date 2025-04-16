@@ -10,6 +10,7 @@ let scrollTimeout;
 let mutationObserver;
 let mutationObserverOptions;
 let displayScrollButtons = true;
+let previousDuration;
 
 // Create a Trusted Types policy for innerHtml assignments when TrustedHTML policies are set ('This document requires 'TrustedHTML' assignment')
 const policy = window.trustedTypes.createPolicy('cactus_defaultPolicy', {
@@ -621,32 +622,34 @@ async function generateQuadTree() {
 			if (e.tagName.toLowerCase() === 'video') {
 				e.addEventListener('durationchange', () => {
 					try {
-						console.log(`Duration changed for video element with cactusId: ${e.dataset.cactusId}, new duration: ${e.duration}`);
+						if (e.duration != previousDuration) {
+							console.log(`Duration changed for video element with cactusId: ${e.dataset.cactusId}, new duration: ${e.duration}`);
 
-						// debugger;
-						// Update rangeValues for the serialized element
-						const duration = e.duration;
-						const step = 60.0; // 60 seconds
-						const updatedRangeValues = [];
+							// Update rangeValues for the serialized element
+							previousDuration = e.duration;
+							const duration = e.duration;
+							const step = 60.0; // 60 seconds
+							const updatedRangeValues = [];
 
-						if (duration) {
-							for (let i = 0; i <= duration; i += step) {
-								updatedRangeValues.push({
-									value: i,
-									textContent: new Date(i * 1000).toISOString().slice(11, 19), // Convert seconds to HH:mm:ss
-									parentElementId: e.dataset.cactusId,
-									parentValue: 'seek',
-								});
+							if (duration) {
+								for (let i = 0; i <= duration; i += step) {
+									updatedRangeValues.push({
+										value: i,
+										textContent: new Date(i * 1000).toISOString().slice(11, 19), // Convert seconds to HH:mm:ss
+										parentElementId: e.dataset.cactusId,
+										parentValue: 'seek',
+									});
+								}
 							}
-						}
 
-						// Find the corresponding serialized element and update its rangeValues
-						const serializedElement = serializedElements.find(el => el.cactusId === e.dataset.cactusId);
-						if (serializedElement) {
-							serializedElement.videoOptions[3].rangeValues = updatedRangeValues;
-							console.log(`Updated serialized elements for video with cactusId: ${e.dataset.cactusId}`, serializedElements);
-							console.log("Quadtree contents", quadTreeContents);
-							window.cactusAPI.send('ipc-tabview-generateQuadTree', quadTreeContents);
+							// Find the corresponding serialized element and update its rangeValues
+							const serializedElement = serializedElements.find(el => el.cactusId === e.dataset.cactusId);
+							if (serializedElement) {
+								serializedElement.videoOptions[3].rangeValues = updatedRangeValues;
+								console.log(`Updated serialized elements for video with cactusId: ${e.dataset.cactusId}`, serializedElements);
+								console.log("Quadtree contents", quadTreeContents);
+								window.cactusAPI.send('ipc-tabview-generateQuadTree', quadTreeContents);
+							}
 						}
 					} catch (error) {
 						window.cactusAPI.logError(`Error handling video duration change: ${error.message}`);
