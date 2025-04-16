@@ -1253,15 +1253,16 @@ async function createTabview(url, isNewTab = false, tabFromDatabase = null) {
         // If a new tab is created (therefore, tabFromDatabase is null), or the tab is from the database, and it is the active tab, set the event listeners
         if (!tabFromDatabase || (tabFromDatabase && tabFromDatabase.isActive)) {
             setTabViewEventlisteners(tabView);
-            tab.setEventHandlers = false;
 
             //Load the default home page
             if (!tabFromDatabase) {
                 tabView.webContents.loadURL(url);
             } else if (tabFromDatabase.isErrorPage) {
                 tabView.webContents.loadURL(tabFromDatabase.originalURL);
+                tab.setEventHandlers = false;
             } else {
                 tabView.webContents.loadURL(tabFromDatabase.url);
+                tab.setEventHandlers = false;
             }
         }
     } catch (err) {
