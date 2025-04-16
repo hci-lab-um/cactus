@@ -642,6 +642,9 @@ ipcMain.on('ipc-overlays-tab-deleted', (event, tabId) => {
         // Disconnecting the mutation observer of the deleted tab
         deletedTabView.webContentsView.webContents.send('ipc-main-disconnect-mutation-observer');
 
+        // Destroying the webContents to stop any background activity - like a video playing
+        deletedTabView.webContentsView.webContents.destroy();
+
         // Removing the tab from the tabList
         tabList = tabList.filter(tab => tab.tabId !== tabId);
 
