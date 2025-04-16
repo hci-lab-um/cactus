@@ -1253,6 +1253,7 @@ async function createTabview(url, isNewTab = false, tabFromDatabase = null) {
         // If a new tab is created (therefore, tabFromDatabase is null), or the tab is from the database, and it is the active tab, set the event listeners
         if (!tabFromDatabase || (tabFromDatabase && tabFromDatabase.isActive)) {
             setTabViewEventlisteners(tabView);
+            tab.setEventHandlers = false;
 
             //Load the default home page
             if (!tabFromDatabase) {
@@ -1582,7 +1583,7 @@ function clearSidebarAndUpdateQuadTree() {
 
 function setTabViewEventlistenersAndLoadURL(tab) {
     try {
-        // If the selected tab has set its event handlers yet, set them - This is to prevent the event handlers from being set multiple times
+        // If the selected tab has not set its event handlers yet, set them - This is to prevent the event handlers from being set multiple times
         // and for the JS and CSS to be injected only once it is the active tab.
         if (tab.setEventHandlers) {
             setTabViewEventlisteners(tab.webContentsView);
