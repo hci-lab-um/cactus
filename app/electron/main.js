@@ -1853,131 +1853,133 @@ async function createOverlay(overlayAreaToShow, elementProperties, isTransparent
 
         mainWindow.contentView.addChildView(overlayContent)
         overlayContent.setBounds({ x: 0, y: 0, width: mainWindowContentBounds.width, height: mainWindowContentBounds.height })
-        overlayContent.webContents.loadURL(path.join(__dirname, '../src/pages/', htmlPage));
+        overlayContent.webContents.loadURL(path.join(__dirname, '../src/pages/', htmlPage)).then(async() => {
+
+            isKeyboardOverlay = overlayAreaToShow === 'keyboard';
+            
+            let overlaysData = {
+                overlayAreaToShow: overlayAreaToShow,
+                tabList: [],
+                bookmarks: [],
+                canGoBack: true,
+                canGoForward: true,
+                isDwellingActive: isDwellingActive,
+                useNavAreas: useNavAreas,
+                useRobotJS: useRobotJS,
+                dwellTime: dwellTime,
+                quickDwellRange: quickDwellRange,
+                settings: [],
+            };
+
+            switch (overlayAreaToShow) {
+                case 'keyboard':
+                    let keyboardLayout = await db.getDefaultLayout();
+                    overlayContent.webContents.send('ipc-main-keyboard-loaded', elementProperties, keyboardLayout, keyboardDwellTime);
+                    break;
+
+                case 'tabs':
+                    // Extracting serializable properties from tabList
+                    const serializableTabList = tabList.map(tab => ({
+                        tabId: tab.tabId,
+                        isActive: tab.isActive,
+                        snapshot: tab.snapshot,
+                        title: tab.webContentsView.webContents.getTitle() ? tab.webContentsView.webContents.getTitle() : tab.title,
+                        url: tab.webContentsView.webContents.getURL() ? tab.webContentsView.webContents.getURL() : tab.url,
+                    }));
+
+                    overlaysData.tabList = serializableTabList;
+                    overlaysData.bookmarks = bookmarks;
+                    break;
+
+                case 'bookmarks':
+                    overlaysData.bookmarks = bookmarks;
+                    break;
+
+                case 'navigation':
+                    // Check if the active tab can go back and forward
+                    let tab = tabList.find(tab => tab.isActive === true);
+                    let canGoBack = tab.webContentsView.webContents.canGoBack();
+                    let canGoForward = tab.webContentsView.webContents.canGoForward();
+
+                    overlaysData.canGoBack = canGoBack;
+                    overlaysData.canGoForward = canGoForward;
+                    break;
+
+                case 'settings':
+                    overlaysData.settings = {
+                        defaultUrl: {
+                            value: defaultUrl,
+                            label: Settings.DEFAULT_URL.LABEL,
+                            description: Settings.DEFAULT_URL.DESCRIPTION,
+                            category: 'General Settings'
+                        },
+                        defaultLanguage: {
+                            value: await db.getDefaultLayout(),
+                            label: Settings.DEFAULT_LAYOUT.LABEL,
+                            description: Settings.DEFAULT_LAYOUT.DESCRIPTION,
+                            options: [
+                                { label: 'ENGLISH', value: KeyboardLayouts.ENGLISH },
+                                { label: 'FRENCH', value: KeyboardLayouts.FRENCH },
+                                { label: 'ITALIAN', value: KeyboardLayouts.ITALIAN },
+                                { label: 'MALTESE', value: KeyboardLayouts.MALTESE }
+                            ],
+                            category: 'General Settings'
+                        },
+                        dwellTime: {
+                            value: dwellTime,
+                            label: Settings.DWELL_TIME.LABEL,
+                            description: Settings.DWELL_TIME.DESCRIPTION,
+                            options: [
+                                { label: `${Settings.DWELL_TIME.VERY_SHORT / 1000} s`, value: Settings.DWELL_TIME.VERY_SHORT },
+                                { label: `${Settings.DWELL_TIME.SHORT / 1000} s`, value: Settings.DWELL_TIME.SHORT },
+                                { label: `${Settings.DWELL_TIME.NORMAL / 1000} s`, value: Settings.DWELL_TIME.NORMAL },
+                                { label: `${Settings.DWELL_TIME.LONG / 1000} s`, value: Settings.DWELL_TIME.LONG },
+                                { label: `${Settings.DWELL_TIME.VERY_LONG / 1000} s`, value: Settings.DWELL_TIME.VERY_LONG }
+                            ],
+                            category: 'Dwell Settings'
+                        },
+                        keyboardDwellTime: {
+                            value: keyboardDwellTime,
+                            label: Settings.KEYBOARD_DWELL_TIME.LABEL,
+                            description: Settings.KEYBOARD_DWELL_TIME.DESCRIPTION,
+                            options: [
+                                { label: `${Settings.KEYBOARD_DWELL_TIME.VERY_SHORT / 1000} s`, value: Settings.KEYBOARD_DWELL_TIME.VERY_SHORT },
+                                { label: `${Settings.KEYBOARD_DWELL_TIME.SHORT / 1000} s`, value: Settings.KEYBOARD_DWELL_TIME.SHORT },
+                                { label: `${Settings.KEYBOARD_DWELL_TIME.NORMAL / 1000} s`, value: Settings.KEYBOARD_DWELL_TIME.NORMAL },
+                                { label: `${Settings.KEYBOARD_DWELL_TIME.LONG / 1000} s`, value: Settings.KEYBOARD_DWELL_TIME.LONG },
+                                { label: `${Settings.KEYBOARD_DWELL_TIME.VERY_LONG / 1000} s`, value: Settings.KEYBOARD_DWELL_TIME.VERY_LONG }
+                            ],
+                            category: 'Dwell Settings'
+                        },
+                        scrollDistance: {
+                            value: scrollDistance,
+                            label: Settings.TAB_VIEW_SCROLL_DISTANCE.LABEL,
+                            description: Settings.TAB_VIEW_SCROLL_DISTANCE.DESCRIPTION,
+                            options: [
+                                { label: 'SLOW', value: Settings.TAB_VIEW_SCROLL_DISTANCE.SLOW },
+                                { label: 'NORMAL', value: Settings.TAB_VIEW_SCROLL_DISTANCE.NORMAL },
+                                { label: 'FAST', value: Settings.TAB_VIEW_SCROLL_DISTANCE.FAST }
+                            ],
+                            category: 'Scrolling Settings'
+                        },
+                        menuAreaScrollDistance: {
+                            value: menuAreaScrollDistance,
+                            label: Settings.MENU_AREA_SCROLL_DISTANCE.LABEL,
+                            description: Settings.MENU_AREA_SCROLL_DISTANCE.DESCRIPTION,
+                            options: [
+                                { label: 'SLOW', value: Settings.MENU_AREA_SCROLL_DISTANCE.SLOW },
+                                { label: 'NORMAL', value: Settings.MENU_AREA_SCROLL_DISTANCE.NORMAL },
+                                { label: 'FAST', value: Settings.MENU_AREA_SCROLL_DISTANCE.FAST }
+                            ],
+                            category: 'Scrolling Settings'
+                        },
+                    }
+                    break;
+            }
+
+            if (!isKeyboardOverlay) overlayContent.webContents.send('ipc-main-overlays-loaded', overlaysData);
+        });
         overlayContent.webContents.focus();
-
-        isKeyboardOverlay = overlayAreaToShow === 'keyboard';
-        let overlaysData = {
-            overlayAreaToShow: overlayAreaToShow,
-            tabList: [],
-            bookmarks: [],
-            canGoBack: true,
-            canGoForward: true,
-            isDwellingActive: isDwellingActive,
-            useNavAreas: useNavAreas,
-            useRobotJS: useRobotJS,
-            dwellTime: dwellTime,
-            quickDwellRange: quickDwellRange,
-            settings: [],
-        };
-
-        switch (overlayAreaToShow) {
-            case 'keyboard':
-                let keyboardLayout = await db.getDefaultLayout();
-                overlayContent.webContents.send('ipc-main-keyboard-loaded', elementProperties, keyboardLayout, keyboardDwellTime);
-                break;
-
-            case 'tabs':
-                // Extracting serializable properties from tabList
-                const serializableTabList = tabList.map(tab => ({
-                    tabId: tab.tabId,
-                    isActive: tab.isActive,
-                    snapshot: tab.snapshot,
-                    title: tab.webContentsView.webContents.getTitle() ? tab.webContentsView.webContents.getTitle() : tab.title,
-                    url: tab.webContentsView.webContents.getURL() ? tab.webContentsView.webContents.getURL() : tab.url,
-                }));
-
-                overlaysData.tabList = serializableTabList;
-                overlaysData.bookmarks = bookmarks;
-                break;
-
-            case 'bookmarks':
-                overlaysData.bookmarks = bookmarks;
-                break;
-
-            case 'navigation':
-                // Check if the active tab can go back and forward
-                let tab = tabList.find(tab => tab.isActive === true);
-                let canGoBack = tab.webContentsView.webContents.canGoBack();
-                let canGoForward = tab.webContentsView.webContents.canGoForward();
-
-                overlaysData.canGoBack = canGoBack;
-                overlaysData.canGoForward = canGoForward;
-                break;
-
-            case 'settings':
-                overlaysData.settings = {
-                    defaultUrl: {
-                        value: defaultUrl,
-                        label: Settings.DEFAULT_URL.LABEL,
-                        description: Settings.DEFAULT_URL.DESCRIPTION,
-                        category: 'General Settings'
-                    },
-                    defaultLanguage: {
-                        value: await db.getDefaultLayout(),
-                        label: Settings.DEFAULT_LAYOUT.LABEL,
-                        description: Settings.DEFAULT_LAYOUT.DESCRIPTION,
-                        options: [
-                            { label: 'ENGLISH', value: KeyboardLayouts.ENGLISH },
-                            { label: 'FRENCH', value: KeyboardLayouts.FRENCH },
-                            { label: 'ITALIAN', value: KeyboardLayouts.ITALIAN },
-                            { label: 'MALTESE', value: KeyboardLayouts.MALTESE }
-                        ],
-                        category: 'General Settings'
-                    },
-                    dwellTime: {
-                        value: dwellTime,
-                        label: Settings.DWELL_TIME.LABEL,
-                        description: Settings.DWELL_TIME.DESCRIPTION,
-                        options: [
-                            { label: `${Settings.DWELL_TIME.VERY_SHORT / 1000} s`, value: Settings.DWELL_TIME.VERY_SHORT },
-                            { label: `${Settings.DWELL_TIME.SHORT / 1000} s`, value: Settings.DWELL_TIME.SHORT },
-                            { label: `${Settings.DWELL_TIME.NORMAL / 1000} s`, value: Settings.DWELL_TIME.NORMAL },
-                            { label: `${Settings.DWELL_TIME.LONG / 1000} s`, value: Settings.DWELL_TIME.LONG },
-                            { label: `${Settings.DWELL_TIME.VERY_LONG / 1000} s`, value: Settings.DWELL_TIME.VERY_LONG }
-                        ],
-                        category: 'Dwell Settings'
-                    },
-                    keyboardDwellTime: {
-                        value: keyboardDwellTime,
-                        label: Settings.KEYBOARD_DWELL_TIME.LABEL,
-                        description: Settings.KEYBOARD_DWELL_TIME.DESCRIPTION,
-                        options: [
-                            { label: `${Settings.KEYBOARD_DWELL_TIME.VERY_SHORT / 1000} s`, value: Settings.KEYBOARD_DWELL_TIME.VERY_SHORT },
-                            { label: `${Settings.KEYBOARD_DWELL_TIME.SHORT / 1000} s`, value: Settings.KEYBOARD_DWELL_TIME.SHORT },
-                            { label: `${Settings.KEYBOARD_DWELL_TIME.NORMAL / 1000} s`, value: Settings.KEYBOARD_DWELL_TIME.NORMAL },
-                            { label: `${Settings.KEYBOARD_DWELL_TIME.LONG / 1000} s`, value: Settings.KEYBOARD_DWELL_TIME.LONG },
-                            { label: `${Settings.KEYBOARD_DWELL_TIME.VERY_LONG / 1000} s`, value: Settings.KEYBOARD_DWELL_TIME.VERY_LONG }
-                        ],
-                        category: 'Dwell Settings'
-                    },
-                    scrollDistance: {
-                        value: scrollDistance,
-                        label: Settings.TAB_VIEW_SCROLL_DISTANCE.LABEL,
-                        description: Settings.TAB_VIEW_SCROLL_DISTANCE.DESCRIPTION,
-                        options: [
-                            { label: 'SLOW', value: Settings.TAB_VIEW_SCROLL_DISTANCE.SLOW },
-                            { label: 'NORMAL', value: Settings.TAB_VIEW_SCROLL_DISTANCE.NORMAL },
-                            { label: 'FAST', value: Settings.TAB_VIEW_SCROLL_DISTANCE.FAST }
-                        ],
-                        category: 'Scrolling Settings'
-                    },
-                    menuAreaScrollDistance: {
-                        value: menuAreaScrollDistance,
-                        label: Settings.MENU_AREA_SCROLL_DISTANCE.LABEL,
-                        description: Settings.MENU_AREA_SCROLL_DISTANCE.DESCRIPTION,
-                        options: [
-                            { label: 'SLOW', value: Settings.MENU_AREA_SCROLL_DISTANCE.SLOW },
-                            { label: 'NORMAL', value: Settings.MENU_AREA_SCROLL_DISTANCE.NORMAL },
-                            { label: 'FAST', value: Settings.MENU_AREA_SCROLL_DISTANCE.FAST }
-                        ],
-                        category: 'Scrolling Settings'
-                    },
-                }
-                break;
-        }
-
-        if (!isKeyboardOverlay) overlayContent.webContents.send('ipc-main-overlays-loaded', overlaysData);
 
         if (isDevelopment) overlayContent.webContents.openDevTools();
         overlayContent.webContents.openDevTools(); // to remove
