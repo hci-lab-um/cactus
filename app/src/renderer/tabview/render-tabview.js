@@ -272,7 +272,7 @@ window.cactusAPI.onAsync('ipc-tabview-set-element-value', (element, value) => {
 						option.selected = !option.selected;
 					}
 				});
-			} else if (parentElement.tagName.toLowerCase() === 'video') {
+			} else if (parentElement.tagName.toLowerCase() === 'video' || parentElement.tagName.toLowerCase() === 'audio') {
 				// If the element is a video, update the video attributes accordingly
 				if (value === 'pausePlay') {
 					parentElement.paused = parentElement.paused ? parentElement.play() : parentElement.pause();
@@ -606,7 +606,7 @@ function removeExistingScrollButtons() {
 async function generateQuadTree() {
 	try {
 		const clickableSelectors = [
-			'button', 'a', 'textarea', 'input', 'select', 'date', 'video',
+			'button', 'a', 'textarea', 'input', 'select', 'date', 'video', 'audio',
 			'[role="button"]', 'div[role="link"]', 'span[role="link"]',
 			'[role="checkbox"]', '[role="textbox"]', '[role="radio"]', '[role="option"]', '[role="tab"]',
 			'[role="menu"]', '[role="switch"]', '[role="slider"]', '[role="combobox"], iframe[src]', '[aria-selected]'
@@ -646,7 +646,7 @@ async function generateQuadTree() {
 							const serializedElement = serializedElements.find(el => el.cactusId === e.dataset.cactusId);
 							if (serializedElement) {
 								console.log('Duration changed for video - Found serialized element:', serializedElement);
-								serializedElement.videoOptions[3].rangeValues = updatedRangeValues;
+								serializedElement.videoAudioOptions[3].rangeValues = updatedRangeValues;
 								console.log(`Updated serialized elements for video with cactusId: ${e.dataset.cactusId}`, serializedElements);
 								console.log("Quadtree contents", quadTreeContents);
 								window.cactusAPI.send('ipc-tabview-clear-sidebar');
@@ -759,7 +759,7 @@ function serializeElement(element) {
 			}) : null,
 			nodeType: element.nodeType,
 			childNodes: element.childNodes ? Array.from(element.childNodes).map(serializeChildNode) : null,
-			videoOptions: [
+			videoAudioOptions: [
 				{
 					value: 'pausePlay',
 					textContent: 'Pause/Play',
@@ -776,6 +776,7 @@ function serializeElement(element) {
 					value: 'volume',
 					textContent: 'Volume',
 					parentElementId: element.dataset.cactusId,
+					parentType: element.tagName.toLowerCase(),
 					type: 'range',
 					rangeValues: (() => {
 						const min = parseFloat(element.getAttribute("min") || "0");
@@ -795,14 +796,15 @@ function serializeElement(element) {
 				},
 				{
 					value: 'seek',
-					textContent: 'Seek Video',
+					textContent: 'Seek',
 					parentElementId: element.dataset.cactusId,
+					parentType: element.tagName.toLowerCase(),
 					type: 'range',
 					rangeValues: (() => {
 						const duration = element.duration;
 						const values = [];
 
-						if (duration && element.tagName === 'VIDEO') {
+						if (duration && (element.tagName === 'VIDEO' || element.tagName === 'AUDIO')) {
 							for (let i = 1; i <= 10; i++) { 
 								const time = (i / 10) * duration; 
 								values.push({

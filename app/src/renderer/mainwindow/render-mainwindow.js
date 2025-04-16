@@ -612,8 +612,10 @@ function renderElementsInSidebar(elements, sidebarItemArea, isSubOption = false)
 								// Set the value of the dropdown to the value of the option
 								ipcRenderer.send('ipc-mainwindow-set-element-value', elementToClick[0]);
 							} else {
-								let navTitle = elementToClick[0].value.charAt(0).toUpperCase() + elementToClick[0].value.slice(1);
-								handleSidebarStack("Video", elements, false, true, navTitle);
+								debugger;
+								const navTitle = elementToClick[0].value.charAt(0).toUpperCase() + elementToClick[0].value.slice(1);
+								const title = elementToClick[0].parentType.charAt(0).toUpperCase() + elementToClick[0].parentType.slice(1);
+								handleSidebarStack(title, elements, false, true, navTitle);
 								renderElementsInSidebar(elementToClick[0].rangeValues, sidebarItemArea, true);
 							}
 						} else {
@@ -638,10 +640,10 @@ function renderElementsInSidebar(elements, sidebarItemArea, isSubOption = false)
 								console.log("Identified a range element: ", elementToClick[0]);
 								handleSidebarStack("", elements, false, false, elementToClick[0].accessibleName);
 								renderElementsInSidebar(elementToClick[0].rangeValues, sidebarItemArea, true);
-							} else if (elementType === 'video') {
-								console.log("Identified a video element: ", elementToClick[0]);
+							} else if (elementType === 'video' || elementType === 'audio') {
+								console.log("Identified a video/audio element: ", elementToClick[0]);
 								handleSidebarStack("", elements, false, false, elementToClick[0].accessibleName);
-								renderElementsInSidebar(elementToClick[0].videoOptions, sidebarItemArea, true);
+								renderElementsInSidebar(elementToClick[0].videoAudioOptions, sidebarItemArea, true);
 
 								// Show the level up button when a video element is clicked
 								setMenuLevelUpButtonVisibility();
@@ -778,6 +780,8 @@ function createSidebarItemElement(element, isNavItem, isSubOption = false) {
 					iconHTML = createMaterialIcon('open_in_new'); break;
 				case 'video':
 					iconHTML = createMaterialIcon('live_tv'); break;
+				case 'audio':
+					iconHTML = createMaterialIcon('graphic_eq'); break;
 				case 'pausePlay':
 					iconHTML = createMaterialIcon('play_pause'); break;
 				case 'muteUnmute':
