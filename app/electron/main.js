@@ -1,4 +1,5 @@
 const { app, BaseWindow, WebContentsView, ipcMain, globalShortcut, screen } = require('electron')
+const { autoUpdater } = require('electron-updater');
 const path = require('path')
 const fs = require('fs')
 const { QuadtreeBuilder, InteractiveElement, HTMLSerializableElement, QtPageDocument, QtBuilderOptions, QtRange } = require('cactus-quadtree-builder');
@@ -50,6 +51,20 @@ process.on('unhandledRejection', (reason, promise) => {
     logger.error(`Unhandled Rejection: ${reason}`);
 });
 
+// ==================================
+// ===== AUTO UPDATER LISTENERS =====
+// ==================================
+
+autoUpdater.on('update-available', () => {
+    console.log('Update available!');
+    mainWindow.webContents.send('ipc-update-available');
+});
+
+autoUpdater.on('update-downloaded', () => {
+    console.log('Update downloaded!');
+    mainWindow.webContents.send('ipc-update-downloaded');
+});
+
 // =================================
 // ====== APP EVENT LISTENERS ======
 // =================================
@@ -68,6 +83,9 @@ app.whenReady().then(async () => {
         setTimeout(() => {
             try {
                 createMainWindow();
+
+                // Check for updates after the main window is created
+                autoUpdater.checkForUpdatesAndNotify();
             } catch (err) {
                 logger.error('Error creating main window:', err.message);
             }
@@ -115,6 +133,14 @@ app.on('activate', () => {
 
 ipcMain.on('ipc-log-error-message', (event, message) => {
     logger.error(message);
+});
+
+// -------------
+//  APP UPDATING
+// -------------
+
+ipcMain.on('ipc-restart-app', () => {
+    autoUpdater.quitAndInstall();
 });
 
 // ---------
@@ -1061,7 +1087,6 @@ function createMainWindow() {
         mainWindowContent.webContents.loadURL(path.join(__dirname, '../src/pages/index.html')).then(() => {
             try {
                 mainWindowContent.webContents.send('mainWindowLoaded', dwellTime, menuAreaScrollDistance, menuAreaScrollInterval, isDwellingActive);
-                mainWindowContent.webContents.openDevTools();
 
                 mainWindowContent.webContents.executeJavaScript(`
                 (() => {
@@ -1310,7 +1335,6 @@ function setTabViewEventlisteners(tabView) {
                     }
                 });
 
-                tabView.webContents.openDevTools(); // to remove
                 if (isDevelopment) tabView.webContents.openDevTools();
             } catch (err) {
                 logger.error('Error during tabview DOM ready:', err.message);
@@ -1982,7 +2006,6 @@ async function createOverlay(overlayAreaToShow, elementProperties, isTransparent
         overlayContent.webContents.focus();
 
         if (isDevelopment) overlayContent.webContents.openDevTools();
-        overlayContent.webContents.openDevTools(); // to remove
     } catch (err) {
         logger.error('Error creating overlay:', err.message);
     }

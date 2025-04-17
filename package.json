@@ -1,17 +1,23 @@
 {
 	"name": "cactus",
+	"productName": "Cactus",
 	"version": "1.0.0",
-	"description": "Gaze Interaction Browser",
+	"description": "Multi-Modal Eye Browser",
 	"main": "app/electron/main.js",
 	"scripts": {
 		"start": "gulp mainCss && gulp webviewCss && gulp bookmarksCss && gulp keyboardCss && electron --enable-transparent-visuals .",
 		"build": "gulp mainCss && gulp webviewCss && gulp bookmarksCss && gulp keyboardCss",
-		"dist": "build"
+		"dist": "electron-builder"
 	},
 	"author": "HCI Lab - Faculty of ICT, University of Malta",
 	"license": "GPL3",
 	"build": {
-		"appId": "cactus",
+		"appId": "com.hci-lab-um.cactus",
+		"publish": {
+			"provider": "github",
+			"owner": "chrisporter-um",
+			"repo": "hci-lab-um/cactus"
+		},
 		"asar": false,
 		"dmg": {
 			"contents": [
@@ -28,27 +34,30 @@
 			]
 		},
 		"linux": {
-			"icon": "/app/resources/logo.png",
 			"target": [
 				"AppImage",
 				"deb"
-			]
+			],
+			"icon": "/app/resources/logo.png"
 		},
 		"win": {
-			"target": "squirrel",
+			"target": [
+				"nsis"
+			],
 			"icon": "/app/resources/logo.png"
 		},
 		"mac": {
+			"target": [
+				"dmg"
+			],
 			"icon": "/app/resources/logo.png"
 		}
 	},
 	"devDependencies": {
-		"cactus-menu-builder": "git+ssh://git@github.com:hci-lab-um/cactus-menu-builder.git",
-		"cactus-quadtree-builder": "git+ssh://git@github.com:hci-lab-um/cactus-quadtree-builder.git",
 		"devtron": "^1.4.0",
 		"electron": "^31.3.1",
-		"electron-builder": "^20.44.4",
-		"electron-builder-squirrel-windows": "^21.2.0",
+		"electron-builder": "^26.0.12",
+		"electron-builder-squirrel-windows": "^26.0.12",
 		"eslint": "^5.16.0",
 		"gulp": "^4.0.2",
 		"gulp-sass": "^5.1.0",
@@ -59,12 +68,15 @@
 		"csv-parser": "^3.2.0",
 		"dompurify": "^3.1.6",
 		"electron-log": "^5.1.7",
+		"electron-updater": "^6.6.2",
 		"lodash": "^4.17.11",
 		"original-fs": "^1.0.0",
 		"path": "^0.12.7",
 		"robotjs_addon": "^0.6.4",
 		"sqlite3": "^5.1.7",
 		"winston": "^3.17.0",
-		"winston-daily-rotate-file": "^5.0.0"
+		"winston-daily-rotate-file": "^5.0.0",
+		"cactus-menu-builder": "git+ssh://git@github.com:hci-lab-um/cactus-menu-builder.git",
+		"cactus-quadtree-builder": "git+ssh://git@github.com:hci-lab-um/cactus-quadtree-builder.git"
 	}
 }

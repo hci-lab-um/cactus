@@ -26,6 +26,17 @@ window.addEventListener('DOMContentLoaded', () => {
 	}
 });
 
+ipcRenderer.on('ipc-update-available', () => {
+	alert('A new update is available. It will be downloaded in the background.');
+});
+
+ipcRenderer.on('ipc-update-downloaded', () => {
+	const response = confirm('Update downloaded. Would you like to restart the app to apply the update?');
+	if (response) {
+		ipcRenderer.send('ipc-restart-app');
+	}
+});
+
 ipcRenderer.on('mainWindowLoaded', (event, dwellTime, menuAreaScrollDistance, menuAreaScrollIntervalInMs, isDwelling) => {
 	try {
 		isDwellingActive = isDwelling;
