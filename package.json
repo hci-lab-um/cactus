@@ -57,13 +57,14 @@
 		"devtron": "^1.4.0",
 		"electron": "^31.3.1",
 		"electron-builder": "^26.0.12",
-		"electron-builder-squirrel-windows": "^26.0.12",
 		"eslint": "^5.16.0",
 		"gulp": "^4.0.2",
 		"gulp-sass": "^5.1.0",
 		"node-sass": "^9.0.0"
 	},
 	"dependencies": {
+		"cactus-menu-builder": "git+ssh://git@github.com:hci-lab-um/cactus-menu-builder.git",
+		"cactus-quadtree-builder": "git+ssh://git@github.com:hci-lab-um/cactus-quadtree-builder.git",
 		"config": "^3.3.12",
 		"csv-parser": "^3.2.0",
 		"dompurify": "^3.1.6",
@@ -75,8 +76,6 @@
 		"robotjs_addon": "^0.6.4",
 		"sqlite3": "^5.1.7",
 		"winston": "^3.17.0",
-		"winston-daily-rotate-file": "^5.0.0",
-		"cactus-menu-builder": "git+ssh://git@github.com:hci-lab-um/cactus-menu-builder.git",
-		"cactus-quadtree-builder": "git+ssh://git@github.com:hci-lab-um/cactus-quadtree-builder.git"
+		"winston-daily-rotate-file": "^5.0.0"
 	}
 }
