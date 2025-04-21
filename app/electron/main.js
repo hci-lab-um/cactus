@@ -1075,6 +1075,7 @@ function createMainWindow() {
             show: false
         });
 
+        mainWindow.removeMenu();
         mainWindow.contentView.addChildView(mainWindowContent);
         mainWindow.maximize();
         mainWindowContent.setBounds({
