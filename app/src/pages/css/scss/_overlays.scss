@@ -84,14 +84,10 @@
   height: 100%;
   grid-template-columns: repeat(3, 1fr);
   grid-template-areas:
-    'settings refresh exit'
+    'topRow topRow topRow'
     'zoomIn zoomOut reset'
     'toggleDwell toggleNav toggleClick'
     'cancel cancel cancel';
-  
-    #refreshBtn {
-      grid-area: refresh;
-    }
 
     #toggleDwellBtn {
       grid-area: toggleDwell;
@@ -117,16 +113,16 @@
       grid-area: reset;
     }
 
-    #settingsBtn {
-      grid-area: settings;
-    }
-    
-    #aboutBtn {
-      grid-area: about;
-    }
+    #topRow{
+      grid-area: topRow;
+      display: flex;
 
-    #exitBtn {
-      grid-area: exit;
+      #settingsBtn,
+      #refreshBtn, 
+      #aboutBtn,
+      #exitBtn {
+        flex: 1;
+      }
     }
 }
 
@@ -400,6 +396,83 @@
   }
 }
 
+#overlay-about {
+  @extend #overlay-tabs;
+
+  #aboutCardsContainer {
+    padding: 1rem 2.5rem;
+    overflow-y: scroll;
+
+    /* width */
+    &::-webkit-scrollbar {
+      width: 5px;
+    }
+    
+    /* Track */
+    &::-webkit-scrollbar-track {
+      box-shadow: inset 0 0 5px grey;
+      border-radius: 2px;
+    }
+    
+    /* Handle */
+    &::-webkit-scrollbar-thumb {
+      background: #10468b;
+      border-radius: 2px;
+    }
+    
+    /* Handle on hover */
+    &::-webkit-scrollbar-thumb:hover {
+      background: #638eec;
+    }
+
+    .aboutCard {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 2.25rem 2.75rem;
+      margin: 1rem 0;
+      border-radius: 15px;
+      background-color: #e9eaf1;
+      gap: 5px;
+
+      h3 {
+        margin: 0;
+        font-size: 1.9rem;
+        color: #0E315D;
+      }
+
+      p {
+        margin: 1rem 0;
+        font-size: 1.4rem;
+        color: #0E315D;
+        line-height: 35px;
+      }
+    }
+
+    .linkButtonsContainer {
+      width: -webkit-fill-available;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-gap: 20px;
+
+      .linkButton {
+        padding: 30px;
+        background-color: #f9faff;
+        border-radius: 15px;
+        text-align: center;
+        font-size: 1.5rem;
+        color: $blue-2;  
+        line-height: 35px;    
+      }
+    }
+  }
+
+  #aboutSidebar {
+    @extend #tabsSidebar;
+  }
+}
+
 #overlay-quickClick {
   background-color: transparent;
   
@@ -472,13 +545,13 @@
   }
 
   &-title {
-    margin-left: 1.5em;
+    margin-left: 1.5vw;
     font-size: 1.8em;
   }
 
   &--left-align {
     justify-content: flex-start;
-    padding-left: 10%;
+    padding-left: 3vw;
   }
 
   &--sidebar {

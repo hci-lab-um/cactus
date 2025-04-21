@@ -64,6 +64,11 @@ ipcRenderer.on('ipc-main-overlays-loaded', (event, overlaysData) => {
 				setEventHandlersForSettingsMenu(settings);
 				break;
 			}
+			case 'about': {
+				byId('overlay-about').style.display = 'grid'
+				setEventHandlersForAboutPage();
+				break;
+			}
 		}
 	} catch (error) {
 		logger.error('Error handling ipc-main-overlays-loaded:', error.message);
@@ -137,8 +142,8 @@ function setEventHandlersForAccessibilityMenu(isDwellingActive = null, useNavAre
 		const toggleLinkClickingBtn = byId('toggleClickBtn')
 		const exitBtn = byId('exitBtn')
 		const cancelOptionsBtn = byId('cancel-options')
+		const aboutBtn = byId('aboutBtn')
 		// const bookmarksBtn = byId('bookmarksBtn')
-		// const aboutBtn = byId('aboutBtn')
 
 		if (!reattachListeners) {
 			let dwellingIcon = toggleDwellBtn.getElementsByTagName('i')[0];
@@ -156,6 +161,10 @@ function setEventHandlersForAccessibilityMenu(isDwellingActive = null, useNavAre
 
 		dwell(refreshBtn, () => {
 			ipcRenderer.send('ipc-overlays-refresh');
+		})
+
+		dwell(aboutBtn, () => {
+			ipcRenderer.send('ipc-overlays-about');
 		})
 
 		dwell(settingsBtn, () => {
@@ -202,10 +211,6 @@ function setEventHandlersForAccessibilityMenu(isDwellingActive = null, useNavAre
 		dwell(cancelOptionsBtn, () => {
 			ipcRenderer.send('ipc-overlays-remove');
 		})
-
-		// dwell(aboutBtn, () => {
-		// 	ipcRenderer.send('ipc-overlays-about');
-		// })
 	} catch (error) {
 		logger.error('Error in setEventHandlersForAccessibilityMenu:', error.message);
 	}
@@ -314,8 +319,9 @@ function setEventHandlersForTabsMenu(tabList, bookmarks, overlay) {
 				})
 			}
 
-			dwellInfinite(scrollUpBtn, () => scrollByOneRow(-1))
-			dwellInfinite(scrollDownBtn, () => scrollByOneRow(1))
+			const rowHeight = 315 + 40; // Height of a tab + gap 
+			dwellInfinite(scrollUpBtn, () => scrollByOneRow(-1, tabsContainer, rowHeight))
+			dwellInfinite(scrollDownBtn, () => scrollByOneRow(1, tabsContainer, rowHeight))
 		}
 
 		function createTabElement(tab) {
@@ -359,14 +365,6 @@ function setEventHandlersForTabsMenu(tabList, bookmarks, overlay) {
 			}
 
 			return tabElement;
-		}
-
-		function scrollByOneRow(direction) {
-			const rowHeight = 315 + 40; // Height of a tab + gap 
-			tabsContainer.scrollBy({
-				top: direction * rowHeight,
-				behavior: 'smooth'
-			});
 		}
 
 		function addBookmarkOverlayControls(tabElement, tab) {
@@ -637,15 +635,6 @@ function setEventHandlersForSettingsMenu(settings = null) {
 			}, {});
 		}
 
-		function scrollByOneRow(direction, container) {
-			console.log('scrolling by one row', direction);
-			const rowHeight = 400;
-			container.scrollBy({
-				top: direction * rowHeight,
-				behavior: 'smooth'
-			});
-		}
-
 		function createSettingCard(setting) {
 			const card = document.createElement('div');
 			card.classList.add('settingCard', 'fadeInUp');
@@ -721,4 +710,47 @@ function setEventHandlersForSettingsMenu(settings = null) {
 	} catch (error) {
 		logger.error('Error in setEventHandlersForSettingsMenu:', error.message);
 	}
+}
+
+function setEventHandlersForAboutPage() {
+	try {
+		// =================================
+		// ======== ABOUT OVERLAY =========
+		// =================================
+
+		const cancelAboutBtn = byId('cancel-about')
+		const scrollUpBtn = byId('aboutScrollUpBtn')
+		const scrollDownBtn = byId('aboutScrollDownBtn')
+		const aboutCardsContainer = byId('aboutCardsContainer')
+		const linkButtons = document.querySelectorAll('.linkButton');
+
+		dwell(cancelAboutBtn, () => ipcRenderer.send('ipc-overlays-remove'));
+
+		// Scroll functionality
+		dwellInfinite(scrollUpBtn, () => scrollByOneRow(-1, aboutCardsContainer));
+		dwellInfinite(scrollDownBtn, () => scrollByOneRow(1, aboutCardsContainer));
+
+		// Add dwell functionality to each link button
+		linkButtons.forEach(button => {
+		const link = button.querySelector('a');
+		if (!link) return;
+
+		const url = link.href; // Getting the URL from the anchor tag inside the button div
+		dwell(link.parentElement, () => {
+			ipcRenderer.send('ipc-overlays-remove-all'); // Close all overlays
+			ipcRenderer.send('ipc-overlays-newTab', url); // Send IPC message to open the URL in a new tab
+		});
+	});
+
+	} catch (error) {
+		logger.error('Error in setEventHandlersForAboutPage:', error.message);
+	}
+}
+
+function scrollByOneRow(direction, container, rowHeight = 400) {
+	console.log('scrolling by one row', direction);
+	container.scrollBy({
+		top: direction * rowHeight,
+		behavior: 'smooth'
+	});
 }

@@ -599,6 +599,14 @@ ipcMain.on('ipc-overlays-remove', (event) => {
     }
 })
 
+ipcMain.on('ipc-overlays-remove-all', (event) => {
+    try {
+        removeOverlay(true);
+    } catch (err) {
+        logger.error('Error removing all overlays:', err.message);
+    }
+})
+
 ipcMain.on('ipc-overlays-remove-and-update', (event) => {
     try {
         let newActiveTab = tabList.find(tab => tab.isActive === true);
@@ -616,14 +624,17 @@ ipcMain.on('ipc-overlays-remove-and-update', (event) => {
 })
 
 // TABS OVERLAY
-ipcMain.on('ipc-overlays-newTab', (event) => {
+ipcMain.on('ipc-overlays-newTab', (event, urlToUse = null) => {
     try {
         // Before updating the active tab, disconnect the mutation observer of the previous active tab
         let previousActiveTab = tabList.find(tab => tab.isActive === true);
         previousActiveTab.webContentsView.webContents.send('ipc-main-disconnect-mutation-observer');
 
         removeOverlay();
-        createTabview(defaultUrl, newTab = true);
+
+        if (urlToUse != null) createTabview(urlToUse, newTab = true);
+        else createTabview(defaultUrl, newTab = true);
+        
         clearSidebarAndUpdateQuadTree();
     } catch (err) {
         logger.error('Error creating new tab:', err.message);
@@ -747,6 +758,14 @@ ipcMain.on('ipc-overlays-refresh', (event) => {
         }
     } catch (err) {
         logger.error('Error refreshing overlay:', err.message);
+    }
+})
+
+ipcMain.on('ipc-overlays-about', (event) => {
+    try {
+        createOverlay("about", null, false);
+    } catch (err) {
+        logger.error('Error opening about overlay:', err.message);
     }
 })
 
@@ -1847,9 +1866,14 @@ async function captureSnapshot() {
     }
 }
 
-function removeOverlay() {
+function removeOverlay(removeAll = false) {
     try {
-        if (overlayList.length > 0) {
+        if (removeAll) {
+            while (overlayList.length > 0) {
+                mainWindow.contentView.removeChildView(overlayList.pop());
+            }
+            isKeyboardOverlay = null;
+        } else if (overlayList.length > 0) {
             mainWindow.contentView.removeChildView(overlayList[overlayList.length - 1]);
             overlayList.pop();
             isKeyboardOverlay = null;
