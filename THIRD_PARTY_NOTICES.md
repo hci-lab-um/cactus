@@ -8,7 +8,9 @@ This project incorporates code from the following third-party open-source librar
     Version: latest (GitHub repository)  
     License: [GPL-3.0](https://github.com/hci-lab-um/cactus-menu-builder/blob/main/LICENSE)  
 
-    Full text of the GPL-3.0 License for cactus-menu-builder:
+    <details>
+    <summary>Full text of the GPL-3.0 License for cactus-menu-builder:</summary>
+
     ```
                             GNU GENERAL PUBLIC LICENSE
                             Version 3, 29 June 2007
@@ -685,12 +687,17 @@ This project incorporates code from the following third-party open-source librar
         Public License instead of this License.  But first, please read
         <https://www.gnu.org/licenses/why-not-lgpl.html>.
     ```
+    <details>
+
+<!-- blank line here -->
 
 2. **[cactus-quadtree-builder](https://github.com/hci-lab-um/cactus-quadtree-builder)**  
     Version: latest (GitHub repository)  
     License: [GPL-3.0](https://github.com/hci-lab-um/cactus-quadtree-builder/blob/main/LICENSE)  
 
-    Full text of the GPL-3.0 License for cactus-quadtree-builder:
+    <details>
+    <summary>Full text of the GPL-3.0 License for cactus-quadtree-builder:</summary>
+    
     ```
                     GNU GENERAL PUBLIC LICENSE
                     Version 3, 29 June 2007
@@ -1367,12 +1374,17 @@ This project incorporates code from the following third-party open-source librar
     Public License instead of this License.  But first, please read
     <https://www.gnu.org/licenses/why-not-lgpl.html>.
     ```
+    <details>
+
+<!-- blank line here -->
 
 3. **[config](https://github.com/node-config/node-config)**  
     Version: ^3.3.12  
     License: [MIT](https://github.com/lorenwest/node-config/blob/master/LICENSE) 
 
-    Full text of the MIT License for config:
+    <details>
+    <summary>Full text of the MIT License for config:</summary>
+
     ```
     Copyright 2010-2022, Loren West and other contributors
 
@@ -1394,12 +1406,16 @@ This project incorporates code from the following third-party open-source librar
     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
     IN THE SOFTWARE.
     ```
+    </details>
+
+<!-- blank line here -->
 
 4. **[csv-parser](https://github.com/mafintosh/csv-parser)**  
     Version: ^3.2.0  
     License: [MIT](https://github.com/mafintosh/csv-parser/blob/master/LICENSE)  
 
-    Full text of the MIT License for csv-parser:
+    <details><summary>Full text of the MIT License for csv-parser:</summary>
+
     ```
     The MIT License (MIT)
 
@@ -1423,12 +1439,17 @@ This project incorporates code from the following third-party open-source librar
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
     THE SOFTWARE.
     ```
+    </details>
+
+<!-- blank line here -->
 
 5. **[dompurify](https://github.com/cure53/DOMPurify)**  
     Version: ^3.1.6  
     License: [Apache-2.0](https://github.com/cure53/DOMPurify/blob/main/LICENSE)  
 
-    Full text of the Apache-2.0 License for dompurify:
+    <details>
+    <summary>Full text of the Apache-2.0 License for dompurify:</summary>
+
     ```
     DOMPurify
     Copyright 2025 Dr.-Ing. Mario Heiderich, Cure53
@@ -1998,12 +2019,17 @@ This project incorporates code from the following third-party open-source librar
         With Secondary Licenses”, as defined by
         the Mozilla Public License, v. 2.0.
     ```
+    </details>
+
+<!-- blank line here -->
 
 6. **[electron-log](https://github.com/megahertz/electron-log)**  
     Version: ^5.1.7  
     License: [MIT](https://github.com/megahertz/electron-log/blob/master/LICENSE) 
     
-    Full text of the MIT License for electron-log: 
+    <details>
+    <summary>Full text of the MIT License for electron-log:</summary>
+ 
     ```
     The MIT License (MIT)
 
@@ -2027,12 +2053,17 @@ This project incorporates code from the following third-party open-source librar
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
     ```
+    </details>
+
+<!-- blank line here -->
 
 7. **[electron-updater](https://github.com/electron-userland/electron-builder)**  
     Version: ^6.6.2  
     License: [MIT](https://github.com/electron-userland/electron-builder/blob/master/LICENSE)  
 
-    Full text of the MIT License for electron-updater:
+    <details>
+    <summary>Full text of the MIT License for electron-updater:</summary>
+
     ```
     The MIT License (MIT)
 
@@ -2056,12 +2087,17 @@ This project incorporates code from the following third-party open-source librar
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
     ```
+    </details>
+
+<!-- blank line here -->
 
 8. **[lodash](https://github.com/lodash/lodash)**  
     Version: ^4.17.11  
     License: [MIT](https://github.com/lodash/lodash/blob/main/LICENSE) 
 
-    Full text of the MIT License for lodash:
+    <details>
+    <summary>Full text of the MIT License for lodash:</summary>
+
     ```
     Copyright OpenJS Foundation and other contributors <https://openjsf.org/>
 
@@ -2110,13 +2146,18 @@ This project incorporates code from the following third-party open-source librar
     maintained libraries used by this software which have their own
     licenses; we recommend you read them, as their terms may differ from the
     terms above.
-    ``` 
+    ```
+    </details> 
+
+<!-- blank line here -->
 
 9. **[original-fs](https://github.com/LongTengDao/original-fs)**  
     Version: ^1.0.0  
     License: [Unlicense](https://github.com/LongTengDao/original-fs/blob/master/UNLICENSE)  
 
-    Full text of the Unlicense License for original-fs:
+    <details>
+    <summary>Full text of the Unlicense License for original-fs:</summary>
+
     ```
     This is free and unencumbered software released into the public domain.
 
@@ -2143,12 +2184,17 @@ This project incorporates code from the following third-party open-source librar
 
     For more information, please refer to <https://unlicense.org>
     ```
+    </details>
+
+<!-- blank line here -->
 
 10. **[path](https://github.com/jinder/path)**  
     Version: ^0.12.7  
     License: [MIT](https://github.com/jinder/path/blob/master/LICENSE)  
 
-    Full text of the MIT License for path:
+    <details>
+    <summary>Full text of the MIT License for path:</summary>
+
     ```
     Copyright Joyent, Inc. and other Node contributors. All rights reserved.
     Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -2169,12 +2215,17 @@ This project incorporates code from the following third-party open-source librar
     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
     IN THE SOFTWARE.
     ```
+    </details>
+
+<!-- blank line here -->
 
 11. **[robotjs_addon](https://github.com/ftyszyx/robotjs)**  
     Version: ^0.6.4  
     License: [MIT](https://github.com/ftyszyx/robotjs/blob/master/LICENSE.md)  
 
-    Full text of the MIT License for robotjs_addon:
+    <details>
+    <summary>Full text of the MIT License for robotjs_addon:</summary>
+
     ```
     Copyright (c) 2014 Jason Stallings
 
@@ -2184,12 +2235,17 @@ This project incorporates code from the following third-party open-source librar
 
     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     ```
+    </details>
+
+<!-- blank line here -->
 
 12. **[sqlite3](https://github.com/TryGhost/node-sqlite3)**  
     Version: ^5.1.7  
     License: [BSD-3-Clause](https://github.com/TryGhost/node-sqlite3/blob/main/LICENSE)  
 
-    Full text of the BSD-3-Clause License for sqlite3:
+    <details>
+    <summary>Full text of the BSD-3-Clause License for sqlite3:</summary>
+
     ```
     Copyright (c) 2013-2025 Mapbox & Ghost Foundation
     All rights reserved.
@@ -2217,12 +2273,17 @@ This project incorporates code from the following third-party open-source librar
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     ```
+    </details>
+
+<!-- blank line here -->
 
 13. **[winston](https://github.com/winstonjs/winston)**  
     Version: ^3.17.0  
     License: [MIT](https://github.com/winstonjs/winston/blob/master/LICENSE)
 
-    Full text of the MIT License for winston:
+    <details>
+    <summary>Full text of the MIT License for winston:</summary>
+
     ```
     Copyright (c) 2010 Charlie Robbins
 
@@ -2243,13 +2304,18 @@ This project incorporates code from the following third-party open-source librar
     LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
     THE SOFTWARE.
-    ```  
+    ```
+    </details>  
+
+<!-- blank line here -->
 
 14. **[winston-daily-rotate-file](https://github.com/winstonjs/winston-daily-rotate-file)**  
     Version: ^5.0.0  
     License: [MIT](https://github.com/winstonjs/winston-daily-rotate-file/blob/master/LICENSE)  
 
-    Full text of the MIT License for winston-daily-rotate-file:
+    <details>
+    <summary>Full text of the MIT License for winston-daily-rotate-file:</summary>
+
     ```
     The MIT License (MIT)
 
@@ -2273,6 +2339,7 @@ This project incorporates code from the following third-party open-source librar
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
     ```
+    </details>
 
 ## Dev Dependencies
 
@@ -2280,7 +2347,9 @@ This project incorporates code from the following third-party open-source librar
     Version: ^1.4.0  
     License: [MIT](https://github.com/electron/devtron/blob/master/LICENSE) 
 
-    Full text of the MIT License for devtron:
+    <details>
+    <summary>Full text of the MIT License for devtron:</summary>
+
     ```
     Copyright (c) 2016 GitHub Inc.
 
@@ -2302,13 +2371,18 @@ This project incorporates code from the following third-party open-source librar
     LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
     OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
     WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-    ``` 
+    ```
+    </details> 
+
+<!-- blank line here -->
 
 2. **[electron](https://github.com/electron/electron)**  
     Version: ^31.3.1  
     License: [MIT](https://github.com/electron/electron/blob/main/LICENSE)  
 
-    Full text of the MIT License for electron:
+    <details>
+    <summary>Full text of the MIT License for electron:</summary>
+
     ```
     Copyright (c) Electron contributors
     Copyright (c) 2013-2020 GitHub Inc.
@@ -2332,12 +2406,17 @@ This project incorporates code from the following third-party open-source librar
     OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
     WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     ```
+    </details>
+
+<!-- blank line here -->
 
 3. **[electron-builder](https://github.com/electron-userland/electron-builder)**  
     Version: ^26.0.12  
     License: [MIT](https://github.com/electron-userland/electron-builder/blob/master/LICENSE)  
 
-    Full text of the MIT License for electron-builder:
+    <details>
+    <summary>Full text of the MIT License for electron-builder:</summary>
+
     ```
     The MIT License (MIT)
 
@@ -2361,12 +2440,17 @@ This project incorporates code from the following third-party open-source librar
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
     ```
+    </details>
+
+<!-- blank line here -->
 
 4. **[eslint](https://github.com/eslint/eslint)**  
     Version: ^5.16.0  
     License: [MIT](https://github.com/eslint/eslint/blob/main/LICENSE)  
 
-    Full text of the MIT License for eslint:
+    <details>
+    <summary>Full text of the MIT License for eslint:</summary>
+
     ```
     Copyright OpenJS Foundation and other contributors, <www.openjsf.org>
 
@@ -2388,12 +2472,17 @@ This project incorporates code from the following third-party open-source librar
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
     THE SOFTWARE.
     ```
+    </details>
+
+<!-- blank line here -->
 
 5. **[gulp](https://github.com/gulpjs/gulp)**  
     Version: ^4.0.2  
     License: [MIT](https://github.com/gulpjs/gulp/blob/master/LICENSE)  
 
-    Full text of the MIT License for gulp:
+    <details>
+    <summary>Full text of the MIT License for gulp:</summary>
+
     ```
     The MIT License (MIT)
 
@@ -2417,12 +2506,17 @@ This project incorporates code from the following third-party open-source librar
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
     ```
+    </details>
+
+<!-- blank line here -->
 
 6. **[gulp-sass](https://github.com/dlmanning/gulp-sass)**  
     Version: ^5.1.0  
     License: [MIT](https://github.com/dlmanning/gulp-sass/blob/master/LICENSE)  
 
-    Full text of the MIT License for gulp-sass:
+    <details>
+    <summary>Full text of the MIT License for gulp-sass:</summary>
+
     ```
     The MIT License (MIT)
 
@@ -2445,12 +2539,17 @@ This project incorporates code from the following third-party open-source librar
     IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
     CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     ```
+    </details>
+
+<!-- blank line here -->
 
 7. **[node-sass](https://github.com/sass/node-sass)**  
     Version: ^9.0.0  
     License: [MIT](https://github.com/sass/node-sass/blob/master/LICENSE)  
 
-    Full text of the MIT License for node-sass:
+    <details>
+    <summary>Full text of the MIT License for node-sass:</summary>
+
     ```
     Copyright (c) 2013-2016 Andrew Nesbitt
 
@@ -2473,3 +2572,4 @@ This project incorporates code from the following third-party open-source librar
     OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
     WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     ```
+    </details>
