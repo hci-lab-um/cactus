@@ -1933,86 +1933,7 @@ async function createOverlay(overlayAreaToShow, elementProperties, isTransparent
                     break;
 
                 case 'settings':
-                    overlaysData.settings = {
-                        useNavAreas: {
-                            value: useNavAreas,
-                            label: Settings.USE_NAV_AREAS.LABEL,
-                            description: Settings.USE_NAV_AREAS.DESCRIPTION,
-                            category: 'Usability Toggles'
-                        },
-                        useRobotJS: {
-                            value: useRobotJS,
-                            label: Settings.USE_ROBOT_JS.LABEL,
-                            description: Settings.USE_ROBOT_JS.DESCRIPTION,
-                            category: 'Usability Toggles'
-                        },
-                        defaultUrl: {
-                            value: defaultUrl,
-                            label: Settings.DEFAULT_URL.LABEL,
-                            description: Settings.DEFAULT_URL.DESCRIPTION,
-                            category: 'General Settings'
-                        },
-                        defaultLanguage: {
-                            value: await db.getDefaultLayout(),
-                            label: Settings.DEFAULT_LAYOUT.LABEL,
-                            description: Settings.DEFAULT_LAYOUT.DESCRIPTION,
-                            options: [
-                                { label: 'ENGLISH', value: KeyboardLayouts.ENGLISH },
-                                { label: 'FRENCH', value: KeyboardLayouts.FRENCH },
-                                { label: 'ITALIAN', value: KeyboardLayouts.ITALIAN },
-                                { label: 'MALTESE', value: KeyboardLayouts.MALTESE }
-                            ],
-                            category: 'General Settings'
-                        },
-                        dwellTime: {
-                            value: dwellTime,
-                            label: Settings.DWELL_TIME.LABEL,
-                            description: Settings.DWELL_TIME.DESCRIPTION,
-                            options: [
-                                { label: `${Settings.DWELL_TIME.VERY_SHORT / 1000} s`, value: Settings.DWELL_TIME.VERY_SHORT },
-                                { label: `${Settings.DWELL_TIME.SHORT / 1000} s`, value: Settings.DWELL_TIME.SHORT },
-                                { label: `${Settings.DWELL_TIME.NORMAL / 1000} s`, value: Settings.DWELL_TIME.NORMAL },
-                                { label: `${Settings.DWELL_TIME.LONG / 1000} s`, value: Settings.DWELL_TIME.LONG },
-                                { label: `${Settings.DWELL_TIME.VERY_LONG / 1000} s`, value: Settings.DWELL_TIME.VERY_LONG }
-                            ],
-                            category: 'Dwell Settings'
-                        },
-                        keyboardDwellTime: {
-                            value: keyboardDwellTime,
-                            label: Settings.KEYBOARD_DWELL_TIME.LABEL,
-                            description: Settings.KEYBOARD_DWELL_TIME.DESCRIPTION,
-                            options: [
-                                { label: `${Settings.KEYBOARD_DWELL_TIME.VERY_SHORT / 1000} s`, value: Settings.KEYBOARD_DWELL_TIME.VERY_SHORT },
-                                { label: `${Settings.KEYBOARD_DWELL_TIME.SHORT / 1000} s`, value: Settings.KEYBOARD_DWELL_TIME.SHORT },
-                                { label: `${Settings.KEYBOARD_DWELL_TIME.NORMAL / 1000} s`, value: Settings.KEYBOARD_DWELL_TIME.NORMAL },
-                                { label: `${Settings.KEYBOARD_DWELL_TIME.LONG / 1000} s`, value: Settings.KEYBOARD_DWELL_TIME.LONG },
-                                { label: `${Settings.KEYBOARD_DWELL_TIME.VERY_LONG / 1000} s`, value: Settings.KEYBOARD_DWELL_TIME.VERY_LONG }
-                            ],
-                            category: 'Dwell Settings'
-                        },
-                        scrollDistance: {
-                            value: scrollDistance,
-                            label: Settings.TAB_VIEW_SCROLL_DISTANCE.LABEL,
-                            description: Settings.TAB_VIEW_SCROLL_DISTANCE.DESCRIPTION,
-                            options: [
-                                { label: 'SLOW', value: Settings.TAB_VIEW_SCROLL_DISTANCE.SLOW },
-                                { label: 'NORMAL', value: Settings.TAB_VIEW_SCROLL_DISTANCE.NORMAL },
-                                { label: 'FAST', value: Settings.TAB_VIEW_SCROLL_DISTANCE.FAST }
-                            ],
-                            category: 'Scrolling Settings'
-                        },
-                        menuAreaScrollDistance: {
-                            value: menuAreaScrollDistance,
-                            label: Settings.MENU_AREA_SCROLL_DISTANCE.LABEL,
-                            description: Settings.MENU_AREA_SCROLL_DISTANCE.DESCRIPTION,
-                            options: [
-                                { label: 'SLOW', value: Settings.MENU_AREA_SCROLL_DISTANCE.SLOW },
-                                { label: 'NORMAL', value: Settings.MENU_AREA_SCROLL_DISTANCE.NORMAL },
-                                { label: 'FAST', value: Settings.MENU_AREA_SCROLL_DISTANCE.FAST }
-                            ],
-                            category: 'Scrolling Settings'
-                        },
-                    }
+                    overlaysData.settings = await getOverlaySettings();
                     break;
             }
 
@@ -2027,20 +1948,108 @@ async function createOverlay(overlayAreaToShow, elementProperties, isTransparent
     }
 }
 
+async function getOverlaySettings() {
+    return {
+        useNavAreas: {
+            value: useNavAreas,
+            label: Settings.USE_NAV_AREAS.LABEL,
+            description: Settings.USE_NAV_AREAS.DESCRIPTION,
+            category: 'Usability Toggles'
+        },
+        useRobotJS: {
+            value: useRobotJS,
+            label: Settings.USE_ROBOT_JS.LABEL,
+            description: Settings.USE_ROBOT_JS.DESCRIPTION,
+            category: 'Usability Toggles'
+        },
+        defaultUrl: {
+            value: defaultUrl,
+            label: Settings.DEFAULT_URL.LABEL,
+            description: Settings.DEFAULT_URL.DESCRIPTION,
+            category: 'General Settings'
+        },
+        defaultLanguage: {
+            value: await db.getDefaultLayout(),
+            label: Settings.DEFAULT_LAYOUT.LABEL,
+            description: Settings.DEFAULT_LAYOUT.DESCRIPTION,
+            options: [
+                { label: 'ENGLISH', value: KeyboardLayouts.ENGLISH },
+                { label: 'FRENCH', value: KeyboardLayouts.FRENCH },
+                { label: 'ITALIAN', value: KeyboardLayouts.ITALIAN },
+                { label: 'MALTESE', value: KeyboardLayouts.MALTESE }
+            ],
+            category: 'General Settings'
+        },
+        dwellTime: {
+            value: dwellTime,
+            label: Settings.DWELL_TIME.LABEL,
+            description: Settings.DWELL_TIME.DESCRIPTION,
+            options: [
+                { label: `${Settings.DWELL_TIME.VERY_SHORT / 1000} s`, value: Settings.DWELL_TIME.VERY_SHORT },
+                { label: `${Settings.DWELL_TIME.SHORT / 1000} s`, value: Settings.DWELL_TIME.SHORT },
+                { label: `${Settings.DWELL_TIME.NORMAL / 1000} s`, value: Settings.DWELL_TIME.NORMAL },
+                { label: `${Settings.DWELL_TIME.LONG / 1000} s`, value: Settings.DWELL_TIME.LONG },
+                { label: `${Settings.DWELL_TIME.VERY_LONG / 1000} s`, value: Settings.DWELL_TIME.VERY_LONG }
+            ],
+            category: 'Dwell Settings'
+        },
+        keyboardDwellTime: {
+            value: keyboardDwellTime,
+            label: Settings.KEYBOARD_DWELL_TIME.LABEL,
+            description: Settings.KEYBOARD_DWELL_TIME.DESCRIPTION,
+            options: [
+                { label: `${Settings.KEYBOARD_DWELL_TIME.VERY_SHORT / 1000} s`, value: Settings.KEYBOARD_DWELL_TIME.VERY_SHORT },
+                { label: `${Settings.KEYBOARD_DWELL_TIME.SHORT / 1000} s`, value: Settings.KEYBOARD_DWELL_TIME.SHORT },
+                { label: `${Settings.KEYBOARD_DWELL_TIME.NORMAL / 1000} s`, value: Settings.KEYBOARD_DWELL_TIME.NORMAL },
+                { label: `${Settings.KEYBOARD_DWELL_TIME.LONG / 1000} s`, value: Settings.KEYBOARD_DWELL_TIME.LONG },
+                { label: `${Settings.KEYBOARD_DWELL_TIME.VERY_LONG / 1000} s`, value: Settings.KEYBOARD_DWELL_TIME.VERY_LONG }
+            ],
+            category: 'Dwell Settings'
+        },
+        scrollDistance: {
+            value: scrollDistance,
+            label: Settings.TAB_VIEW_SCROLL_DISTANCE.LABEL,
+            description: Settings.TAB_VIEW_SCROLL_DISTANCE.DESCRIPTION,
+            options: [
+                { label: 'SLOW', value: Settings.TAB_VIEW_SCROLL_DISTANCE.SLOW },
+                { label: 'NORMAL', value: Settings.TAB_VIEW_SCROLL_DISTANCE.NORMAL },
+                { label: 'FAST', value: Settings.TAB_VIEW_SCROLL_DISTANCE.FAST }
+            ],
+            category: 'Scrolling Settings'
+        },
+        menuAreaScrollDistance: {
+            value: menuAreaScrollDistance,
+            label: Settings.MENU_AREA_SCROLL_DISTANCE.LABEL,
+            description: Settings.MENU_AREA_SCROLL_DISTANCE.DESCRIPTION,
+            options: [
+                { label: 'SLOW', value: Settings.MENU_AREA_SCROLL_DISTANCE.SLOW },
+                { label: 'NORMAL', value: Settings.MENU_AREA_SCROLL_DISTANCE.NORMAL },
+                { label: 'FAST', value: Settings.MENU_AREA_SCROLL_DISTANCE.FAST }
+            ],
+            category: 'Scrolling Settings'
+        },
+        // shortcuts: {
+        //     label: Settings.SHORTCUTS.LABEL,
+        //     description: Settings.SHORTCUTS.DESCRIPTION,
+        //     category: 'Hotkeys'
+        // }
+    }
+}
+
 async function registerSwitchShortcutCommands() {
     try {
         const shortcuts = await db.getShortcuts();
 
         const shortcutActions = [
-            { action: Shortcuts.CLICK, handler: () => handleClickShortcut() },
-            { action: Shortcuts.TOGGLE_OMNI_BOX, handler: () => handleToggleOmniBoxShortcut() },
-            { action: Shortcuts.SIDEBAR_SCROLL_UP, handler: () => handleSidebarScrollUpShortcut() },
-            { action: Shortcuts.SIDEBAR_SCROLL_DOWN, handler: () => handleSidebarScrollDownShortcut() },
-            { action: Shortcuts.NAVIGATE_FORWARD, handler: () => handleNavigateForwardShortcut() },
-            { action: Shortcuts.NAVIGATE_BACK, handler: () => handleNavigateBackShortcut() },
-            { action: Shortcuts.TOGGLE_DWELLING, handler: () => handleToggleDwellingShortcut() },
-            { action: Shortcuts.ZOOM_IN, handler: () => handleZoomInShortcut() },
-            { action: Shortcuts.ZOOM_OUT, handler: () => handleZoomOutShortcut() },
+            { action: Shortcuts.CLICK.NAME, handler: () => handleClickShortcut() },
+            { action: Shortcuts.TOGGLE_OMNI_BOX.NAME, handler: () => handleToggleOmniBoxShortcut() },
+            { action: Shortcuts.SIDEBAR_SCROLL_UP.NAME, handler: () => handleSidebarScrollUpShortcut() },
+            { action: Shortcuts.SIDEBAR_SCROLL_DOWN.NAME, handler: () => handleSidebarScrollDownShortcut() },
+            { action: Shortcuts.NAVIGATE_FORWARD.NAME, handler: () => handleNavigateForwardShortcut() },
+            { action: Shortcuts.NAVIGATE_BACK.NAME, handler: () => handleNavigateBackShortcut() },
+            { action: Shortcuts.TOGGLE_DWELLING.NAME, handler: () => handleToggleDwellingShortcut() },
+            { action: Shortcuts.ZOOM_IN.NAME, handler: () => handleZoomInShortcut() },
+            { action: Shortcuts.ZOOM_OUT.NAME, handler: () => handleZoomOutShortcut() },
         ];
 
         shortcutActions.forEach(({ action, handler }) => {

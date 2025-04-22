@@ -113,15 +113,15 @@ function createShortcutsTable() {
 function populateShortcutsTable() {
     return new Promise((resolve, reject) => {
         const shortcuts = {
-            [Shortcuts.CLICK]: "CommandOrControl+Alt+C",
-            [Shortcuts.TOGGLE_OMNI_BOX]: "CommandOrControl+Alt+O",
-            [Shortcuts.TOGGLE_DWELLING]: "CommandOrControl+Alt+D",
-            [Shortcuts.ZOOM_IN]: "CommandOrControl+Alt+Plus",
-            [Shortcuts.ZOOM_OUT]: "CommandOrControl+Alt+-",
-            [Shortcuts.SIDEBAR_SCROLL_UP]: "CommandOrControl+Alt+W",
-            [Shortcuts.SIDEBAR_SCROLL_DOWN]: "CommandOrControl+Alt+S",
-            [Shortcuts.NAVIGATE_FORWARD]: "CommandOrControl+Alt+Right",
-            [Shortcuts.NAVIGATE_BACK]: "CommandOrControl+Alt+Left"
+            [Shortcuts.CLICK.NAME]: Shortcuts.CLICK.HOTKEYS,
+            [Shortcuts.TOGGLE_OMNI_BOX.NAME]: Shortcuts.TOGGLE_OMNI_BOX.HOTKEYS,
+            [Shortcuts.TOGGLE_DWELLING.NAME]: Shortcuts.TOGGLE_DWELLING.HOTKEYS,
+            [Shortcuts.ZOOM_IN.NAME]: Shortcuts.ZOOM_IN.HOTKEYS,
+            [Shortcuts.ZOOM_OUT.NAME]: Shortcuts.ZOOM_OUT.HOTKEYS,
+            [Shortcuts.SIDEBAR_SCROLL_UP.NAME]: Shortcuts.SIDEBAR_SCROLL_UP.HOTKEYS,
+            [Shortcuts.SIDEBAR_SCROLL_DOWN.NAME]: Shortcuts.SIDEBAR_SCROLL_DOWN.HOTKEYS,
+            [Shortcuts.NAVIGATE_FORWARD.NAME]: Shortcuts.NAVIGATE_FORWARD.HOTKEYS,
+            [Shortcuts.NAVIGATE_BACK.NAME]: Shortcuts.NAVIGATE_BACK.HOTKEYS
         };
         const insertShortcut = `
             INSERT OR IGNORE INTO shortcuts (action, shortcut)
