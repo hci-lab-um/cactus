@@ -1,57 +1,61 @@
 const Shortcuts = Object.freeze({
-    CLICK: {
-        NAME: "click",
-        LABEL: "Click",
-        DESCRIPTION: "Performs a click action at the current mouse position.",
-        HOTKEYS: "CommandOrControl+Alt+C",
-    },
-    TOGGLE_OMNI_BOX: {
-        NAME: "toggleOmniBox",
-        LABEL: "Open Omni Box",
-        DESCRIPTION: "Opens the Omni Box, which allows you to enter a URL or search term.",
-        HOTKEYS: "CommandOrControl+Alt+O",
-    },
-    TOGGLE_DWELLING: {
-        NAME: "toggleDwelling",
-        LABEL: "Pause/Resume Dwelling",
-        DESCRIPTION: "Pauses or resumes the dwelling action.",
-        HOTKEYS: "CommandOrControl+Alt+D",
-    },
-    ZOOM_IN: {
-        NAME: "zoomIn",
-        LABEL: "Zoom In",
-        DESCRIPTION: "Zooms in on the current tab.",
-        HOTKEYS: "CommandOrControl+Alt+Plus",
-    },
-    ZOOM_OUT: {
-        NAME: "zoomOut",
-        LABEL: "Zoom Out",
-        DESCRIPTION: "Zooms out from the current tab.",
-        HOTKEYS: "CommandOrControl+Alt+-",
-    },
-    SIDEBAR_SCROLL_UP: {
-        NAME: "sidebarScrollUp",
-        LABEL: "Sidebar Scroll Up",
-        DESCRIPTION: "Scrolls up the sidebar menu.",
-        HOTKEYS: "CommandOrControl+Alt+W",
-    },
-    SIDEBAR_SCROLL_DOWN: {
-        NAME: "sidebarScrollDown",
-        LABEL: "Sidebar Scroll Down",
-        DESCRIPTION: "Scrolls down the sidebar menu.",
-        HOTKEYS: "CommandOrControl+Alt+S",
-    },
-    NAVIGATE_FORWARD: {
-        NAME: "navigateForward",
-        LABEL: "Forward Navigation",
-        DESCRIPTION: "Navigates forward in the tab history.",
-        HOTKEYS: "CommandOrControl+Alt+Right",
-    },
-    NAVIGATE_BACK: {
-        NAME: "navigateBack",
-        LABEL: "Backward Navigation",
-        DESCRIPTION: "Navigates backward in the tab history.",
-        HOTKEYS: "CommandOrControl+Alt+Left",
+    LABEL: "Hotkeys",
+    DESCRIPTION: "The following is a list of pre-configured keyboard shortcuts for faster browser interactions using an assistive switch and switch interface.",
+    ACTIONS: {
+        CLICK: {
+            NAME: "click",
+            LABEL: "Click",
+            DESCRIPTION: "Performs a click action at the current mouse position.",
+            HOTKEYS: "CommandOrControl+Alt+C",
+        },
+        TOGGLE_OMNI_BOX: {
+            NAME: "toggleOmniBox",
+            LABEL: "Open/Close Omni Box",
+            DESCRIPTION: "Opens or closes the Omni Box, which allows you to enter a URL or search term.",
+            HOTKEYS: "CommandOrControl+Alt+O",
+        },
+        TOGGLE_DWELLING: {
+            NAME: "toggleDwelling",
+            LABEL: "Pause/Resume Dwelling",
+            DESCRIPTION: "Pauses or resumes the dwelling action.",
+            HOTKEYS: "CommandOrControl+Alt+D",
+        },
+        ZOOM_IN: {
+            NAME: "zoomIn",
+            LABEL: "Zoom In",
+            DESCRIPTION: "Zooms in on the current tab.",
+            HOTKEYS: "CommandOrControl+Alt+Plus",
+        },
+        ZOOM_OUT: {
+            NAME: "zoomOut",
+            LABEL: "Zoom Out",
+            DESCRIPTION: "Zooms out from the current tab.",
+            HOTKEYS: "CommandOrControl+Alt+-",
+        },
+        SIDEBAR_SCROLL_UP: {
+            NAME: "sidebarScrollUp",
+            LABEL: "Sidebar Scroll Up",
+            DESCRIPTION: "Scrolls up the sidebar menu.",
+            HOTKEYS: "CommandOrControl+Alt+W",
+        },
+        SIDEBAR_SCROLL_DOWN: {
+            NAME: "sidebarScrollDown",
+            LABEL: "Sidebar Scroll Down",
+            DESCRIPTION: "Scrolls down the sidebar menu.",
+            HOTKEYS: "CommandOrControl+Alt+S",
+        },
+        NAVIGATE_FORWARD: {
+            NAME: "navigateForward",
+            LABEL: "Forward Navigation",
+            DESCRIPTION: "Navigates forward in the tab history.",
+            HOTKEYS: "CommandOrControl+Alt+Right",
+        },
+        NAVIGATE_BACK: {
+            NAME: "navigateBack",
+            LABEL: "Backward Navigation",
+            DESCRIPTION: "Navigates backward in the tab history.",
+            HOTKEYS: "CommandOrControl+Alt+Left",
+        }
     }
 });
 

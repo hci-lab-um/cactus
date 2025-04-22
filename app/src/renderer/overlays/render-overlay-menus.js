@@ -649,6 +649,23 @@ function setEventHandlersForSettingsMenu(settings = null) {
 					});
 					
 					optionsContainer.appendChild(defaultValue);
+				} else if (setting.actions) {
+					optionsContainer.classList.add('optionsContainer--flex-column');
+
+					setting.actions.forEach(action => {
+						const actionElement = document.createElement('div');
+						actionElement.classList.add('option', 'option--left-align', 'fadeInUp');
+
+						const label = document.createElement('h1');
+						label.textContent = `${action.label} — ${action.description}`;
+						actionElement.appendChild(label);
+
+						const hotkeys = document.createElement('h2');
+						hotkeys.textContent = action.hotkeys;
+						actionElement.appendChild(hotkeys);
+
+						optionsContainer.appendChild(actionElement);
+					});
 				} else {
 					// Updating css for the selected option
 					optionsContainer.classList.add('optionsContainer--minWidth');
@@ -675,7 +692,7 @@ function setEventHandlersForSettingsMenu(settings = null) {
 			} else {
 				// Adjust layout based on the number of options
 				if (setting.options.length === 4) {
-					optionsContainer.classList.add('optionsContainer--fourOptions');
+					optionsContainer.classList.add('optionsContainer--twoColumns');
 				}
 
 				setting.options.forEach(option => {

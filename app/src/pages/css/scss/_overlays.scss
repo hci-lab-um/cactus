@@ -367,11 +367,15 @@
         display: flex;
         width: 100%;
         justify-content: space-between;
-        gap: 2%;
+        gap: 15px;
         margin-top: 10px;
 
         &--minWidth {
           width: min-content;
+        }
+
+        &--flex-column {
+          flex-direction: column;
         }
         
         .option {
@@ -387,9 +391,23 @@
             border: 3px solid #2571D3;
             background: #E1F0FF;
           }
+
+          &--left-align {
+            text-align: left;
+          }
+
+          h1 {
+            font-size: 1.5rem;
+          }
+
+          h2 {
+            font-size: 1.3rem;
+            margin-top: 15px;
+            color: #46464e;
+          }
         }
         
-        &--fourOptions {
+        &--twoColumns {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             grid-gap: 20px;

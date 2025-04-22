@@ -113,15 +113,15 @@ function createShortcutsTable() {
 function populateShortcutsTable() {
     return new Promise((resolve, reject) => {
         const shortcuts = {
-            [Shortcuts.CLICK.NAME]: Shortcuts.CLICK.HOTKEYS,
-            [Shortcuts.TOGGLE_OMNI_BOX.NAME]: Shortcuts.TOGGLE_OMNI_BOX.HOTKEYS,
-            [Shortcuts.TOGGLE_DWELLING.NAME]: Shortcuts.TOGGLE_DWELLING.HOTKEYS,
-            [Shortcuts.ZOOM_IN.NAME]: Shortcuts.ZOOM_IN.HOTKEYS,
-            [Shortcuts.ZOOM_OUT.NAME]: Shortcuts.ZOOM_OUT.HOTKEYS,
-            [Shortcuts.SIDEBAR_SCROLL_UP.NAME]: Shortcuts.SIDEBAR_SCROLL_UP.HOTKEYS,
-            [Shortcuts.SIDEBAR_SCROLL_DOWN.NAME]: Shortcuts.SIDEBAR_SCROLL_DOWN.HOTKEYS,
-            [Shortcuts.NAVIGATE_FORWARD.NAME]: Shortcuts.NAVIGATE_FORWARD.HOTKEYS,
-            [Shortcuts.NAVIGATE_BACK.NAME]: Shortcuts.NAVIGATE_BACK.HOTKEYS
+            [Shortcuts.ACTIONS.CLICK.NAME]:                 Shortcuts.ACTIONS.CLICK.HOTKEYS,
+            [Shortcuts.ACTIONS.TOGGLE_OMNI_BOX.NAME]:       Shortcuts.ACTIONS.TOGGLE_OMNI_BOX.HOTKEYS,
+            [Shortcuts.ACTIONS.TOGGLE_DWELLING.NAME]:       Shortcuts.ACTIONS.TOGGLE_DWELLING.HOTKEYS,
+            [Shortcuts.ACTIONS.ZOOM_IN.NAME]:               Shortcuts.ACTIONS.ZOOM_IN.HOTKEYS,
+            [Shortcuts.ACTIONS.ZOOM_OUT.NAME]:              Shortcuts.ACTIONS.ZOOM_OUT.HOTKEYS,
+            [Shortcuts.ACTIONS.SIDEBAR_SCROLL_UP.NAME]:     Shortcuts.ACTIONS.SIDEBAR_SCROLL_UP.HOTKEYS,
+            [Shortcuts.ACTIONS.SIDEBAR_SCROLL_DOWN.NAME]:   Shortcuts.ACTIONS.SIDEBAR_SCROLL_DOWN.HOTKEYS,
+            [Shortcuts.ACTIONS.NAVIGATE_FORWARD.NAME]:      Shortcuts.ACTIONS.NAVIGATE_FORWARD.HOTKEYS,
+            [Shortcuts.ACTIONS.NAVIGATE_BACK.NAME]:         Shortcuts.ACTIONS.NAVIGATE_BACK.HOTKEYS
         };
         const insertShortcut = `
             INSERT OR IGNORE INTO shortcuts (action, shortcut)

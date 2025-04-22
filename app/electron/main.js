@@ -2028,11 +2028,16 @@ async function getOverlaySettings() {
             ],
             category: 'Scrolling Settings'
         },
-        // shortcuts: {
-        //     label: Settings.SHORTCUTS.LABEL,
-        //     description: Settings.SHORTCUTS.DESCRIPTION,
-        //     category: 'Hotkeys'
-        // }
+        shortcuts: {
+            label: Shortcuts.LABEL,
+            description: Shortcuts.DESCRIPTION,
+            category: 'Shortcuts',
+            actions: Object.values(Shortcuts.ACTIONS).map(shortcut => ({
+                label: shortcut.LABEL,
+                description: shortcut.DESCRIPTION,
+                hotkeys: shortcut.HOTKEYS
+            }))
+        }
     }
 }
 
@@ -2041,15 +2046,15 @@ async function registerSwitchShortcutCommands() {
         const shortcuts = await db.getShortcuts();
 
         const shortcutActions = [
-            { action: Shortcuts.CLICK.NAME, handler: () => handleClickShortcut() },
-            { action: Shortcuts.TOGGLE_OMNI_BOX.NAME, handler: () => handleToggleOmniBoxShortcut() },
-            { action: Shortcuts.SIDEBAR_SCROLL_UP.NAME, handler: () => handleSidebarScrollUpShortcut() },
-            { action: Shortcuts.SIDEBAR_SCROLL_DOWN.NAME, handler: () => handleSidebarScrollDownShortcut() },
-            { action: Shortcuts.NAVIGATE_FORWARD.NAME, handler: () => handleNavigateForwardShortcut() },
-            { action: Shortcuts.NAVIGATE_BACK.NAME, handler: () => handleNavigateBackShortcut() },
-            { action: Shortcuts.TOGGLE_DWELLING.NAME, handler: () => handleToggleDwellingShortcut() },
-            { action: Shortcuts.ZOOM_IN.NAME, handler: () => handleZoomInShortcut() },
-            { action: Shortcuts.ZOOM_OUT.NAME, handler: () => handleZoomOutShortcut() },
+            { action: Shortcuts.ACTIONS.CLICK.NAME, handler: () => handleClickShortcut() },
+            { action: Shortcuts.ACTIONS.TOGGLE_OMNI_BOX.NAME, handler: () => handleToggleOmniBoxShortcut() },
+            { action: Shortcuts.ACTIONS.SIDEBAR_SCROLL_UP.NAME, handler: () => handleSidebarScrollUpShortcut() },
+            { action: Shortcuts.ACTIONS.SIDEBAR_SCROLL_DOWN.NAME, handler: () => handleSidebarScrollDownShortcut() },
+            { action: Shortcuts.ACTIONS.NAVIGATE_FORWARD.NAME, handler: () => handleNavigateForwardShortcut() },
+            { action: Shortcuts.ACTIONS.NAVIGATE_BACK.NAME, handler: () => handleNavigateBackShortcut() },
+            { action: Shortcuts.ACTIONS.TOGGLE_DWELLING.NAME, handler: () => handleToggleDwellingShortcut() },
+            { action: Shortcuts.ACTIONS.ZOOM_IN.NAME, handler: () => handleZoomInShortcut() },
+            { action: Shortcuts.ACTIONS.ZOOM_OUT.NAME, handler: () => handleZoomOutShortcut() },
         ];
 
         shortcutActions.forEach(({ action, handler }) => {
