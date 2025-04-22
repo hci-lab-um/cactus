@@ -84,22 +84,22 @@
   height: 100%;
   grid-template-columns: repeat(3, 1fr);
   grid-template-areas:
-    'topRow topRow topRow'
     'zoomIn zoomOut reset'
-    'toggleDwell toggleNav toggleClick'
+    'toggleDwell refresh settings'
+    'bottomRow bottomRow bottomRow'
     'cancel cancel cancel';
 
     #toggleDwellBtn {
       grid-area: toggleDwell;
     }
 
-    #toggleNavBtn {
-      grid-area: toggleNav;
-    }
+    // #toggleNavBtn {
+    //   grid-area: toggleNav;
+    // }
 
-    #toggleClickBtn {
-      grid-area: toggleClick;
-    }
+    // #toggleClickBtn {
+    //   grid-area: toggleClick;
+    // }
 
     #zoomInBtn {
       grid-area: zoomIn;
@@ -112,13 +112,19 @@
     #resetZoomBtn {
       grid-area: reset;
     }
+    
+    #settingsBtn {
+      grid-area: settings;
+    }
 
-    #topRow{
-      grid-area: topRow;
+    #refreshBtn{
+      grid-area: refresh;
+    }
+
+    #bottomRow {
+      grid-area: bottomRow;
       display: flex;
 
-      #settingsBtn,
-      #refreshBtn, 
       #aboutBtn,
       #exitBtn {
         flex: 1;
@@ -179,7 +185,7 @@
     justify-items: center;
     gap: 40px;
     padding: 40px;
-    overflow-y: auto;
+    overflow-y: scroll;
     
     /* width */
     &::-webkit-scrollbar {
@@ -425,6 +431,13 @@
       background: #638eec;
     }
 
+    h2 {
+      margin: 30px;
+      font-size: 2.5rem;
+      color: #0E315D;
+      text-align: center;
+    }
+    
     .aboutCard {
       display: flex;
       flex-direction: column;
@@ -436,9 +449,32 @@
       background-color: #e9eaf1;
       gap: 5px;
 
+      #cactusLogo {
+        &-container {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          margin-bottom: 1rem;
+          gap: 15px
+        }
+
+        &-logo {
+          width: 80px;
+          height: 80px;
+          border-radius: 50%;
+          margin: 0;
+        }
+      }
+
       h3 {
         margin: 0;
         font-size: 1.9rem;
+        color: #0E315D;
+      }
+
+      h4 {
+        margin-top: 8px;
+        font-size: 1.3rem;
         color: #0E315D;
       }
 

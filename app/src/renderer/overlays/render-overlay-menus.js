@@ -2,7 +2,7 @@ const { ipcRenderer } = require('electron')
 const { byId, dwell, dwellInfinite, detachAllDwellListeners } = require('../../../src/tools/utils')
 const { createCursor, followCursor, startCursorAnimation, stopCursorAnimation, getMouse } = require('../../../src/tools/cursor')
 const DOMPurify = require('dompurify');
-const logger = require('../../../src/tools/logger')
+const logger = require('../../../src/tools/logger');
 
 // Exposes an HTML sanitizer to allow for innerHtml assignments when TrustedHTML policies are set ('This document requires 'TrustedHTML' assignment')
 window.addEventListener('DOMContentLoaded', () => {
@@ -22,7 +22,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 ipcRenderer.on('ipc-main-overlays-loaded', (event, overlaysData) => {
 	try {
-		const { overlayAreaToShow, tabList, bookmarks, settings, canGoBack, canGoForward, isDwellingActive, useNavAreas, useRobotJS, dwellTime, quickDwellRange } = overlaysData;
+		const { overlayAreaToShow, tabList, bookmarks, settings, canGoBack, canGoForward, isDwellingActive, useNavAreas, useRobotJS, dwellTime, quickDwellRange, appVersion } = overlaysData;
 		console.log('Overlays data', overlaysData);
 
 		// Setting the dwell time in CSS variable
@@ -66,7 +66,7 @@ ipcRenderer.on('ipc-main-overlays-loaded', (event, overlaysData) => {
 			}
 			case 'about': {
 				byId('overlay-about').style.display = 'grid'
-				setEventHandlersForAboutPage();
+				setEventHandlersForAboutPage(appVersion);
 				break;
 			}
 		}
@@ -138,8 +138,8 @@ function setEventHandlersForAccessibilityMenu(isDwellingActive = null, useNavAre
 		const zoomOutBtn = byId('zoomOutBtn')
 		const resetZoomBtn = byId('resetZoomBtn')
 		const toggleDwellBtn = byId('toggleDwellBtn')
-		const toggleNavBtn = byId('toggleNavBtn')
-		const toggleLinkClickingBtn = byId('toggleClickBtn')
+		// const toggleNavBtn = byId('toggleNavBtn')
+		// const toggleLinkClickingBtn = byId('toggleClickBtn')
 		const exitBtn = byId('exitBtn')
 		const cancelOptionsBtn = byId('cancel-options')
 		const aboutBtn = byId('aboutBtn')
@@ -150,13 +150,13 @@ function setEventHandlersForAccessibilityMenu(isDwellingActive = null, useNavAre
 			dwellingIcon.innerText = isDwellingActive ? 'toggle_on' : 'toggle_off';
 			dwellingIcon.style.color = dwellingIcon.innerText === 'toggle_on' ? '#10468b' : '#aaacbb';
 
-			let navIcon = toggleNavBtn.getElementsByTagName('i')[0];
-			navIcon.innerText = useNavAreas ? 'toggle_on' : 'toggle_off';
-			navIcon.style.color = navIcon.innerText === 'toggle_on' ? '#10468b' : '#aaacbb';
+			// let navIcon = toggleNavBtn.getElementsByTagName('i')[0];
+			// navIcon.innerText = useNavAreas ? 'toggle_on' : 'toggle_off';
+			// navIcon.style.color = navIcon.innerText === 'toggle_on' ? '#10468b' : '#aaacbb';
 
-			let clickIcon = toggleLinkClickingBtn.getElementsByTagName('i')[0];
-			clickIcon.innerText = useRobotJS ? 'toggle_on' : 'toggle_off';
-			clickIcon.style.color = clickIcon.innerText === 'toggle_on' ? '#10468b' : '#aaacbb';
+			// let clickIcon = toggleLinkClickingBtn.getElementsByTagName('i')[0];
+			// clickIcon.innerText = useRobotJS ? 'toggle_on' : 'toggle_off';
+			// clickIcon.style.color = clickIcon.innerText === 'toggle_on' ? '#10468b' : '#aaacbb';
 		}
 
 		dwell(refreshBtn, () => {
@@ -190,19 +190,19 @@ function setEventHandlersForAccessibilityMenu(isDwellingActive = null, useNavAre
 			icon.style.color = icon.innerText === 'toggle_on' ? '#10468b' : '#aaacbb';
 		})
 
-		dwell(toggleNavBtn, () => {
-			ipcRenderer.send('ipc-overlays-toggle-nav');
-			let icon = toggleNavBtn.getElementsByTagName('i')[0];
-			icon.innerText = icon.innerText === 'toggle_on' ? 'toggle_off' : 'toggle_on';
-			icon.style.color = icon.innerText === 'toggle_on' ? '#10468b' : '#aaacbb';
-		})
+		// dwell(toggleNavBtn, () => {
+		// 	ipcRenderer.send('ipc-overlays-toggle-nav');
+		// 	let icon = toggleNavBtn.getElementsByTagName('i')[0];
+		// 	icon.innerText = icon.innerText === 'toggle_on' ? 'toggle_off' : 'toggle_on';
+		// 	icon.style.color = icon.innerText === 'toggle_on' ? '#10468b' : '#aaacbb';
+		// })
 
-		dwell(toggleLinkClickingBtn, () => {
-			ipcRenderer.send('ipc-overlays-toggle-useRobotJS');
-			let icon = toggleLinkClickingBtn.getElementsByTagName('i')[0];
-			icon.innerText = icon.innerText === 'toggle_on' ? 'toggle_off' : 'toggle_on';
-			icon.style.color = icon.innerText === 'toggle_on' ? '#10468b' : '#aaacbb';
-		})
+		// dwell(toggleLinkClickingBtn, () => {
+		// 	ipcRenderer.send('ipc-overlays-toggle-useRobotJS');
+		// 	let icon = toggleLinkClickingBtn.getElementsByTagName('i')[0];
+		// 	icon.innerText = icon.innerText === 'toggle_on' ? 'toggle_off' : 'toggle_on';
+		// 	icon.style.color = icon.innerText === 'toggle_on' ? '#10468b' : '#aaacbb';
+		// })
 
 		dwell(exitBtn, () => {
 			ipcRenderer.send('ipc-exit-browser');
@@ -712,7 +712,7 @@ function setEventHandlersForSettingsMenu(settings = null) {
 	}
 }
 
-function setEventHandlersForAboutPage() {
+function setEventHandlersForAboutPage(appVersion) {
 	try {
 		// =================================
 		// ======== ABOUT OVERLAY =========
@@ -723,6 +723,9 @@ function setEventHandlersForAboutPage() {
 		const scrollDownBtn = byId('aboutScrollDownBtn')
 		const aboutCardsContainer = byId('aboutCardsContainer')
 		const linkButtons = document.querySelectorAll('.linkButton');
+		const versionNumber = byId('appVersion');
+
+		versionNumber.textContent = appVersion;
 
 		dwell(cancelAboutBtn, () => ipcRenderer.send('ipc-overlays-remove'));
 
