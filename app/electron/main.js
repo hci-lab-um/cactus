@@ -809,22 +809,6 @@ ipcMain.on('ipc-overlays-toggle-dwell', (event) => {
     }
 });
 
-// ipcMain.on('ipc-overlays-toggle-nav', (event) => {
-//     try {
-//         toggleNavigation();
-//     } catch (err) {
-//         logger.error('Error toggling navigation:', err.message);
-//     }
-// });
-
-// ipcMain.on('ipc-overlays-toggle-useRobotJS', (event) => {
-//     try {
-//         toggleUseRobotJS();
-//     } catch (err) {
-//         logger.error('Error toggling RobotJS:', err.message);
-//     }
-// });
-
 ipcMain.on('ipc-exit-browser', async (event) => {
     try {
         removeOverlay();

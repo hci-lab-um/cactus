@@ -139,25 +139,14 @@ function setEventHandlersForAccessibilityMenu(isDwellingActive = null, useNavAre
 		const zoomOutBtn = byId('zoomOutBtn')
 		const resetZoomBtn = byId('resetZoomBtn')
 		const toggleDwellBtn = byId('toggleDwellBtn')
-		// const toggleNavBtn = byId('toggleNavBtn')
-		// const toggleLinkClickingBtn = byId('toggleClickBtn')
 		const exitBtn = byId('exitBtn')
 		const cancelOptionsBtn = byId('cancel-options')
 		const aboutBtn = byId('aboutBtn')
-		// const bookmarksBtn = byId('bookmarksBtn')
 
 		if (!reattachListeners) {
 			let dwellingIcon = toggleDwellBtn.getElementsByTagName('i')[0];
 			dwellingIcon.innerText = isDwellingActive ? 'toggle_on' : 'toggle_off';
 			dwellingIcon.style.color = dwellingIcon.innerText === 'toggle_on' ? '#10468b' : '#aaacbb';
-
-			// let navIcon = toggleNavBtn.getElementsByTagName('i')[0];
-			// navIcon.innerText = useNavAreas ? 'toggle_on' : 'toggle_off';
-			// navIcon.style.color = navIcon.innerText === 'toggle_on' ? '#10468b' : '#aaacbb';
-
-			// let clickIcon = toggleLinkClickingBtn.getElementsByTagName('i')[0];
-			// clickIcon.innerText = useRobotJS ? 'toggle_on' : 'toggle_off';
-			// clickIcon.style.color = clickIcon.innerText === 'toggle_on' ? '#10468b' : '#aaacbb';
 		}
 
 		dwell(refreshBtn, () => {
@@ -190,20 +179,6 @@ function setEventHandlersForAccessibilityMenu(isDwellingActive = null, useNavAre
 			icon.innerText = icon.innerText === 'toggle_on' ? 'toggle_off' : 'toggle_on';
 			icon.style.color = icon.innerText === 'toggle_on' ? '#10468b' : '#aaacbb';
 		})
-
-		// dwell(toggleNavBtn, () => {
-		// 	ipcRenderer.send('ipc-overlays-toggle-nav');
-		// 	let icon = toggleNavBtn.getElementsByTagName('i')[0];
-		// 	icon.innerText = icon.innerText === 'toggle_on' ? 'toggle_off' : 'toggle_on';
-		// 	icon.style.color = icon.innerText === 'toggle_on' ? '#10468b' : '#aaacbb';
-		// })
-
-		// dwell(toggleLinkClickingBtn, () => {
-		// 	ipcRenderer.send('ipc-overlays-toggle-useRobotJS');
-		// 	let icon = toggleLinkClickingBtn.getElementsByTagName('i')[0];
-		// 	icon.innerText = icon.innerText === 'toggle_on' ? 'toggle_off' : 'toggle_on';
-		// 	icon.style.color = icon.innerText === 'toggle_on' ? '#10468b' : '#aaacbb';
-		// })
 
 		dwell(exitBtn, () => {
 			ipcRenderer.send('ipc-exit-browser');
