@@ -809,21 +809,21 @@ ipcMain.on('ipc-overlays-toggle-dwell', (event) => {
     }
 });
 
-ipcMain.on('ipc-overlays-toggle-nav', (event) => {
-    try {
-        toggleNavigation();
-    } catch (err) {
-        logger.error('Error toggling navigation:', err.message);
-    }
-});
+// ipcMain.on('ipc-overlays-toggle-nav', (event) => {
+//     try {
+//         toggleNavigation();
+//     } catch (err) {
+//         logger.error('Error toggling navigation:', err.message);
+//     }
+// });
 
-ipcMain.on('ipc-overlays-toggle-useRobotJS', (event) => {
-    try {
-        toggleUseRobotJS();
-    } catch (err) {
-        logger.error('Error toggling RobotJS:', err.message);
-    }
-});
+// ipcMain.on('ipc-overlays-toggle-useRobotJS', (event) => {
+//     try {
+//         toggleUseRobotJS();
+//     } catch (err) {
+//         logger.error('Error toggling RobotJS:', err.message);
+//     }
+// });
 
 ipcMain.on('ipc-exit-browser', async (event) => {
     try {
@@ -981,32 +981,23 @@ ipcMain.on('ipc-settings-show-keyboard', (event, elementProperties) => {
 ipcMain.on('ipc-settings-option-selected', (event, setting, optionValue) => {
     try {
         switch (setting.label) {
+            case Settings.USE_NAV_AREAS.LABEL:
+                toggleNavigation();
+                break;
+            case Settings.USE_ROBOT_JS.LABEL:
+                toggleUseRobotJS();
+                break;
             case Settings.DWELL_TIME.LABEL:
-                dwellTime = optionValue;
-                db.updateDwellTime(optionValue);
-                mainWindowContent.webContents.send('ipc-mainwindow-update-dwell-time', optionValue);
-                overlayList.slice(0, -1).forEach(overlay => {
-                    overlay.webContents.send('ipc-setting-update-dwell-time', optionValue);
-                });
+                updateDwellTime(optionValue);
                 break;
             case Settings.KEYBOARD_DWELL_TIME.LABEL:
-                keyboardDwellTime = optionValue;
-                db.updateKeyboardDwellTime(optionValue);
-                overlayList.forEach(overlay => {
-                    overlay.webContents.send('ipc-setting-update-keyboard-dwell-time', optionValue);
-                });
+                updateKeyboardDwellTime(optionValue);
                 break;
             case Settings.TAB_VIEW_SCROLL_DISTANCE.LABEL:
-                scrollDistance = optionValue;
-                db.updateTabScrollDistance(optionValue);
-                tabList.forEach(tab => {
-                    tab.webContentsView.webContents.send('ipc-tabview-update-scroll-distance', optionValue);
-                });
+                updateScrollDistance(optionValue)
                 break;
             case Settings.MENU_AREA_SCROLL_DISTANCE.LABEL:
-                menuAreaScrollDistance = optionValue;
-                db.updateMenuScrollDistance(optionValue);
-                mainWindowContent.webContents.send('ipc-mainwindow-update-scroll-distance', optionValue);
+                updateMenuAreaScrollDistance(optionValue);
                 break;
             case Settings.DEFAULT_LAYOUT.LABEL:
                 db.updateDefaultLayout(optionValue);
@@ -1959,6 +1950,18 @@ async function createOverlay(overlayAreaToShow, elementProperties, isTransparent
 
                 case 'settings':
                     overlaysData.settings = {
+                        useNavAreas: {
+                            value: useNavAreas,
+                            label: Settings.USE_NAV_AREAS.LABEL,
+                            description: Settings.USE_NAV_AREAS.DESCRIPTION,
+                            category: 'Usability Toggles'
+                        },
+                        useRobotJS: {
+                            value: useRobotJS,
+                            label: Settings.USE_ROBOT_JS.LABEL,
+                            description: Settings.USE_ROBOT_JS.DESCRIPTION,
+                            category: 'Usability Toggles'
+                        },
                         defaultUrl: {
                             value: defaultUrl,
                             label: Settings.DEFAULT_URL.LABEL,
@@ -2175,6 +2178,53 @@ async function toggleUseRobotJS() {
         await db.updateUserSetting(Settings.USE_ROBOT_JS.NAME, useRobotJS);
     } catch (err) {
         logger.error('Error toggling RobotJS:', err.message);
+    }
+}
+
+async function updateDwellTime(newDwellTime) {
+    try {
+        dwellTime = newDwellTime;
+        db.updateDwellTime(newDwellTime);
+        mainWindowContent.webContents.send('ipc-mainwindow-update-dwell-time', newDwellTime);
+        overlayList.slice(0, -1).forEach(overlay => {
+            overlay.webContents.send('ipc-setting-update-dwell-time', newDwellTime);
+        });
+    } catch (err) {
+        logger.error('Error updating dwell time:', err.message);
+    }
+}
+
+async function updateKeyboardDwellTime(newKeyboardDwellTime) {
+    try {
+        keyboardDwellTime = newKeyboardDwellTime;
+        db.updateKeyboardDwellTime(newKeyboardDwellTime);
+        overlayList.forEach(overlay => {
+            overlay.webContents.send('ipc-setting-update-keyboard-dwell-time', newKeyboardDwellTime);
+        });
+    } catch (err) {
+        logger.error('Error updating keyboard dwell time:', err.message);
+    }
+}
+
+async function updateScrollDistance(newScrollDistance) {
+    try {
+        scrollDistance = newScrollDistance;
+        db.updateTabScrollDistance(newScrollDistance);
+        tabList.forEach(tab => {
+            tab.webContentsView.webContents.send('ipc-tabview-update-scroll-distance', newScrollDistance);
+        });
+    } catch (err) {
+        logger.error('Error updating scroll distance:', err.message);
+    }
+}
+
+async function updateMenuAreaScrollDistance(newMenuAreaScrollDistance) {
+    try {
+        menuAreaScrollDistance = newMenuAreaScrollDistance;
+        db.updateMenuScrollDistance(newMenuAreaScrollDistance);
+        mainWindowContent.webContents.send('ipc-mainwindow-update-scroll-distance', newMenuAreaScrollDistance);
+    } catch (err) {
+        logger.error('Error updating menu area scroll distance:', err.message);
     }
 }
 

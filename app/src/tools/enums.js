@@ -73,10 +73,17 @@ const Settings = Object.freeze({
     },
     USE_NAV_AREAS: {
         NAME: "useNavAreas",
+        LABEL: "Menu Rendering",
+        // LABEL: "Hierarchical Menu",
+        DESCRIPTION: "Determines if the sidebar displays a hierarchical menu or individual elements. Enabling this option will show the menu hierarchy.",
         DEFAULT: 0,
-    },
-    USE_ROBOT_JS: {
+        },
+        USE_ROBOT_JS: {
         NAME: "useRobotJS",
+        LABEL: "Link Interaction",
+        // LABEL: "Link Clicking",
+        // LABEL: "Manual Clicking",
+        DESCRIPTION: "Determines if the application will use the URL to navigate to a link, or if it will move the eye cursor on the link and click it manually. Enabling this option will use the manual clicking method.",
         DEFAULT: 1,
     },
     IS_DWELLING_ACTIVE: {

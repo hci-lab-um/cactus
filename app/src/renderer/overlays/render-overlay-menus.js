@@ -3,6 +3,7 @@ const { byId, dwell, dwellInfinite, detachAllDwellListeners } = require('../../.
 const { createCursor, followCursor, startCursorAnimation, stopCursorAnimation, getMouse } = require('../../../src/tools/cursor')
 const DOMPurify = require('dompurify');
 const logger = require('../../../src/tools/logger');
+const { Settings } = require('../../../src/tools/enums');
 
 // Exposes an HTML sanitizer to allow for innerHtml assignments when TrustedHTML policies are set ('This document requires 'TrustedHTML' assignment')
 window.addEventListener('DOMContentLoaded', () => {
@@ -639,36 +640,63 @@ function setEventHandlersForSettingsMenu(settings = null) {
 			const card = document.createElement('div');
 			card.classList.add('settingCard', 'fadeInUp');
 
+			const stylingDiv = document.createElement('div');
+			card.appendChild(stylingDiv);
+
 			const title = document.createElement('h3');
 			title.textContent = setting.label;
-			card.appendChild(title);
+			stylingDiv.appendChild(title);
 
 			const description = document.createElement('p');
 			description.textContent = setting.description;
-			card.appendChild(description);
+			stylingDiv.appendChild(description);
 
 			// Add options container for settings with multiple options
 			const optionsContainer = document.createElement('div');
 			optionsContainer.classList.add('optionsContainer');
 
-			// Add toggle button for settings with a single option
 			if (!setting.options || setting.options.length === 1) {
-				const defaultValue = document.createElement('div');
-				defaultValue.id = 'url'
-				defaultValue.classList.add('option', 'overlayBtn');
-				defaultValue.textContent = setting.value
+				// if it is the homepage URL setting, add a text input instead of a toggle button
+				if (setting.label === Settings.DEFAULT_URL.LABEL) {
+					const defaultValue = document.createElement('div');
+					defaultValue.id = 'url'
+					defaultValue.classList.add('option', 'overlayBtn');
+					defaultValue.textContent = setting.value
 
-				dwell(defaultValue, () => {
-					let elementProperties = {
-						id: 'url',
-						value: setting.value,
-						type: 'text',
-						isSetting: true,
-					}
-					ipcRenderer.send('ipc-settings-show-keyboard', elementProperties);
-				});
+					dwell(defaultValue, () => {
+						let elementProperties = {
+							id: 'url',
+							value: setting.value,
+							type: 'text',
+							isSetting: true,
+						}
+						ipcRenderer.send('ipc-settings-show-keyboard', elementProperties);
+					});
+					
+					optionsContainer.appendChild(defaultValue);
+				} else {
+					// Updating css for the selected option
+					optionsContainer.classList.add('optionsContainer--minWidth');
+					card.classList.add('settingCard--flex-row');
 
-				optionsContainer.appendChild(defaultValue);
+					// Create a toggle button for boolean settings
+					const toggleBtn = document.createElement('div');
+					toggleBtn.classList.add('overlayBtn', 'overlayBtn--square', 'fadeInUp');
+
+					const icon = document.createElement('i');
+					icon.classList.add('material-icons--medium');
+					icon.innerText = setting.value ? 'toggle_on' : 'toggle_off';
+					icon.style.color = setting.value ? '#10468b' : '#aaacbb';
+					toggleBtn.appendChild(icon);
+
+					dwell(toggleBtn, () => {
+						ipcRenderer.send('ipc-settings-option-selected', setting, !setting.value);
+						icon.innerText = icon.innerText === 'toggle_on' ? 'toggle_off' : 'toggle_on';
+						icon.style.color = icon.innerText === 'toggle_on' ? '#10468b' : '#aaacbb';
+					});
+
+					optionsContainer.appendChild(toggleBtn);
+				}
 			} else {
 				// Adjust layout based on the number of options
 				if (setting.options.length === 4) {

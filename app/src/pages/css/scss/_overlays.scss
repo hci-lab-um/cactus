@@ -93,14 +93,6 @@
       grid-area: toggleDwell;
     }
 
-    // #toggleNavBtn {
-    //   grid-area: toggleNav;
-    // }
-
-    // #toggleClickBtn {
-    //   grid-area: toggleClick;
-    // }
-
     #zoomInBtn {
       grid-area: zoomIn;
     }
@@ -353,6 +345,11 @@
       background-color: #e9eaf1;
       gap: 5px;
 
+      &--flex-row {
+        flex-direction: row;
+        align-items: center;
+      }
+
       h3 {
         margin: 0;
         font-size: 1.9rem;
@@ -372,6 +369,10 @@
         justify-content: space-between;
         gap: 2%;
         margin-top: 10px;
+
+        &--minWidth {
+          width: min-content;
+        }
         
         .option {
           flex: 1;
@@ -588,6 +589,10 @@
   &--left-align {
     justify-content: flex-start;
     padding-left: 3vw;
+  }
+
+  &--square {
+    padding: 3vw;
   }
 
   &--sidebar {
