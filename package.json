@@ -38,19 +38,31 @@
 				"AppImage",
 				"deb"
 			],
-			"icon": "/app/resources/logo.png"
+			"icon": "/app/resources/logo.ico"
 		},
 		"win": {
 			"target": [
 				"nsis"
 			],
-			"icon": "/app/resources/logo.png"
+			"icon": "/app/resources/logo.ico"
 		},
 		"mac": {
 			"target": [
 				"dmg"
 			],
-			"icon": "/app/resources/logo.png"
+			"icon": "/app/resources/logo.ico"
+		},
+		"nsis": {
+			"oneClick": false,
+			"allowToChangeInstallationDirectory": true,
+			"installerIcon": "app/resources/logo.ico",
+			"installerHeaderIcon": "app/resources/logo.ico",
+			"uninstallerIcon": "app/resources/logo.ico",
+			"installerSidebar": "app/resources/installerSidebar.bmp",
+			"uninstallerSidebar": "app/resources/installerSidebar.bmp",
+			"createDesktopShortcut": true,
+			"createStartMenuShortcut": true,
+			"shortcutName": "Cactus"
 		}
 	},
 	"devDependencies": {
