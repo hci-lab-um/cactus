@@ -759,7 +759,7 @@ function serializeElement(element) {
 			}) : null,
 			nodeType: element.nodeType,
 			childNodes: element.childNodes ? Array.from(element.childNodes).map(serializeChildNode) : null,
-			videoAudioOptions: [
+			videoAudioOptions: (element.tagName === 'VIDEO' || element.tagName === 'AUDIO') ? [
 				{
 					value: 'pausePlay',
 					textContent: 'Pause/Play',
@@ -804,7 +804,7 @@ function serializeElement(element) {
 						const duration = element.duration;
 						const values = [];
 
-						if (duration && (element.tagName === 'VIDEO' || element.tagName === 'AUDIO')) {
+						if (duration) {
 							for (let i = 1; i <= 10; i++) { 
 								const time = (i / 10) * duration; 
 								values.push({
@@ -818,7 +818,7 @@ function serializeElement(element) {
 						}
 					})(),
 				}
-			]
+			] : null
 		};
 	} catch (error) {
 		window.cactusAPI.logError(`Error serializing element: ${error.message}`);
