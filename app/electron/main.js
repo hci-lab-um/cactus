@@ -2175,9 +2175,11 @@ async function toggleReadMode() {
 async function toggleUseNavAreas() {
     try {
         useNavAreas = !useNavAreas;
-        tabList.forEach(tab => {
-            tab.webContentsView.webContents.send('ipc-tabview-create-quadtree', useNavAreas);
-        });
+        // Update the quadtree in the active tab only since other tabs will regenerate the quadtree when they are activated
+        const activeTab = tabList.find(tab => tab.isActive === true);
+        if (activeTab) {
+            activeTab.webContentsView.webContents.send('ipc-tabview-create-quadtree', useNavAreas);
+        }
         await db.updateUserSetting(Settings.USE_NAV_AREAS.NAME, useNavAreas);
     } catch (err) {
         logger.error('Error toggling navigation:', err.message);
