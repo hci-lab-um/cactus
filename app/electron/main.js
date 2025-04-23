@@ -1211,10 +1211,13 @@ function resizeMainWindow() {
                         height: Math.floor(properties.height)
                     };
 
-                    // Update the bounds of all tabs
+                    // Update the bounds of all tabs, and the quadtree of the active tab.
+                    // There is no need to update the bounds of the inactive tabs, since they will be updated when they are activated.
+                    let activeTab = tabList.find(tab => tab.isActive === true);
                     tabList.forEach(tab => {
                         tab.webContentsView.setBounds(webpageBounds);
                     });
+                    activeTab.webContentsView.webContents.send('ipc-tabview-create-quadtree', useNavAreas);
                 } catch (err) {
                     logger.error('Error updating webpage bounds:', err.message);
                 }
