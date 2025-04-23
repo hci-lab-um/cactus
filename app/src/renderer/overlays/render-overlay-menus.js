@@ -598,7 +598,7 @@ function setEventHandlersForSettingsMenu(settings = null) {
 		dwellInfinite(scrollDownBtn, () => scrollByOneRow(1, settingsCardsContainer));
 
 		// Close button functionality
-		dwell(cancelSettingsBtn, () => ipcRenderer.send('ipc-overlays-remove'));
+		dwell(cancelSettingsBtn, () => ipcRenderer.send('ipc-overlays-remove-and-update'));
 
 		function groupSettingsByCategory(settings) {
 			return Object.values(settings).reduce((grouped, setting) => {

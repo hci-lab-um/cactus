@@ -312,7 +312,6 @@ ipcMain.on('ipc-tabview-clear-sidebar', (event) => {
 });
 
 ipcMain.on('ipc-tabview-cursor-mouseover', (event, mouseData) => {
-    console.log("Mouse data: ", mouseData);
     try {
         clearInterval(timeoutCursorHovering);
 
@@ -980,7 +979,7 @@ ipcMain.on('ipc-settings-option-selected', (event, setting, optionValue) => {
     try {
         switch (setting.label) {
             case Settings.USE_NAV_AREAS.LABEL:
-                toggleNavigation();
+                toggleUseNavAreas();
                 break;
             case Settings.USE_ROBOT_JS.LABEL:
                 toggleUseRobotJS();
@@ -2170,7 +2169,7 @@ async function toggleReadMode() {
     }
 }
 
-async function toggleNavigation() {
+async function toggleUseNavAreas() {
     try {
         useNavAreas = !useNavAreas;
         tabList.forEach(tab => {
