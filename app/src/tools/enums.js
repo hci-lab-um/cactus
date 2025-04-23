@@ -103,7 +103,7 @@ const Settings = Object.freeze({
     TAB_VIEW_SCROLL_DISTANCE: {
         NAME: "tabViewScrollDistance",
         LABEL: "Web Page Scroll Speed",
-        DESCRIPTION: "The speed at which the web page scrolls when using the arrow buttons.",
+        DESCRIPTION: "The speed at which the web page on every tab scrolls when using the arrow buttons.",
         SLOW: 5,
         NORMAL: 10,
         FAST: 15,
@@ -124,15 +124,15 @@ const Settings = Object.freeze({
         NAME: "useNavAreas",
         LABEL: "Menu Rendering",
         // LABEL: "Hierarchical Menu",
-        DESCRIPTION: "Determines if the sidebar displays a hierarchical menu or individual elements. Enabling this option will show the menu hierarchy.",
+        DESCRIPTION: "Determines if the sidebar displays a hierarchical menu or individual elements. Enabling this option will show the menu hierarchy. This setting will apply to all open tabs.",
         DEFAULT: 0,
         },
         USE_ROBOT_JS: {
         NAME: "useRobotJS",
-        LABEL: "Link Interaction",
+        // LABEL: "Link Interaction",
         // LABEL: "Link Clicking",
-        // LABEL: "Manual Clicking",
-        DESCRIPTION: "Determines if the application will use the URL to navigate to a link, or if it will move the eye cursor on the link and click it manually. Enabling this option will use the manual clicking method.",
+        LABEL: "Manual Link Interaction",
+        DESCRIPTION: "Determines if the application will use the URL to navigate to a link, or if it will move the eye cursor on the link and click it manually. Enabling this option will use the manual clicking method on all open tabs.",
         DEFAULT: 1,
     },
     IS_READ_MODE_ACTIVE: {
