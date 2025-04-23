@@ -10,6 +10,8 @@ const db = require('../database/database.js');
 const { Settings, KeyboardLayouts, Shortcuts } = require('../src/tools/enums.js');
 const logger = require('../src/tools/logger.js');
 
+const gotTheLock = app.requestSingleInstanceLock()
+
 const isDevelopment = process.env.NODE_ENV === "development";
 let dwellRangeWidth;
 let dwellRangeHeight;
@@ -69,33 +71,37 @@ autoUpdater.on('update-downloaded', () => {
 // ====== APP EVENT LISTENERS ======
 // =================================
 
-app.whenReady().then(async () => {
-    try {
-        await db.connect();
-        await db.createTables();
-        await initialiseVariables();
-    } catch (err) {
-        logger.error('Error initializing database:', err.message);
-    }
-
-    try {
-        createSplashWindow();
-        setTimeout(() => {
-            try {
-                createMainWindow();
-
-                // Check for updates after the main window is created
-                autoUpdater.checkForUpdatesAndNotify();
-            } catch (err) {
-                logger.error('Error creating main window:', err.message);
-            }
-        }, 3000); // This is the duration of the splash screen gif
-
-        registerSwitchShortcutCommands();
-    } catch (err) {
-        logger.error('Error during app initialization:', err.message);
-    }
-});
+if (!gotTheLock) {
+    app.quit()
+} else {
+    app.whenReady().then(async () => {
+        try {
+            await db.connect();
+            await db.createTables();
+            await initialiseVariables();
+        } catch (err) {
+            logger.error('Error initializing database:', err.message);
+        }
+    
+        try {
+            createSplashWindow();
+            setTimeout(() => {
+                try {
+                    createMainWindow();
+    
+                    // Check for updates after the main window is created
+                    autoUpdater.checkForUpdatesAndNotify();
+                } catch (err) {
+                    logger.error('Error creating main window:', err.message);
+                }
+            }, 3000); // This is the duration of the splash screen gif
+    
+            registerSwitchShortcutCommands();
+        } catch (err) {
+            logger.error('Error during app initialization:', err.message);
+        }
+    });
+}
 
 app.on('window-all-closed', async () => {
     try {
@@ -168,7 +174,7 @@ ipcMain.handle('ipc-get-user-setting', async (event, setting) => {
             case Settings.KEYBOARD_DWELL_TIME.NAME:
                 return keyboardDwellTime;
             case Settings.MENU_AREA_SCROLL_DISTANCE.NAME:
-                return menuAreaScrollDistance; 99
+                return menuAreaScrollDistance;
             case Settings.MENU_AREA_SCROLL_INTERVAL_IN_MS.NAME:
                 return menuAreaScrollInterval;
             case Settings.TAB_VIEW_SCROLL_DISTANCE.NAME:
@@ -214,6 +220,13 @@ ipcMain.on('ipc-tabview-generateQuadTree', (event, contents) => {
         }).filter(Boolean);
 
         let pageDocument = new QtPageDocument(contents.docTitle, contents.docURL, visibleElements, adjustedWidth, adjustedHeight, null);
+
+        // find the element with type video and console log the insertion points
+        const videoElements = visibleElements.filter(el => el.type === 'video' || el.tag === 'video');
+        videoElements.forEach(el => {
+            console.log("Video element insertion points: ", el.insertionPointX, el.insertionPointY);
+            console.log("Video element x, y, width and height: ", el.x, el.y, el.width, el.height);
+        });
 
         qtBuilder.buildAsync(pageDocument).then((qt) => {
             try {
@@ -299,6 +312,7 @@ ipcMain.on('ipc-tabview-clear-sidebar', (event) => {
 });
 
 ipcMain.on('ipc-tabview-cursor-mouseover', (event, mouseData) => {
+    console.log("Mouse data: ", mouseData);
     try {
         clearInterval(timeoutCursorHovering);
 
