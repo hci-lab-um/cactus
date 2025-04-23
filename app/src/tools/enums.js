@@ -1,6 +1,6 @@
 const Shortcuts = Object.freeze({
     LABEL: "Hotkeys",
-    DESCRIPTION: "The following is a list of pre-configured keyboard shortcuts for faster browser interactions using an assistive switch and switch interface.",
+    DESCRIPTION: "The following is a list of pre-configured keyboard shortcuts for faster browser interactions using a programmable switch interface.",
     ACTIONS: {
         CLICK: {
             NAME: "click",

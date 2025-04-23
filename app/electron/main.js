@@ -2031,7 +2031,7 @@ async function getOverlaySettings() {
         shortcuts: {
             label: Shortcuts.LABEL,
             description: Shortcuts.DESCRIPTION,
-            category: 'Shortcuts',
+            category: 'Adaptive Switch Shortcuts',
             actions: Object.values(Shortcuts.ACTIONS).map(shortcut => ({
                 label: shortcut.LABEL,
                 description: shortcut.DESCRIPTION,
