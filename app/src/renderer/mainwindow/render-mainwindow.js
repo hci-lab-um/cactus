@@ -10,7 +10,7 @@ let omni, navbar, sidebar, sidebarItemArea, selectedNavItemTitle, menuNavLevelup
 let cursor;
 let navAreaStack = [];
 let url;
-let isDwellingActive;
+let isReadModeActive;
 let scrollDistance;
 let scrollIntervalInMs;
 
@@ -37,9 +37,9 @@ ipcRenderer.on('ipc-update-downloaded', () => {
 	}
 });
 
-ipcRenderer.on('mainWindowLoaded', (event, dwellTime, menuAreaScrollDistance, menuAreaScrollIntervalInMs, isDwelling) => {
+ipcRenderer.on('mainWindowLoaded', (event, dwellTime, menuAreaScrollDistance, menuAreaScrollIntervalInMs, isReadMode) => {
 	try {
-		isDwellingActive = isDwelling;
+		isReadModeActive = isReadMode;
 		scrollDistance = menuAreaScrollDistance;
 		scrollIntervalInMs = menuAreaScrollIntervalInMs;
 		// Setting the dwell time in CSS variable
@@ -56,13 +56,13 @@ ipcRenderer.on('mainWindowLoaded', (event, dwellTime, menuAreaScrollDistance, me
 	}
 });
 
-ipcRenderer.on('ipc-mainwindow-handle-dwell-events', (event, isDwelling) => {
+ipcRenderer.on('ipc-mainwindow-handle-dwell-events', (event, isReadMode) => {
 	try {
-		// When dwelling is off, the sidebar is not populated with elements, but if there are still elements in the sidebar, they are removed. 
+		// When read mode is on, the sidebar is not populated with elements, but if there are still elements in the sidebar, they are removed. 
 		// Therefore, resetNavigationSidebar() is called to clear the sidebar either from the previous elements, or from the dwelling message.
-		isDwellingActive = isDwelling;
+		isReadModeActive = isReadMode;
 		resetNavigationSidebar();
-		if (!isDwellingActive) showDwellingPausedMessage();
+		if (isReadModeActive) showDwellingPausedMessage();
 	} catch (error) {
 		logger.error("Error in ipc-mainwindow-handle-dwell-events handler:", error.message);
 	}
@@ -697,7 +697,7 @@ function resetNavigationSidebar(options = {}) {
 		selectedNavItemTitle.textContent = ""
 		selectedNavItemTitle.style.display = 'none'
 		
-		if (!isDwellingActive) showDwellingPausedMessage();
+		if (isReadModeActive) showDwellingPausedMessage();
 	} catch (error) {
 		logger.error("Error in resetNavigationSidebar:", error.message);
 	}

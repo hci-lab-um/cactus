@@ -115,7 +115,7 @@ function populateShortcutsTable() {
         const shortcuts = {
             [Shortcuts.ACTIONS.CLICK.NAME]:                 Shortcuts.ACTIONS.CLICK.HOTKEYS,
             [Shortcuts.ACTIONS.TOGGLE_OMNI_BOX.NAME]:       Shortcuts.ACTIONS.TOGGLE_OMNI_BOX.HOTKEYS,
-            [Shortcuts.ACTIONS.TOGGLE_DWELLING.NAME]:       Shortcuts.ACTIONS.TOGGLE_DWELLING.HOTKEYS,
+            [Shortcuts.ACTIONS.TOGGLE_READ_MODE.NAME]:       Shortcuts.ACTIONS.TOGGLE_READ_MODE.HOTKEYS,
             [Shortcuts.ACTIONS.ZOOM_IN.NAME]:               Shortcuts.ACTIONS.ZOOM_IN.HOTKEYS,
             [Shortcuts.ACTIONS.ZOOM_OUT.NAME]:              Shortcuts.ACTIONS.ZOOM_OUT.HOTKEYS,
             [Shortcuts.ACTIONS.SIDEBAR_SCROLL_UP.NAME]:     Shortcuts.ACTIONS.SIDEBAR_SCROLL_UP.HOTKEYS,
@@ -184,7 +184,7 @@ function populateUserSettingsTable() {
             [Settings.MENU_AREA_SCROLL_INTERVAL_IN_MS.NAME]: Settings.MENU_AREA_SCROLL_INTERVAL_IN_MS.DEFAULT,
             [Settings.USE_NAV_AREAS.NAME]: Settings.USE_NAV_AREAS.DEFAULT,
             [Settings.USE_ROBOT_JS.NAME]: Settings.USE_ROBOT_JS.DEFAULT,
-            [Settings.IS_DWELLING_ACTIVE.NAME]: Settings.IS_DWELLING_ACTIVE.DEFAULT,
+            [Settings.IS_READ_MODE_ACTIVE.NAME]: Settings.IS_READ_MODE_ACTIVE.DEFAULT,
             [Settings.DEFAULT_URL.NAME]: Settings.DEFAULT_URL.DEFAULT,
             [Settings.DEFAULT_LAYOUT.NAME]: Settings.DEFAULT_LAYOUT.DEFAULT
         };
@@ -426,8 +426,8 @@ function getUseRobotJS() {
     return getSetting(Settings.USE_ROBOT_JS.NAME).then(value => value === '1');
 }
 
-function getIsDwellingActive() {
-    return getSetting(Settings.IS_DWELLING_ACTIVE.NAME).then(value => value === '1');
+function getIsReadModeActive() {
+    return getSetting(Settings.IS_READ_MODE_ACTIVE.NAME).then(value => value === '1');
 }
 
 function getTabScrollDistance() {
@@ -523,7 +523,7 @@ function updateIsDwellingActive(value) {
     if (typeof value !== 'boolean') {
         throw new Error('Is Dwelling Active must be a boolean');
     }
-    return updateUserSetting(Settings.IS_DWELLING_ACTIVE.NAME, value ? 1 : 0);
+    return updateUserSetting(Settings.IS_READ_MODE_ACTIVE.NAME, value ? 1 : 0);
 }
 
 function updateTabScrollDistance(value) {
@@ -593,7 +593,7 @@ module.exports = {
     getDwellRangeHeight,
     getActivateNavAreas,
     getUseRobotJS,
-    getIsDwellingActive,
+    getIsReadModeActive,
     getTabScrollDistance,
     getMenuScrollDistance,
     getMenuScrollInterval,

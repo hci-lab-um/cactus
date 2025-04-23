@@ -14,10 +14,10 @@ const Shortcuts = Object.freeze({
             DESCRIPTION: "Opens or closes the Omni Box, which allows you to enter a URL or search term.",
             HOTKEYS: "CommandOrControl+Alt+O",
         },
-        TOGGLE_DWELLING: {
-            NAME: "toggleDwelling",
-            LABEL: "Pause/Resume Dwelling",
-            DESCRIPTION: "Pauses or resumes the dwelling action.",
+        TOGGLE_READ_MODE: {
+            NAME: "toggleReadMode",
+            LABEL: "Pause/Resume Reading Mode",
+            DESCRIPTION: "Pauses or resumes reading mode.",
             HOTKEYS: "CommandOrControl+Alt+D",
         },
         ZOOM_IN: {
@@ -135,9 +135,9 @@ const Settings = Object.freeze({
         DESCRIPTION: "Determines if the application will use the URL to navigate to a link, or if it will move the eye cursor on the link and click it manually. Enabling this option will use the manual clicking method.",
         DEFAULT: 1,
     },
-    IS_DWELLING_ACTIVE: {
-        NAME: "isDwellingActive",
-        DEFAULT: 1,
+    IS_READ_MODE_ACTIVE: {
+        NAME: "isReadModeActive",
+        DEFAULT: 0,
     },
     DEFAULT_URL: {
         NAME: "defaultUrl",

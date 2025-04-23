@@ -15,7 +15,7 @@ let dwellRangeWidth;
 let dwellRangeHeight;
 let useNavAreas;
 let useRobotJS;
-let isDwellingActive;
+let isReadModeActive;
 let defaultUrl;
 let scrollDistance;
 let scrollInterval;
@@ -179,8 +179,8 @@ ipcMain.handle('ipc-get-user-setting', async (event, setting) => {
                 return dwellRangeHeight;
             case Settings.USE_NAV_AREAS.NAME:
                 return useNavAreas;
-            case Settings.IS_DWELLING_ACTIVE.NAME:
-                return isDwellingActive;
+            case Settings.IS_READ_MODE_ACTIVE.NAME:
+                return isReadModeActive;
             default:
                 throw new Error(`Unknown setting: ${setting}`);
         }
@@ -304,8 +304,8 @@ ipcMain.on('ipc-tabview-cursor-mouseover', (event, mouseData) => {
 
         timeoutCursorHovering = setInterval(() => {
             try {
-                // New sidebar elements are only rendered if dwelling is active. This prevents the sidebar from being populated when the user has paused dwelling
-                if (isDwellingActive) {
+                // New sidebar elements are only rendered if read mode is inactive. This prevents the sidebar from being populated when dwelling is paused.
+                if (!isReadModeActive) {
                     const { x, y } = mouseData;
 
                     const qtRangeToQuery = new QtRange(x - (dwellRangeWidth / 2), y - (dwellRangeHeight / 2), dwellRangeWidth, dwellRangeHeight);
@@ -801,11 +801,11 @@ ipcMain.on('ipc-overlays-zoom-reset', (event) => {
     }
 });
 
-ipcMain.on('ipc-overlays-toggle-dwell', (event) => {
+ipcMain.on('ipc-overlays-toggle-read-mode', (event) => {
     try {
-        toggleDwelling();
+        toggleReadMode();
     } catch (err) {
-        logger.error('Error toggling dwell:', err.message);
+        logger.error('Error toggling read mode:', err.message);
     }
 });
 
@@ -1021,7 +1021,7 @@ async function initialiseVariables() {
         dwellRangeHeight = await db.getDwellRangeHeight();
         useNavAreas = await db.getActivateNavAreas();
         useRobotJS = await db.getUseRobotJS();
-        isDwellingActive = await db.getIsDwellingActive();
+        isReadModeActive = await db.getIsReadModeActive();
         scrollDistance = await db.getTabScrollDistance();
         keyboardDwellTime = await db.getKeyboardDwellTime();
         dwellTime = await db.getDwellTime();
@@ -1081,7 +1081,7 @@ function createMainWindow() {
 
         mainWindowContent.webContents.loadURL(path.join(__dirname, '../src/pages/index.html')).then(() => {
             try {
-                mainWindowContent.webContents.send('mainWindowLoaded', dwellTime, menuAreaScrollDistance, menuAreaScrollInterval, isDwellingActive);
+                mainWindowContent.webContents.send('mainWindowLoaded', dwellTime, menuAreaScrollDistance, menuAreaScrollInterval, isReadModeActive);
 
                 mainWindowContent.webContents.executeJavaScript(`
                 (() => {
@@ -1889,7 +1889,7 @@ async function createOverlay(overlayAreaToShow, elementProperties, isTransparent
                 bookmarks: [],
                 canGoBack: true,
                 canGoForward: true,
-                isDwellingActive: isDwellingActive,
+                isReadModeActive: isReadModeActive,
                 useNavAreas: useNavAreas,
                 useRobotJS: useRobotJS,
                 dwellTime: dwellTime,
@@ -2052,7 +2052,7 @@ async function registerSwitchShortcutCommands() {
             { action: Shortcuts.ACTIONS.SIDEBAR_SCROLL_DOWN.NAME, handler: () => handleSidebarScrollDownShortcut() },
             { action: Shortcuts.ACTIONS.NAVIGATE_FORWARD.NAME, handler: () => handleNavigateForwardShortcut() },
             { action: Shortcuts.ACTIONS.NAVIGATE_BACK.NAME, handler: () => handleNavigateBackShortcut() },
-            { action: Shortcuts.ACTIONS.TOGGLE_DWELLING.NAME, handler: () => handleToggleDwellingShortcut() },
+            { action: Shortcuts.ACTIONS.TOGGLE_READ_MODE.NAME, handler: () => handleToggleReadModeShortcut() },
             { action: Shortcuts.ACTIONS.ZOOM_IN.NAME, handler: () => handleZoomInShortcut() },
             { action: Shortcuts.ACTIONS.ZOOM_OUT.NAME, handler: () => handleZoomOutShortcut() },
         ];
@@ -2124,11 +2124,11 @@ function handleNavigateBackShortcut() {
     }
 }
 
-function handleToggleDwellingShortcut() {
+function handleToggleReadModeShortcut() {
     try {
-        toggleDwelling();
+        toggleReadMode();
     } catch (err) {
-        logger.error('Error handling toggle dwelling shortcut:', err.message);
+        logger.error('Error handling toggle read mode shortcut:', err.message);
     }
 }
 
@@ -2148,13 +2148,13 @@ function handleZoomOutShortcut() {
     }
 }
 
-async function toggleDwelling() {
+async function toggleReadMode() {
     try {
-        isDwellingActive = !isDwellingActive
-        mainWindowContent.webContents.send('ipc-mainwindow-handle-dwell-events', isDwellingActive);
-        await db.updateUserSetting(Settings.IS_DWELLING_ACTIVE.NAME, isDwellingActive);
+        isReadModeActive = !isReadModeActive
+        mainWindowContent.webContents.send('ipc-mainwindow-handle-dwell-events', isReadModeActive);
+        await db.updateUserSetting(Settings.IS_READ_MODE_ACTIVE.NAME, isReadModeActive);
     } catch (err) {
-        logger.error('Error toggling dwelling:', err.message);
+        logger.error('Error toggling read mode:', err.message);
     }
 }
 

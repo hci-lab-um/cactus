@@ -23,7 +23,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 ipcRenderer.on('ipc-main-overlays-loaded', (event, overlaysData) => {
 	try {
-		const { overlayAreaToShow, tabList, bookmarks, settings, canGoBack, canGoForward, isDwellingActive, useNavAreas, useRobotJS, dwellTime, quickDwellRange, appVersion } = overlaysData;
+		const { overlayAreaToShow, tabList, bookmarks, settings, canGoBack, canGoForward, isReadModeActive, useNavAreas, useRobotJS, dwellTime, quickDwellRange, appVersion } = overlaysData;
 		console.log('Overlays data', overlaysData);
 
 		// Setting the dwell time in CSS variable
@@ -47,7 +47,7 @@ ipcRenderer.on('ipc-main-overlays-loaded', (event, overlaysData) => {
 			}
 			case 'accessibility': {
 				byId('overlay-options').style.display = 'grid'
-				setEventHandlersForAccessibilityMenu(isDwellingActive, useNavAreas, useRobotJS);
+				setEventHandlersForAccessibilityMenu(isReadModeActive, useNavAreas, useRobotJS);
 				break;
 			}
 			case 'bookmarks': {
@@ -127,7 +127,7 @@ function setEventHandlersForOmniMenu() {
 	}
 }
 
-function setEventHandlersForAccessibilityMenu(isDwellingActive = null, useNavAreas = null, useRobotJS = null, reattachListeners = false) {
+function setEventHandlersForAccessibilityMenu(isReadModeActive = null, useNavAreas = null, useRobotJS = null, reattachListeners = false) {
 	try {
 		// =================================
 		// ======== OPTIONS OVERLAY ========
@@ -138,15 +138,15 @@ function setEventHandlersForAccessibilityMenu(isDwellingActive = null, useNavAre
 		const zoomInBtn = byId('zoomInBtn')
 		const zoomOutBtn = byId('zoomOutBtn')
 		const resetZoomBtn = byId('resetZoomBtn')
-		const toggleDwellBtn = byId('toggleDwellBtn')
+		const toggleReadModeBtn = byId('toggleDwellBtn')
 		const exitBtn = byId('exitBtn')
 		const cancelOptionsBtn = byId('cancel-options')
 		const aboutBtn = byId('aboutBtn')
 
 		if (!reattachListeners) {
-			let dwellingIcon = toggleDwellBtn.getElementsByTagName('i')[0];
-			dwellingIcon.innerText = isDwellingActive ? 'toggle_on' : 'toggle_off';
-			dwellingIcon.style.color = dwellingIcon.innerText === 'toggle_on' ? '#10468b' : '#aaacbb';
+			let readModeIcon = toggleReadModeBtn.getElementsByTagName('i')[0];
+			readModeIcon.innerText = isReadModeActive ? 'toggle_on' : 'toggle_off';
+			readModeIcon.style.color = readModeIcon.innerText === 'toggle_on' ? '#10468b' : '#aaacbb';
 		}
 
 		dwell(refreshBtn, () => {
@@ -173,9 +173,9 @@ function setEventHandlersForAccessibilityMenu(isDwellingActive = null, useNavAre
 			ipcRenderer.send('ipc-overlays-zoom-reset');
 		})
 
-		dwell(toggleDwellBtn, () => {
-			ipcRenderer.send('ipc-overlays-toggle-dwell');
-			let icon = toggleDwellBtn.getElementsByTagName('i')[0];
+		dwell(toggleReadModeBtn, () => {
+			ipcRenderer.send('ipc-overlays-toggle-read-mode');
+			let icon = toggleReadModeBtn.getElementsByTagName('i')[0];
 			icon.innerText = icon.innerText === 'toggle_on' ? 'toggle_off' : 'toggle_on';
 			icon.style.color = icon.innerText === 'toggle_on' ? '#10468b' : '#aaacbb';
 		})
