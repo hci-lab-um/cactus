@@ -59,52 +59,56 @@ window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist, isActiv
 				// a) not custom Cursor related (debounce every x ms to avoid too many quadtree gen calls)
 				// b) not a known attribute being added/removed
 				for (let mutation of mutationsList) {
-					if (
-						mutation.target.id != 'cactus_cursor'
-						&& !mutation.target.classList.contains('cactusElementVisualise')
-						&& !mutation.target.classList.contains('cactusElementVisualiseRemoved')
-						&& !mutation.target.classList.contains('cactus-element-highlight')
-
-						// this prevents the insertion of the scrolling buttons from being registered as a mutation
-						&& !mutation.target.classList.contains('cactus-scrollButton')
-						&& !mutation.target.classList.contains('cactus-scrollUp_outerDiv')
-						&& !mutation.target.classList.contains('cactus-scrollDown_outerDiv')
-					) {
-						console.log(`Mutation observed for tab with url ${document.URL}.. calling generate quad tree ${mutation}`);
-						//Indicate callback execution
-						mutationObserverCallbackExecuting = true;
-
-						//Execute quadtree generation AFTER 1 SECOND TO WAIT FOR THE PAGE TO LOAD THE CHANGES AND DETECT THE NEW ELEMENTS!!!
-						setTimeout(() => {
-							try {
-								generateQuadTree();
-								if (useNavAreas) generateNavAreasTree();
-								sendMessageToIframes('ipc-iframes-loaded', { scrollDist });
-							} catch (error) {
-								window.cactusAPI.logError(`Error generating QuadTree/NavAreasTree: ${error.message}`);
-							}
-						}, 1000);
-
-						console.log("quad tree generated");
-
-						// If the mutation is a simple data-cactus-id attribute change, then scroll buttons are not updated
-						if (mutation.type !== "attributes" || mutation.attributeName !== "data-cactus-id") {
-							initScrollableElements();
-						} else {
-							console.log("Mutation is data-cactus-id attribute change, skipping scrollable elements check");
+					const isCactusInternalElement = (node) => {
+						if (!(node instanceof HTMLElement)) return false;
+						return (
+							node.id === 'cactus_cursor' ||
+							node.classList.contains('cactusElementVisualise') ||
+							node.classList.contains('cactusElementVisualiseRemoved') ||
+							node.classList.contains('cactus-element-highlight') ||
+							node.classList.contains('cactus-scrollButton') ||
+							node.classList.contains('cactus-scrollUp_outerDiv') ||
+							node.classList.contains('cactus-scrollDown_outerDiv')
+						);
+					};
+		
+					const allAddedAreCactusElements = [...mutation.addedNodes].every(isCactusInternalElement);
+					const allRemovedAreCactusElements = [...mutation.removedNodes].every(isCactusInternalElement);
+		
+					// Skips this mutation if ONLY internal CACTUS elements were added or removed
+					if (allAddedAreCactusElements && allRemovedAreCactusElements) continue;
+		
+					console.log(`Mutation observed on target: `, mutation.target, `\nMutation type: `, mutation.type);
+					mutationObserverCallbackExecuting = true;
+		
+					setTimeout(() => {
+						try {
+							generateQuadTree();
+							if (useNavAreas) generateNavAreasTree();
+							sendMessageToIframes('ipc-iframes-loaded', { scrollDist });
+						} catch (error) {
+							window.cactusAPI.logError(`Error generating QuadTree/NavAreasTree: ${error.message}`);
 						}
-
-						//Reset flag to allow next callback execution on x ms
-						setTimeout(() => {
-							mutationObserverCallbackExecuting = false;
-						}, 1000);
-						break;
+					}, 1000);
+		
+					console.log("quad tree generated");
+		
+					if (mutation.type !== "attributes" || mutation.attributeName !== "data-cactus-id") {
+						initScrollableElements();
+					} else {
+						console.log("Mutation is data-cactus-id attribute change, skipping scrollable elements check");
 					}
+		
+					setTimeout(() => {
+						mutationObserverCallbackExecuting = false;
+					}, 1000);
+		
+					break;
 				}
 			} catch (error) {
 				window.cactusAPI.logError(`Error in mutation observer callback: ${error.message}`);
 			}
-		});
+		});		
 
 		mutationObserverOptions = {
 			attributes: true, //necessary for collapsable elements etc...
