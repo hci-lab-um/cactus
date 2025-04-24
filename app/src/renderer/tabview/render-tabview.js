@@ -891,7 +891,7 @@ function filterVisibleElements(elements) {
 				style.visibility !== 'hidden' &&
 				element.offsetWidth > 0 &&
 				element.offsetHeight > 0 &&
-				//Check if element is, at least partly, within the viewport
+				//Checking if element is, at least partly, within the viewport
 				(
 					rect.x <= (window.innerWidth || document.documentElement.clientWidth) &&
 					rect.x + rect.width >= 0 &&
