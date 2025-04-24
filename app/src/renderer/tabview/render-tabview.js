@@ -663,9 +663,9 @@ async function generateQuadTree() {
 								console.log('Duration changed for video - Found serialized element:', serializedElement);
 								serializedElement.videoAudioOptions[3].rangeValues = updatedRangeValues;
 								console.log(`Updated serialized elements for video with cactusId: ${e.dataset.cactusId}`, serializedElements);
-								console.log("Quadtree contents", quadTreeContents);
+								console.log("Quadtree contents", pageData);
 								window.cactusAPI.send('ipc-tabview-clear-sidebar');
-								window.cactusAPI.send('ipc-tabview-generateQuadTree', quadTreeContents);
+								window.cactusAPI.send('ipc-tabview-generateQuadTree', pageData);
 							}
 						}
 					} catch (error) {
@@ -679,12 +679,12 @@ async function generateQuadTree() {
 		// console.log("Visible elements", visibleElements);
 		const serializedElements = visibleElements.map(serializeElement); //creating an element object for each element in the array
 
-		const quadTreeContents = {
+		const pageData = {
 			serializedVisibleElements: serializedElements,
 			docTitle: document.title,
 			docURL: document.URL
 		};
-		window.cactusAPI.send('ipc-tabview-generateQuadTree', quadTreeContents);
+		window.cactusAPI.send('ipc-tabview-generateQuadTree', pageData);
 	} catch (error) {
 		window.cactusAPI.logError(`Error generating QuadTree: ${error.message}`);
 	}
