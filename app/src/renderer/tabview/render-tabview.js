@@ -730,18 +730,21 @@ function serializeElement(element) {
 			innerText: element.innerText,
 			value: element.value,
 			rangeValues: (() => {
-				const min = parseFloat(element.getAttribute("min") || element.getAttribute("ariaValueMin") || "0");
-				const max = parseFloat(element.getAttribute("max") || element.getAttribute("ariaValueMax") || "100");
-				const step = parseFloat(element.getAttribute("step") || "1");
-				const values = [];
-				for (let i = min; i <= max; i += step) {
-					values.push({
-						value: i.toString(),
-						textContent: i,
-						parentElementId: element.dataset.cactusId,
-					});
+				if (element.tagName === 'RANGE') {
+					const min = parseFloat(element.getAttribute("min") || element.getAttribute("ariaValueMin") || "0");
+					const max = parseFloat(element.getAttribute("max") || element.getAttribute("ariaValueMax") || "100");
+					const step = parseFloat(element.getAttribute("step") || "1");
+					const values = [];
+					for (let i = min; i <= max; i += step) {
+						values.push({
+							value: i.toString(),
+							textContent: i,
+							parentElementId: element.dataset.cactusId,
+						});
+					}
+					return values;
 				}
-				return values;
+				return [];
 			})(),
 			title: element.title,
 			href: element.getAttribute('href'),
