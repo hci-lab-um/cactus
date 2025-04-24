@@ -4,6 +4,7 @@ let cursor;
 let cursorInterval;
 let scrollDistance;
 let isScrolling = false;
+let isScrollingUsingButtons = false;
 let iterator = 0;
 let useNavAreas;
 let scrollTimeout;
@@ -346,17 +347,22 @@ window.addEventListener('message', (event) => {
 	}
 });
 
-// This is useful for elements that scroll the page when they are clicked and for any other scrolling 
-// not done through the scrolling buttons displayed on-screen.
+// This is useful for elements that scroll the page when they are clicked (like a scroll to top button)
+// and for any other scrolling not done through the scrolling buttons displayed on-screen.
 window.addEventListener('scroll', () => {
 	try {
-		if (scrollTimeout) {
-			clearTimeout(scrollTimeout);
+		// At times, this event listener is triggered when the user scrolls using the scrolling buttons, but other times it is not 
+		// (because the scroll buttons would be for another element that is not the main window). To prevent multiple quadtree 
+		// generations, if the user is scrolling using the buttons, the QuadTree/NavAreasTree is generated elsewhere (inside the step function).
+		if (!isScrollingUsingButtons) {
+			if (scrollTimeout) {
+				clearTimeout(scrollTimeout);
+			}
+			scrollTimeout = setTimeout(() => {
+				generateQuadTree();
+				if (window.useNavAreas) generateNavAreasTree();
+			}, 500);
 		}
-		scrollTimeout = setTimeout(() => {
-			generateQuadTree();
-			if (window.useNavAreas) generateNavAreasTree();
-		}, 1000);
 	} catch (error) {
 		window.cactusAPI.logError(`Error handling scroll event: ${error.message}`);
 	}
@@ -530,9 +536,14 @@ function initScrollableElements() {
 
 					function step() {
 						if (!isScrolling) {
+							isScrollingUsingButtons = false;
+							generateQuadTree();
+							if (window.useNavAreas) generateNavAreasTree();
+
 							return; // Stop if scrolling is interrupted
 						}
 
+						isScrollingUsingButtons = true; // Set the flag to indicate scrolling is in progress
 						checkIfElementIsAtTop(element, scrollUpButton_outerDiv, scrollUpButton);
 						checkIfElementIsAtBottom(element, scrollDownButton_outerDiv, scrollDownButton);
 
