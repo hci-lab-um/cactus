@@ -621,7 +621,7 @@ function removeExistingScrollButtons() {
 async function generateQuadTree() {
 	try {
 		const clickableSelectors = [
-			'button', 'a', 'textarea', 'input', 'select', 'date', 'video', 'audio',
+			'button', 'a:not([tabindex="-1"])', 'textarea', 'input', 'select', 'date', 'video', 'audio',
 			'[role="button"]', 'div[role="link"]', 'span[role="link"]',
 			'[role="checkbox"]', '[role="textbox"]', '[role="radio"]', '[role="option"]', '[role="tab"]',
 			'[role="menu"]', '[role="switch"]', '[role="slider"]', '[role="combobox"], iframe[src]', '[aria-selected]'
