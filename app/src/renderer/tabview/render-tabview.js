@@ -638,8 +638,6 @@ async function generateQuadTree() {
 				e.addEventListener('durationchange', () => {
 					try {
 						if (e.duration != previousDuration) {
-							console.log(`Duration changed for video element with cactusId: ${e.dataset.cactusId}, new duration: ${e.duration}`);
-
 							// Update rangeValues for the serialized element
 							previousDuration = e.duration;
 							const duration = e.duration;
@@ -660,12 +658,9 @@ async function generateQuadTree() {
 							// Find the corresponding serialized element and update its rangeValues
 							const serializedElement = serializedElements.find(el => el.cactusId === e.dataset.cactusId);
 							if (serializedElement) {
-								console.log('Duration changed for video - Found serialized element:', serializedElement);
 								serializedElement.videoAudioOptions[3].rangeValues = updatedRangeValues;
-								console.log(`Updated serialized elements for video with cactusId: ${e.dataset.cactusId}`, serializedElements);
-								console.log("Quadtree contents", pageData);
 								window.cactusAPI.send('ipc-tabview-clear-sidebar');
-								window.cactusAPI.send('ipc-tabview-generateQuadTree', pageData);
+								if (pageData) window.cactusAPI.send('ipc-tabview-generateQuadTree', pageData);
 							}
 						}
 					} catch (error) {
