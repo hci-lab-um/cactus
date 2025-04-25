@@ -268,6 +268,7 @@ window.cactusAPI.on('ipc-tabview-keyboard-input', (text, elementToUpdate, submit
 window.cactusAPI.onAsync('ipc-tabview-set-element-value', (element, value) => {
 	try {
 		let parentElement = document.querySelector('[data-cactus-id="' + element.parentElementId + '"]');
+		debugger
 		if (parentElement) {
 			if (parentElement.multiple) {
 				// When a select element has the multiple attribute, it is possible to select more than one option
@@ -291,6 +292,15 @@ window.cactusAPI.onAsync('ipc-tabview-set-element-value', (element, value) => {
 			} else {
 				// Handle single selection
 				parentElement.value = value;
+
+				// Ensure the correct option is selected if setting value alone doesn’t work
+				const optionToSelect = Array.from(parentElement.options).find(opt => opt.value === value);
+				if (optionToSelect) {
+					optionToSelect.selected = true;
+				}
+
+				// Trigger change event to make sure it's registered
+				parentElement.dispatchEvent(new Event('change', { bubbles: true }));
 			}
 		}
 	} catch (error) {

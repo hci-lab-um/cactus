@@ -1155,8 +1155,8 @@ function createMainWindow() {
                 if (splashWindow) {
                     splashWindow.close();
                 }
-                // if (isDevelopment) mainWindowContent.webContents.openDevTools();
-                mainWindowContent.webContents.openDevTools();
+                if (isDevelopment) mainWindowContent.webContents.openDevTools();
+                // mainWindowContent.webContents.openDevTools();
             } catch (err) {
                 logger.error('Error showing main window:', err.message);
             }
@@ -1338,8 +1338,8 @@ function setTabViewEventlisteners(tabView) {
                     }
                 });
 
-                // if (isDevelopment) tabView.webContents.openDevTools();
-                tabView.webContents.openDevTools();
+                if (isDevelopment) tabView.webContents.openDevTools();
+                // tabView.webContents.openDevTools();
             } catch (err) {
                 logger.error('Error during tabview DOM ready:', err.message);
             }
@@ -1948,8 +1948,8 @@ async function createOverlay(overlayAreaToShow, elementProperties, isTransparent
         });
         overlayContent.webContents.focus();
 
-        // if (isDevelopment) overlayContent.webContents.openDevTools();
-        overlayContent.webContents.openDevTools();
+        if (isDevelopment) overlayContent.webContents.openDevTools();
+        // overlayContent.webContents.openDevTools();
     } catch (err) {
         logger.error('Error creating overlay:', err.message);
     }
