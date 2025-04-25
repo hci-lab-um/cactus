@@ -219,14 +219,7 @@ ipcMain.on('ipc-tabview-generateQuadTree', (event, contents) => {
             }
         }).filter(Boolean);
 
-        let pageDocument = new QtPageDocument(contents.docTitle, contents.docURL, visibleElements, adjustedWidth, adjustedHeight, null);
-
-        // find the element with type video and console log the insertion points
-        const videoElements = visibleElements.filter(el => el.type === 'video' || el.tag === 'video');
-        videoElements.forEach(el => {
-            console.log("Video element insertion points: ", el.insertionPointX, el.insertionPointY);
-            console.log("Video element x, y, width and height: ", el.x, el.y, el.width, el.height);
-        });
+        let pageDocument = new QtPageDocument(contents.docTitle, contents.docURL, visibleElements, adjustedWidth, adjustedHeight, null);+
 
         qtBuilder.buildAsync(pageDocument).then((qt) => {
             try {
@@ -1162,8 +1155,8 @@ function createMainWindow() {
                 if (splashWindow) {
                     splashWindow.close();
                 }
-                if (isDevelopment) mainWindowContent.webContents.openDevTools();
-                // mainWindowContent.webContents.openDevTools();
+                // if (isDevelopment) mainWindowContent.webContents.openDevTools();
+                mainWindowContent.webContents.openDevTools();
             } catch (err) {
                 logger.error('Error showing main window:', err.message);
             }
@@ -1345,8 +1338,8 @@ function setTabViewEventlisteners(tabView) {
                     }
                 });
 
-                if (isDevelopment) tabView.webContents.openDevTools();
-                // tabView.webContents.openDevTools();
+                // if (isDevelopment) tabView.webContents.openDevTools();
+                tabView.webContents.openDevTools();
             } catch (err) {
                 logger.error('Error during tabview DOM ready:', err.message);
             }
@@ -1955,8 +1948,8 @@ async function createOverlay(overlayAreaToShow, elementProperties, isTransparent
         });
         overlayContent.webContents.focus();
 
-        if (isDevelopment) overlayContent.webContents.openDevTools();
-        // overlayContent.webContents.openDevTools();
+        // if (isDevelopment) overlayContent.webContents.openDevTools();
+        overlayContent.webContents.openDevTools();
     } catch (err) {
         logger.error('Error creating overlay:', err.message);
     }
