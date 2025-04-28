@@ -2,9 +2,15 @@ const { createLogger, format, transports } = require('winston');
 require('winston-daily-rotate-file');
 const path = require('path');
 const os = require('os');
+const fs = require('fs');
 
 // Define a cross-platform safe directory for logs
 const logDirectory = path.join(os.homedir(), '.cactus', 'logs');
+
+// Ensure the log directory exists
+if (!fs.existsSync(logDirectory)) {
+  fs.mkdirSync(logDirectory, { recursive: true });
+}
 
 const logger = createLogger({
   level: 'error',
