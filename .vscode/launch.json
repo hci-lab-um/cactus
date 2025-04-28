@@ -1,62 +1,126 @@
+// ------------------------------ ONLY FOR WINDOWS DEBUGGING -----------------------------------
+// {
+// 	"version": "0.2.0",
+// 	"configurations": [
+// 		{
+// 			"name": "Debug - Prod",
+// 			"type": "node",
+// 			"env": {
+// 				"NODE_ENV": "production"
+// 			},
+// 			"request": "launch",
+// 			"cwd": "${workspaceFolder}",
+// 			"runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
+// 			"windows": {
+// 				"runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron.cmd"
+// 			},
+// 			"args": [
+// 				"."
+// 			],
+// 			"outputCapture": "std"
+// 		},
+// 		{
+// 			"name": "Debug - Dev",
+// 			"type": "node",
+// 			"env": {
+// 				"NODE_ENV": "development"
+// 			},
+// 			"request": "launch",
+// 			"cwd": "${workspaceFolder}",
+// 			"runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
+// 			"windows": {
+// 				"runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron.cmd"
+// 			},
+// 			"args": [
+// 				"."
+// 			],
+// 			"outputCapture": "std"
+// 		},
+// 		{
+// 			"name": "Debug Renderer Process",
+// 			"port": 9222,
+// 			"request": "attach",
+// 			"type": "chrome",
+// 			"webRoot": "${workspaceFolder}",
+// 			"timeout": 60000,
+// 			"presentation": {
+// 				"hidden": true
+// 			}
+// 		}
+// 	],
+// 	"compounds": [
+// 		{
+// 			"name": "Debug All",
+// 			"configurations": [
+// 				"Debug Main Process",
+// 				"Debug Renderer Process"
+// 			],
+// 			"presentation": {
+// 				"order": 1
+// 			}
+// 		}
+// 	]
+// }
+
+
+
+// ------------------------------ ONLY FOR macOS DEBUGGING -----------------------------------
 {
 	"version": "0.2.0",
 	"configurations": [
-		{
-			"name": "Debug - Prod",
-			"type": "node",
-			"env": {
-				"NODE_ENV": "production"
-			},
-			"request": "launch",
-			"cwd": "${workspaceFolder}",
-			"runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
-			"windows": {
-				"runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron.cmd"
-			},
-			"args": [
-				"."
-			],
-			"outputCapture": "std"
+	  {
+		"name": "Debug - Prod",
+		"type": "node",
+		"env": {
+		  "NODE_ENV": "production"
 		},
-		{
-			"name": "Debug - Dev",
-			"type": "node",
-			"env": {
-				"NODE_ENV": "development"
-			},
-			"request": "launch",
-			"cwd": "${workspaceFolder}",
-			"runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
-			"windows": {
-				"runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron.cmd"
-			},
-			"args": [
-				"."
-			],
-			"outputCapture": "std"
+		"request": "launch",
+		"cwd": "${workspaceFolder}",
+		"runtimeExecutable": "/Users/hcilab/.nvm/versions/node/v20.19.1/bin/node",
+		"args": [
+		  "${workspaceFolder}/node_modules/.bin/electron",
+		  "."
+		],
+		"outputCapture": "std"
+	  },
+	  {
+		"name": "Debug - Dev",
+		"type": "node",
+		"env": {
+		  "NODE_ENV": "development"
 		},
-		{
-			"name": "Debug Renderer Process",
-			"port": 9222,
-			"request": "attach",
-			"type": "chrome",
-			"webRoot": "${workspaceFolder}",
-			"timeout": 60000,
-			"presentation": {
-				"hidden": true
-			}
+		"request": "launch",
+		"cwd": "${workspaceFolder}",
+		"runtimeExecutable": "/Users/hcilab/.nvm/versions/node/v20.19.1/bin/node",
+		"args": [
+		  "${workspaceFolder}/node_modules/.bin/electron",
+		  "."
+		],
+		"outputCapture": "std"
+	  },
+	  {
+		"name": "Debug Renderer Process",
+		"port": 9222,
+		"request": "attach",
+		"type": "chrome",
+		"webRoot": "${workspaceFolder}",
+		"timeout": 60000,
+		"presentation": {
+		  "hidden": true
 		}
+	  }
 	],
 	"compounds": [
-		{
-			"name": "Debug All",
-			"configurations": [
-				"Debug Main Process",
-				"Debug Renderer Process"
-			],
-			"presentation": {
-				"order": 1
-			}
+	  {
+		"name": "Debug All",
+		"configurations": [
+		  "Debug Main Process",
+		  "Debug Renderer Process"
+		],
+		"presentation": {
+		  "order": 1
 		}
+	  }
 	]
-}
+  }
+  
