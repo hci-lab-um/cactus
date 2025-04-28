@@ -202,6 +202,7 @@ ipcMain.handle('ipc-get-user-setting', async (event, setting) => {
 // This creates a quadtree using serialisable HTML elements passed on from the renderer
 ipcMain.on('ipc-tabview-generateQuadTree', (event, contents) => {
     try {
+        if (tabList.length === 0) return;
         var tab = tabList.find(tab => tab.isActive === true);
         // Recreate quadtree
         let bounds = tab.webContentsView.getBounds();
@@ -256,7 +257,8 @@ ipcMain.on('ipc-tabview-generateQuadTree', (event, contents) => {
 
 ipcMain.on('ipc-tabview-generateNavAreasTree', (event, contents) => {
     try {
-        //Recreate quadtree    
+        //Recreate quadtree 
+        if (tabList.length === 0) return;
         var tab = tabList.find(tab => tab.isActive === true);
         let bounds = tab.webContentsView.getBounds();
         let menuBuilderOptions = new MenuBuilderOptions(bounds.width, bounds.height, 'new');
@@ -506,6 +508,7 @@ ipcMain.on('ipc-mainwindow-click-sidebar-element', (event, elementToClick) => {
 ipcMain.on('ipc-mainwindow-highlight-elements-on-page', (event, elements) => {
     try {
         //Highlight elements on page
+        if (tabList.length === 0) return;
         var tab = tabList.find(tab => tab.isActive === true);
         tab.webContentsView.webContents.send('ipc-tabview-highlight-elements', elements);
     } catch (err) {
@@ -1209,6 +1212,7 @@ function resizeMainWindow() {
 
                     // Update the bounds of all tabs, and the quadtree of the active tab.
                     // There is no need to update the bounds of the inactive tabs, since they will be updated when they are activated.
+                    if (tabList.length === 0) return;
                     let activeTab = tabList.find(tab => tab.isActive === true);
                     tabList.forEach(tab => {
                         tab.webContentsView.setBounds(webpageBounds);
@@ -1318,6 +1322,7 @@ function setTabViewEventlisteners(tabView) {
                         // This event fires when the tabView is attached
 
                         // If the tab is active, send isActive = true to connect the mutation observer
+                        if (tabList.length === 0) return;
                         if (tabList.find(tab => tab.webContentsView === tabView && tab.isActive)) {
                             tabView.webContents.send('ipc-main-tabview-loaded', useNavAreas, scrollDistance, true);
                         } else {
@@ -1351,6 +1356,7 @@ function setTabViewEventlisteners(tabView) {
         //Loading event - update omnibox
         tabView.webContents.on('did-start-loading', () => {
             try {
+                if (tabList.length === 0) return;
                 // If the event emitted is from the active tab, update the omnibox
                 let activeTab = tabList.find(tab => tab.isActive === true);
                 if (tabView === activeTab.webContentsView) {
@@ -1363,6 +1369,7 @@ function setTabViewEventlisteners(tabView) {
 
         tabView.webContents.on('did-stop-loading', () => {
             try {
+                if (tabList.length === 0) return;
                 // If the event emitted is from the active tab, update the omnibox
                 let activeTab = tabList.find(tab => tab.isActive === true);
                 if (tabView === activeTab.webContentsView) {
@@ -1489,6 +1496,7 @@ function setTabViewEventlisteners(tabView) {
 function handleLoadError(errorCode, attemptedURL, responseBody = null) {
     try {
         // Storing the active tab's original URL before the error page is loaded.
+        if (tabList.length === 0) return;
         let activeTab = tabList.find(tab => tab.isActive === true);
         activeTab.originalURL = attemptedURL;
         activeTab.isErrorPage = true;
@@ -1581,6 +1589,7 @@ function handleLoadError(errorCode, attemptedURL, responseBody = null) {
 
 function updateOmnibox() {
     try {
+        if (tabList.length === 0) return;
         let activeTab = tabList.find(tab => tab.isActive === true);
         let pageDetails = {
             title: activeTab.webContentsView.webContents.getTitle(),
@@ -1596,6 +1605,7 @@ function updateOmnibox() {
 
 function updateBookmarksIcon() {
     try {
+        if (tabList.length === 0) return;
         let activeTab = tabList.find(tab => tab.isActive === true);
         let activeURL = activeTab.webContentsView.webContents.getURL();
         let isBookmark = bookmarks.some(bookmark => bookmark.url === activeURL);
@@ -1608,6 +1618,7 @@ function updateBookmarksIcon() {
 function clearSidebarAndUpdateQuadTree() {
     try {
         mainWindowContent.webContents.send('ipc-mainwindow-clear-sidebar');
+        if (tabList.length === 0) return;
         tabList.find(tab => tab.isActive === true).webContentsView.webContents.send('ipc-tabview-create-quadtree', useNavAreas);
     } catch (err) {
         logger.error('Error clearing sidebar and updating quadtree:', err.message);
@@ -1714,6 +1725,7 @@ function slideInView(view, duration = 200) {
 
 function insertRendererCSS() {
     try {
+        if (tabList.length === 0) return;
         var tab = tabList.find(tab => tab.isActive === true);
         tab.webContentsView.webContents.insertCSS(`
             html, body { overflow-x: hidden; } 
@@ -1834,6 +1846,7 @@ function insertRendererCSS() {
 async function captureSnapshot() {
     try {
         return new Promise((resolve, reject) => {
+            if (tabList.length === 0) return;
             var tab = tabList.find(tab => tab.isActive === true);
             if (tab && tab.webContentsView && tab.webContentsView.webContents) {
                 tab.webContentsView.webContents.capturePage().then(snapshot => {
