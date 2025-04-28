@@ -9,6 +9,7 @@ const robot = require("robotjs_addon");
 const db = require('../database/database.js');
 const { Settings, KeyboardLayouts, Shortcuts } = require('../src/tools/enums.js');
 const logger = require('../src/tools/logger.js');
+const { pathToFileURL } = require('url');
 
 const gotTheLock = app.requestSingleInstanceLock()
 
@@ -82,20 +83,20 @@ if (!gotTheLock) {
         } catch (err) {
             logger.error('Error initializing database:', err.message);
         }
-    
+
         try {
             createSplashWindow();
             setTimeout(() => {
                 try {
                     createMainWindow();
-    
+
                     // Check for updates after the main window is created
                     autoUpdater.checkForUpdatesAndNotify();
                 } catch (err) {
                     logger.error('Error creating main window:', err.message);
                 }
             }, 3000); // This is the duration of the splash screen gif
-    
+
             registerSwitchShortcutCommands();
         } catch (err) {
             logger.error('Error during app initialization:', err.message);
@@ -106,11 +107,10 @@ if (!gotTheLock) {
 app.on('window-all-closed', async () => {
     try {
         await deleteAndInsertAllTabs();
-
-        // App closes when all windows are closed, however this is not default behaviour on macOS (applications and their menu bar to stay active)
         if (process.platform !== 'darwin') {
-            app.quit()
+            app.quit();
         }
+        // app.quit();
     } catch (err) {
         logger.error('Error during app closure:', err.message);
     }
@@ -219,33 +219,33 @@ ipcMain.on('ipc-tabview-generateQuadTree', (event, contents) => {
             }
         }).filter(Boolean);
 
-        let pageDocument = new QtPageDocument(contents.docTitle, contents.docURL, visibleElements, adjustedWidth, adjustedHeight, null);+
+        let pageDocument = new QtPageDocument(contents.docTitle, contents.docURL, visibleElements, adjustedWidth, adjustedHeight, null); +
 
-        qtBuilder.buildAsync(pageDocument).then((qt) => {
-            try {
-                currentQt = qt;
-                //Only in debug mode - show which points are available for interaction
+            qtBuilder.buildAsync(pageDocument).then((qt) => {
+                try {
+                    currentQt = qt;
+                    //Only in debug mode - show which points are available for interaction
 
-                if (isDevelopment) {
-                    const viewRange = new QtRange(0, 0, pageDocument.documentWidth, pageDocument.documentHeight);
-                    const elementsInView = qt.queryRange(viewRange);
+                    if (isDevelopment) {
+                        const viewRange = new QtRange(0, 0, pageDocument.documentWidth, pageDocument.documentHeight);
+                        const elementsInView = qt.queryRange(viewRange);
 
-                    contents = {
-                        elementsInView: elementsInView,
-                        dwellRangeWidth: dwellRangeWidth,
-                        dwellRangeHeight: dwellRangeHeight,
-                        color: '#702963'
-                    };
+                        contents = {
+                            elementsInView: elementsInView,
+                            dwellRangeWidth: dwellRangeWidth,
+                            dwellRangeHeight: dwellRangeHeight,
+                            color: '#702963'
+                        };
 
-                    tab.webContentsView.webContents.send('ipc-clear-highlighted-elements');
-                    tab.webContentsView.webContents.send('ipc-highlight-available-elements', contents);
+                        tab.webContentsView.webContents.send('ipc-clear-highlighted-elements');
+                        tab.webContentsView.webContents.send('ipc-highlight-available-elements', contents);
+                    }
+                } catch (err) {
+                    logger.error('Error during quadtree processing:', err.message);
                 }
-            } catch (err) {
-                logger.error('Error during quadtree processing:', err.message);
-            }
-        }).catch(err => {
-            logger.error("Error building quadtree: ", err.message);
-        });
+            }).catch(err => {
+                logger.error("Error building quadtree: ", err.message);
+            });
     } catch (err) {
         logger.error("Error generating quadtree: ", err.message);
     }
@@ -486,12 +486,12 @@ ipcMain.on('ipc-mainwindow-click-sidebar-element', (event, elementToClick) => {
     try {
         if (elementToClick) {
             if (useRobotJS) {
-				robotClick(elementToClick.insertionPointX, elementToClick.insertionPointY);
-			} else if ((elementToClick.type === 'a' || elementToClick.tag === 'a') && elementToClick.href && elementToClick.href != '#' && elementToClick.href != 'javascript:void(0)') {
-				browseToUrl(elementToClick.href);
-			} else {
-				robotClick(elementToClick.insertionPointX, elementToClick.insertionPointY);
-			}
+                robotClick(elementToClick.insertionPointX, elementToClick.insertionPointY);
+            } else if ((elementToClick.type === 'a' || elementToClick.tag === 'a') && elementToClick.href && elementToClick.href != '#' && elementToClick.href != 'javascript:void(0)') {
+                browseToUrl(elementToClick.href);
+            } else {
+                robotClick(elementToClick.insertionPointX, elementToClick.insertionPointY);
+            }
         } else {
             logger.error("Element to click has not been found");
         }
@@ -640,7 +640,7 @@ ipcMain.on('ipc-overlays-newTab', (event, urlToUse = null) => {
 
         if (urlToUse != null) createTabview(urlToUse, newTab = true);
         else createTabview(defaultUrl, newTab = true);
-        
+
         clearSidebarAndUpdateQuadTree();
     } catch (err) {
         logger.error('Error creating new tab:', err.message);
@@ -918,7 +918,7 @@ ipcMain.on('ipc-quick-click-add-scroll-buttons', (event) => {
 // KEYBOARD OVERLAY
 // -----------------
 
-ipcMain.on('ipc-keyboard-input', (event, value, element, submit, updateValueAttr = false) => {    
+ipcMain.on('ipc-keyboard-input', (event, value, element, submit, updateValueAttr = false) => {
     try {
         removeOverlay();
 
@@ -1050,8 +1050,8 @@ function createSplashWindow() {
 
         const splashWindowContent = new WebContentsView({ webPreferences: { transparent: true } });
         splashWindow.contentView.addChildView(splashWindowContent);
-        splashWindowContent.setBounds({ x: 0, y: 0, width: splashWindow.getBounds().width, height: splashWindow.getBounds().height });
-        splashWindowContent.webContents.loadURL(path.join(__dirname, '../src/pages/splash.html'));
+        splashWindowContent.setBounds({ x: 0, y: 0, width: splashWindow.getBounds().width, height: splashWindow.getBounds().height }); 
+        splashWindowContent.webContents.loadURL(pathToFileURL(path.resolve(__dirname, '../src/pages/splash.html')).href)
     } catch (err) {
         logger.error('Error creating splash window:', err.message);
     }
@@ -1083,7 +1083,7 @@ function createMainWindow() {
             height: mainWindow.getContentBounds().height
         });
 
-        mainWindowContent.webContents.loadURL(path.join(__dirname, '../src/pages/index.html')).then(() => {
+        mainWindowContent.webContents.loadURL(pathToFileURL(path.resolve(__dirname, '../src/pages/index.html')).href).then(() => {
             try {
                 mainWindowContent.webContents.send('mainWindowLoaded', dwellTime, menuAreaScrollDistance, menuAreaScrollInterval, isReadModeActive);
 
@@ -1152,7 +1152,7 @@ function createMainWindow() {
         mainWindow.once('ready-to-show', () => {
             try {
                 mainWindow.show();
-                if (splashWindow) {
+                if (splashWindow && !splashWindow.isDestroyed()) {
                     splashWindow.close();
                 }
                 if (isDevelopment) mainWindowContent.webContents.openDevTools();
@@ -1491,7 +1491,7 @@ function handleLoadError(errorCode, attemptedURL, responseBody = null) {
 
         if (!responseBody) {
             // If the server does not respond with a custom error page, load the browser's error page instead
-            activeTab.webContentsView.webContents.loadURL(path.join(__dirname, '../src/pages/error.html')).then(() => {
+            activeTab.webContentsView.webContents.loadURL(pathToFileURL(path.resolve(__dirname, '../src/pages/error.html')).href).then(() => {
                 try {
                     activeTab.webContentsView.webContents.executeJavaScript(`    
                         // Update the content based on the error code
@@ -1886,10 +1886,9 @@ async function createOverlay(overlayAreaToShow, elementProperties, isTransparent
 
         mainWindow.contentView.addChildView(overlayContent)
         overlayContent.setBounds({ x: 0, y: 0, width: mainWindowContentBounds.width, height: mainWindowContentBounds.height })
-        overlayContent.webContents.loadURL(path.join(__dirname, '../src/pages/', htmlPage)).then(async() => {
-
+        overlayContent.webContents.loadURL(pathToFileURL(path.resolve(__dirname, '../src/pages/', htmlPage)).href).then(async () => {
             isKeyboardOverlay = overlayAreaToShow === 'keyboard';
-            
+
             let overlaysData = {
                 overlayAreaToShow: overlayAreaToShow,
                 tabList: [],
@@ -2374,7 +2373,7 @@ function getFullURL(url) {
 // ====== DATABASE FUNCTIONS =======
 // =================================
 
-async function addBookmarkToDatabase(bookmark){
+async function addBookmarkToDatabase(bookmark) {
     try {
         await db.addBookmark(bookmark);
     } catch (err) {
@@ -2382,7 +2381,7 @@ async function addBookmarkToDatabase(bookmark){
     }
 }
 
-async function deleteBookmarkByUrl(url){
+async function deleteBookmarkByUrl(url) {
     try {
         await db.deleteBookmarkByUrl(url);
     } catch (err) {
