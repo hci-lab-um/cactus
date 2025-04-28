@@ -1,15 +1,16 @@
+const { app } = require('electron');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const { Settings, Shortcuts, KeyboardLayouts } = require('../src/tools/enums.js');
-const dbPath = path.join(__dirname, 'cactus.db');
+const dbPath = path.join(app.getPath('userData'), 'cactus.db');
 
 let db;
 
 function connect() {
     return new Promise((resolve, reject) => {
-        db = new sqlite3.Database(dbPath, (err) => {
+        db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
             if (err) {
-                console.error('Error connecting to the database:', err.message);
+                console.log(`Error connecting to the database: ${err.message}, dbPath: ${dbPath}`);
                 reject(err);
             } else {
                 console.log('Connected to the SQLite database.');
