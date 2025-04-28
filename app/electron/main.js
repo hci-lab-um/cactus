@@ -10,6 +10,7 @@ const db = require('../database/database.js');
 const { Settings, KeyboardLayouts, Shortcuts } = require('../src/tools/enums.js');
 const logger = require('../src/tools/logger.js');
 const { pathToFileURL } = require('url');
+const { platform } = require('os');
 
 const gotTheLock = app.requestSingleInstanceLock()
 
@@ -116,10 +117,12 @@ app.on('window-all-closed', async () => {
     }
 });
 
-app.on('activate', () => {
+app.on('activate', async () => {
     try {
         // On macOS re-create window when the dock icon is clicked (with no other windows open).
         if (BaseWindow.getAllWindows().length === 0) {
+            tabList = [];
+            initialiseVariables();
             createMainWindow();
         }
     } catch (err) {
@@ -1050,7 +1053,7 @@ function createSplashWindow() {
 
         const splashWindowContent = new WebContentsView({ webPreferences: { transparent: true } });
         splashWindow.contentView.addChildView(splashWindowContent);
-        splashWindowContent.setBounds({ x: 0, y: 0, width: splashWindow.getBounds().width, height: splashWindow.getBounds().height }); 
+        splashWindowContent.setBounds({ x: 0, y: 0, width: splashWindow.getBounds().width, height: splashWindow.getBounds().height });
         splashWindowContent.webContents.loadURL(pathToFileURL(path.resolve(__dirname, '../src/pages/splash.html')).href)
     } catch (err) {
         logger.error('Error creating splash window:', err.message);
@@ -1402,6 +1405,7 @@ function setTabViewEventlisteners(tabView) {
 
         tabView.webContents.session.webRequest.onResponseStarted(async (details) => {
             try {
+                if (tabList.length === 0) return;
                 const activeTab = tabList.find(tab => tab.isActive === true);
                 const responseWebContentsId = details.webContentsId;
                 const activeTabWebContentsId = activeTab.webContentsView.webContents.id;
@@ -2407,6 +2411,7 @@ async function deleteAndInsertAllTabs() {
 
             await db.addTab(tabData);
         }
+        tabList = [];
     } catch (err) {
         logger.error('Error updating database with open tabs:', err.message);
     }
