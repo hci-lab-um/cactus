@@ -12,6 +12,7 @@ let mutationObserver;
 let mutationObserverOptions;
 let displayScrollButtons = true;
 let previousDuration;
+let isMutationObserverActive;
 
 // Create a Trusted Types policy for innerHtml assignments when TrustedHTML policies are set ('This document requires 'TrustedHTML' assignment')
 const policy = window.trustedTypes.createPolicy('cactus_defaultPolicy', {
@@ -121,6 +122,7 @@ window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist, isActiv
 		if (isActive) {
 			try {
 				mutationObserver.observe(document.body, mutationObserverOptions);
+				isMutationObserverActive = true;
 			} catch (error) {
 				window.cactusAPI.logError(`Error starting mutation observer: ${error.message}`);
 			}
@@ -147,20 +149,22 @@ window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist, isActiv
 	}
 });
 
-window.cactusAPI.on('ipc-main-disconnect-mutation-observer', () => {
+window.cactusAPI.on('ipc-main-disconnect-mutation-observer', async () => {
 	try {
 		console.log("============= Mutation observer disconnected ==================");
-		mutationObserver.disconnect();
+		isMutationObserverActive = false;
+		await mutationObserver.disconnect();
 	} catch (error) {
 		window.cactusAPI.logError(`Error disconnecting mutation observer: ${error.message}`);
 	}
 });
 
 
-window.cactusAPI.on('ipc-main-reconnect-mutation-observer', () => {
+window.cactusAPI.on('ipc-main-reconnect-mutation-observer', async () => {
 	try {
 		console.log("============= Mutation observer reconnected ==================");
-		mutationObserver.observe(document.body, mutationObserverOptions);
+		isMutationObserverActive = true;
+		await mutationObserver.observe(document.body, mutationObserverOptions);
 	} catch (error) {
 		window.cactusAPI.logError(`Error reconnecting mutation observer: ${error.message}`);
 	}
@@ -670,7 +674,7 @@ async function generateQuadTree() {
 							if (serializedElement) {
 								serializedElement.videoAudioOptions[3].rangeValues = updatedRangeValues;
 								window.cactusAPI.send('ipc-tabview-clear-sidebar');
-								if (pageData) window.cactusAPI.send('ipc-tabview-generateQuadTree', pageData);
+								if (pageData && isMutationObserverActive) window.cactusAPI.send('ipc-tabview-generateQuadTree', pageData);
 							}
 						}
 					} catch (error) {
