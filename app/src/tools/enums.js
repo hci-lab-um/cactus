@@ -71,7 +71,7 @@ const Settings = Object.freeze({
     DWELL_TIME: {
         NAME: "dwellTime",
         LABEL: "General Dwelling Duration",
-        DESCRIPTION: "The time in seconds that the cursor must remain over an item before it is selected.",
+        DESCRIPTION: "The time in seconds that the cursor must remain over an item before it is selected. This duration is also used when using Quick Click.",
         VERY_SHORT: 800,
         SHORT: 900,
         NORMAL: 1000,
@@ -126,8 +126,8 @@ const Settings = Object.freeze({
         // LABEL: "Hierarchical Menu",
         DESCRIPTION: "Determines if the sidebar displays a hierarchical menu or individual elements. Enabling this option will show the menu hierarchy. This setting will apply to all open tabs.",
         DEFAULT: 1,
-        },
-        USE_ROBOT_JS: {
+    },
+    USE_ROBOT_JS: {
         NAME: "useRobotJS",
         // LABEL: "Link Interaction",
         // LABEL: "Link Clicking",

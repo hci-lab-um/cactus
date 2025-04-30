@@ -1,3 +1,5 @@
+const { ipcRenderer } = require('electron')
+const { Settings } = require('./enums.js');
 var mouse = { x: 0, y: 0 };
 
 function setMouseXY(e) {
@@ -90,11 +92,13 @@ exports.followCursor = (id) => {
 };
 
 // Start Animation (Filling Circle)
-exports.startCursorAnimation = () => {
+exports.startCursorAnimation = async () => {
   try {
     const fillingCircle = document.getElementById("fillingCircle");
     if (fillingCircle) {
-      fillingCircle.style.transition = "rx 1.5s linear, ry 1.5s linear";
+      const dwellTime = await ipcRenderer.invoke('ipc-get-user-setting', Settings.DWELL_TIME.NAME);
+      
+      fillingCircle.style.transition = `rx ${dwellTime / 1000}s linear, ry ${dwellTime / 1000}s linear`;
       fillingCircle.setAttribute("rx", "300");
       fillingCircle.setAttribute("ry", "210");
     } else {
