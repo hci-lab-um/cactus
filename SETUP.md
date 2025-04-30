@@ -125,7 +125,7 @@ Some devices or software have not yet been fully tested with CACTUS. If you atte
 
 If you're unsure how to configure your system or need help with setup, feel free to:
 - Open an issue in this repository
-- Contact the support team
+- Contact the support team on: * *email address here* *
 
 ---
 
