@@ -638,7 +638,7 @@ async function generateQuadTree() {
 			'button', 'a:not([tabindex="-1"])', 'textarea', 'input', 'select', 'date', 'video', 'audio',
 			'[role="button"]', 'div[role="link"]', 'span[role="link"]',
 			'[role="checkbox"]', '[role="textbox"]', '[role="radio"]', '[role="option"]', '[role="tab"]',
-			'[role="menu"]', '[role="switch"]', '[role="slider"]', '[role="combobox"], iframe[src]', '[aria-selected]'
+			'[role="menu"]', '[role="switch"]', '[role="slider"]', '[role="combobox"]', 'iframe[src]:not([src="about:blank"])', '[aria-selected]'
 		];
 		const clickableElements = Array.from(document.querySelectorAll(clickableSelectors.join(', ')));
 		const visibleElements = filterVisibleElements(clickableElements).map(e => {

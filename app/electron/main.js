@@ -589,7 +589,7 @@ ipcMain.on('ipc-mainwindow-remove-bookmark', async (event) => {
 
 ipcMain.on('ipc-mainwindow-open-iframe', (event, src) => {
     try {
-        if (src) {
+        if (src && src !== 'about:blank') {
             createTabview(getFullURL(src), newTab = true);
         }
     } catch (err) {
