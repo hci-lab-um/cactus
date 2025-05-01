@@ -69,6 +69,44 @@
   animation-name: fadeOutDown;
 }
 
+@keyframes fadeInRight {
+  from {
+    transform: translate3d(40px, 0, 0);
+    opacity: 0;
+  }
+
+  to {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}
+
+.fadeInRight {
+  animation-duration: 0.4s;
+  animation-fill-mode: both;
+  opacity: 0;
+  animation-name: fadeInRight;
+}
+
+@keyframes fadeOutRight {
+  from {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+
+  to {
+    transform: translate3d(40px, 0, 0);
+    opacity: 0;
+  }
+}
+
+.fadeOutRight {
+  animation-duration: 0.4s;
+  animation-fill-mode: both;
+  opacity: 1;
+  animation-name: fadeOutRight;
+}
+
 @keyframes shake {
   10%, 90% {
     transform: translate3d(-1px, 0, 0);
@@ -156,5 +194,45 @@
 
   to {
     clip-path: inset(0% 0 0 0);
+  }
+}
+
+@keyframes slide-fill {
+  from {
+    left: 100%;
+  }
+  to {
+    left: -100%;
+  }
+}
+
+.border-animation {
+  position: relative;
+  z-index: 1;
+  overflow-x: hidden;
+
+  &:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 100%;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+    background: linear-gradient(to right, transparent, #69adff, transparent);
+    animation: slide-fill 0.8s linear alternate 1;
+  }
+
+  &:after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    left: 15px;
+    top: 15px;
+    width: calc(100% - 30px);
+    height: calc(100% - 30px);
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0px 0px 11px 11px #ffffff;
   }
 }

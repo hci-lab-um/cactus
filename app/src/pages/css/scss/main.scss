@@ -108,13 +108,14 @@ body {
   &_levelup,
   &_scrollup,
   &_scrolldown {
+    width: calc(100% - 30px);
+    padding: 20px;
+    border: none;
+    border-radius: 6px;
+    margin: 15px;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100%;
-    padding: 20px;
-    border: 15px solid white;
-    border-radius: 20px;
   }
 
   &_quick {
@@ -136,12 +137,22 @@ body {
   &_scrolldown {
     @extend .dwellBtn;
     @extend .dwellBtn--withoutAnimation;
-    margin-top: auto;
+  }
+
+  &_menu {
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    align-items: flex-start;
+    width: 100%;
+    height: 100%;
   }
 
   &_items {
     width: 100%;
     overflow-y: auto;
+    overflow-x: hidden;
     flex-grow: 1;
   }
 
@@ -167,16 +178,13 @@ body {
     @extend .dwellBtn;
     display: grid;
     grid-template-columns: 80% auto;
-    // height: 50px;
-    width: 90%;
     padding: 15px;
-    flex-direction: column;
     align-content: center;
     align-items: center;
     box-sizing: border-box;
     border: none;
     border-radius: 10px;
-    margin: 10px 10px 15px 10px;
+    margin: 10px 15px 15px 15px;
 
     &_title {
       font-size: 0.7em;

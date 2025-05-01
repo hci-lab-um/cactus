@@ -518,6 +518,10 @@ function renderNavItemInSidebar(navItems) {
 		//Scroll to top (in case already mid-way)
 		sidebarItemArea.scrollTo(0, 0);
 
+		if (navItems.length > 0) {
+			addSidebarAnimation();
+		}
+
 		//Attach dwell
 		let sidebarItems = document.querySelectorAll('.sidebar_item')
 		sidebarItems.forEach(item => {
@@ -527,7 +531,7 @@ function renderNavItemInSidebar(navItems) {
 				if (elementToClick) {
 					if (!elementToClick[0].children || elementToClick[0].children.length == 0) {
 						// Show click event animation and clear sidebar
-						item.classList.add('fadeOutDown');
+						item.classList.add('fadeOutRight');
 						setTimeout(() => {
 							sidebarItemArea.innerHTML = "";
 							const inputType = shouldDisplayKeyboard(elementToClick[0], true);
@@ -544,7 +548,7 @@ function renderNavItemInSidebar(navItems) {
 								// href is not valid, hence we click on the element instead
 								ipcRenderer.send('ipc-mainwindow-click-sidebar-element', elementToClick[0]);
 							}
-						}, 400); // 400 is chosen to match the fadeOutDown animation duration
+						}, 400); // 400 is chosen to match the fadeOutRight animation duration
 
 						resetNavigationSidebar();
 					} else {
@@ -596,6 +600,10 @@ function renderElementsInSidebar(elements, sidebarItemArea, isSubOption = false)
 			sidebarItemArea.appendChild(sidebarItem);
 		});
 
+		if (elements.length > 0) {
+			addSidebarAnimation();
+		}
+
 		//Highlight newly added elements on page
 		ipcRenderer.send('ipc-mainwindow-highlight-elements-on-page', elements);
 
@@ -608,7 +616,7 @@ function renderElementsInSidebar(elements, sidebarItemArea, isSubOption = false)
 
 				if (elementToClick[0]) {
 					// Show click event animation
-					item.classList.add('fadeOutDown');
+					item.classList.add('fadeOutRight');
 					console.log("element to click: ", elementToClick);
 
 					setTimeout(() => {
@@ -664,7 +672,7 @@ function renderElementsInSidebar(elements, sidebarItemArea, isSubOption = false)
 							// hiding the cursor in the sidebar on robot click
 							cursor.style.visibility = 'hidden';
 						}
-					}, 400); // 400 is chosen to match the fadeOutDown animation duration
+					}, 400); // 400 is chosen to match the fadeOutRight animation duration
 				}
 			});
 		});
@@ -672,6 +680,24 @@ function renderElementsInSidebar(elements, sidebarItemArea, isSubOption = false)
 		setMenuLevelUpButtonVisibility();
 	} catch (error) {
 		logger.error("Error in renderElementsInSidebar:", error.message);
+	}
+}
+
+function addSidebarAnimation() {
+	// Adding the animation to the sidebar menu
+	try {
+		let sidebarMenu = byId('sidebar_menu');
+		sidebarMenu.classList.add('border-animation');
+
+		setTimeout(() => {
+			try {
+				sidebarMenu.classList.remove('border-animation');
+			} catch (error) {
+				console.error("Error removing 'border-animation' class:", error.message);
+			}
+		}, 800); // 800ms is the duration of the animation
+	} catch (error) {
+		console.error("Error adding 'border-animation' class to sidebar menu:", error.message);
 	}
 }
 
@@ -732,7 +758,7 @@ function handleSidebarStack(title = "", items = {}, isNavItem = false, isSubOpti
 function createSidebarItemElement(element, isNavItem, isSubOption = false) {
 	try {
 		const sidebarItem = document.createElement('div');
-		sidebarItem.className = 'sidebar_item fadeInDown';
+		sidebarItem.className = 'sidebar_item fadeInRight';
 		sidebarItem.id = isSubOption ? element.value : element.id;
 
 		const itemContent = document.createElement('div');

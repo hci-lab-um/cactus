@@ -611,7 +611,7 @@ function initScrollableElements() {
 // This function is used to position the sccroll button on top of the element which it is scrolling
 function getZIndex(element) {
 	try {
-		return parseInt(window.getComputedStyle(element).zIndex, 10) || 2147483648; // Default to 99999997 if no z-index is set
+		return parseInt(window.getComputedStyle(element).zIndex, 10) || 2147483648; // Default to 2147483648 if no z-index is set
 	} catch (error) {
 		window.cactusAPI.logError(`Error getting z-index: ${error.message}`);
 	}
