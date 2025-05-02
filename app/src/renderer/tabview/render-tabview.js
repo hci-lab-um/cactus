@@ -38,10 +38,11 @@ window.cactusAPI.on('ipc-iframes-loaded', (scrollDist) => {
 	}
 });
 
-window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist, isActive) => {
+window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist, isActive, isScrollOn) => {
 	try {
 		useNavAreas = useNavAreas;
 		scrollDistance = scrollDist;
+		displayScrollButtons = isScrollOn;
 		initScrollableElements();
 
 		// Setup the QuadTree and NavAreasTree

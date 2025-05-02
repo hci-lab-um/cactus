@@ -37,7 +37,7 @@ let overlayList = [];
 let tabsFromDatabase = [];
 let bookmarks = [];
 let successfulLoad;
-let scrollButtonsRemoved = false;
+let isScrollToggleOn = true;
 
 
 // =========================================
@@ -510,12 +510,24 @@ ipcMain.on('ipc-mainwindow-highlight-elements-on-page', (event, elements) => {
     }
 });
 
+ipcMain.on('ipc-mainwindow-toggle-scroll-buttons', (event, isScrollButtonsVisible) => {
+    // remove scroll buttons on every tab if they are currently visible
+    tabList.forEach(tab => {
+        if (isScrollButtonsVisible) {
+            isScrollToggleOn = false;
+            tab.webContentsView.webContents.send('ipc-main-remove-scroll-buttons');
+        } else {
+            isScrollToggleOn = true;
+            tab.webContentsView.webContents.send('ipc-main-add-scroll-buttons');
+        }
+    });
+});
+
 ipcMain.on('ipc-mainwindow-show-overlay', async (event, overlayAreaToShow, elementProperties) => {
     try {
         if (overlayAreaToShow === 'quickClick') {
             // remove scroll buttons on the tabview
             var tab = tabList.find(tab => tab.isActive === true);
-            scrollButtonsRemoved = true;
             tab.webContentsView.webContents.send('ipc-main-remove-scroll-buttons');
 
             createOverlay(overlayAreaToShow, elementProperties, true);
@@ -904,10 +916,9 @@ ipcMain.on('ipc-quick-click-dwelltime-elapsed', (event) => {
 ipcMain.on('ipc-quick-click-add-scroll-buttons', (event) => {
     try {
         // Adding the scroll buttons back to the tabview if they were removed
-        if (scrollButtonsRemoved) {
+        if (isScrollToggleOn) {
             var tab = tabList.find(tab => tab.isActive === true);
             tab.webContentsView.webContents.send('ipc-main-add-scroll-buttons');
-            scrollButtonsRemoved = false;
         }
     } catch (err) {
         logger.error('Error adding scroll buttons:', err.message);
@@ -1316,9 +1327,9 @@ function setTabViewEventlisteners(tabView) {
 
                         // If the tab is active, send isActive = true to connect the mutation observer
                         if (tabList.find(tab => tab.webContentsView === tabView && tab.isActive)) {
-                            tabView.webContents.send('ipc-main-tabview-loaded', useNavAreas, scrollDistance, true);
+                            tabView.webContents.send('ipc-main-tabview-loaded', useNavAreas, scrollDistance, true, isScrollToggleOn);
                         } else {
-                            tabView.webContents.send('ipc-main-tabview-loaded', useNavAreas, scrollDistance, false);
+                            tabView.webContents.send('ipc-main-tabview-loaded', useNavAreas, scrollDistance, false, isScrollToggleOn);
                         }
 
                         // injecting javascript into each first level iframe of the tabview

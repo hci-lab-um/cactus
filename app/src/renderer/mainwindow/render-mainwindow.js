@@ -406,6 +406,7 @@ function setupNavigationSideBar(reattachListeners = false) {
 		if (!reattachListeners) resetNavigationSidebar();
 
 		quickClick = byId('sidebar_quick')
+		scrollToggle = byId('sidebar_scrolltoggle')
 		menuNavLevelup = byId('sidebar_levelup')
 		menuScrollUp = byId('sidebar_scrollup')
 		menuScrollDown = byId('sidebar_scrolldown')
@@ -424,6 +425,17 @@ function setupNavigationSideBar(reattachListeners = false) {
 
 		ipcRenderer.on('ipc-main-sidebar-scrolldown', () => {
 			sidebarScroll(1);
+		});
+
+		dwell(scrollToggle, () => {
+			// update icon and color
+			let icon = scrollToggle.getElementsByTagName('i')[0];
+			let isScrollButtonsVisible = icon.innerText === 'toggle_on' ? true : false;
+
+			icon.innerText = isScrollButtonsVisible ? 'toggle_off' : 'toggle_on';
+			icon.style.color = isScrollButtonsVisible ? '#aaacbb' : '#10468b';
+
+			ipcRenderer.send('ipc-mainwindow-toggle-scroll-buttons', isScrollButtonsVisible);
 		});
 
 		dwell(quickClick, () => {

@@ -39,6 +39,11 @@
         font-family: 'Material Symbols Outlined Filled';
     }
 
+    &--extra-small {
+        @extend .material-icons;
+        font-size: 1.5rem;
+    }
+
     &--smaller {
         @extend .material-icons;
         font-size: 1.7rem;

@@ -86,10 +86,10 @@ body {
   text-align: left;
 
   &_header {
-    // display: flex;
     // align-items: center;
     border-bottom: 1px solid $lightgrey;
     width: 100%;
+    display: flex;
     // padding: 20px 30px;
 
     // &_icon {
@@ -105,6 +105,7 @@ body {
   }
 
   &_quick,
+  &_scrolltoggle,
   &_levelup,
   &_scrollup,
   &_scrolldown {
@@ -118,10 +119,20 @@ body {
     justify-content: center;
   }
 
-  &_quick {
+  &_quick,
+  &_scrolltoggle {
     @extend .dwellBtn;
     justify-content: center;
-    gap: 20px;
+    gap: 10px;
+    font-size: 16px;
+  }
+
+  &_quick {
+    margin-right: 7.5px;
+  }
+
+  &_scrolltoggle {
+    margin-left: 7.5px;
   }
 
   &_levelup {
