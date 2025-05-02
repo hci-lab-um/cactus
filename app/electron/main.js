@@ -390,7 +390,13 @@ ipcMain.on('robot-keyboard-type', (event, { text, submit }) => {
                 if (consecutiveCharPattern.test(word)) {
                     // If the word has consecutive characters, type each character using keyTap
                     for (let char of word) {
-                        robot.keyTap(char);
+                        if (/[^a-zA-Z0-9]/.test(char)) {
+                            // If the character is a special character, use typeString
+                            robot.typeString(char);
+                        } else {
+                            // Otherwise, use keyTap
+                            robot.keyTap(char);
+                        }
                     }
                 } else {
                     // If the word does not have consecutive characters, type the whole word using typeString
