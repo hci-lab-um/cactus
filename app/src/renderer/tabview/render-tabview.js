@@ -58,9 +58,9 @@ window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist, isActiv
 				// If callback is already executing, ignore this invocation
 				if (mutationObserverCallbackExecuting) return;
 
-				// Iterate through the list of mutations, and only generate quadTrees when: 
+				// Iterating through the list of mutations, and only generating quadTrees when:
 				// a) not custom Cursor related (debounce every x ms to avoid too many quadtree gen calls)
-				// b) not a known attribute being added/removed
+				// b) not a known attribute or child being added/removed
 				for (let mutation of mutationsList) {
 					const isCactusInternalElement = (node) => {
 						if (!(node instanceof HTMLElement)) return false;
@@ -74,13 +74,13 @@ window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist, isActiv
 							node.classList.contains('cactus-scrollDown_outerDiv')
 						);
 					};
-		
-					const allAddedAreCactusElements = [...mutation.addedNodes].every(isCactusInternalElement);
-					const allRemovedAreCactusElements = [...mutation.removedNodes].every(isCactusInternalElement);
-		
-					// Skips this mutation if ONLY internal CACTUS elements were added or removed
-					if (allAddedAreCactusElements && allRemovedAreCactusElements) continue;
-		
+					const allAddedAreCactusElements = [...mutation.addedNodes].length > 0 && [...mutation.addedNodes].every(isCactusInternalElement);
+					const allRemovedAreCactusElements = [...mutation.removedNodes].length > 0 && [...mutation.removedNodes].every(isCactusInternalElement);
+					const allTargetAreCactusElements = isCactusInternalElement(mutation.target);
+	
+					// Skips this mutation ONLY if internal CACTUS elements were added or removed
+					if (allAddedAreCactusElements || allRemovedAreCactusElements || allTargetAreCactusElements) continue;
+
 					console.log(`Mutation observed on target: `, mutation.target, `\nMutation type: `, mutation.type);
 					mutationObserverCallbackExecuting = true;
 		
