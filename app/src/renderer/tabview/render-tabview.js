@@ -77,13 +77,13 @@ window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist, isActiv
 					const allAddedAreCactusElements = [...mutation.addedNodes].length > 0 && [...mutation.addedNodes].every(isCactusInternalElement);
 					const allRemovedAreCactusElements = [...mutation.removedNodes].length > 0 && [...mutation.removedNodes].every(isCactusInternalElement);
 					const allTargetAreCactusElements = isCactusInternalElement(mutation.target);
-	
+
 					// Skips this mutation ONLY if internal CACTUS elements were added or removed
 					if (allAddedAreCactusElements || allRemovedAreCactusElements || allTargetAreCactusElements) continue;
 
 					console.log(`Mutation observed on target: `, mutation.target, `\nMutation type: `, mutation.type);
 					mutationObserverCallbackExecuting = true;
-		
+
 					setTimeout(() => {
 						try {
 							generateQuadTree();
@@ -93,25 +93,25 @@ window.cactusAPI.on('ipc-main-tabview-loaded', (useNavAreas, scrollDist, isActiv
 							window.cactusAPI.logError(`Error generating QuadTree/NavAreasTree: ${error.message}`);
 						}
 					}, 1000);
-		
+
 					console.log("quad tree generated");
-		
+
 					if (mutation.type !== "attributes" || mutation.attributeName !== "data-cactus-id") {
 						initScrollableElements();
 					} else {
 						console.log("Mutation is data-cactus-id attribute change, skipping scrollable elements check");
 					}
-		
+
 					setTimeout(() => {
 						mutationObserverCallbackExecuting = false;
 					}, 1000);
-		
+
 					break;
 				}
 			} catch (error) {
 				window.cactusAPI.logError(`Error in mutation observer callback: ${error.message}`);
 			}
-		});		
+		});
 
 		mutationObserverOptions = {
 			attributes: true, //necessary for collapsable elements etc...
@@ -259,7 +259,7 @@ window.cactusAPI.on('ipc-tabview-keyboard-input', (text, elementToUpdate, submit
 				if (submit) window.cactusAPI.send('robot-keyboard-enter');
 			} else {
 				console.log('Typing text using RobotJS: ', text);
-			//JS is restricted when it comes to editing fields on remote pages - therefore, Robotjs is used to emulate the keyboard and mouse
+				//JS is restricted when it comes to editing fields on remote pages - therefore, Robotjs is used to emulate the keyboard and mouse
 				window.cactusAPI.send('robot-keyboard-type', { text, submit });
 			}
 		} else {
@@ -273,7 +273,6 @@ window.cactusAPI.on('ipc-tabview-keyboard-input', (text, elementToUpdate, submit
 window.cactusAPI.onAsync('ipc-tabview-set-element-value', (element, value) => {
 	try {
 		let parentElement = document.querySelector('[data-cactus-id="' + element.parentElementId + '"]');
-		debugger
 		if (parentElement) {
 			if (parentElement.multiple) {
 				// When a select element has the multiple attribute, it is possible to select more than one option
@@ -637,7 +636,7 @@ async function generateQuadTree() {
 	try {
 		const clickableSelectors = [
 			'button', 'a:not([tabindex="-1"])', 'textarea', 'input', 'select', 'date', 'video', 'audio',
-			'[role="button"]', 'div[role="link"]', 'span[role="link"]',
+			'[role="button"]', '[role="link"]',
 			'[role="checkbox"]', '[role="textbox"]', '[role="radio"]', '[role="option"]', '[role="tab"]',
 			'[role="menu"]', '[role="switch"]', '[role="slider"]', '[role="combobox"]', 'iframe[src]:not([src="about:blank"])', '[aria-selected]'
 		];
@@ -833,10 +832,10 @@ function serializeElement(element) {
 						const values = [];
 
 						if (duration) {
-							for (let i = 1; i <= 10; i++) { 
-								const time = (i / 10) * duration; 
+							for (let i = 1; i <= 10; i++) {
+								const time = (i / 10) * duration;
 								values.push({
-									value: time.toFixed(2), 
+									value: time.toFixed(2),
 									textContent: new Date(time * 1000).toISOString().slice(11, 19),
 									parentElementId: element.dataset.cactusId,
 									parentValue: 'seek',
