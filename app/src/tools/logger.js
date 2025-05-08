@@ -7,7 +7,7 @@ const os = require('os');
 const logDirectory = path.join(os.homedir(), '.cactus', 'logs');
 
 const logger = createLogger({
-  level: 'error',
+  level: 'info',
   format: format.combine(
     format.timestamp({ format: () => new Date().toLocaleString() }), // Use local date and time
     format.printf(({ timestamp, level, message, ...meta }) => {

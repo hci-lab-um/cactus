@@ -57,14 +57,22 @@ process.on('unhandledRejection', (reason, promise) => {
 // ===== AUTO UPDATER LISTENERS =====
 // ==================================
 
+autoUpdater.on('checking-for-update', () => {
+    logger.info('Checking for update...');
+});
+
 autoUpdater.on('update-available', () => {
-    console.log('Update available!');
-    mainWindow.webContents.send('ipc-update-available');
+    logger.info('Update available!');
+    // mainWindow.webContents.send('ipc-update-available');
 });
 
 autoUpdater.on('update-downloaded', () => {
-    console.log('Update downloaded!');
-    mainWindow.webContents.send('ipc-update-downloaded');
+    logger.info('Update downloaded!');
+    // mainWindow.webContents.send('ipc-update-downloaded');
+});
+
+autoUpdater.on('error', (error) => {
+    logger.error('Cactus update error:', error.message);
 });
 
 // =================================

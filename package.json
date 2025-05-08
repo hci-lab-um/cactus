@@ -1,7 +1,7 @@
 {
 	"name": "cactus",
 	"productName": "Cactus",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "Multi-Modal Eye Browser",
 	"main": "app/electron/main.js",
 	"scripts": {
@@ -20,6 +20,7 @@
 			"repo": "cactus"
 		},
 		"asar": false,
+		"artifactName": "Cactus-Setup-${version}.${ext}",
 		"dmg": {
 			"contents": [
 				{
