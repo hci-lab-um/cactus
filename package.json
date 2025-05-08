@@ -1,7 +1,7 @@
 {
 	"name": "cactus",
 	"productName": "Cactus",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"description": "Multi-Modal Eye Browser",
 	"main": "app/electron/main.js",
 	"scripts": {
@@ -15,8 +15,8 @@
 		"appId": "com.hci-lab-um.cactus",
 		"publish": {
 			"provider": "github",
-			"owner": "chrisporter-um",
-			"repo": "hci-lab-um/cactus"
+			"owner": "hci-lab-um",
+			"repo": "cactus"
 		},
 		"asar": false,
 		"dmg": {
