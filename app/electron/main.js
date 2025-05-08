@@ -369,6 +369,7 @@ ipcMain.on('robot-keyboard-type', (event, { text, submit }) => {
 
         // Wait a short period to ensure the field is focused before performing actions
         robot.setKeyboardDelay(50);
+        robot.typeString(' ');
 
         // Select all text (Ctrl + A or Cmd + A). On Windows/Linux 'control', on macOS 'command'
         if (process.platform == 'darwin')
@@ -383,28 +384,34 @@ ipcMain.on('robot-keyboard-type', (event, { text, submit }) => {
         if (!hasConsecutiveChars) {
             robot.typeString(text);
         } else {
-            // Split the text into an array of words
-            const wordArray = text.split(" ");
-            // Iterate through each word
-            wordArray.forEach((word, index) => {
-                if (consecutiveCharPattern.test(word)) {
-                    // If the word has consecutive characters, type each character using keyTap
-                    for (let char of word) {
-                        if (/[^a-zA-Z0-9]/.test(char)) {
-                            // If the character is a special character, use typeString
-                            robot.typeString(char);
-                        } else {
-                            // Otherwise, use keyTap
-                            robot.keyTap(char);
+            const lines = text.split("\n"); // Split the text into lines based on newline characters
+
+            lines.forEach((line, lineIndex) => {
+                const wordArray = line.split(" "); // Split the line into words
+                wordArray.forEach((word, wordIndex) => {
+                    if (consecutiveCharPattern.test(word)) {
+                        // If the word has consecutive characters, type each character using keyTap
+                        for (let char of word) {
+                            if (/[^a-zA-Z0-9]/.test(char)) {
+                                // If the character is a special character, use typeString
+                                robot.typeString(char);
+                            } else {
+                                // Otherwise, use keyTap
+                                robot.keyTap(char);
+                            }
                         }
+                    } else {
+                        // If the word does not have consecutive characters, type the whole word using typeString
+                        robot.typeString(word);
                     }
-                } else {
-                    // If the word does not have consecutive characters, type the whole word using typeString
-                    robot.typeString(word);
-                }
-                // Add a space after each word except the last one
-                if (index < wordArray.length - 1) {
-                    robot.keyTap("space");
+                    // Add a space after each word except the last one in the line
+                    if (wordIndex < wordArray.length - 1) {
+                        robot.keyTap("space");
+                    }
+                });
+                // Add an enter after each line except the last one
+                if (lineIndex < lines.length - 1) {
+                    robot.keyTap("enter");
                 }
             });
         }

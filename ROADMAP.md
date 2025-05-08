@@ -5,6 +5,7 @@
 1. Generating the quadtree inside iframes and therefore have the ability interact with its elements through the sidebar.
 2. Browser History
 3. When a form is present on a page, it would be populated with the previous response (E.g. autocompleting a sign in form).
+4. Faster typing and allowing consecutive special characters to be printed. 
 
 ## Out of Scope
 ### The assumption is that users already have software that allow them to perform these actions
