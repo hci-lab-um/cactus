@@ -7,7 +7,8 @@
 	"scripts": {
 		"start": "gulp mainCss && gulp webviewCss && gulp bookmarksCss && gulp keyboardCss && electron --enable-transparent-visuals .",
 		"build": "gulp mainCss && gulp webviewCss && gulp bookmarksCss && gulp keyboardCss",
-		"dist": "electron-builder"
+		"dist": "electron-builder",
+		"publish": "electron-builder --publish always"
 	},
 	"author": "HCI Lab - Faculty of ICT, University of Malta",
 	"license": "GPL3",
