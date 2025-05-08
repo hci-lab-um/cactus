@@ -1,23 +1,17 @@
-# Cactus - roadmap
+# Cactus - Roadmap
 
-## Planned features
+## Future features
 
-1. Pick up all interactive elements (including input fields)
-2. Select only x amount of interactive elements, to avoid scrolling in sidebar... but also offer it in case it is required
-3. Integrate SwitfKey or ModaliKey (see note 1)
-4. Integrate multi-modal interaction (i.e. custom cursor responding to click events - configurable to respond to any key or key combination which could be programmed into Hitch 2.0 or any adaptive swtich)
-5. Integrate with WebGazer for cursor control without the need for an eye tracker (configurable)
-6. Add Configuration screens 
-7. Make all parameterized via Config (e.g. dwellRangeWidth/dwellRangeHeight)
-8. config.get('dwelling.useNavAreas'); should be provided as a quick user setting (e.g. UI toggle), allowing users to toggle between nav area navigation mode and not (i.e. normal QT approach). Sometimes, nav areas are either not marked up properly (e.g. large number of elements on one level), or have a with no hrefs. 
-9. Create constants for ipcChannels etc...
-10. Logging and exception handling
+1. Generating the quadtree inside iframes and therefore have the ability interact with its elements through the sidebar.
+2. Browser History
+3. When a form is present on a page, it would be populated with the previous response (E.g. autocompleting a sign in form).
+
+## Out of Scope
+### The assumption is that users already have software that allow them to perform these actions
+1. Copy and paste - copying text could be by selecting the starting point and end point through 2 seperate clicks. This sequence of actions could be indentified after specifying the intent through a button somewhere
+2. Drag and drop
 
 ## Notes
-1. It might be better if Cactus works with any ET that is supported by Windows Eye Control or Tobii Gaze Point, as opposed to integrating directly with specific ETs. 
-2. To create Logos and icon packs (current logo is from icons8)
-3. Add About section, and add reference to any attribution-specific resources 
-(<a target="_blank" href="https://icons8.com/icon/avhBdzCooISo/succulent">Succulent</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>)
-4. Create installer with splash screen.
+1.  Cactus works with any ET that is supported by Windows Eye Control or Tobii Gaze Point, as opposed to being directly integrated with specific ETs. 
 
 

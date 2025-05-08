@@ -2,11 +2,9 @@
 
 Cactus is an accessibility-first browser, designed and optimised to work with alternative input modalities such as eye-trackers.
 
-This project was developed at the University of Malta (HCI Lab) by Daniel Vella, under the supervision of Chris Porter.
-
 ## Installation
 
-Node >= 20.11.1
+20.11.1 <= Node Version < 21 (It cannot be used with versions later than 20 because node-sass is depricated)
 ```
 1. Download and install node
 2. `cd` into repository
@@ -27,6 +25,7 @@ You may create a binary for your platform by calling
 
 ## People
 
+- [Marie Buhagiar](https://www.linkedin.com/in/marie-buhagiar-283155267/)
 - [Daniel Vella](https://www.linkedin.com/in/velladaniel/)
 - [Chris Porter](https://www.um.edu.mt/profile/chrisporter)
 
