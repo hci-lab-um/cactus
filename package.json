@@ -16,8 +16,8 @@
 		"appId": "com.hci-lab-um.cactus",
 		"publish": {
 			"provider": "github",
-			"owner": "chrisporter-um",
-			"repo": "hci-lab-um/cactus"
+			"owner": "hci-lab-um",
+			"repo": "cactus"
 		},
 		"asar": false,
 		"dmg": {
