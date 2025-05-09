@@ -150,7 +150,7 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 
 ## Experimental and Not Yet Tested
 
-Some devices or software have not yet been fully tested with CACTUS. If you attempt to use CACTUS with these and encounter issues, please [open an issue](https://github.com/your-repo/issues) or contact the development team.
+Some devices or software have not yet been fully tested with CACTUS. If you attempt to use CACTUS with these and encounter issues, please [open an issue](https://github.com/hci-lab-um/cactus/issues) or contact the development team.
 
 ---
 
