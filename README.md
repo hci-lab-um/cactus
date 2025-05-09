@@ -32,7 +32,7 @@ You may create a binary for your platform by calling
 
 `npm run dist`
 
-#### Usage
+#### Running
 
 1. If you have the executable: look under the 'dist' folder
 2. Alternatively use ```npm run start``` from your commmand line
@@ -50,7 +50,7 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 ## License
 [GPL3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-## General Instructions
+## Setup and Usage Instructions
 
 - Ensure your eye tracker or pointer device is properly calibrated.
 - Open CACTUS using your preferred method (e.g. desktop shortcut, pinned taskbar).
