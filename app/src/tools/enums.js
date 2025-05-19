@@ -150,6 +150,10 @@ const Settings = Object.freeze({
         LABEL: "Keyboard Language",
         DESCRIPTION: "The keyboard language that will be used as a default, unless it is changed from the keyboard itself.",
         DEFAULT: KeyboardLayouts.ENGLISH,
+    },
+    PREVIOUS_APP_VERSION: {
+        NAME: "previousAppVersion",
+        DEFAULT: "0.0.0",
     }
 });
 
