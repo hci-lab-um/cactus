@@ -1,6 +1,5 @@
 const { app, BaseWindow, WebContentsView, ipcMain, globalShortcut, screen, session } = require('electron')
 const { autoUpdater } = require('electron-updater');
-const Store = require('electron-store');
 const path = require('path')
 const fs = require('fs')
 const { QuadtreeBuilder, InteractiveElement, HTMLSerializableElement, QtPageDocument, QtBuilderOptions, QtRange } = require('cactus-quadtree-builder');
@@ -12,7 +11,6 @@ const { Settings, KeyboardLayouts, Shortcuts } = require('../src/tools/enums.js'
 const logger = require('../src/tools/logger.js');
 
 const gotTheLock = app.requestSingleInstanceLock()
-const store = new Store();
 const isDevelopment = process.env.NODE_ENV === "development";
 
 let dwellRangeWidth;
@@ -40,6 +38,7 @@ let tabsFromDatabase = [];
 let bookmarks = [];
 let successfulLoad;
 let isScrollToggleOn = true;
+let dbReady = false;
 
 
 // =========================================
@@ -67,9 +66,21 @@ autoUpdater.on('update-available', () => {
     logger.info('Update available!');
 });
 
-autoUpdater.on('update-downloaded', () => {
+autoUpdater.on('update-downloaded', async () => {
     logger.info('Update downloaded!');
-    store.set('previousVersion', app.getVersion());
+    if (dbReady) {
+        db.updatePreviousAppVersion(app.getVersion());
+    } else {
+        // Retry after a short delay if db is not ready
+        const retrySetVersion = () => {
+            if (dbReady) {
+                db.updatePreviousAppVersion(app.getVersion());
+            } else {
+                setTimeout(retrySetVersion, 500);
+            }
+        };
+        retrySetVersion();
+    }
     // optionally send message to renderer or call autoUpdater.quitAndInstall()
     // mainWindow.webContents.send('ipc-update-downloaded');
 });
@@ -87,27 +98,28 @@ if (!gotTheLock) {
 } else {
     app.whenReady().then(async () => {
         try {
-            await checkIfUpdateInstalled();
             await db.connect();
             await db.createTables();
+            dbReady = true;
             await initialiseVariables();
+            await checkIfUpdateInstalled();
         } catch (err) {
             logger.error('Error initializing database:', err.message);
         }
-    
+
         try {
             createSplashWindow();
             setTimeout(() => {
                 try {
                     createMainWindow();
-    
+
                     // Check for updates after the main window is created
                     autoUpdater.checkForUpdatesAndNotify();
                 } catch (err) {
                     logger.error('Error creating main window:', err.message);
                 }
             }, 3000); // This is the duration of the splash screen gif
-    
+
             registerSwitchShortcutCommands();
         } catch (err) {
             logger.error('Error during app initialization:', err.message);
@@ -954,7 +966,7 @@ ipcMain.on('ipc-quick-click-add-scroll-buttons', (event) => {
 // KEYBOARD OVERLAY
 // -----------------
 
-ipcMain.on('ipc-keyboard-input', (event, value, element, submit, updateValueAttr = false) => {    
+ipcMain.on('ipc-keyboard-input', (event, value, element, submit, updateValueAttr = false) => {
     try {
         removeOverlay();
 
@@ -1055,14 +1067,14 @@ ipcMain.on('log', (event, loggedItem) => {
 // =================================
 
 async function checkIfUpdateInstalled() {
-    const previousVersion = store.get('previousVersion');
+    const previousVersion = await db.getPreviousAppVersion();
     const currentVersion = app.getVersion();
 
     // Checks if the newest version has installed successfully
     if (previousVersion && previousVersion !== currentVersion) {
         logger.info(`Update successfully installed: ${previousVersion} → ${currentVersion}`);
-        store.delete('previousVersion');
-        
+        db.deletePreviousAppVersion();
+
         session.defaultSession.clearCache((error) => {
             if (error) logger.error('Cache clear error:', error);
             else logger.info('Cache cleared!');
@@ -1940,7 +1952,7 @@ async function createOverlay(overlayAreaToShow, elementProperties, isTransparent
 
         mainWindow.contentView.addChildView(overlayContent)
         overlayContent.setBounds({ x: 0, y: 0, width: mainWindowContentBounds.width, height: mainWindowContentBounds.height })
-        overlayContent.webContents.loadURL(path.join(__dirname, '../src/pages/', htmlPage)).then(async() => {
+        overlayContent.webContents.loadURL(path.join(__dirname, '../src/pages/', htmlPage)).then(async () => {
 
             isKeyboardOverlay = overlayAreaToShow === 'keyboard';
             
@@ -2428,7 +2440,7 @@ function getFullURL(url) {
 // ====== DATABASE FUNCTIONS =======
 // =================================
 
-async function addBookmarkToDatabase(bookmark){
+async function addBookmarkToDatabase(bookmark) {
     try {
         await db.addBookmark(bookmark);
     } catch (err) {
@@ -2436,7 +2448,7 @@ async function addBookmarkToDatabase(bookmark){
     }
 }
 
-async function deleteBookmarkByUrl(url){
+async function deleteBookmarkByUrl(url) {
     try {
         await db.deleteBookmarkByUrl(url);
     } catch (err) {

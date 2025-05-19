@@ -1,7 +1,7 @@
 const { app } = require('electron');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
-const { Settings, Shortcuts, KeyboardLayouts } = require('../src/tools/enums.js');
+const { Settings, Shortcuts } = require('../src/tools/enums.js');
 const dbPath = path.join(app.getPath('userData'), 'cactus.db');
 
 let db;
@@ -175,19 +175,20 @@ function createUserSettingsTable() {
 function populateUserSettingsTable() {
     return new Promise((resolve, reject) => {
         const defaultSettings = {
-            [Settings.DWELL_TIME.NAME]: Settings.DWELL_TIME.NORMAL,
-            [Settings.DWELL_RANGE.NAME]: Settings.DWELL_RANGE.DEFAULT,
-            [Settings.KEYBOARD_DWELL_TIME.NAME]: Settings.KEYBOARD_DWELL_TIME.SHORT,
-            [Settings.RANGE_WIDTH.NAME]: Settings.RANGE_WIDTH.DEFAULT,
-            [Settings.RANGE_HEIGHT.NAME]: Settings.RANGE_HEIGHT.DEFAULT,
-            [Settings.TAB_VIEW_SCROLL_DISTANCE.NAME]: Settings.TAB_VIEW_SCROLL_DISTANCE.NORMAL,
-            [Settings.MENU_AREA_SCROLL_DISTANCE.NAME]: Settings.MENU_AREA_SCROLL_DISTANCE.NORMAL,
-            [Settings.MENU_AREA_SCROLL_INTERVAL_IN_MS.NAME]: Settings.MENU_AREA_SCROLL_INTERVAL_IN_MS.DEFAULT,
-            [Settings.USE_NAV_AREAS.NAME]: Settings.USE_NAV_AREAS.DEFAULT,
-            [Settings.USE_ROBOT_JS.NAME]: Settings.USE_ROBOT_JS.DEFAULT,
-            [Settings.IS_READ_MODE_ACTIVE.NAME]: Settings.IS_READ_MODE_ACTIVE.DEFAULT,
-            [Settings.DEFAULT_URL.NAME]: Settings.DEFAULT_URL.DEFAULT,
-            [Settings.DEFAULT_LAYOUT.NAME]: Settings.DEFAULT_LAYOUT.DEFAULT
+            [Settings.DWELL_TIME.NAME]:                         Settings.DWELL_TIME.NORMAL,
+            [Settings.DWELL_RANGE.NAME]:                        Settings.DWELL_RANGE.DEFAULT,
+            [Settings.KEYBOARD_DWELL_TIME.NAME]:                Settings.KEYBOARD_DWELL_TIME.SHORT,
+            [Settings.RANGE_WIDTH.NAME]:                        Settings.RANGE_WIDTH.DEFAULT,
+            [Settings.RANGE_HEIGHT.NAME]:                       Settings.RANGE_HEIGHT.DEFAULT,
+            [Settings.TAB_VIEW_SCROLL_DISTANCE.NAME]:           Settings.TAB_VIEW_SCROLL_DISTANCE.NORMAL,
+            [Settings.MENU_AREA_SCROLL_DISTANCE.NAME]:          Settings.MENU_AREA_SCROLL_DISTANCE.NORMAL,
+            [Settings.MENU_AREA_SCROLL_INTERVAL_IN_MS.NAME]:    Settings.MENU_AREA_SCROLL_INTERVAL_IN_MS.DEFAULT,
+            [Settings.USE_NAV_AREAS.NAME]:                      Settings.USE_NAV_AREAS.DEFAULT,
+            [Settings.USE_ROBOT_JS.NAME]:                       Settings.USE_ROBOT_JS.DEFAULT,
+            [Settings.IS_READ_MODE_ACTIVE.NAME]:                Settings.IS_READ_MODE_ACTIVE.DEFAULT,
+            [Settings.DEFAULT_URL.NAME]:                        Settings.DEFAULT_URL.DEFAULT,
+            [Settings.DEFAULT_LAYOUT.NAME]:                     Settings.DEFAULT_LAYOUT.DEFAULT,
+            [Settings.PREVIOUS_APP_VERSION.NAME]:               Settings.PREVIOUS_APP_VERSION.DEFAULT,
         };
         const insertSetting = `
             INSERT OR IGNORE INTO user_settings (setting, value)
@@ -314,6 +315,25 @@ function deleteAllTabs() {
                 reject(err);
             } else {
                 console.log('All tabs have been deleted');
+                resolve();
+            }
+        });
+    });
+}
+
+function deletePreviousAppVersion() {
+    return new Promise((resolve, reject) => {
+        if (!db) {
+            reject(new Error('Database not initialized'));
+            return;
+        }
+        const query = `DELETE FROM user_settings WHERE setting = ?`;
+        db.run(query, [Settings.PREVIOUS_APP_VERSION.NAME], function (err) {
+            if (err) {
+                console.error('Error deleting previous app version:', err.message);
+                reject(err);
+            } else {
+                console.log('Previous app version deleted successfully.');
                 resolve();
             }
         });
@@ -459,6 +479,10 @@ function getDefaultLayout() {
     return getSetting(Settings.DEFAULT_LAYOUT.NAME);
 }
 
+function getPreviousAppVersion() {
+    return getSetting(Settings.PREVIOUS_APP_VERSION.NAME);
+}
+
 // =================================
 // =========== UPDATING ============
 // =================================
@@ -576,6 +600,13 @@ function updateDefaultLayout(value) {
     return updateUserSetting(Settings.DEFAULT_LAYOUT.NAME, value);
 }
 
+function updatePreviousAppVersion(version) {
+    if (typeof version !== 'string') {
+        throw new Error('App version must be a string');
+    }
+    return updateUserSetting(Settings.PREVIOUS_APP_VERSION.NAME, version);
+}
+
 
 module.exports = {
     connect,
@@ -601,9 +632,11 @@ module.exports = {
     getDwellTime,
     getQuickDwellRange,
     getKeyboardDwellTime,
+    getPreviousAppVersion,
 
     deleteBookmarkByUrl,
     deleteAllTabs,
+    deletePreviousAppVersion,
 
     updateUserSetting,
     updateDefaultURL,
@@ -619,4 +652,5 @@ module.exports = {
     updateKeyboardDwellTime,
     updateMenuScrollInterval,
     updateDefaultLayout,
+    updatePreviousAppVersion,
 };
