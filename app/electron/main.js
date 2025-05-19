@@ -1,4 +1,4 @@
-const { app, BaseWindow, WebContentsView, ipcMain, globalShortcut, screen } = require('electron')
+const { app, BaseWindow, WebContentsView, ipcMain, globalShortcut, screen, session } = require('electron')
 const { autoUpdater } = require('electron-updater');
 const path = require('path')
 const fs = require('fs')
@@ -11,8 +11,8 @@ const { Settings, KeyboardLayouts, Shortcuts } = require('../src/tools/enums.js'
 const logger = require('../src/tools/logger.js');
 
 const gotTheLock = app.requestSingleInstanceLock()
-
 const isDevelopment = process.env.NODE_ENV === "development";
+
 let dwellRangeWidth;
 let dwellRangeHeight;
 let useNavAreas;
@@ -38,6 +38,7 @@ let tabsFromDatabase = [];
 let bookmarks = [];
 let successfulLoad;
 let isScrollToggleOn = true;
+let dbReady = false;
 
 
 // =========================================
@@ -58,16 +59,35 @@ process.on('unhandledRejection', (reason, promise) => {
 // ==================================
 
 autoUpdater.on('checking-for-update', () => {
-    logger.info('Checking for update...');
+    logger.info('Checking for updates...');
 });
 
 autoUpdater.on('update-available', () => {
     logger.info('Update available!');
-    // mainWindow.webContents.send('ipc-update-available');
 });
 
-autoUpdater.on('update-downloaded', () => {
-    logger.info('Update downloaded!');
+autoUpdater.on('update-not-available', () => {
+    logger.info('Update not available.');
+});
+
+autoUpdater.on('update-downloaded', async () => {
+    logger.info('Update downloaded! Waiting for user to restart the app to install it.');
+    if (dbReady) {
+        // Updating the previous app version in the database to the current version
+        // before the app is restarted and the new version is installed.
+        db.updatePreviousAppVersion(app.getVersion());
+    } else {
+        // Retrying after a short delay if db is not ready
+        const retrySetVersion = () => {
+            if (dbReady) {
+                db.updatePreviousAppVersion(app.getVersion());
+            } else {
+                setTimeout(retrySetVersion, 500);
+            }
+        };
+        retrySetVersion();
+    }
+    // Sending a message to the renderer to call autoUpdater.quitAndInstall() if confirmed by the user
     // mainWindow.webContents.send('ipc-update-downloaded');
 });
 
@@ -87,23 +107,24 @@ if (!gotTheLock) {
             await db.connect();
             await db.createTables();
             await initialiseVariables();
+            await checkIfUpdateInstalled();
         } catch (err) {
             logger.error('Error initializing database:', err.message);
         }
-    
+
         try {
             createSplashWindow();
             setTimeout(() => {
                 try {
                     createMainWindow();
-    
+
                     // Check for updates after the main window is created
                     autoUpdater.checkForUpdatesAndNotify();
                 } catch (err) {
                     logger.error('Error creating main window:', err.message);
                 }
             }, 3000); // This is the duration of the splash screen gif
-    
+
             registerSwitchShortcutCommands();
         } catch (err) {
             logger.error('Error during app initialization:', err.message);
@@ -950,7 +971,7 @@ ipcMain.on('ipc-quick-click-add-scroll-buttons', (event) => {
 // KEYBOARD OVERLAY
 // -----------------
 
-ipcMain.on('ipc-keyboard-input', (event, value, element, submit, updateValueAttr = false) => {    
+ipcMain.on('ipc-keyboard-input', (event, value, element, submit, updateValueAttr = false) => {
     try {
         removeOverlay();
 
@@ -1050,8 +1071,29 @@ ipcMain.on('log', (event, loggedItem) => {
 // ======= HELPER FUNCTIONS ========
 // =================================
 
+async function checkIfUpdateInstalled() {
+    const previousVersion = await db.getPreviousAppVersion();
+    const currentVersion = app.getVersion();
+
+    // Checks if the newest version has installed successfully
+    if (previousVersion && previousVersion !== currentVersion) {
+        if (previousVersion !== Settings.PREVIOUS_APP_VERSION.DEFAULT) {
+            logger.info(`Update successfully installed: ${previousVersion} → ${currentVersion}`);
+        }        
+
+        // Clearing cached files (JS, CSS, HTML, etc.) to ensure the app loads fresh resources after updating
+        session.defaultSession.clearCache((error) => {
+            if (error) logger.error('Cache clear error:', error);
+            else logger.info('Cache cleared!');
+        });
+    } else {
+        logger.info(`Current app version: ${currentVersion}`);
+    }
+}
+
 async function initialiseVariables() {
     try {
+        dbReady = true;
         bookmarks = await db.getBookmarks();
         tabsFromDatabase = await db.getTabs();
         defaultUrl = await db.getDefaultURL();
@@ -1918,7 +1960,7 @@ async function createOverlay(overlayAreaToShow, elementProperties, isTransparent
 
         mainWindow.contentView.addChildView(overlayContent)
         overlayContent.setBounds({ x: 0, y: 0, width: mainWindowContentBounds.width, height: mainWindowContentBounds.height })
-        overlayContent.webContents.loadURL(path.join(__dirname, '../src/pages/', htmlPage)).then(async() => {
+        overlayContent.webContents.loadURL(path.join(__dirname, '../src/pages/', htmlPage)).then(async () => {
 
             isKeyboardOverlay = overlayAreaToShow === 'keyboard';
             
@@ -2406,7 +2448,7 @@ function getFullURL(url) {
 // ====== DATABASE FUNCTIONS =======
 // =================================
 
-async function addBookmarkToDatabase(bookmark){
+async function addBookmarkToDatabase(bookmark) {
     try {
         await db.addBookmark(bookmark);
     } catch (err) {
@@ -2414,7 +2456,7 @@ async function addBookmarkToDatabase(bookmark){
     }
 }
 
-async function deleteBookmarkByUrl(url){
+async function deleteBookmarkByUrl(url) {
     try {
         await db.deleteBookmarkByUrl(url);
     } catch (err) {
