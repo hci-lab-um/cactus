@@ -1,5 +1,6 @@
-const { app, BaseWindow, WebContentsView, ipcMain, globalShortcut, screen } = require('electron')
+const { app, BaseWindow, WebContentsView, ipcMain, globalShortcut, screen, session } = require('electron')
 const { autoUpdater } = require('electron-updater');
+const Store = require('electron-store');
 const path = require('path')
 const fs = require('fs')
 const { QuadtreeBuilder, InteractiveElement, HTMLSerializableElement, QtPageDocument, QtBuilderOptions, QtRange } = require('cactus-quadtree-builder');
@@ -11,8 +12,9 @@ const { Settings, KeyboardLayouts, Shortcuts } = require('../src/tools/enums.js'
 const logger = require('../src/tools/logger.js');
 
 const gotTheLock = app.requestSingleInstanceLock()
-
+const store = new Store();
 const isDevelopment = process.env.NODE_ENV === "development";
+
 let dwellRangeWidth;
 let dwellRangeHeight;
 let useNavAreas;
@@ -63,11 +65,12 @@ autoUpdater.on('checking-for-update', () => {
 
 autoUpdater.on('update-available', () => {
     logger.info('Update available!');
-    // mainWindow.webContents.send('ipc-update-available');
 });
 
 autoUpdater.on('update-downloaded', () => {
     logger.info('Update downloaded!');
+    store.set('previousVersion', app.getVersion());
+    // optionally send message to renderer or call autoUpdater.quitAndInstall()
     // mainWindow.webContents.send('ipc-update-downloaded');
 });
 
@@ -84,6 +87,7 @@ if (!gotTheLock) {
 } else {
     app.whenReady().then(async () => {
         try {
+            await checkIfUpdateInstalled();
             await db.connect();
             await db.createTables();
             await initialiseVariables();
@@ -1049,6 +1053,24 @@ ipcMain.on('log', (event, loggedItem) => {
 // =================================
 // ======= HELPER FUNCTIONS ========
 // =================================
+
+async function checkIfUpdateInstalled() {
+    const previousVersion = store.get('previousVersion');
+    const currentVersion = app.getVersion();
+
+    // Checks if the newest version has installed successfully
+    if (previousVersion && previousVersion !== currentVersion) {
+        logger.info(`Update successfully installed: ${previousVersion} → ${currentVersion}`);
+        store.delete('previousVersion');
+        
+        session.defaultSession.clearCache((error) => {
+            if (error) logger.error('Cache clear error:', error);
+            else logger.info('Cache cleared!');
+        });
+    } else {
+        logger.info(`Current app version: ${currentVersion}`);
+    }
+}
 
 async function initialiseVariables() {
     try {
