@@ -59,11 +59,15 @@ process.on('unhandledRejection', (reason, promise) => {
 // ==================================
 
 autoUpdater.on('checking-for-update', () => {
-    logger.info('Checking for update...');
+    logger.info('Checking for updates...');
 });
 
 autoUpdater.on('update-available', () => {
     logger.info('Update available!');
+});
+
+autoUpdater.on('update-not-available', () => {
+    logger.info('Update not available.');
 });
 
 autoUpdater.on('update-downloaded', async () => {
@@ -1073,10 +1077,9 @@ async function checkIfUpdateInstalled() {
 
     // Checks if the newest version has installed successfully
     if (previousVersion && previousVersion !== currentVersion) {
-        logger.info(`Update successfully installed: ${previousVersion} → ${currentVersion}`);
-        // if (previousVersion !== Settings.PREVIOUS_APP_VERSION.DEFAULT) {
-        //     db.deletePreviousAppVersion();
-        // }        
+        if (previousVersion !== Settings.PREVIOUS_APP_VERSION.DEFAULT) {
+            logger.info(`Update successfully installed: ${previousVersion} → ${currentVersion}`);
+        }        
 
         // Clearing cached files (JS, CSS, HTML, etc.) to ensure the app loads fresh resources after updating
         session.defaultSession.clearCache((error) => {
