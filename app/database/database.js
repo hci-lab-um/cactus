@@ -321,25 +321,6 @@ function deleteAllTabs() {
     });
 }
 
-function deletePreviousAppVersion() {
-    return new Promise((resolve, reject) => {
-        if (!db) {
-            reject(new Error('Database not initialized'));
-            return;
-        }
-        const query = `DELETE FROM user_settings WHERE setting = ?`;
-        db.run(query, [Settings.PREVIOUS_APP_VERSION.NAME], function (err) {
-            if (err) {
-                console.error('Error deleting previous app version:', err.message);
-                reject(err);
-            } else {
-                console.log('Previous app version deleted successfully.');
-                resolve();
-            }
-        });
-    });
-}
-
 // =================================
 // ============ GETTERS ============
 // =================================
@@ -636,7 +617,6 @@ module.exports = {
 
     deleteBookmarkByUrl,
     deleteAllTabs,
-    deletePreviousAppVersion,
 
     updateUserSetting,
     updateDefaultURL,

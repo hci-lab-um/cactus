@@ -83,7 +83,7 @@ autoUpdater.on('update-downloaded', async () => {
         };
         retrySetVersion();
     }
-    // optionally send message to renderer or call autoUpdater.quitAndInstall()
+    // Sending a message to the renderer to call autoUpdater.quitAndInstall() if confirmed by the user
     // mainWindow.webContents.send('ipc-update-downloaded');
 });
 
@@ -1078,6 +1078,7 @@ async function checkIfUpdateInstalled() {
         //     db.deletePreviousAppVersion();
         // }        
 
+        // Clearing cached files (JS, CSS, HTML, etc.) to ensure the app loads fresh resources after updating
         session.defaultSession.clearCache((error) => {
             if (error) logger.error('Cache clear error:', error);
             else logger.info('Cache cleared!');
