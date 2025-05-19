@@ -67,11 +67,13 @@ autoUpdater.on('update-available', () => {
 });
 
 autoUpdater.on('update-downloaded', async () => {
-    logger.info('Update downloaded!');
+    logger.info('Update downloaded! Waiting for user to restart the app to install it.');
     if (dbReady) {
+        // Updating the previous app version in the database to the current version
+        // before the app is restarted and the new version is installed.
         db.updatePreviousAppVersion(app.getVersion());
     } else {
-        // Retry after a short delay if db is not ready
+        // Retrying after a short delay if db is not ready
         const retrySetVersion = () => {
             if (dbReady) {
                 db.updatePreviousAppVersion(app.getVersion());
@@ -100,7 +102,6 @@ if (!gotTheLock) {
         try {
             await db.connect();
             await db.createTables();
-            dbReady = true;
             await initialiseVariables();
             await checkIfUpdateInstalled();
         } catch (err) {
@@ -1073,7 +1074,9 @@ async function checkIfUpdateInstalled() {
     // Checks if the newest version has installed successfully
     if (previousVersion && previousVersion !== currentVersion) {
         logger.info(`Update successfully installed: ${previousVersion} → ${currentVersion}`);
-        db.deletePreviousAppVersion();
+        // if (previousVersion !== Settings.PREVIOUS_APP_VERSION.DEFAULT) {
+        //     db.deletePreviousAppVersion();
+        // }        
 
         session.defaultSession.clearCache((error) => {
             if (error) logger.error('Cache clear error:', error);
@@ -1086,6 +1089,7 @@ async function checkIfUpdateInstalled() {
 
 async function initialiseVariables() {
     try {
+        dbReady = true;
         bookmarks = await db.getBookmarks();
         tabsFromDatabase = await db.getTabs();
         defaultUrl = await db.getDefaultURL();
