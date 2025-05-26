@@ -1238,7 +1238,21 @@ function createMainWindow() {
 
         mainWindow.on('closed', () => {
             mainWindow = null;
+            logger.info('Main window closed');
         });
+
+        mainWindow.on('unresponsive', () => {
+            logger.warn('Window became unresponsive');
+        });
+
+        mainWindowContent.webContents.on('render-process-gone', (event, details) => {
+            logger.error('Renderer process crashed:', details);
+        });
+
+        mainWindowContent.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
+            logger.error('Failed to load:', errorCode, errorDescription);
+        });
+
     } catch (err) {
         logger.error('Error creating main window:', err.message);
     }
@@ -1545,10 +1559,28 @@ function setTabViewEventlisteners(tabView) {
         });
 
         tabView.webContents.setWindowOpenHandler(({ url }) => {
+            // It is important to return an object with the action property, to prevent Electron from managing the popup.
+            // Instead, we handle the popup ourselves by creating a new tabview.
             try {
-                createTabview(url, isNewTab = true);
+                createTabview(url, true);
+                return { action: 'deny' };
             } catch (err) {
                 logger.error('Error during window open handler:', err.message);
+                return { action: 'deny' }; 
+            }
+        });
+
+        // Certain tabs close on their own, so we need to listen for the destroyed event and 
+        // remove it from the tabList and mainWindow contentView accordingly. Failing to do so
+        // will result in undefined behaviour and crashes.
+        tabView.webContents.once('destroyed', () => {
+            logger.info('WebContents was destroyed, removing from mainWindow');
+
+            try {
+                mainWindow.contentView.removeChildView(tabView);
+                tabList = tabList.filter(tab => tab.webContentsView !== tabView);
+            } catch (err) {
+                logger.warn('View already removed or invalid:', err.message);
             }
         });
     } catch (err) {
@@ -1958,7 +1990,12 @@ async function createOverlay(overlayAreaToShow, elementProperties, isTransparent
         })
         overlayList.push(overlayContent);
 
-        mainWindow.contentView.addChildView(overlayContent)
+        try {
+            mainWindow.contentView.addChildView(overlayContent)
+        } catch (error) {
+            logger.error('Error adding overlay content view:', error);
+        }
+        
         overlayContent.setBounds({ x: 0, y: 0, width: mainWindowContentBounds.width, height: mainWindowContentBounds.height })
         overlayContent.webContents.loadURL(path.join(__dirname, '../src/pages/', htmlPage)).then(async () => {
 

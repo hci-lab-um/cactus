@@ -244,7 +244,6 @@ async function isValidTLD(domain, validTLDs) {
 		const tld = domainParts[domainParts.length - 1].toLowerCase();
 		return validTLDs.has(tld);
 	} catch (error) {
-		logger.error("Error in isValidTLD:", error.message);
 		return false;
 	}
 }
@@ -255,7 +254,6 @@ function isValidUrl(string) {
 		new URL(string);
 		return true;
 	} catch (error) {
-		logger.error("Error in isValidUrl:", error.message);
 		return false;
 	}
 }
