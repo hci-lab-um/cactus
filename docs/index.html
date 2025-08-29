@@ -9,421 +9,316 @@
         content="CACTUS provides constraint-free multi-modal access to communication technology for users with severe motor impairments through innovative gaze-based browsing.">
     <meta name="author" content="CACTUS Research Team">
 
-    <meta property="og:title" content="CACTUS - Breaking Barriers with Gaze-Based Technology">
+    <!-- Open Graph metadata -->
+    <meta property="og:title" content="CACTUS - Eye Browser">
     <meta property="og:description"
-        content="Revolutionary assistive technology unlocking internet access for people with severe motor limitations, including locked-in individuals.">
+        content="Innovative assistive technology unlocking internet access for people with severe motor limitations.">
     <meta property="og:type" content="website">
 
+    <!-- CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Google Font -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
-    <!-- Navigation Bar -->
-    <nav class="navbar">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top shadow-lg" id="mainNavbar">
         <div class="container">
-            <ul class="navbar-list">
-                <li><a href="#about">About</a></li>
-                <li><a href="#features">Features</a></li>
-                <li><a href="#publications">Publications</a></li>
-                <li><a href="#people">People</a></li>
-                <li><a href="#contact">Contact Us</a></li>
-            </ul>
+            <a class="navbar-brand" href="#">
+                <img src="/docs/assets/Cactus_Logo.png" alt="CACTUS Logo" class="navbar-logo">
+                <img src="/docs/assets/cactus_title_green.png" alt="CACTUS Title" class="navbar-title">
+                <!-- <img src="/docs/assets/cactus_title_only.png" alt="CACTUS Title" class="navbar-title"> -->
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div id="navMenu" class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#publications">Publications</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#people">People</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+                </ul>
+            </div>
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="hero-background">
-            <div class="hero-overlay"></div>
-        </div>
-
-        <div class="hero-content">
-            <div class="hero-logo">
-                <img src="/docs/assets/Philip_The_Cactus.png" alt="Philip the Cactus Logo" class="hero-img">
-            </div>
-
-            <h1 class="hero-title">
-                <span class="hero-title-main">
-                    <img src="/docs/assets/Cactus_Eye_Browser_Transparent.png" alt="Cactus Eye Browser Title" class="hero-img">
-                </span>
-                <!-- <span class="hero-title-sub">Constraint-free multi-modal Access to Communication <br> Technology for Users
-                    with Severe motor impairments</span> -->
-            </h1>
-
-            <p class="hero-description">
-                Reimagining web browsing for people with severe motor limitations. Using advanced eye-tracking and adaptive switches, it transforms complex websites into gaze-friendly interfaces, making communication, work, and entertainment accessible to everyone, regardless of physical ability.
-            </p>
-
-            <div class="hero-funders">
-                <img src="/docs/assets/ICT_Red_Logo.png" alt="University of Malta Faculty of ICT Logo" class="hero-img">
-                <img src="/docs/assets/Xjenza_Logo.png" alt="Xjenza Logo" class="hero-img">
-            </div>
-
-            <!-- <div class="hero-buttons">
-                <button class="btn btn-hero">
-                    Learn About Our Technology
-                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <line x1="5" y1="12" x2="19" y2="12" />
-                        <polyline points="12,5 19,12 12,19" />
-                    </svg>
-                </button>
-                <button class="btn btn-soft">Meet Our Team</button>
-            </div> -->
-
-            <!-- <div class="hero-stats">
-                <div class="stat">
-                    <div class="stat-value">
-                        <svg fill="#0a3039" viewBox="-1.28 -1.28 34.56 34.56" xmlns="http://www.w3.org/2000/svg" stroke="#0a3039" stroke-width="1.216"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M-0.136 16.708c0.152-8.765 6.287-15.005 13.797-16.015 8.959-1.199 16.495 4.895 17.943 12.979 1.375 7.667-2.839 14.844-9.787 17.688-0.599 0.244-0.927 0.109-1.156-0.5l-3.453-8.969c-0.197-0.527-0.063-0.855 0.453-1.088 1.563-0.709 2.536-1.896 2.797-3.6 0.411-2.64-1.5-5.077-4.161-5.307-2.423-0.235-4.609 1.453-5 3.853-0.339 2.131 0.713 4.115 2.697 5.016 0.62 0.281 0.745 0.557 0.505 1.188l-3.469 9.031c-0.167 0.443-0.531 0.6-1 0.417-3.661-1.432-6.667-4.167-8.437-7.677-1.609-3.177-1.624-5.661-1.729-7.021zM1.213 16.584c0.027 0.427 0.041 0.921 0.084 1.427 0.405 4.64 3.197 9.26 8.452 11.817 0.209 0.093 0.287 0.052 0.365-0.145 0.959-2.527 1.927-5.052 2.901-7.579 0.083-0.208 0.041-0.307-0.152-0.427-2.041-1.287-3.057-3.131-2.943-5.552 0.063-1.391 0.6-2.615 1.537-3.636 1.932-2.109 4.968-2.568 7.453-1.135 2.052 1.187 3.197 3.484 2.916 5.839-0.235 1.968-1.244 3.479-2.953 4.5-0.172 0.104-0.224 0.187-0.145 0.389 0.979 2.532 1.953 5.063 2.916 7.595 0.079 0.203 0.157 0.244 0.36 0.145 2.297-1.068 4.208-2.599 5.688-4.64 2.244-3.115 3.171-6.579 2.728-10.391-0.88-7.584-7.703-13.865-16.489-12.781-6.844 0.839-12.604 6.615-12.719 14.573z"></path> </g></svg>
+    <!-- Hero -->
+    <section class="hero section">
+        <div class="d-flex flex-column w-100 h-100">
+            <div class="container z-1">
+                <div class="row flex-md-row-reverse align-items-center hero-content">
+                    <!-- Right side: Philip the Cactus -->
+                    <div class="col-md-6 text-center text-md-end">
+                        <!-- <img src="/docs/assets/Philip_The_Cactus.png" alt="Philip the Cactus" class="img-fluid"> -->
+                        <img src="/docs/assets/Philip_The_Cactus2.png" alt="Philip the Cactus" class="hero-image">
                     </div>
-                    <div class="stat-label">Free & Open Source</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-value">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M9.25 7C9.25 5.48122 10.4812 4.25 12 4.25C13.5188 4.25 14.75 5.48122 14.75 7C14.75 8.51878 13.5188 9.75 12 9.75C10.4812 9.75 9.25 8.51878 9.25 7ZM12 5.75C11.3096 5.75 10.75 6.30964 10.75 7C10.75 7.69036 11.3096 8.25 12 8.25C12.6904 8.25 13.25 7.69036 13.25 7C13.25 6.30964 12.6904 5.75 12 5.75Z" fill="#0a3039"></path> <path d="M5.30952 9.70721C5.47121 9.32592 5.91134 9.14786 6.29265 9.30946L6.29401 9.31004L6.30026 9.31267L6.32747 9.324C6.35201 9.33417 6.38913 9.34943 6.43772 9.36906C6.53493 9.40833 6.67786 9.46501 6.85757 9.53329C7.21744 9.67003 7.72245 9.85242 8.30152 10.0346C9.47972 10.4052 10.8888 10.75 12 10.75C13.1112 10.75 14.5203 10.4052 15.6985 10.0346C16.2775 9.85242 16.7826 9.67003 17.1424 9.53329C17.3221 9.46501 17.4651 9.40833 17.5623 9.36906C17.6109 9.34943 17.648 9.33417 17.6725 9.324L17.6997 9.31267L17.706 9.31004L17.7072 9.30953C18.0885 9.14791 18.5288 9.32591 18.6905 9.70721C18.8522 10.0886 18.6739 10.5289 18.2926 10.6906L18.2889 10.6922L18.2798 10.696L18.2468 10.7097C18.2183 10.7215 18.1771 10.7385 18.1241 10.7599C18.0183 10.8026 17.8656 10.8631 17.6752 10.9355C17.2949 11.08 16.7617 11.2726 16.1486 11.4655C15.1597 11.7765 13.9122 12.1049 12.75 12.2131V13.4522C12.75 13.8837 12.874 14.306 13.1073 14.6689L15.6309 18.5944C15.8549 18.9429 15.754 19.4069 15.4056 19.6309C15.0571 19.8549 14.5931 19.754 14.3691 19.4056L12 15.7203L9.63088 19.4056C9.40689 19.754 8.94286 19.8549 8.59443 19.6309C8.246 19.4069 8.14513 18.9429 8.36912 18.5944L10.8927 14.6689C11.126 14.306 11.25 13.8837 11.25 13.4522V12.2131C10.0878 12.1049 8.84029 11.7765 7.85143 11.4655C7.23834 11.2726 6.70512 11.08 6.32479 10.9355C6.1344 10.8631 5.98174 10.8026 5.87588 10.7599C5.82294 10.7385 5.78166 10.7215 5.75318 10.7097L5.72018 10.696L5.71114 10.6922L5.70741 10.6906C5.32606 10.5289 5.14781 10.0886 5.30952 9.70721Z" fill="#0a3039"></path> <path fill-rule="evenodd" clip-rule="evenodd" d="M1.25 12C1.25 6.06294 6.06294 1.25 12 1.25C17.9371 1.25 22.75 6.06294 22.75 12C22.75 17.9371 17.9371 22.75 12 22.75C6.06294 22.75 1.25 17.9371 1.25 12ZM12 2.75C6.89137 2.75 2.75 6.89137 2.75 12C2.75 17.1086 6.89137 21.25 12 21.25C17.1086 21.25 21.25 17.1086 21.25 12C21.25 6.89137 17.1086 2.75 12 2.75Z" fill="#0a3039"></path> </g></svg>
-                    </div>
-                    <div class="stat-label">Supports Multi-Modal Input</div>
-                </div>                
-                <div class="stat">
-                    <div class="stat-value">
-                        <svg fill="#0a3039" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M1,15H12a1,1,0,0,0,1-1V4.17a1,1,0,0,0-.35-.77,1,1,0,0,0-.81-.22L.84,5A1,1,0,0,0,0,6v8A1,1,0,0,0,1,15ZM2,6.85l9-1.5V13H2Z"></path> <path d="M30.84,0l-15,2.5a1,1,0,0,0-.84,1V14a1,1,0,0,0,1,1H31a1,1,0,0,0,1-1V1a1,1,0,0,0-.35-.76A1,1,0,0,0,30.84,0ZM30,13H17V4.35L30,2.18Z"></path> <path d="M.84,27l11,1.83H12a1,1,0,0,0,1-1V18a1,1,0,0,0-1-1H1a1,1,0,0,0-1,1v8A1,1,0,0,0,.84,27ZM2,19h9v7.65l-9-1.5Z"></path> <path d="M31,17H16a1,1,0,0,0-1,1V28.5a1,1,0,0,0,.84,1l15,2.5H31a1,1,0,0,0,.65-.24A1,1,0,0,0,32,31V18A1,1,0,0,0,31,17ZM30,29.82,17,27.65V19H30Z"></path> </g></svg>
-                    </div>
-                    <div class="stat-label">Cross Platform</div>
-                </div>
-            </div> -->
-        </div>
 
-        <div class="scroll-indicator">
-            <div class="scroll-mouse">
-                <div class="scroll-dot"></div>
-            </div>
-        </div>
-    </section>
-
-    <!-- About Section -->
-    <section class="about" id="about">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">Breaking Barriers with Technology</h2>
-                <p class="section-description">
-                    CACTUS represents a breakthrough in assistive technology, specifically designed for individuals
-                    with severe motor impairments, including those who are locked-in. Our approach goes beyond
-                    traditional accessibility — we're creating freedom.
-                </p>
-            </div>
-
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                            <circle cx="12" cy="12" r="3" />
-                        </svg>
-                    </div>
-                    <div class="feature-content">
-                        <h3 class="feature-title">Gaze-Based Navigation</h3>
-                        <p class="feature-description">Revolutionary eye-tracking technology that translates gaze
-                            patterns into seamless web navigation, eliminating the need for traditional input devices.
+                    <!-- Left side: Title + description -->
+                    <div class="col-md-6 d-flex flex-column align-items-start">
+                        <h1 class="mb-4 mb-md-5">
+                            <img src="/docs/assets/cactus_eye_browser_left_aligned.png" alt="Cactus Eye Browser" class="hero-title-main">
+                        </h1>
+                        <p class="lead text-center text-md-start">
+                            Reimagining web browsing for people with severe motor limitations. Using advanced
+                            eye-tracking
+                            and adaptive switches, it transforms complex websites into gaze-friendly interfaces, making
+                            communication, work, and
+                            entertainment accessible to everyone.
                         </p>
+                        <!-- <div class="d-flex gap-4 mt-3 justify-content-start">                                                                                                                                                                                                                                                                                                                                                                                                                  </div> -->
+                        </div>
+                        </div>
+            </div>
+            <!-- Curved Divider -->
+            <div class="curved">
+                <div class="arrows"></div>
+                <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
+                    <path d="M321.39,56.44C493,106,741,106,911.61,56.44L1200,0V120H0V0Z" class="shape-fill"></path>
+                </svg>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- About -->
+    <section id="about" class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2>Breaking Barriers with Technology</h2>
+                <p class="text-muted">
+                    CACTUS represents a breakthrough in assistive technology, specifically designed for individuals
+                    with severe motor impairments, including those who are locked-in.
+                </p>
+            </div>
+
+            <!-- Feature Cards -->
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+                <div class="col">
+                    <div class="card h-100 text-center shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Gaze-Based Navigation</h5>
+                            <p class="card-text">Revolutionary eye-tracking technology that translates gaze patterns
+                                into seamless
+                                web navigation.</p>
+                        </div>
                     </div>
                 </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path
-                                d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.51 2.51 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z" />
-                            <path
-                                d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.51 2.51 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z" />
-                        </svg>
-                    </div>
-                    <div class="feature-content">
-                        <h3 class="feature-title">Intelligent Adaptation</h3>
-                        <p class="feature-description">AI-powered interface that learns and adapts to individual user
-                            patterns, optimizing the browsing experience for each person's unique needs.</p>
+                <div class="col">
+                    <div class="card h-100 text-center shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Adaptive Interfaces</h5>
+                            <p class="card-text">Customizable interfaces tailored to individual user needs and
+                                preferences.</p>
+                        </div>
                     </div>
                 </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <polygon points="13,2 3,14 12,14 11,22 21,10 12,10 13,2" />
-                        </svg>
-                    </div>
-                    <div class="feature-content">
-                        <h3 class="feature-title">Real-Time Processing</h3>
-                        <p class="feature-description">Lightning-fast processing ensures responsive interaction, making
-                            web browsing as natural and intuitive as looking around a room.</p>
+                <div class="col">
+                    <div class="card h-100 text-center shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Switch Compatibility</h5>
+                            <p class="card-text">Seamlessly integrates with adaptive switches for enhanced
+                                accessibility.</p>
+                        </div>
                     </div>
                 </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path
-                                d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                        </svg>
-                    </div>
-                    <div class="feature-content">
-                        <h3 class="feature-title">Human-Centered Design</h3>
-                        <p class="feature-description">Every aspect designed with dignity and independence in mind,
-                            empowering users to connect, learn, work, and explore without limitations.</p>
+                <div class="col">
+                    <div class="card h-100 text-center shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Inclusive Design</h5>
+                            <p class="card-text">Built from the ground up to empower locked-in and mobility-impaired
+                                individuals.</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="locked-in-section">
-                <div class="locked-in-content">
-                    <h3 class="locked-in-title">For Locked-In Individuals</h3>
-                    <p class="locked-in-text">
-                        Our technology is particularly groundbreaking for individuals experiencing locked-in syndrome
-                        or similar conditions. We understand that physical constraints should never limit mental freedom
-                        or the ability to connect with the world.
-                    </p>
-                    <p class="locked-in-text">
-                        CACTUS opens doors to education, employment, social connections, entertainment, and
-                        self-expression — enabling users to live full, connected lives regardless of physical
-                        limitations.
-                    </p>
+            <!-- Locked-in Impact -->
+            <div class="row mt-5 align-items-center">
+                <div class="col-md-7">
+                    <h3>For Locked-In Individuals</h3>
+                    <p>Our technology is particularly groundbreaking for individuals experiencing locked-in syndrome or
+                        similar
+                        conditions.</p>
+                    <p>CACTUS opens doors to education, employment, social connections, entertainment, and
+                        self-expression.</p>
                 </div>
-                <div class="locked-in-visual">
+                <div class="col-md-5 text-center">
                     <div class="unlock-icon">🔓</div>
-                    <h4 class="unlock-title">Unlocked Potential</h4>
-                    <p class="unlock-text">Every person deserves access to the digital world and all the opportunities
-                        it provides.</p>
+                    <h4>Unlocked Potential</h4>
+                    <p>Every person deserves access to the digital world and all the opportunities it provides.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Features Section -->
-    <section class="impact" id="features">
+    <!-- Features -->
+    <section id="features" class="py-5 bg-light">
         <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">Transforming Lives Through Access</h2>
-                <p class="section-description">
-                    CACTUS isn't just about technology — it's about restoring fundamental human experiences
-                    and opportunities that everyone deserves, regardless of physical limitations.
-                </p>
+            <div class="text-center mb-5">
+                <h2>Transforming Lives Through Access</h2>
+                <p class="text-muted">CACTUS isn't just about technology — it's about restoring fundamental human
+                    experiences.</p>
             </div>
 
-            <div class="impact-grid">
-                <div class="impact-card">
-                    <div class="impact-icon communication">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                        </svg>
+            <!-- Impact Cards -->
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                <div class="col">
+                    <div class="card h-100 text-center shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Communication</h5>
+                            <p class="card-text">Connect with family, friends, and communities worldwide.</p>
+                        </div>
                     </div>
-                    <h3 class="impact-title">Communication</h3>
-                    <p class="impact-description">Connect with family, friends, and communities worldwide through social
-                        media, messaging, and video calls.</p>
                 </div>
-
-                <div class="impact-card">
-                    <div class="impact-icon education">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-                            <path d="M6 12v5c3 3 9 3 12 0v-5" />
-                        </svg>
+                <div class="col">
+                    <div class="card h-100 text-center shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Education</h5>
+                            <p class="card-text">Access learning resources and participate in online education.</p>
+                        </div>
                     </div>
-                    <h3 class="impact-title">Education</h3>
-                    <p class="impact-description">Access online courses, research materials, and educational platforms
-                        to continue learning and growth.</p>
                 </div>
-
-                <div class="impact-card">
-                    <div class="impact-icon employment">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-                            <line x1="8" y1="21" x2="16" y2="21" />
-                            <line x1="12" y1="17" x2="12" y2="21" />
-                        </svg>
+                <div class="col">
+                    <div class="card h-100 text-center shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Employment</h5>
+                            <p class="card-text">Pursue remote work and professional opportunities.</p>
+                        </div>
                     </div>
-                    <h3 class="impact-title">Employment</h3>
-                    <p class="impact-description">Participate in remote work opportunities, freelancing, and
-                        professional development programs.</p>
                 </div>
-
-                <div class="impact-card">
-                    <div class="impact-icon entertainment">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <polygon points="5,3 19,12 5,21 5,3" />
-                        </svg>
+                <div class="col">
+                    <div class="card h-100 text-center shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Entertainment</h5>
+                            <p class="card-text">Enjoy films, music, games, and social media with ease.</p>
+                        </div>
                     </div>
-                    <h3 class="impact-title">Entertainment</h3>
-                    <p class="impact-description">Enjoy streaming services, games, music, and digital media for
-                        recreation and relaxation.</p>
                 </div>
-
-                <div class="impact-card">
-                    <div class="impact-icon creativity">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-                            <circle cx="8" cy="9" r="2" />
-                            <path d="M9 21a6 6 0 0 0 6-6" />
-                        </svg>
+                <div class="col">
+                    <div class="card h-100 text-center shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Creativity</h5>
+                            <p class="card-text">Engage in writing, art, and self-expression online.</p>
+                        </div>
                     </div>
-                    <h3 class="impact-title">Creativity</h3>
-                    <p class="impact-description">Express creativity through digital art, writing, music creation, and
-                        other creative platforms.</p>
                 </div>
-
-                <div class="impact-card">
-                    <div class="impact-icon information">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                        </svg>
+                <div class="col">
+                    <div class="card h-100 text-center shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Information</h5>
+                            <p class="card-text">Stay informed with the latest news and digital resources.</p>
+                        </div>
                     </div>
-                    <h3 class="impact-title">Information</h3>
-                    <p class="impact-description">Access news, research, knowledge bases, and stay informed about the
-                        world around you.</p>
                 </div>
             </div>
 
-            <div class="dignity-section">
-                <h3 class="dignity-title">Dignity Through Independence</h3>
-                <p class="dignity-description">
-                    At the heart of CACTUS is the belief that every person deserves independence, dignity,
-                    and the freedom to participate fully in our digital society. We're not just building
-                    assistive technology — we're building bridges to human potential.
-                </p>
-                <div class="dignity-icons">
-                    <div class="dignity-item">
-                        <div class="dignity-emoji">🌍</div>
-                        <div class="dignity-label">Global Connection</div>
+            <!-- Dignity Section -->
+            <div class="text-center mt-5">
+                <h3>Dignity Through Independence</h3>
+                <p class="text-muted">At the heart of CACTUS is the belief that every person deserves independence and
+                    dignity.</p>
+                <div class="d-flex justify-content-center gap-4 mt-3">
+                    <div>🌍 <div>Global Connection</div>
                     </div>
-                    <div class="dignity-item">
-                        <div class="dignity-emoji">💪</div>
-                        <div class="dignity-label">Empowerment</div>
+                    <div>💪 <div>Empowerment</div>
                     </div>
-                    <div class="dignity-item">
-                        <div class="dignity-emoji">🚀</div>
-                        <div class="dignity-label">Limitless Future</div>
+                    <div>🚀 <div>Limitless Future</div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Publications Section -->
-    <section class="publications" id="publications">
+    <!-- Publications -->
+    <section id="publications" class="py-5">
         <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">Publications</h2>
-                <p class="section-description">Explore our published research and articles on assistive technology and
-                    gaze-based systems.</p>
+            <div class="text-center mb-4">
+                <h2>Publications</h2>
+                <p class="text-muted">Explore our published research and articles on assistive technology.</p>
             </div>
-            <!-- Add publication list here -->
-            <ul class="publication-list">
-                <li>Publication 1: <a href="#">Title and link</a></li>
-                <li>Publication 2: <a href="#">Title and link</a></li>
-                <!-- ... -->
-            </ul>
-        </div>
-    </section>
-
-    <!-- People Section -->
-    <section class="people" id="people">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">People</h2>
-                <p class="section-description">Meet the CACTUS research team and contributors.</p>
-            </div>
-            <!-- Add team members here -->
-            <ul class="people-list">
-                <li>Dr. Jane Doe – Principal Investigator</li>
-                <li>Dr. John Smith – Researcher</li>
-                <!-- ... -->
-            </ul>
-        </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section class="contact" id="contact">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">Join Our Mission</h2>
-                <p class="section-description">
-                    Interested in learning more about CACTUS or contributing to our research?
-                    We welcome collaboration from researchers, healthcare professionals, and advocates.
-                </p>
-            </div>
-
-            <div class="contact-grid">
-                <div class="contact-card">
-                    <div class="contact-icon research">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <circle cx="12" cy="12" r="3" />
-                            <path d="M12 1v6m0 6v6" />
-                            <path d="m15.5 3.5-1 1m-1 1-1 1m-1 1-1 1" />
-                            <path d="M19.5 8.5l-1-1" />
-                            <path d="m4.5 15.5 1-1m1-1 1-1m1-1 1-1" />
-                            <path d="M4.5 8.5l1 1" />
-                        </svg>
+            <div class="row row-cols-1 row-cols-md-2 g-4">
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Publication 1</h5>
+                            <p class="card-text">Title and description here. <a href="#">Read more</a></p>
+                        </div>
                     </div>
-                    <h3 class="contact-title">Research Collaboration</h3>
-                    <p class="contact-description">
-                        Partner with us on cutting-edge research in assistive technology,
-                        eye-tracking systems, and accessibility solutions.
-                    </p>
-                    <button class="btn btn-contact research">
-                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                            <polyline points="22,6 12,13 2,6" />
-                        </svg>
-                        Contact Research Team
-                    </button>
                 </div>
-
-                <div class="contact-card">
-                    <div class="contact-icon healthcare">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                            <circle cx="9" cy="7" r="4" />
-                            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                        </svg>
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Publication 2</h5>
+                            <p class="card-text">Title and description here. <a href="#">Read more</a></p>
+                        </div>
                     </div>
-                    <h3 class="contact-title">Healthcare Partnerships</h3>
-                    <p class="contact-description">
-                        Connect with our team to explore implementation opportunities
-                        in clinical settings and healthcare institutions.
-                    </p>
-                    <button class="btn btn-contact healthcare">
-                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                            <polyline points="15,3 21,3 21,9" />
-                            <line x1="10" y1="14" x2="21" y2="3" />
-                        </svg>
-                        Healthcare Inquiries
-                    </button>
                 </div>
             </div>
-
-            <div class="contact-form-section">
-                <h3 class="updates-title">Contact Us</h3>
-                <form class="contact-form" action="mailto:cactus@um.edu.mt" method="POST" enctype="text/plain">
-                    <div class="form-group">
-                        <label for="name">Name</label>
-                        <input type="text" id="name" name="name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" name="email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="message">Message</label>
-                        <textarea id="message" name="message" rows="5" required></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-hero">Send Message</button>
-                </form>
-            </div>
         </div>
     </section>
-    <script src="navbar.js"></script>
+
+    <!-- People -->
+    <section id="people" class="py-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-4">
+                <h2>People</h2>
+                <p class="text-muted">Meet the CACTUS research team.</p>
+            </div>
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                <div class="col">
+                    <div class="card h-100 text-center shadow-sm">
+                        <img src="/docs/assets/person1.jpg" class="card-img-top" alt="Team Member 1">
+                        <div class="card-body">
+                            <h5 class="card-title">Dr. Jane Doe</h5>
+                            <p class="card-text">Project Lead, Assistive Technology</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100 text-center shadow-sm">
+                        <img src="/docs/assets/person2.jpg" class="card-img-top" alt="Team Member 2">
+                        <div class="card-body">
+                            <h5 class="card-title">John Smith</h5>
+                            <p class="card-text">Researcher, Human-Computer Interaction</p>
+                        </div>
+                    </div>
+                    </div>
+                <div class="col">
+                    <div class="card h-100 text-center shadow-sm">
+                        <img src="/docs/assets/person3.jpg" class="card-img-top" alt="Team Member 3">
+                        <div class="card-body">
+                            <h5 class="card-title">Maria Rossi</h5>
+                            <p class="card-text">Engineer, Eye-Tracking Systems</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+    </section>
+
+    <!-- Contact -->
+    <section id="contact" class="py-5 position-relative contact-section">
+        <div class="container position-relative z-1">
+            <div class="row justify-content-center">
+                <div class="col-lg-6 col-md-8 col-12">
+                    <div class="text-center">
+                        <h2 class="mb-3">Contact</h2>
+                        <p class="lead mb-4">Reach out for any general inquiries, feedback, or possible collaboration opportunities on the email below.</p>
+                        <a href="mailto:cactus@um.edu.mt" class="btn btn-dark btn-lg">cactus@um.edu.mt</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <img src="/docs/assets/cacti.png" alt="Cacti background"
+            class="contact-cacti-bg position-absolute w-100 start-0 bottom-0 z-0">
+    </section>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="navigation.js"></script>
 </body>
 
 </html>
