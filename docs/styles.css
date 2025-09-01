@@ -66,6 +66,14 @@ body {
     min-height: calc(100vh - 56px);
     /* 56px is the Bootstrap mobile navbar height */
   }
+
+  .hero-content {
+    padding-top: 3vh;
+  }
+
+  .hero-image {
+    max-width: 70%;
+  }
 }
 
 
