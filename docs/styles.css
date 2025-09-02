@@ -2,6 +2,18 @@
   --bs-body-bg: #d5e5df;
   /* --bs-body-bg: #cddcd6; */
   /* --bs-body-bg: #e0e0db; */
+
+  --arrow-size: 30px;
+  /* default size */
+  --arrow-border: calc(var(--arrow-size) / 3);
+}
+
+@media (min-width: 992px) {
+  :root {
+    --arrow-size: 60px;
+    /* bigger arrows on desktops */
+    --arrow-border: calc(var(--arrow-size) / 3);
+  }
 }
 
 body {
@@ -56,9 +68,20 @@ body {
   height: auto;
 }
 
+.hero-button {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 1.25rem 5rem;
+}
+
 .hero-title-main {
   max-width: 85%;
   height: auto;
+}
+
+.hero-description {
+  text-align: center;
 }
 
 @media (max-width: 991.98px) {
@@ -104,64 +127,63 @@ body {
 /*  Arrow animation  */
 /* ----------------- */
 
-.arrow-container {
-  position: sticky;
-  bottom: 30px;
-}
-
 .arrows {
   position: absolute;
-  top: 10%;
+  top: 50%;
   left: 50%;
-  width: 80px;
-  height: 80px;
-  transform: translate(-10%, -50%);
+  width: var(--arrow-size);
+  height: var(--arrow-size);
+  transform: translate(-50%, -50%);
 }
 
-.arrows:before {
-  content: '';
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-left: calc(80px/3) solid rgba(0, 0, 0, 0.3);
-  border-bottom: calc(80px/3) solid rgba(0, 0, 0, 0.3);
-  transform: translate(calc(80px/3), calc(80px*4/3))rotate(-45deg);
-  animation: arrows 3s linear infinite;
-}
-
+.arrows:before,
 .arrows:after {
   content: '';
   position: absolute;
   width: 100%;
   height: 100%;
-  border-left: calc(80px/3) solid rgba(0, 0, 0, 0.3);
-  border-bottom: calc(80px/3) solid rgba(0, 0, 0, 0.3);
-  transform: translate(calc(80px*2/3), 0px)rotate(-45deg);
-  animation: arrows 3s linear infinite calc(3s/-2);
+  border-left: var(--arrow-border) solid rgba(0, 0, 0, 0.7);
+  border-bottom: var(--arrow-border) solid rgba(0, 0, 0, 0.7);
+  animation: arrows 3s linear infinite;
+}
+
+.arrows:before {
+  transform: translate(calc(var(--arrow-size) / 3),
+      calc(var(--arrow-size) * 4 / 3)) rotate(-45deg);
+}
+
+.arrows:after {
+  transform: translate(calc(var(--arrow-size) * 2 / 3),
+      0px) rotate(-45deg);
+  animation-delay: -1.5s;
+  /* half of 3s */
 }
 
 @keyframes arrows {
   0% {
-    border-left: calc(80px/3) solid rgba(0, 0, 0, 0);
-    border-bottom: calc(80px/3) solid rgba(0, 0, 0, 0);
-    transform: translate(calc(80px/-6), calc(80px*4/-6))rotate(-45deg);
+    border-left: var(--arrow-border) solid rgba(0, 0, 0, 0);
+    border-bottom: var(--arrow-border) solid rgba(0, 0, 0, 0);
+    transform: translate(calc(var(--arrow-size) / -6),
+        calc(var(--arrow-size) * -4 / 6)) rotate(-45deg);
   }
 
-  10%, 70% {
-    border-left: calc(80px/3) solid rgba(0, 0, 0, 0);
-    border-bottom: calc(80px/3) solid rgba(0, 0, 0, 0);
+  10%, 90% {
+    border-left: var(--arrow-border) solid rgba(0, 0, 0, 0);
+    border-bottom: var(--arrow-border) solid rgba(0, 0, 0, 0);
   }
 
-  40% {
-    border-left: calc(80px/3) solid rgba(0, 0, 0, 0.7);
-    border-bottom: calc(80px/3) solid rgba(0, 0, 0, 0.7);
-    transform: translate(calc(80px/-6), 0px)rotate(-45deg);
+  50% {
+    border-left: var(--arrow-border) solid rgba(0, 0, 0, 0.7);
+    border-bottom: var(--arrow-border) solid rgba(0, 0, 0, 0.7);
+    transform: translate(calc(var(--arrow-size) / -6),
+        0px) rotate(-45deg);
   }
 
-  80%, 100% {
-    border-left: calc(80px/3) solid rgba(0, 0, 0, 0);
-    border-bottom: calc(80px/3) solid rgba(0, 0, 0, 0);
-    transform: translate(calc(80px/-6), calc(calc(80px*4)/6))rotate(-45deg);
+  100% {
+    border-left: var(--arrow-border) solid rgba(0, 0, 0, 0);
+    border-bottom: var(--arrow-border) solid rgba(0, 0, 0, 0);
+    transform: translate(calc(var(--arrow-size) / -6),
+        calc(var(--arrow-size) * 4 / 6)) rotate(-45deg);
   }
 }
 
