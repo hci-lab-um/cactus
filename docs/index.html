@@ -86,7 +86,7 @@
                 </div>
             </div>
             <!-- Curved Divider -->
-            <div class="curved">
+            <div class="curved bg-light">
                 <div class="arrows"></div>
                 <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
                     <path d="M321.39,56.44C493,106,741,106,911.61,56.44L1200,0V120H0V0Z" class="shape-fill"></path>
@@ -185,7 +185,7 @@
     <!-- Features -->
     <section id="features" class="pb-5 bg-light">
         <!-- Curved Divider -->
-        <div class="curved curved-flipped">
+        <div class="curved curved-flipped bg-light">
             <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
                 <path d="M321.39,56.44C493,106,741,106,911.61,56.44L1200,0V120H0V0Z" class="shape-fill"></path>
             </svg>
@@ -249,36 +249,124 @@
                 </div>
             </div>
         </div>
+        <!-- Curved Divider -->
+        <!-- <div class="curved bg-light">
+                                                                                            <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
+                                                                                                <path d="M321.39,56.44C493,106,741,106,911.61,56.44L1200,0V120H0V0Z" class="shape-fill"></path>
+                                                                                            </svg>
+                                                                                        </div> -->
     </section>
 
-    <!-- Publication -->
-    <section id="publications" class="py-5">
-        <div class="container d-flex px-4">
-            <div class="row w-100">
-                <div class="col-12 col-md-8 mb-4 d-flex flex-column justify-content-center">
-                    <h2 class="pb-2">Publication</h2>
-                    <p class="text-muted fs-5">
-                        Explore our published article introducing two interaction patterns, Quadtree-based
-                        Target Selection with secondary confirmation and Hierarchical Re-rendering of navigation menus,
-                        for the gaze-native browser CACTUS to improve performance, usability, and reduce workload in
-                        eye-tracking web navigation.</p>
-                </div>
-                <div class="col-12 col-md-4 d-flex align-items-center">
-                    <div class="paper d-flex flex-column justify-content-between align-items-center">
-                        <h1 class="text-center">
-                            Remapping the Document Object Model using Geometric<br>
-                            and Hierarchical Data Structures for Efficient Eye Control
-                        </h1>
-                        <div>
-                            <h2>Daniel Vella</h2>
-                            <h2>Chris Porter</h2>
-                        </div>
-                        <img src="/docs/assets/ICT_Red_Logo.png" alt="University of Malta ICT Logo" class="" />
-                    </div>
-                </div>
-            </div>
+    <!-- Publications & Article Section with Slider -->
+    <section id="publications" class="py-1">
+        <div class="container px-4">
+    
+            <div id="researchCarousel" class="carousel slide" data-bs-ride="false">
+                <div class="carousel-inner">
+    
+                    <!-- Publication Slide -->
+                    <div class="carousel-item active">
+                        <div class="row w-100 py-5">
+                            <div class="col-12 col-md-8 mb-4 d-flex flex-column justify-content-center">
+                                <h2 class="pb-2">Publication</h2>
+                                <p class="text-muted fs-5">
+                                    Explore our research paper introducing two interaction patterns, Quadtree-based
+                                    Target Selection with secondary confirmation and Hierarchical Re-rendering of
+                                    navigation menus,
+                                    for the gaze-native browser CACTUS to improve performance, usability, and reduce
+                                    workload in
+                                    eye-tracking web navigation.
+                                    </p>
+                                    <div class="citation col-12 d-flex align-items-center justify-content-center">
+                                        <a href="javascript:void(0);" class="btn btn-outline-secondary" id="copy-citation-btn" onclick="copyCitation()"
+                                            data-bs-toggle="tooltip" data-bs-placement="top" title="Copy citation">
+                                            <i class="icon">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+                                                    <path fill="#000000"
+                                                        d="M448 296c0 66.3-53.7 120-120 120l-8 0c-17.7 0-32-14.3-32-32s14.3-32 32-32l8 0c30.9 0 56-25.1 56-56l0-8-64 0c-35.3 0-64-28.7-64-64l0-64c0-35.3 28.7-64 64-64l64 0c35.3 0 64 28.7 64 64l0 136zm-256 0c0 66.3-53.7 120-120 120l-8 0c-17.7 0-32-14.3-32-32s14.3-32 32-32l8 0c30.9 0 56-25.1 56-56l0-8-64 0c-35.3 0-64-28.7-64-64l0-64c0-35.3 28.7-64 64-64l64 0c35.3 0 64 28.7 64 64l0 136z" />
+                                                </svg>
+                                            </i>
+                                        </a>
+                                        <p>D. Vella and C. Porter, "Remapping the Document Object Model
+                                            using Geometric and
+                                            Hierarchical Data Structures for
+                                            Efficient Eye Control," Acm Pacmhci, vol. 8, (ETRA), pp. 1–16, 2024. Available:
+                                            https://dl.acm.org/doi/10.1145/3655608. DOI: 10.1145/3655608.
+                                        </p>
+                                    </div>
+                                    </div>
+                                    <div class="col-12 col-md-4 d-flex align-items-center justify-content-center">
+                                        <a href="https://dl.acm.org/doi/10.1145/3655608" target="_blank" rel="noopener"
+                                            class="text-decoration-none text-reset">
+                                            <div class="paper d-flex flex-column justify-content-between align-items-center">
+                                                <h1 class="text-center">
+                                                    Remapping the Document Object Model using Geometric<br>
+                                                    and Hierarchical Data Structures for Efficient Eye Control
+                                                </h1>
+                                                <div>
+                                                    <h2>Daniel Vella</h2>
+                                                    <h2>Chris Porter</h2>
+                                                </div>
+                                                <img src="/docs/assets/ICT_Red_Logo.png" alt="University of Malta ICT Logo" />
+                                            </div>
+                                        </a>
+                                    </div>
+                                    </div>
+                                    </div>
+                                    <!-- Article Slide -->
+                                    <div class="carousel-item">
+                                        <div class="row w-100 py-5">
+                                            <div class="col-12 col-md-8 mb-4 d-flex flex-column justify-content-center">
+                                                <h2 class="pb-2">Article</h2>
+                                                <p class="text-muted fs-5">
+                                    Explore our published article introducing two interaction patterns, Quadtree-based
+                                    Target Selection with secondary confirmation and Hierarchical Re-rendering of
+                                    navigation menus,
+                                    for the gaze-native browser CACTUS to improve performance, usability, and reduce
+                                    workload in
+                                    eye-tracking web navigation.
+                                    </p>
+                                    </div>
+                            <div class="col-12 col-md-4 d-flex align-items-center justify-content-center">
+                                <a href="https://dl.acm.org/doi/10.1145/3655608" target="_blank" rel="noopener"
+                                    class="text-decoration-none text-reset">
+                                    <div class="paper d-flex flex-column justify-content-between align-items-center">
+                                        <h1 class="text-center">
+                                            Remapping the Document Object Model using Geometric<br>
+                                            and Hierarchical Data Structures for Efficient Eye Control
+                                        </h1>
+                                        <div>
+                                            <h2>Daniel Vella</h2>
+                                            <h2>Chris Porter</h2>
+                                        </div>
+                                        <img src="/docs/assets/ICT_Red_Logo.png" alt="University of Malta ICT Logo" />
+                                        </div>
+                                        </a>
+                                        </div>
+                                        </div>
+                                        </div>
+</div>
+<!-- Controls -->
+<button class="carousel-control-prev" type="button" data-bs-target="#researchCarousel" data-bs-slide="prev">
+    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Previous</span>
+</button>
+<button class="carousel-control-next" type="button" data-bs-target="#researchCarousel" data-bs-slide="next">
+    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Next</span>
+</button>
+
+<!-- Indicators -->
+<div class="carousel-indicators">
+    <button type="button" data-bs-target="#researchCarousel" data-bs-slide-to="0" class="active" aria-current="true"
+        aria-label="Publication"></button>
+    <button type="button" data-bs-target="#researchCarousel" data-bs-slide-to="1" aria-label="Article"></button>
+</div>
+
+</div>
         </div>
     </section>
+
 
     <!-- People -->
     <section id="people" class="py-5 bg-light">
@@ -406,7 +494,23 @@
     </section>
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="navigation.js"></script>
+        <script src="navigation.js"></script>
+        <script>
+            // Enable Bootstrap tooltip for copy citation button
+            document.addEventListener('DOMContentLoaded', function () {
+                var copyBtn = document.getElementById('copy-citation-btn');
+                if (copyBtn && window.bootstrap) {
+                    var tooltip = new bootstrap.Tooltip(copyBtn);
+                    copyBtn.addEventListener('click', function () {
+                        copyBtn.setAttribute('data-bs-original-title', 'Copied!');
+                        tooltip.show();
+                        setTimeout(function () {
+                            copyBtn.setAttribute('data-bs-original-title', 'Copy citation');
+                        }, 1500);
+                    });
+                }
+            });
+        </script>
 </body>
 
 </html>

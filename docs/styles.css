@@ -205,6 +205,41 @@ body {
   }
 }
 
+
+/* ---------------- */
+/*  Citation Style  */
+/* ---------------- */
+
+.citation{
+  padding-top: 1.5rem;
+}
+
+.citation p {
+  font-size: 0.8rem;
+  font-weight: normal;
+  margin-left: 4%;
+  margin-bottom: 0;
+}
+
+.citation button {
+  background: white;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.citation a {
+  height: 100%;
+  align-content: center;
+}
+
+.citation svg {
+  width: 2rem;
+  height: 2rem;
+  vertical-align: middle;
+}
+
+
 /* ----------------- */
 /*  Paper Animation  */
 /* ----------------- */
