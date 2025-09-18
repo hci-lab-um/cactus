@@ -20,7 +20,7 @@ body {
   font-family: 'Inter', sans-serif;
 }
 
-.active {
+.active-nav-link {
   font-weight: bold;
 }
 
@@ -206,11 +206,46 @@ body {
 }
 
 
+/* ------------ */
+/*   Features   */
+/* ------------ */
+
+.features {
+  background-image: url('/docs/assets/hero-background.png');
+  background-size: cover;
+}
+
+.feature-card {
+  border: 2.25px solid #ffffffb5;
+
+  -webkit-transition: all .5s ease;
+  -moz-transition: all .5s ease;
+  -ms-transition: all .5s ease;
+  -o-transition: all .5s ease;
+  transition: all .5s ease;
+}
+
+.feature-card:hover {
+  border: 2px solid #0a2f38;
+  -webkit-transform: scale(1.05);
+  -moz-transform: scale(1.05);
+  -ms-transform: scale(1.05);
+  -o-transform: scale(1.05);
+  transform: scale(1.05);
+}
+
+
+.feature-card img {
+  border-top-left-radius: 1.25rem;
+  border-top-right-radius: 1.25rem;
+}
+
+
 /* ---------------- */
 /*  Citation Style  */
 /* ---------------- */
 
-.citation{
+.citation {
   padding-top: 1.5rem;
 }
 
@@ -240,9 +275,9 @@ body {
 }
 
 
-/* ----------------- */
-/*  Paper Animation  */
-/* ----------------- */
+/* ---------------------------- */
+/*  Paper & Article Animations  */
+/* ---------------------------- */
 
 .paper {
   width: 15em;
@@ -275,14 +310,15 @@ body {
   border-top: 1px solid #f4f4f6;
 
   box-shadow:
-    0 0 2px 0 #f4f4f6 inset, 
-    0em 100px 500px -5px rgba(255, 255, 255, .5), 
-    -1em 1em 3em 1em rgba(255, 255, 255, .2), 
-    -5em 1em 30em 1em rgba(255, 255, 255, .2), 
-    0em 10px 50px -10px rgba(255, 255, 255, 1), 
-    1.2em 0em 3em 0em #044134c2, 
-    2.5em -1em 17em 3em #04413412, 
+    0 0 2px 0 #f4f4f6 inset,
+    0em 100px 500px -5px rgba(255, 255, 255, .5),
+    -1em 1em 3em 1em rgba(255, 255, 255, .2),
+    -5em 1em 30em 1em rgba(255, 255, 255, .2),
+    0em 10px 50px -10px rgba(255, 255, 255, 1),
+    1.2em 0em 3em 0em #044134c2,
+    2.5em -1em 17em 3em #04413412,
     0px -5px 25px 0px #808f8c;
+
   -webkit-transition: all .5s ease;
   -moz-transition: all .5s ease;
   -ms-transition: all .5s ease;
@@ -316,10 +352,72 @@ body {
   /* margin-top: 1rem; */
 }
 
+.article {
+  height: 20em;
+  overflow: visible;
+
+  box-shadow:
+    0 0 2px 0 #f4f4f6 inset,
+    0em 100px 500px -5px rgba(255, 255, 255, .5),
+    -1em 1em 3em 1em rgba(255, 255, 255, .2),
+    -5em 1em 30em 1em rgba(255, 255, 255, .2),
+    0em 10px 50px -10px rgba(255, 255, 255, 1),
+    1.2em 0em 3em 0em #044134c2,
+    2.5em -1em 17em 3em #04413412,
+    0px -5px 25px 0px #808f8c;
+
+  -webkit-transition: all .5s ease;
+  -moz-transition: all .5s ease;
+  -ms-transition: all .5s ease;
+  -o-transition: all .5s ease;
+  transition: all .5s ease;
+}
+
+.article:hover {
+  -webkit-transform: scale(1.1);
+  -moz-transform: scale(1.1);
+  -ms-transform: scale(1.1);
+  -o-transform: scale(1.1);
+  transform: scale(1.1);
+}
+
+/* ---------------- */
+/*     Carousel     */
+/* ---------------- */
+.research {
+  position: relative;
+  overflow: hidden;
+}
+
+.research button {
+  background-color: var(--bs-body-bg);
+}
+
+.carousel-inner {
+  overflow: visible !important;
+
+}
+
+.carousel-control-prev-icon, .carousel-control-next-icon {
+  background-color: black;
+  border: 8px solid black;
+  border-radius: 100px;
+  width: 3rem;
+  height: 3rem;
+}
+
+.carousel-indicators [data-bs-target] {
+  opacity: 0.25;
+  background-color: black;
+}
+
+.carousel-indicators .active {
+  opacity: 1;
+}
+
 /* --------------- */
 /*  Profile Cards  */
 /* --------------- */
-
 .profile-card-3 {
   font-family: "Open Sans", Arial, sans-serif;
   position: relative;

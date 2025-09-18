@@ -47,7 +47,7 @@ function updateActiveNav() {
   // If above the first section, don't activate any nav link
   const firstSection = document.getElementById(SECTION_IDS[0]);
   if (firstSection && scrollPosition < firstSection.offsetTop) {
-    navLinks.forEach(link => link.classList.remove('active'));
+    navLinks.forEach(link => link.classList.remove('active-nav-link'));
     return;
   }
 
@@ -59,9 +59,9 @@ function updateActiveNav() {
   }
 
   navLinks.forEach(link => {
-    link.classList.remove('active');
+    link.classList.remove('active-nav-link');
     if (currentSection && link.getAttribute('href') === '#' + currentSection) {
-      link.classList.add('active');
+      link.classList.add('active-nav-link');
     }
   });
 }
@@ -86,4 +86,56 @@ function copyCitation() {
     });
 }
 
-document.addEventListener('DOMContentLoaded', initNavigation);
+// Feature Modal logic
+function setupFeatureModal() {
+  const modal = document.getElementById('featureModal');
+  const modalTitle = document.getElementById('featureModalLabel');
+  const modalDescription = document.getElementById('featureModalDescription');
+  const modalVideo = document.getElementById('featureModalVideo');
+  const featureButtons = document.querySelectorAll('.feature-modal-trigger');
+
+  featureButtons.forEach(btn => {
+    btn.addEventListener('click', function () {
+      const title = btn.getAttribute('data-title') || '';
+      const description = btn.getAttribute('data-description') || '';
+      const video = btn.getAttribute('data-video') || '';
+
+      if (modalTitle) modalTitle.textContent = title;
+      if (modalDescription) modalDescription.textContent = description;
+      if (modalVideo) {
+        // Remove old sources
+        while (modalVideo.firstChild) modalVideo.removeChild(modalVideo.firstChild);
+        if (video) {
+          const source = document.createElement('source');
+          source.src = video;
+          source.type = 'video/mp4';
+          modalVideo.appendChild(source);
+          modalVideo.load();
+        }
+      }
+    });
+  });
+}
+
+// Bootstrap tooltip for copy citation button
+document.addEventListener('DOMContentLoaded', function () {
+  var copyBtns = document.getElementsByClassName('copy-citation-btn');
+  for (var i = 0; i < copyBtns.length; i++) {
+    var copyBtn = copyBtns[i];
+    if (copyBtn && window.bootstrap) {
+      var tooltip = new bootstrap.Tooltip(copyBtn);
+      copyBtn.addEventListener('click', function () {
+        copyBtn.setAttribute('data-bs-original-title', 'Copied!');
+        tooltip.show();
+        setTimeout(function () {
+          copyBtn.setAttribute('data-bs-original-title', 'Copy citation');
+        }, 1500);
+      });
+    }
+  }
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+  setupFeatureModal();
+  initNavigation();
+});
