@@ -55,7 +55,7 @@ body {
   height: calc(100% - 90px);
   display: flex;
   align-items: center;
-  background-image: url('/docs/assets/hero-background.png');
+  background-image: url('./assets/hero-background.png');
   background-size: cover;
 }
 
@@ -137,7 +137,7 @@ body {
 }
 
 .card-bg {
-  background-image: url('/docs/assets/hero-background.png');
+  background-image: url('./assets/hero-background.png');
   background-size: cover;
 }
 
@@ -211,7 +211,7 @@ body {
 /* ------------ */
 
 .features {
-  background-image: url('/docs/assets/hero-background.png');
+  background-image: url('./assets/hero-background.png');
   background-size: cover;
 }
 
