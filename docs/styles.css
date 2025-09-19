@@ -281,62 +281,95 @@ body {
   min-height: 100vh;
 }
 
+
 .feature-modal-custom .modal-content {
-  border-radius: 2rem;
-  background: #f8f9fa;
-  box-shadow: 0 8px 48px rgba(0, 0, 0, 0.18);
+  border-radius: 2.5rem;
+  background: linear-gradient(135deg, #e8f6ef 0%, #f8f9fa 60%, #e0e7fa 100%);
+  box-shadow: 0 8px 48px 0 rgba(10, 47, 56, 0.18), 0 2px 16px 0 rgba(10, 47, 56, 0.10);
   overflow: hidden;
   margin: 0 auto;
   width: auto;
+  border-top: 12px solid #0a2f38;
+  border-left: 6px solid #b2dfdb;
+  border-right: 6px solid #b2dfdb;
 }
+
 
 .feature-modal-custom .modal-header {
   border-bottom: none;
   background: none;
+  padding-top: 1.5rem;
+  padding-bottom: 0.5rem;
 }
+
 
 .feature-modal-custom .modal-title {
-  font-size: 2rem;
-  font-weight: 700;
+  font-size: 2.2rem;
+  font-weight: 800;
   width: 100%;
   text-align: center;
+  color: #0a2f38;
+  letter-spacing: 0.5px;
+  background-clip: text;
 }
 
+
 .feature-modal-custom .modal-body {
-  padding-top: 0;
-  padding-bottom: 2rem;
+  padding-top: 0.5rem;
+  padding-bottom: 2.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2rem;
+  gap: 2.2rem;
 }
+
 
 #featureModalVideoContainer {
   width: 100%;
   display: flex;
   justify-content: center;
+  background: rgba(26, 188, 156, 0.1);
+  border-radius: 1.5rem;
+  padding: 1rem;
 }
+
 
 #featureModalVideo {
   width: 45rem;
-  /* fill modal width */
   height: auto !important;
-  /* keep aspect ratio */
   max-width: 1300px !important;
-  /* larger video on big screens */
   max-height: 85vh !important;
-  /* use most of viewport height */
   border-radius: 1.5rem;
-  box-shadow: 0 4px 20px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 20px 10px rgba(26, 188, 156, 0.10);
   background: #000;
   border: 3px solid #0a2f38;
 }
+
 
 #featureModalDescription {
   max-width: 1000px;
   font-size: 1.15rem;
   text-align: justify;
   margin: 0 auto;
+  color: #0a2f38;
+  background: rgba(29, 233, 182, 0.07);
+  border-radius: 1rem;
+  padding: 1.2rem 1.5rem;
+  box-shadow: 0 2px 12px 0 rgba(10, 47, 56, 0.04);
+}
+
+.feature-modal-custom .btn-close {
+  filter: none;
+  background-color: #e0e7fa;
+  border-radius: 50%;
+  transition: box-shadow 0.2s, background 0.2s;
+  box-shadow: 0 2px 8px 0 rgba(10, 47, 56, 0.08);
+}
+
+.feature-modal-custom .btn-close:hover {
+  background-color: rgba(26, 188, 156, 0.35);
+  box-shadow: 0 4px 16px 0 rgba(26, 188, 156, 0.18);
+  opacity: 1;
 }
 
 

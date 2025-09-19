@@ -60,7 +60,7 @@
                     <div class="col-md-6 d-flex flex-column align-items-center align-items-md-start">
                         <picture class="mb-5 w-100">
                             <source srcset="./assets/cactus_eye_browser_centred.png" media="(max-width: 767.98px)">
-                            <img src="./assets/cactus_eye_browser_left_aligned.png" alt="Cactus Eye Browser"
+                            <img src="./assets/cactus_eye_browser_left_aligned.png" alt="CACTUS Eye Browser"
                                 class="hero-title-main mx-auto d-block d-md-inline mx-md-0">
                         </picture>
                         <p class="lead text-md-start hero-description">
@@ -234,7 +234,7 @@
                                 for efficient searching and processing.</p>
                         </div>
                         <button class="stretched-link feature-modal-trigger feature-modal-btn"
-                            data-description="A Quadtree is a hierarchical, spatial data structure that recursively subdivides a two-dimensional space into four quadrants or regions. In CACTUS, it is used to efficiently index and retrieve DOM elements based on their screen coordinates, enabling rapid hit-testing and gaze-based selection even on complex web pages. This reduces the computational complexity of spatial queries from O(n) to O(log n) in the average case, significantly improving performance for gaze interaction."
+                            data-longDescription="A Quadtree is a hierarchical, spatial data structure that recursively subdivides a two-dimensional space into four quadrants or regions. In CACTUS, it is used to efficiently index and retrieve DOM elements based on their screen coordinates, enabling rapid hit-testing and gaze-based selection even on complex web pages. This reduces the computational complexity of spatial queries from O(n) to O(log n) in the average case, significantly improving performance for gaze interaction."
                             data-bs-toggle="modal" data-bs-target="#featureModal" data-title="Quadtree Algorithm"
                             data-description="A Quadtree data structure that organises interactive page elements by location for efficient searching and processing."
                             data-video="./assets/features/quadtree.mp4"
@@ -252,7 +252,7 @@
                                 re-rendered hierarchically in the side panel.</p>
                         </div>
                         <button class="stretched-link feature-modal-trigger feature-modal-btn"
-                            data-description="The menu rendering engine dynamically generates accessible, gaze-optimized context menus by traversing the DOM and extracting actionable elements. It applies ARIA roles, semantic grouping, and spatial clustering to ensure that all interactive elements are discoverable and reachable via gaze or switch input. The rendering logic adapts to page structure and user preferences, supporting both hierarchical and flat menu layouts for optimal usability."
+                            data-longDescription="The menu rendering engine dynamically generates accessible, gaze-optimised context menus by traversing the DOM and extracting actionable elements. It applies ARIA roles, semantic grouping, and spatial clustering to ensure that all interactive elements are discoverable and reachable via gaze or switch input. The rendering logic adapts to page structure and user preferences, supporting both hierarchical and flat menu layouts for optimal usability."
                             data-bs-toggle="modal" data-bs-target="#featureModal" data-title="Menu Rendering"
                             data-description="In case of navigation menus, the entire landmark region’s contents are re-rendered hierarchically in the side panel."
                             data-video="./assets/features/menu_rendering.mp4"
@@ -271,7 +271,7 @@
                                 the user.</p>
                         </div>
                         <button class="stretched-link feature-modal-trigger feature-modal-btn"
-                            data-description="The Virtual Eye Cursor is a software abstraction that maps real-time gaze coordinates to a persistent on-screen cursor. It decouples raw eye-tracking data from DOM interaction, applying smoothing, dwell-time logic, and adaptive filtering to reduce jitter and false activations. The cursor is rendered using a high-contrast, customizable SVG overlay, ensuring precise and accessible gaze-based selection across all web content."
+                            data-longDescription="The Virtual Eye Cursor is a software abstraction that maps real-time gaze coordinates to a persistent on-screen cursor. It decouples raw eye-tracking data from DOM interaction, applying smoothing, dwell-time logic, and adaptive filtering to reduce jitter and false activations. The cursor is rendered using a high-contrast, customisable SVG overlay, ensuring precise and accessible gaze-based selection across all web content."
                             data-bs-toggle="modal" data-bs-target="#featureModal" data-title="Virtual Eye Cursor"
                             data-description="A virtual cursor that represents a smoothened version of the gaze path taken by the user."
                             data-video="./assets/features/virtual_eye_cursor.mp4"
@@ -289,7 +289,7 @@
                                 switches to different browser functionalities.</p>
                         </div>
                         <button class="stretched-link feature-modal-trigger feature-modal-btn"
-                            data-description="Second input modalities refer to the integration of alternative access methods such as adaptive switches, sip-and-puff devices, or voice commands. CACTUS abstracts these modalities via a unified event bus, allowing users to trigger actions (e.g., click, scroll, select) in conjunction with or independently from gaze. This multimodal architecture enhances accessibility for users with complex motor profiles."
+                            data-longDescription="Second input modalities refer to the integration of alternative access methods such as adaptive switches, sip-and-puff devices, or voice commands. CACTUS abstracts these modalities via a unified event bus, allowing users to trigger actions (e.g., click, scroll, select) in conjunction with or independently from gaze. This multimodal architecture enhances accessibility for users with complex motor profiles."
                             data-bs-toggle="modal" data-bs-target="#featureModal"
                             data-title="Integration with Adaptive Switches"
                             data-description="Seamless integration with adaptive switches, allowing users to map multiple switches to different browser functionalities."
@@ -308,7 +308,7 @@
                                 formats directly within the browser interface.</p>
                         </div>
                         <button class="stretched-link feature-modal-trigger feature-modal-btn"
-                            data-description="The multilingual and numeric keyboard is a fully on-screen, gaze-accessible input system supporting multiple languages and layouts. It uses dynamic key grouping, predictive text, and dwell-based selection to enable efficient text entry. The keyboard is rendered as a responsive SVG grid, with ARIA support and adaptive sizing for different screen resolutions and user needs."
+                            data-longDescription="The CACTUS on-screen keyboard is a fully gaze-accessible, multilingual, and numeric input system designed for users with limited motor control. It features dynamic key layouts for multiple languages, a dedicated numeric keypad, and advanced autocomplete functionality that predicts and suggests words in real time as the user types. Text entry is performed using dwell-based selection, and the keyboard enlarges the nearby keys to facilitate selection. The interface is rendered as a responsive SVG grid with ARIA support, ensuring compatibility with assistive technologies and adaptability to various screen sizes and user preferences."
                             data-bs-toggle="modal" data-bs-target="#featureModal"
                             data-title="Multilingual & Numeric Keyboard"
                             data-description="A multilingual and numeric on-screen keyboard with text autocomplete which formats directly within the browser interface."
@@ -326,7 +326,7 @@
                                 video components, and hierarchical menus.</p>
                         </div>
                         <button class="stretched-link feature-modal-trigger feature-modal-btn"
-                            data-description="The dynamic side panel is a context-sensitive UI component that aggregates notifications, settings, and assistive tools. It is implemented as a modular, event-driven sidebar that can be invoked via gaze, switch, or keyboard input. The panel supports live updates, accessibility announcements, and persistent user preferences, enhancing workflow efficiency and discoverability."
+                            data-longDescription="The CACTUS Side Panel is a dynamic, context-aware panel that continuously detects all interactive elements in the immediate vicinity of the Virtual Eye Cursor on the web page. As the user moves their gaze, the side panel updates in real time to display these links stacked vertically, making them easily accessible for selection. This mechanism enables users to efficiently click on nearby links using gaze, switches, or keyboard input, providing rapid, accessible navigation without requiring precise pointer control. The sidebar’s content is updated live as the user’s focus shifts, ensuring that relevant interactive elements are always within easy reach."
                             data-bs-toggle="modal" data-bs-target="#featureModal" data-title="Dynamic Side Panel"
                             data-description="A side panel that encompasses a variety of contexts, including drop-downs, video components, and hierarchical menus."
                             data-video="./assets/features/sidepanel.mp4"
@@ -343,7 +343,7 @@
                                 directly resulting in an emulated click. </p>
                         </div>
                         <button class="stretched-link feature-modal-trigger feature-modal-btn"
-                            data-description="Quick Click is a low-latency, dwell-based activation mechanism that allows users to trigger clicks or actions with minimal gaze fixation. It employs adaptive dwell timing, false-positive suppression, and visual feedback to ensure reliable and efficient interaction, especially for users with limited head control or high involuntary movement."
+                            data-longDescription="Quick Click enables users to immediately click or activate the interactive element they are looking at, simply by dwelling on it with their gaze. Unlike the side panel, which lists nearby elements for selection, Quick Click allows direct interaction with any on-page item under the Virtual Eye Cursor, without the need for it to be listed first. This provides a fast, intuitive way to perform actions with minimal effort, using adaptive dwell timing, false-positive suppression, and visual feedback for reliability and accessibility."
                             data-bs-toggle="modal" data-bs-target="#featureModal" data-title="Quick Click"
                             data-description="A function that allows the user to dwell on a specific on-page item, directly resulting in an emulated click."
                             data-video="./assets/features/quick_click.mp4"
@@ -355,18 +355,18 @@
                         <img src="./assets/features/input_types.png" class="card-img-top"
                             alt="Integration with Different Input Types">
                         <div class="card-body py-4">
-                            <h5 class="card-title">Integration with Different Input Types</h5>
+                            <h5 class="card-title">Integration with Different HTML Form Input Elements</h5>
                             <p class="card-text text-muted">Supports various input types, including buttons, links,
                                 radio buttons,
                                 checkboxes, dates, comboboxes, videos, audio, text, textareas, numbers and so on.</p>
                         </div>
                         <button class="stretched-link feature-modal-trigger feature-modal-btn"
-                            data-description="Integration with different input types enables CACTUS to support a wide range of assistive hardware and software, including eye trackers, switches, and speech recognition. The system uses a modular input abstraction layer, normalizing events and providing a consistent API for UI components, thus ensuring extensibility and robust cross-device compatibility."
+                            data-longDescription="CACTUS is engineered to interact with a comprehensive set of HTML form input elements, including <button>, <a>, <input type='text'>, <input type='number'>, <input type='date'>, <input type='radio'>, <input type='checkbox'>, <input type='range'>, <input type='file'>, <select>, <option>, <textarea>, <datalist>, <output>, and <progress>. The system also supports multimedia elements such as <video> and <audio>, as well as ARIA roles for custom widgets. This is achieved through a modular input abstraction layer that normalises events from gaze, switches, and other assistive devices, providing a unified API for robust, extensible, and accessible interaction across all supported input types."
                             data-bs-toggle="modal" data-bs-target="#featureModal"
-                            data-title="Integration with Different Input Types"
-                            data-description="Supports various input types, including buttons, links, radio buttons, checkboxes, dates, comboboxes, videos, audio, text, textareas, numbers and so on."
+                            data-title="Integration with Different HTML Form Input Elements" data-description="Supports various input types, including buttons, links, radio buttons,
+                            checkboxes, dates, comboboxes, videos, audio, text, textareas, numbers and so on."
                             data-video="./assets/features/input_types.mp4"
-                            aria-label="View more about Integration with Different Input Types"></button>
+                            aria-label="View more about Integration with Different HTML Form Input Elements"></button>
                     </div>
                 </div>
                 <div class="col">
@@ -379,7 +379,7 @@
                                 experience according to individual preferences.</p>
                         </div>
                         <button class="stretched-link feature-modal-trigger feature-modal-btn"
-                            data-description="Highly customizable settings allow users and clinicians to tailor the interface, dwell times, color schemes, and input mappings to individual needs. The settings engine persists preferences using local storage and synchronizes them across sessions, supporting both JSON import/export and real-time updates for maximum flexibility."
+                            data-longDescription="Highly customisable settings allow users to tailor the interface, dwell times, language preferences, scroll settings and adaptive switch shortcuts to individual needs. The settings engine persists preferences using a database that stores all the user's preferences for the next sessions. All changes are reflected in real-time in the database."
                             data-bs-toggle="modal" data-bs-target="#featureModal" data-title="Highly Customisable"
                             data-description="A settings page that offers extensive customisation options to tailor the user experience according to individual preferences."
                             data-video="./assets/features/settings.mp4"
@@ -513,7 +513,7 @@
                                     target="_blank" rel="noopener" class="text-decoration-none text-reset">
                                     <div class="paper d-flex flex-column justify-content-between align-items-center">
                                         <h1 class="text-center">
-                                            Experiencing Cactus - Browsing The Web Using Your Eyes
+                                            Experiencing CACTUS - Browsing The Web Using Your Eyes
                                         </h1>
                                         <div class="text-center">
                                             <h2>Marie Buhagiar</h2>

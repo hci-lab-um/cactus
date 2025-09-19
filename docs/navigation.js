@@ -97,7 +97,7 @@ function setupFeatureModal() {
   featureButtons.forEach(btn => {
     btn.addEventListener('click', function () {
       const title = btn.getAttribute('data-title') || '';
-      const description = btn.getAttribute('data-description') || '';
+      const description = btn.getAttribute('data-longDescription') || '';
       const video = btn.getAttribute('data-video') || '';
 
       if (modalTitle) modalTitle.textContent = title;
