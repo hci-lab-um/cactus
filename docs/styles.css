@@ -185,7 +185,8 @@ body {
         calc(var(--arrow-size) * -4 / 6)) rotate(-45deg);
   }
 
-  10%, 90% {
+  10%,
+  90% {
     border-left: var(--arrow-border) solid rgba(0, 0, 0, 0);
     border-bottom: var(--arrow-border) solid rgba(0, 0, 0, 0);
   }
@@ -238,6 +239,104 @@ body {
 .feature-card img {
   border-top-left-radius: 1.25rem;
   border-top-right-radius: 1.25rem;
+}
+
+/* Feature Modal Custom Button Styles */
+.feature-modal-btn {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+  z-index: 2;
+}
+
+/* Feature Modal Video Styles */
+#featureModalVideo {
+  max-width: 90vw;
+  max-height: 60vh;
+  background: #000;
+}
+
+/* Feature Modal Content Styles */
+.modal-content.p-4.pb-0 {
+  border-radius: 2rem;
+  background: #f8f9fa;
+}
+
+/* -------------------------- */
+/*  Feature Modal Custom CSS  */
+/* -------------------------- */
+
+
+.feature-modal-custom .modal-dialog {
+  max-width: 95vw !important;
+  width: 95vw !important;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.feature-modal-custom .modal-content {
+  border-radius: 2rem;
+  background: #f8f9fa;
+  box-shadow: 0 8px 48px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+  margin: 0 auto;
+  width: auto;
+}
+
+.feature-modal-custom .modal-header {
+  border-bottom: none;
+  background: none;
+}
+
+.feature-modal-custom .modal-title {
+  font-size: 2rem;
+  font-weight: 700;
+  width: 100%;
+  text-align: center;
+}
+
+.feature-modal-custom .modal-body {
+  padding-top: 0;
+  padding-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+#featureModalVideoContainer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+#featureModalVideo {
+  width: 45rem;
+  /* fill modal width */
+  height: auto !important;
+  /* keep aspect ratio */
+  max-width: 1300px !important;
+  /* larger video on big screens */
+  max-height: 85vh !important;
+  /* use most of viewport height */
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 20px 20px rgba(0, 0, 0, 0.15);
+  background: #000;
+  border: 3px solid #0a2f38;
+}
+
+#featureModalDescription {
+  max-width: 1000px;
+  font-size: 1.15rem;
+  text-align: justify;
+  margin: 0 auto;
 }
 
 
@@ -398,7 +497,8 @@ body {
 
 }
 
-.carousel-control-prev-icon, .carousel-control-next-icon {
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
   background-color: black;
   border: 8px solid black;
   border-radius: 100px;
