@@ -80,7 +80,7 @@ function copyCitation() {
     const citationText = `D. Vella and C. Porter, "Remapping the Document Object Model using Geometric and Hierarchical Data Structures for Efficient Eye Control," Acm Pacmhci, vol. 8, (ETRA), pp. 1–16, 2024. Available: https://dl.acm.org/doi/10.1145/3655608. DOI: 10.1145/3655608.`;
 
     navigator.clipboard.writeText(citationText).then(() => {
-        alert("Citation copied to clipboard!");
+        alert("Citation copied!");
     }).catch(err => {
         console.error("Error copying citation: ", err);
     });

@@ -574,6 +574,10 @@ body {
 /* ---------------- */
 /*     Carousel     */
 /* ---------------- */
+.carousel-item {
+  justify-items: center;
+}
+
 .research {
   position: relative;
   overflow: hidden;
@@ -585,7 +589,6 @@ body {
 
 .carousel-inner {
   overflow: visible !important;
-
 }
 
 .carousel-control-prev-icon,

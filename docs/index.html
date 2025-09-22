@@ -410,54 +410,8 @@
         </button>
 
         <div class="container px-4">
-            <div id="researchCarousel" class="carousel slide" data-bs-wrap="true" data-bs-ride="false">
+            <div id="researchCarousel" class="carousel slide" data-bs-wrap="true" data-bs-ride="false" data-bs-touch="true">
                 <div class="carousel-inner">
-
-                    <!-- <div class="carousel-item active">
-                                                                                                                                                                                                                                                                                                                                                        <div class="row w-100 py-5 gap-4 gap-md-0">
-                            <div class="col-12 col-md-8 mb-4 d-flex flex-column justify-content-center">
-                                <h2 class="pb-2">1. Publication</h2>
-                                <p class="text-muted fs-5">
-                                    Explore our research paper introducing two interaction patterns, Quadtree-based
-                                    Target Selection with secondary confirmation and Hierarchical Re-rendering of
-                                    navigation menus, for the gaze-native browser CACTUS to improve performance,
-                                    usability, and reduce workload in eye-tracking web navigation.
-                                    </p>
-                                    <div class="citation col-12 d-flex align-items-center justify-content-center">
-                                    <a href="javascript:void(0);" class="btn btn-outline-secondary copy-citation-btn" onclick="copyCitation()"
-                                        data-bs-toggle="tooltip" data-bs-placement="top" title="Copy citation">
-                                        <i class="icon">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
-                                                <path fill="#000000"
-                                                    d="M448 296c0 66.3-53.7 120-120 120l-8 0c-17.7 0-32-14.3-32-32s14.3-32 32-32l8 0c30.9 0 56-25.1 56-56l0-8-64 0c-35.3 0-64-28.7-64-64l0-64c0-35.3 28.7-64 64-64l64 0c35.3 0 64 28.7 64 64l0 136zm-256 0c0 66.3-53.7 120-120 120l-8 0c-17.7 0-32-14.3-32-32s14.3-32 32-32l8 0c30.9 0 56-25.1 56-56l0-8-64 0c-35.3 0-64-28.7-64-64l0-64c0-35.3 28.7-64 64-64l64 0c35.3 0 64 28.7 64 64l0 136z" />
-                                            </svg>
-                                        </i>
-                                    </a>
-                                    <p>D. Vella and C. Porter, "Remapping the Document Object Model
-                                        using Geometric and Hierarchical Data Structures for Efficient Eye Control,"
-                                        Acm Pacmhci, vol. 8, (ETRA), pp. 1–16, 2024. Available:
-                                        https://dl.acm.org/doi/10.1145/3655608. DOI: 10.1145/3655608.
-                                        </p>
-                                        </div>
-                                        </div>
-                                        <div class="col-12 col-md-4 d-flex align-items-center justify-content-center">
-                                            <a href="https://dl.acm.org/doi/10.1145/3655608" target="_blank" rel="noopener"
-                                                class="text-decoration-none text-reset">
-                                                <div class="paper d-flex flex-column justify-content-between align-items-center">
-                                                    <h1 class="text-center">
-                                                        Remapping the Document Object Model using Geometric<br>
-                                                        and Hierarchical Data Structures for Efficient Eye Control
-                                                    </h1>
-                                        <div class="text-center">
-                                            <h2>Daniel Vella</h2>
-                                            <h2>Chris Porter</h2>
-                                        </div>
-                                        <img src="./assets/ICT_Red_Logo.png" alt="University of Malta ICT Logo" />
-                                    </div>
-                                    </a>
-                                    </div>
-                        </div>
-                    </div> -->
                     <!-- Publication 1 Slide -->
                     <div class="carousel-item active">
                         <div class="row w-100 py-5 gap-4 gap-md-0 justify-content-center">
@@ -503,7 +457,7 @@
                                     <span class="tap-to-copy text-muted">Tap to Copy Citation</span>
                                 </a>
                             </div>
-                            <div class="paper-container col-12 col-md-4 d-flex align-items-center justify-content-center">
+                            <div class="paper-container col-12 col-md-4 d-flex align-items-center">
                                 <a href="https://dl.acm.org/doi/10.1145/3655608" target="_blank" rel="noopener"
                                     class="text-decoration-none text-reset">
                                     <div class="paper d-flex flex-column justify-content-between align-items-center">
@@ -524,15 +478,19 @@
 
                     <!-- Publication 2 Slide -->
                     <div class="carousel-item">
-                        <div class="row w-100 py-5 justify-content-center">
+                        <div class="row w-100 py-5 gap-4 gap-md-0 justify-content-center">
                             <div class="col-12 col-md-8 mb-4 d-flex flex-column justify-content-center">
                                 <h2 class="pb-2">2. Publication</h2>
+                                <a href="http://camps.aptaracorp.com/ACM_PMS/PMS/ACM/CHITALY2025/198/b59cb32c-6d30-11f0-823f-16ffd757ba29/OUT/chitaly2025-198.html"
+                                    target="_blank" rel="noopener" class="publication-title pb-2">
+                                    Experiencing CACTUS - Browsing The Web Using Your Eyes
+                                </a>
                                 <p class="text-muted fs-5">
                                     Our second paper presents novel methods for improving gaze-based navigation
                                     through predictive modeling and adaptive interface layouts to further enhance
                                     usability and reduce user workload.
                                 </p>
-                                <div class="citation col-12 d-flex align-items-center justify-content-center">
+                                <div class="citation citation-md col-12 d-flex flex-row align-items-center">
                                     <a href="javascript:void(0);" class="btn btn-outline-secondary copy-citation-btn"
                                         onclick="copyCitation()" data-bs-toggle="tooltip" data-bs-placement="top"
                                         title="Copy citation">
@@ -543,11 +501,16 @@
                                             </svg>
                                         </i>
                                     </a>
-                                    <p>To be published soon.
-                                    </p>
+                                    <p>To be published soon.</p>
                                 </div>
+                                <a href="javascript:void(0);"
+                                    class="citation citation-sm col-12 d-flex flex-column align-items-center justify-content-center"
+                                    onclick="copyCitation()">
+                                    <p>To be published soon.</p>
+                                    <span class="tap-to-copy text-muted">Tap to Copy Citation</span>
+                                </a>
                             </div>
-                            <div class="col-12 col-md-4 d-flex align-items-center justify-content-center">
+                            <div class="paper-container col-12 col-md-4 d-flex align-items-center justify-content-center">
                                 <a href="http://camps.aptaracorp.com/ACM_PMS/PMS/ACM/CHITALY2025/198/b59cb32c-6d30-11f0-823f-16ffd757ba29/OUT/chitaly2025-198.html"
                                     target="_blank" rel="noopener" class="text-decoration-none text-reset">
                                     <div class="paper d-flex flex-column justify-content-between align-items-center">
@@ -565,11 +528,16 @@
                             </div>
                         </div>
                     </div>
+
                     <!-- Article Slide -->
                     <div class="carousel-item">
-                        <div class="row w-100 py-5">
+                        <div class="row w-100 py-5 gap-4 gap-md-0 justify-content-center">
                             <div class="col-12 col-md-8 mb-4 d-flex flex-column justify-content-center">
                                 <h2 class="pb-2">3. Article</h2>
+                                <a href="http://camps.aptaracorp.com/ACM_PMS/PMS/ACM/CHITALY2025/198/b59cb32c-6d30-11f0-823f-16ffd757ba29/OUT/chitaly2025-198.html"
+                                    target="_blank" rel="noopener" class="publication-title pb-2">
+                                    Reimagining the web browser for eye-gaze control – the Cactus project
+                                </a>
                                 <p class="text-muted fs-5">
                                     Explore our published article introducing two interaction patterns, Quadtree-based
                                     Target Selection with secondary confirmation and Hierarchical Re-rendering of
@@ -577,7 +545,7 @@
                                     usability, and reduce workload in eye-tracking web navigation.
                                 </p>
                             </div>
-                            <div class="col-12 col-md-4 d-flex align-items-center justify-content-center">
+                            <div class="paper-container col-12 col-md-4 d-flex align-items-center justify-content-center">
                                 <a href="https://timesofmalta.com/article/reimagining-web-browser-eyegaze-control-cactus-project.1108324"
                                     target="_blank" rel="noopener" class="text-decoration-none text-reset">
                                     <img src="./assets/times_of_malta_article.jpg" alt="Times of Malta Article"
