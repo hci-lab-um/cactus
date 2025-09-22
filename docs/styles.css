@@ -241,7 +241,6 @@ body {
   border-top-right-radius: 1.25rem;
 }
 
-/* Feature Modal Custom Button Styles */
 .feature-modal-btn {
   position: absolute;
   top: 0;
@@ -253,23 +252,23 @@ body {
   z-index: 2;
 }
 
-/* Feature Modal Video Styles */
-#featureModalVideo {
-  max-width: 90vw;
-  max-height: 60vh;
-  background: #000;
-}
-
-/* Feature Modal Content Styles */
-.modal-content.p-4.pb-0 {
-  border-radius: 2rem;
-  background: #f8f9fa;
-}
 
 /* -------------------------- */
 /*  Feature Modal Custom CSS  */
 /* -------------------------- */
 
+/* Feature Modal Content Styles */
+.feature-modal-custom .modal-content {
+  border-radius: 2.5rem;
+  background: #f8f9fa;
+  box-shadow: 0 8px 48px 0 rgba(10, 47, 56, 0.18), 0 2px 16px 0 rgba(10, 47, 56, 0.10);
+  overflow: hidden;
+  margin: 0 auto;
+  width: auto;
+  border-top: 6px solid #0a2f38;
+  border-left: 6px solid #b2dfdb;
+  border-right: 6px solid #b2dfdb;
+}
 
 .feature-modal-custom .modal-dialog {
   max-width: 95vw !important;
@@ -281,27 +280,12 @@ body {
   min-height: 100vh;
 }
 
-
-.feature-modal-custom .modal-content {
-  border-radius: 2.5rem;
-  background: linear-gradient(135deg, #e8f6ef 0%, #f8f9fa 60%, #e0e7fa 100%);
-  box-shadow: 0 8px 48px 0 rgba(10, 47, 56, 0.18), 0 2px 16px 0 rgba(10, 47, 56, 0.10);
-  overflow: hidden;
-  margin: 0 auto;
-  width: auto;
-  border-top: 12px solid #0a2f38;
-  border-left: 6px solid #b2dfdb;
-  border-right: 6px solid #b2dfdb;
-}
-
-
 .feature-modal-custom .modal-header {
   border-bottom: none;
   background: none;
   padding-top: 1.5rem;
   padding-bottom: 0.5rem;
 }
-
 
 .feature-modal-custom .modal-title {
   font-size: 2.2rem;
@@ -313,26 +297,21 @@ body {
   background-clip: text;
 }
 
-
 .feature-modal-custom .modal-body {
   padding-top: 0.5rem;
-  padding-bottom: 2.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2.2rem;
 }
 
-
 #featureModalVideoContainer {
   width: 100%;
   display: flex;
   justify-content: center;
-  background: rgba(26, 188, 156, 0.1);
   border-radius: 1.5rem;
   padding: 1rem;
 }
-
 
 #featureModalVideo {
   width: 40rem;
@@ -345,14 +324,13 @@ body {
   border: 3px solid #0a2f38;
 }
 
-
 #featureModalDescription {
   max-width: 1000px;
   font-size: 1.15rem;
   text-align: justify;
   margin: 0 auto;
   color: #0a2f38;
-  background: rgba(29, 233, 182, 0.07);
+  background: #d5e5df;
   border-radius: 1rem;
   padding: 1.2rem 1.5rem;
   box-shadow: 0 2px 12px 0 rgba(10, 47, 56, 0.04);
@@ -372,6 +350,32 @@ body {
   opacity: 1;
 }
 
+@media (max-width: 991.98px) {
+  .feature-modal-custom .modal-title {
+    font-size: 1.5rem;
+  }
+
+  #featureModalVideoContainer {
+    padding: 0;
+  }
+
+  #featureModalVideo {
+    width: 100%;
+  }
+
+  .feature-modal-custom .modal-content {
+    border: none;
+  }
+
+  .feature-modal-custom .modal-header {
+    padding-top: 0.5rem;
+    padding-bottom: 1rem;
+  }
+
+  #featureModalDescription {
+    font-size: 1rem !important;
+  }
+}
 
 /* ---------------- */
 /*  Citation Style  */
@@ -381,6 +385,10 @@ body {
   padding-top: 1.5rem;
 }
 
+.citation-sm {
+  display: none !important;
+}
+
 .citation p {
   font-size: 0.8rem;
   font-weight: normal;
@@ -388,16 +396,56 @@ body {
   margin-bottom: 0;
 }
 
-.citation button {
-  background: white;
-  border: none;
-  cursor: pointer;
-  text-decoration: underline;
+.citation span {
+  display: none;
 }
 
 .citation a {
   height: 100%;
   align-content: center;
+}
+
+@media (max-width: 991.98px) {
+  .citation {
+    padding: 1rem;
+    border: 1px solid black;
+    border-radius: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  .citation-sm {
+    display: inline-block !important;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .citation-sm span {
+    font-size: 0.75rem;
+    text-align: center;
+    margin-top: 0.5rem;
+    display: inline-block;
+    width: 100%;
+  }
+
+  .citation-md {
+    display: none !important;
+  }
+
+  .citation p {
+    margin: 0;
+    text-align: center;
+  }
+
+  .citation a {
+    display: none;
+  }
+}
+
+.citation button {
+  background: white;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
 }
 
 .citation svg {
@@ -410,6 +458,16 @@ body {
 /* ---------------------------- */
 /*  Paper & Article Animations  */
 /* ---------------------------- */
+
+.paper-container {
+  display: inline-block !important
+}
+
+@media (max-width: 991.98px) {
+  .paper-container {
+    display: none !important;
+  }
+}
 
 .paper {
   width: 15em;
@@ -539,6 +597,14 @@ body {
   height: 3rem;
 }
 
+@media (max-width: 991.98px) {
+
+  .carousel-control-prev,
+  .carousel-control-next {
+    display: none;
+  }
+}
+
 .carousel-indicators [data-bs-target] {
   opacity: 0.25;
   background-color: black;
@@ -547,6 +613,22 @@ body {
 .carousel-indicators .active {
   opacity: 1;
 }
+
+.publication-title {
+  font-weight: normal;
+  color: darkblue;
+  display: none;
+  font-size: 1.4rem;
+  text-decoration: none;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 991.98px) {
+  .publication-title {
+    display: block;
+  }
+}
+
 
 /* --------------- */
 /*  Profile Cards  */

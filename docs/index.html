@@ -203,14 +203,14 @@
             <div class="modal fade feature-modal-custom" id="featureModal" tabindex="-1"
                 aria-labelledby="featureModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-xxl modal-dialog-centered feature-modal-custom">
-                    <div class="modal-content p-4 pb-0">
+                    <div class="modal-content p-mb-4 p-2">
                         <div class="modal-header border-0">
                             <h4 class="modal-title w-100 text-center fw-bold" id="featureModalLabel"></h4>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body d-flex flex-column align-items-center justify-content-center gap-4">
                             <div id="featureModalVideoContainer" class="w-100 d-flex justify-content-center">
-                                <video id="featureModalVideo" controls></video>
+                                <video id="featureModalVideo" controls autoplay muted loop></video>
                             </div>
                             <div class="w-100 d-flex justify-content-center">
                                 <p id="featureModalDescription" class="fs-5 mb-0"></p>
@@ -252,7 +252,7 @@
                                 re-rendered hierarchically in the side panel.</p>
                         </div>
                         <button class="stretched-link feature-modal-trigger feature-modal-btn"
-                            data-longDescription="The menu rendering engine dynamically generates accessible, gaze-optimised context menus by traversing the DOM and extracting actionable elements. It applies ARIA roles, semantic grouping, and spatial clustering to ensure that all interactive elements are discoverable and reachable via gaze or switch input. The rendering logic adapts to page structure and user preferences, supporting both hierarchical and flat menu layouts for optimal usability."
+                            data-longDescription="In CACTUS, the Menu Rendering Engine works alongside the sidebar to transform complex website navigation into structured, accessible menus. It automatically detects menubars, flyouts, and megamenus from the page’s DOM, reconstructing them into hierarchical data that preserves labels, links, and spatial relationships. This ensures that even hidden or dynamically generated navigation elements are captured and made usable. By outputting a consistent, JSON-based menu structure enriched with accessibility metadata, CACTUS can re-render these menus inside the sidebar in real time. As users move their gaze or switch focus, the sidebar presents these structured menus in a clear, context-sensitive layout, enabling efficient and precise navigation without requiring fine pointer control."
                             data-bs-toggle="modal" data-bs-target="#featureModal" data-title="Menu Rendering"
                             data-description="In case of navigation menus, the entire landmark region’s contents are re-rendered hierarchically in the side panel."
                             data-video="./assets/features/menu_rendering.mp4"
@@ -289,7 +289,7 @@
                                 switches to different browser functionalities.</p>
                         </div>
                         <button class="stretched-link feature-modal-trigger feature-modal-btn"
-                            data-longDescription="Second input modalities refer to the integration of alternative access methods such as adaptive switches, sip-and-puff devices, or voice commands. CACTUS abstracts these modalities via a unified event bus, allowing users to trigger actions (e.g., click, scroll, select) in conjunction with or independently from gaze. This multimodal architecture enhances accessibility for users with complex motor profiles."
+                            data-longDescription="CACTUS provides a plug-and-play approach for integrating second input modalities, known as adaptive switches (e.g., the Vibe-Lite Switch, foot switches, or sip-and-puff devices). These modalities are connected through a switch interface (e.g., Hitch 2.0), which typically supports one or more switches. Each switch can be mapped to specific actions depending on the setup, allowing users to trigger pre-programmed functions like clicking or scrolling, or to activate browser-specific commands by assigning the corresponding hotkeys. Examples include opening bookmarks, zooming in, or navigating forwards and backwards, all in conjunction with gaze. This setup gives users, particularly those with complex motor profiles, the ability to speed up and enhance their interaction with the browser."
                             data-bs-toggle="modal" data-bs-target="#featureModal"
                             data-title="Integration with Adaptive Switches"
                             data-description="Seamless integration with adaptive switches, allowing users to map multiple switches to different browser functionalities."
@@ -308,7 +308,7 @@
                                 formats directly within the browser interface.</p>
                         </div>
                         <button class="stretched-link feature-modal-trigger feature-modal-btn"
-                            data-longDescription="The CACTUS on-screen keyboard is a fully gaze-accessible, multilingual, and numeric input system designed for users with limited motor control. It features dynamic key layouts for multiple languages, a dedicated numeric keypad, and advanced autocomplete functionality that predicts and suggests words in real time as the user types. Text entry is performed using dwell-based selection, and the keyboard enlarges the nearby keys to facilitate selection. The interface is rendered as a responsive SVG grid with ARIA support, ensuring compatibility with assistive technologies and adaptability to various screen sizes and user preferences."
+                            data-longDescription="The CACTUS on-screen keyboard is a fully gaze-accessible, multilingual, and numeric input system designed for users with limited motor control. It features dynamic key layouts for multiple languages, a dedicated numeric keypad, and advanced autocomplete functionality that predicts and suggests words in real time as the user types. Text entry is performed using dwell-based selection, and the keyboard enlarges the nearby keys to facilitate selection."
                             data-bs-toggle="modal" data-bs-target="#featureModal"
                             data-title="Multilingual & Numeric Keyboard"
                             data-description="A multilingual and numeric on-screen keyboard with text autocomplete which formats directly within the browser interface."
@@ -326,7 +326,7 @@
                                 video components, and hierarchical menus.</p>
                         </div>
                         <button class="stretched-link feature-modal-trigger feature-modal-btn"
-                            data-longDescription="The CACTUS Side Panel is a dynamic, context-aware panel that continuously detects all interactive elements in the immediate vicinity of the Virtual Eye Cursor on the web page. As the user moves their gaze, the side panel updates in real time to display these links stacked vertically, making them easily accessible for selection. This mechanism enables users to efficiently click on nearby links using gaze, switches, or keyboard input, providing rapid, accessible navigation without requiring precise pointer control. The sidebar’s content is updated live as the user’s focus shifts, ensuring that relevant interactive elements are always within easy reach."
+                            data-longDescription="The sidebar in CACTUS is a dynamic, context-aware navigation panel that serves as the primary interface for interacting with web page elements through gaze-based control. Located on the left side of the browser interface, it continuously updates in real-time to display interactive elements detected near the user's Virtual Eye Cursor. The sidebar operates through two main modes: hierarchical menu rendering and individual element listing. When displaying individual elements, it shows interactive components like buttons, links, form inputs, and multimedia controls as vertically stacked items with descriptive icons and labels, each with visual animations for feedback. Users navigate through the sidebar using dwell-based selection, scroll controls, and level-up navigation for hierarchical structures."
                             data-bs-toggle="modal" data-bs-target="#featureModal" data-title="Dynamic Side Panel"
                             data-description="A side panel that encompasses a variety of contexts, including drop-downs, video components, and hierarchical menus."
                             data-video="./assets/features/sidepanel.mp4"
@@ -355,18 +355,19 @@
                         <img src="./assets/features/input_types.png" class="card-img-top"
                             alt="Integration with Different Input Types">
                         <div class="card-body py-4">
-                            <h5 class="card-title">Integration with Different HTML Form Input Elements</h5>
+                            <h5 class="card-title">Integration with Different HTML Input Types</h5>
                             <p class="card-text text-muted">Supports various input types, including buttons, links,
                                 radio buttons,
                                 checkboxes, dates, comboboxes, videos, audio, text, textareas, numbers and so on.</p>
                         </div>
                         <button class="stretched-link feature-modal-trigger feature-modal-btn"
-                            data-longDescription="CACTUS is engineered to interact with a comprehensive set of HTML form input elements, including <button>, <a>, <input type='text'>, <input type='number'>, <input type='date'>, <input type='radio'>, <input type='checkbox'>, <input type='range'>, <input type='file'>, <select>, <option>, <textarea>, <datalist>, <output>, and <progress>. The system also supports multimedia elements such as <video> and <audio>, as well as ARIA roles for custom widgets. This is achieved through a modular input abstraction layer that normalises events from gaze, switches, and other assistive devices, providing a unified API for robust, extensible, and accessible interaction across all supported input types."
+                            data-longDescription="CACTUS is engineered to interact with a comprehensive set of HTML input types, including <button>, <a>, <input type='text'>, <input type='number'>, <input type='date'>, <input type='radio'>, <input type='checkbox'>, <input type='range'>, <input type='file'>, <select>, <option>, <textarea>, <datalist>, <output>, and <progress>. The system also supports multimedia elements such as <video> and <audio>, as well as ARIA roles for custom widgets. This is achieved through a modular input abstraction layer that normalises events from gaze, switches, and other assistive devices, providing a unified API for robust, extensible, and accessible interaction across all supported input types."
                             data-bs-toggle="modal" data-bs-target="#featureModal"
-                            data-title="Integration with Different HTML Form Input Elements" data-description="Supports various input types, including buttons, links, radio buttons,
+                            data-title="Integration with Different HTML Input Types" data-description="Supports various HTML input types, including
+                            buttons, links, radio buttons,
                             checkboxes, dates, comboboxes, videos, audio, text, textareas, numbers and so on."
                             data-video="./assets/features/input_types.mp4"
-                            aria-label="View more about Integration with Different HTML Form Input Elements"></button>
+                            aria-label="View more about Integration with Different HTML Input Types"></button>
                     </div>
                 </div>
                 <div class="col">
@@ -412,9 +413,8 @@
             <div id="researchCarousel" class="carousel slide" data-bs-wrap="true" data-bs-ride="false">
                 <div class="carousel-inner">
 
-                    <!-- Publication 1 Slide -->
-                    <div class="carousel-item active">
-                        <!-- <div class="row w-100 py-5 gap-4 gap-md-0">
+                    <!-- <div class="carousel-item active">
+                                                                                                                                                                                                                                                                                                                                                        <div class="row w-100 py-5 gap-4 gap-md-0">
                             <div class="col-12 col-md-8 mb-4 d-flex flex-column justify-content-center">
                                 <h2 class="pb-2">1. Publication</h2>
                                 <p class="text-muted fs-5">
@@ -453,39 +453,78 @@
                                             <h2>Chris Porter</h2>
                                         </div>
                                         <img src="./assets/ICT_Red_Logo.png" alt="University of Malta ICT Logo" />
-                                        </div>
-                                        </a>
-                                        </div>
-                        </div> -->
-                        <div class="row w-100 py-5 gap-4 gap-md-0">
+                                    </div>
+                                    </a>
+                                    </div>
+                        </div>
+                    </div> -->
+                    <!-- Publication 1 Slide -->
+                    <div class="carousel-item active">
+                        <div class="row w-100 py-5 gap-4 gap-md-0 justify-content-center">
                             <div class="col-12 col-md-8 mb-4 d-flex flex-column justify-content-center">
                                 <h2 class="pb-2">1. Publication</h2>
-                                <h4 class="pb-2" style="
-                                                                            font-weight: normal;
-                                                                            color: darkblue;
-                                                                        ">Remapping the Document Object Model using
+                                <a href="https://dl.acm.org/doi/10.1145/3655608" target="_blank" rel="noopener"
+                                    class="publication-title pb-2">
+                                    Remapping the Document Object Model using
                                     Geometric and Hierarchical
-                                    Data Structures </h4>
+                                    Data Structures </a>
                                 <p class="text-muted fs-5">
                                     Explore our research paper introducing two interaction patterns, Quadtree-based
                                     Target Selection with secondary confirmation and Hierarchical Re-rendering of
                                     navigation menus, for the gaze-native browser CACTUS to improve performance,
                                     usability, and reduce workload in eye-tracking web navigation.
                                 </p>
-                                <div class="citation col-12 d-flex align-items-center justify-content-center">
-
+                                <div
+                                    class="citation citation-md col-12 d-flex flex-row align-items-center justify-content-center">
+                                    <a href="javascript:void(0);" class="btn btn-outline-secondary copy-citation-btn"
+                                        onclick="copyCitation()" data-bs-toggle="tooltip" data-bs-placement="top"
+                                        title="Copy citation">
+                                        <i class="icon">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+                                                <path fill="#000000"
+                                                    d="M448 296c0 66.3-53.7 120-120 120l-8 0c-17.7 0-32-14.3-32-32s14.3-32 32-32l8 0c30.9 0 56-25.1 56-56l0-8-64 0c-35.3 0-64-28.7-64-64l0-64c0-35.3 28.7-64 64-64l64 0c35.3 0 64 28.7 64 64l0 136zm-256 0c0 66.3-53.7 120-120 120l-8 0c-17.7 0-32-14.3-32-32s14.3-32 32-32l8 0c30.9 0 56-25.1 56-56l0-8-64 0c-35.3 0-64-28.7-64-64l0-64c0-35.3 28.7-64 64-64l64 0c35.3 0 64 28.7 64 64l0 136z" />
+                                            </svg>
+                                        </i>
+                                    </a>
                                     <p>D. Vella and C. Porter, "Remapping the Document Object Model
                                         using Geometric and Hierarchical Data Structures for Efficient Eye Control,"
                                         Acm Pacmhci, vol. 8, (ETRA), pp. 1–16, 2024. Available:
                                         https://dl.acm.org/doi/10.1145/3655608. DOI: 10.1145/3655608.
                                     </p>
                                 </div>
+                                <a href="javascript:void(0);"
+                                    class="citation citation-sm col-12 d-flex flex-column align-items-center justify-content-center"
+                                    onclick="copyCitation()">
+                                    <p>D. Vella and C. Porter, "Remapping the Document Object Model
+                                        using Geometric and Hierarchical Data Structures for Efficient Eye Control,"
+                                        Acm Pacmhci, vol. 8, (ETRA), pp. 1–16, 2024. Available:
+                                        https://dl.acm.org/doi/10.1145/3655608. DOI: 10.1145/3655608.
+                                    </p>
+                                    <span class="tap-to-copy text-muted">Tap to Copy Citation</span>
+                                </a>
+                            </div>
+                            <div class="paper-container col-12 col-md-4 d-flex align-items-center justify-content-center">
+                                <a href="https://dl.acm.org/doi/10.1145/3655608" target="_blank" rel="noopener"
+                                    class="text-decoration-none text-reset">
+                                    <div class="paper d-flex flex-column justify-content-between align-items-center">
+                                        <h1 class="text-center">
+                                            Remapping the Document Object Model using Geometric<br>
+                                            and Hierarchical Data Structures for Efficient Eye Control
+                                        </h1>
+                                        <div class="text-center">
+                                            <h2>Daniel Vella</h2>
+                                            <h2>Chris Porter</h2>
+                                        </div>
+                                        <img src="./assets/ICT_Red_Logo.png" alt="University of Malta ICT Logo" />
+                                    </div>
+                                </a>
                             </div>
                         </div>
                     </div>
+
                     <!-- Publication 2 Slide -->
                     <div class="carousel-item">
-                        <div class="row w-100 py-5">
+                        <div class="row w-100 py-5 justify-content-center">
                             <div class="col-12 col-md-8 mb-4 d-flex flex-column justify-content-center">
                                 <h2 class="pb-2">2. Publication</h2>
                                 <p class="text-muted fs-5">
