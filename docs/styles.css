@@ -600,17 +600,13 @@ body {
   height: 3rem;
 }
 
-@media (max-width: 991.98px) {
-
-  .carousel-control-prev,
-  .carousel-control-next {
-    display: none;
-  }
-}
-
 .carousel-indicators [data-bs-target] {
   opacity: 0.25;
   background-color: black;
+}
+
+.carousel-indicators [data-bs-target] span {
+  display: none;
 }
 
 .carousel-indicators .active {
@@ -627,11 +623,56 @@ body {
 }
 
 @media (max-width: 991.98px) {
+  .carousel-indicators {
+    position: relative;
+    margin-bottom: 1.25rem;
+    margin-top: 2rem;
+    gap: 14px;
+  }
+
+  .carousel-indicators [data-bs-target] {
+    background-color: transparent;
+    height: 40px;
+    width: 40px;
+    color: #0a3039;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-indent: 0;
+    opacity: 1;
+    border: 1.5px solid #0a3039;
+  }
+
+  .carousel-indicators [data-bs-target] span {
+    display: block;
+  }
+
+  .carousel-indicators .active {
+    background-color: #0a3039;
+    color: white;
+  }
+
+  .carousel-control-prev,
+  .carousel-control-next {
+    display: none;
+  }
+
   .publication-title {
     display: block;
   }
+
+  .publication-desc {
+    font-size: 1rem !important;
+  }
 }
 
+@media (min-width: 1024px) and (max-width: 1920px) {
+  .carousel-control-prev,
+  .carousel-control-next {
+    width: 9%;
+  }
+}
 
 /* --------------- */
 /*  Profile Cards  */
@@ -762,6 +803,30 @@ body {
   position: relative;
 }
 
+/* Add this new pseudo-element for background image only */
+.contact-section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('./assets/cacti-cropped.png');
+  background-size: contain;
+  background-position: bottom;
+  opacity: 0.175;
+  /* Only the background image will have this opacity */
+  pointer-events: none;
+  z-index: 0;
+}
+
+@media (max-width: 991.98px) {
+  .contact-section::before {
+    background-repeat: no-repeat;
+    background-position: center bottom;
+  }
+}
+
 .contact-cacti-bg {
   opacity: 0.25;
   pointer-events: none;
@@ -781,5 +846,19 @@ body {
   .stat-label {
     font-weight: 600;
     font-size: 0.85rem;
+  }
+}
+
+/* ---------------- */
+/*    Footer       */
+/* ---------------- */
+
+.footer-logos img {
+  height: 40px;
+}
+
+@media (max-width: 991.98px) {
+  .footer-logos img {
+    height: 30px;
   }
 }

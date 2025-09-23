@@ -411,18 +411,28 @@
 
         <div class="container px-4">
             <div id="researchCarousel" class="carousel slide" data-bs-wrap="true" data-bs-ride="false" data-bs-touch="true">
+                <!-- Indicators -->
+                <div class="carousel-indicators">
+                    <button type="button" data-bs-target="#researchCarousel" data-bs-slide-to="0" class="active"
+                        aria-current="true" aria-label="Publication 1"><span>1</span></button>
+                    <button type="button" data-bs-target="#researchCarousel" data-bs-slide-to="1"
+                        aria-label="Publication 2"><span>2</span></button>
+                    <button type="button" data-bs-target="#researchCarousel" data-bs-slide-to="2"
+                        aria-label="Article"><span>3</span></button>
+                </div>
+
                 <div class="carousel-inner">
                     <!-- Publication 1 Slide -->
                     <div class="carousel-item active">
-                        <div class="row w-100 py-5 gap-4 gap-md-0 justify-content-center">
+                        <div class="row w-100 pt-4 pb-5 py-md-5 gap-4 gap-md-0 justify-content-center">
                             <div class="col-12 col-md-8 mb-4 d-flex flex-column justify-content-center">
                                 <h2 class="pb-2">1. Publication</h2>
                                 <a href="https://dl.acm.org/doi/10.1145/3655608" target="_blank" rel="noopener"
-                                    class="publication-title pb-2">
+                                    class="publication-title pb-2 fs-5">
                                     Remapping the Document Object Model using
                                     Geometric and Hierarchical
                                     Data Structures </a>
-                                <p class="text-muted fs-5">
+                                <p class="publication-desc text-muted fs-5">
                                     Explore our research paper introducing two interaction patterns, Quadtree-based
                                     Target Selection with secondary confirmation and Hierarchical Re-rendering of
                                     navigation menus, for the gaze-native browser CACTUS to improve performance,
@@ -478,14 +488,14 @@
 
                     <!-- Publication 2 Slide -->
                     <div class="carousel-item">
-                        <div class="row w-100 py-5 gap-4 gap-md-0 justify-content-center">
+                        <div class="row w-100 pt-4 pb-5 py-md-5 gap-4 gap-md-0 justify-content-center">
                             <div class="col-12 col-md-8 mb-4 d-flex flex-column justify-content-center">
                                 <h2 class="pb-2">2. Publication</h2>
                                 <a href="http://camps.aptaracorp.com/ACM_PMS/PMS/ACM/CHITALY2025/198/b59cb32c-6d30-11f0-823f-16ffd757ba29/OUT/chitaly2025-198.html"
-                                    target="_blank" rel="noopener" class="publication-title pb-2">
+                                    target="_blank" rel="noopener" class="publication-title pb-2 fs-5">
                                     Experiencing CACTUS - Browsing The Web Using Your Eyes
                                 </a>
-                                <p class="text-muted fs-5">
+                                <p class="publication-desc text-muted fs-5">
                                     Our second paper presents novel methods for improving gaze-based navigation
                                     through predictive modeling and adaptive interface layouts to further enhance
                                     usability and reduce user workload.
@@ -531,14 +541,14 @@
 
                     <!-- Article Slide -->
                     <div class="carousel-item">
-                        <div class="row w-100 py-5 gap-4 gap-md-0 justify-content-center">
-                            <div class="col-12 col-md-8 mb-4 d-flex flex-column justify-content-center">
+                        <div class="row w-100 pt-4 pb-5 py-md-5 gap-4 gap-md-0 justify-content-center">
+                            <div class="col-12 col-md-8 mb-md-4 d-flex flex-column justify-content-center">
                                 <h2 class="pb-2">3. Article</h2>
                                 <a href="https://timesofmalta.com/article/reimagining-web-browser-eyegaze-control-cactus-project.1108324"
-                                    target="_blank" rel="noopener" class="publication-title pb-2">
+                                    target="_blank" rel="noopener" class="publication-title pb-2 fs-5">
                                     Reimagining the web browser for eye-gaze control – the Cactus project
                                 </a>
-                                <p class="text-muted fs-5">
+                                <p class="publication-desc text-muted fs-5">
                                     Explore our published article introducing two interaction patterns, Quadtree-based
                                     Target Selection with secondary confirmation and Hierarchical Re-rendering of
                                     navigation menus, for the gaze-native browser CACTUS to improve performance,
@@ -554,16 +564,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <!-- Indicators -->
-                <div class="carousel-indicators">
-                    <button type="button" data-bs-target="#researchCarousel" data-bs-slide-to="0" class="active"
-                        aria-current="true" aria-label="Publication 1"></button>
-                    <button type="button" data-bs-target="#researchCarousel" data-bs-slide-to="1"
-                        aria-label="Publication 2"></button>
-                    <button type="button" data-bs-target="#researchCarousel" data-bs-slide-to="2"
-                        aria-label="Article"></button>
                 </div>
             </div>
         </div>
@@ -688,21 +688,19 @@
                 </div>
             </div>
         </div>
-        <img src="./assets/cacti.png" alt="Cacti background"
-            class="contact-cacti-bg position-absolute w-100 start-0 bottom-0 z-0">
-
     </section>
+
     <!-- Footer -->
-    <footer class="footer bg-light py-4 border-top">
-        <div class="container d-flex flex-column flex-md-row align-items-center justify-content-between">
+    <footer class="footer py-4 border-top">
+        <div class="container d-flex flex-column flex-md-row align-items-center justify-content-between gap-3">
             <div class="footer-text text-center text-md-start mb-3 mb-md-0">
                 <strong>Contact:</strong> <a href="mailto:cactus@um.edu.mt">cactus@um.edu.mt</a><br>
                 Developed at the <strong>University of Malta</strong>.<br>
                 Project funded by <strong>Xjenza</strong>.
             </div>
-            <div class="footer-logos d-flex align-items-center justify-content-center gap-3">
-                <img src="./assets/ICT_Red_Logo.png" alt="University of Malta Logo" style="height:40px;">
-                <img src="./assets/Xjenza_Logo.png" alt="Xjenza Logo" style="height:40px;">
+            <div class="footer-logos d-flex align-items-center justify-content-center gap-5">
+                <img src="./assets/ICT_Red_Logo.png" alt="University of Malta Logo">
+                <img src="./assets/Xjenza_Logo.png" alt="Xjenza Logo">
             </div>
         </div>
     </footer>
