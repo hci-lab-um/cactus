@@ -73,6 +73,17 @@ body {
   align-items: center;
   gap: 15px;
   padding: 1.25rem 5rem;
+  justify-content: center;
+}
+
+.hero-button:hover .hero-button-icon {
+  filter: invert(1);
+}
+
+.hero-button-icon {
+  display: inline-block;
+  vertical-align: middle;
+  background: transparent;
 }
 
 .hero-title-main {
