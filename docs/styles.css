@@ -353,6 +353,7 @@ body {
   border-radius: 50%;
   transition: box-shadow 0.2s, background 0.2s;
   box-shadow: 0 2px 8px 0 rgba(10, 47, 56, 0.08);
+  padding: 0.75rem;
 }
 
 .feature-modal-custom .btn-close:hover {
