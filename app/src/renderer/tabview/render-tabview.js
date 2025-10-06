@@ -483,16 +483,43 @@ function initScrollableElements() {
 	try {
 		if (displayScrollButtons) {
 			removeExistingScrollButtons();
+			let scrollableElements = [];
 
 			// The list of scrollable elements is filtered so that only the <html> tag is considered if the <body> tag is also present, preventing overlapping scrolling buttons
-			const scrollableElements = Array.from(document.querySelectorAll('*')).filter(element => {
+			let allElements = Array.from(document.querySelectorAll('*'));
+
+			// First pass: collect all scrollable HTML/BODY elements
+			let htmlElement = null;
+			let bodyElement = null;
+
+			allElements.forEach((element) => {
+				const isHtml = element.tagName.toLowerCase() === 'html';
+				const isBody = element.tagName.toLowerCase() === 'body';
 				const style = window.getComputedStyle(element);
-				return (
-					(style.overflowY === 'scroll' || style.overflowY === 'auto') &&
-					element.scrollHeight >= element.clientHeight &&
-					style.overflowY !== 'visible'
-				);
+
+				if (isHtml && element.scrollHeight > element.clientHeight) {
+					htmlElement = element;
+				} else if (isBody && element.scrollHeight > element.clientHeight) {
+					bodyElement = element;
+				} else if (!isHtml && !isBody) {
+					// Handle other scrollable elements
+					if (
+						element.scrollHeight > element.clientHeight &&
+						(style.overflowY === 'scroll' || style.overflowY === 'auto') &&
+						style.overflowY !== 'visible' &&
+						style.visibility !== 'hidden'
+					) {
+						scrollableElements.push(element);
+					}
+				}
 			});
+
+			// Add only one of HTML or BODY (prefer HTML if both are scrollable)
+			if (htmlElement) {
+				scrollableElements.push(htmlElement);
+			} else if (bodyElement) {
+				scrollableElements.push(bodyElement);
+			}
 
 			console.log("Scrollable elements", scrollableElements);
 
