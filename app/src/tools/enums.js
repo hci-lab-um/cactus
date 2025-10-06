@@ -104,9 +104,13 @@ const Settings = Object.freeze({
         NAME: "tabViewScrollDistance",
         LABEL: "Web Page Scroll Speed",
         DESCRIPTION: "The speed at which the web page on every tab scrolls when using the arrow buttons.",
-        SLOW: 5,
-        NORMAL: 10,
-        FAST: 15,
+        SLOW: 100,
+        NORMAL: 200,
+        FAST: 300,
+    },
+    TAB_VIEW_SCROLL_INTERVAL_IN_MS: {
+        NAME: "tabViewScrollIntervalInMs",
+        DEFAULT: 300,
     },
     MENU_AREA_SCROLL_DISTANCE: {
         NAME: "menuAreaScrollDistance",

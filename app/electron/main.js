@@ -20,7 +20,8 @@ let useRobotJS;
 let isReadModeActive;
 let defaultUrl;
 let scrollDistance;
-let scrollInterval;
+let scrollIntervalTime;
+let quickClickScrollInterval; // This is for Quick Click Scrolling
 let menuAreaScrollDistance;
 let menuAreaScrollInterval;
 let keyboardDwellTime;
@@ -204,8 +205,6 @@ ipcMain.handle('ipc-get-user-setting', async (event, setting) => {
                 return keyboardDwellTime;
             case Settings.MENU_AREA_SCROLL_DISTANCE.NAME:
                 return menuAreaScrollDistance;
-            case Settings.MENU_AREA_SCROLL_INTERVAL_IN_MS.NAME:
-                return menuAreaScrollInterval;
             case Settings.TAB_VIEW_SCROLL_DISTANCE.NAME:
                 return scrollDistance;
             case Settings.RANGE_WIDTH.NAME:
@@ -887,7 +886,7 @@ ipcMain.on('ipc-quick-click-scroll-up', (event) => {
     try {
         let activeTab = tabList.find(tab => tab.isActive === true);
         // Start scrolling up repeatedly
-        scrollInterval = setInterval(() => {
+        quickClickScrollInterval = setInterval(() => {
             activeTab.webContentsView.webContents.executeJavaScript(`
                 window.scrollBy({
                     top: (${scrollDistance * -1}),
@@ -905,7 +904,7 @@ ipcMain.on('ipc-quick-click-scroll-down', (event) => {
     try {
         let activeTab = tabList.find(tab => tab.isActive === true);
         // Start scrolling down repeatedly
-        scrollInterval = setInterval(() => {
+        quickClickScrollInterval = setInterval(() => {
             activeTab.webContentsView.webContents.executeJavaScript(`
                 window.scrollBy({
                     top: ${scrollDistance},
@@ -922,9 +921,9 @@ ipcMain.on('ipc-quick-click-scroll-down', (event) => {
 ipcMain.on('ipc-quick-click-scroll-stop', (event) => {
     try {
         // Stop the scrolling
-        if (scrollInterval) {
-            clearInterval(scrollInterval);
-            scrollInterval = null;
+        if (quickClickScrollInterval) {
+            clearInterval(quickClickScrollInterval);
+            quickClickScrollInterval = null;
         }
     } catch (err) {
         logger.error('Error stopping scroll:', err.message);
@@ -1103,6 +1102,7 @@ async function initialiseVariables() {
         useRobotJS = await db.getUseRobotJS();
         isReadModeActive = await db.getIsReadModeActive();
         scrollDistance = await db.getTabScrollDistance();
+        scrollIntervalTime = await db.getTabScrollInterval();
         keyboardDwellTime = await db.getKeyboardDwellTime();
         dwellTime = await db.getDwellTime();
         quickDwellRange = await db.getQuickDwellRange();
@@ -1404,9 +1404,9 @@ function setTabViewEventlisteners(tabView) {
 
                         // If the tab is active, send isActive = true to connect the mutation observer
                         if (tabList.find(tab => tab.webContentsView === tabView && tab.isActive)) {
-                            tabView.webContents.send('ipc-main-tabview-loaded', useNavAreas, scrollDistance, true, isScrollToggleOn);
+                            tabView.webContents.send('ipc-main-tabview-loaded', useNavAreas, scrollDistance, scrollIntervalTime, true, isScrollToggleOn);
                         } else {
-                            tabView.webContents.send('ipc-main-tabview-loaded', useNavAreas, scrollDistance, false, isScrollToggleOn);
+                            tabView.webContents.send('ipc-main-tabview-loaded', useNavAreas, scrollDistance, scrollIntervalTime, false, isScrollToggleOn);
                         }
 
                         // injecting javascript into each first level iframe of the tabview
@@ -1427,7 +1427,7 @@ function setTabViewEventlisteners(tabView) {
                 });
 
                 if (isDevelopment) tabView.webContents.openDevTools();
-                // tabView.webContents.openDevTools();
+                tabView.webContents.openDevTools();
             } catch (err) {
                 logger.error('Error during tabview DOM ready:', err.message);
             }

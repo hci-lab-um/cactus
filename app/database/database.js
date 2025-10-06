@@ -117,7 +117,7 @@ function populateShortcutsTable() {
         const shortcuts = {
             [Shortcuts.ACTIONS.CLICK.NAME]:                 Shortcuts.ACTIONS.CLICK.HOTKEYS,
             [Shortcuts.ACTIONS.TOGGLE_OMNI_BOX.NAME]:       Shortcuts.ACTIONS.TOGGLE_OMNI_BOX.HOTKEYS,
-            [Shortcuts.ACTIONS.TOGGLE_READ_MODE.NAME]:       Shortcuts.ACTIONS.TOGGLE_READ_MODE.HOTKEYS,
+            [Shortcuts.ACTIONS.TOGGLE_READ_MODE.NAME]:      Shortcuts.ACTIONS.TOGGLE_READ_MODE.HOTKEYS,
             [Shortcuts.ACTIONS.ZOOM_IN.NAME]:               Shortcuts.ACTIONS.ZOOM_IN.HOTKEYS,
             [Shortcuts.ACTIONS.ZOOM_OUT.NAME]:              Shortcuts.ACTIONS.ZOOM_OUT.HOTKEYS,
             [Shortcuts.ACTIONS.SIDEBAR_SCROLL_UP.NAME]:     Shortcuts.ACTIONS.SIDEBAR_SCROLL_UP.HOTKEYS,
@@ -182,6 +182,7 @@ function populateUserSettingsTable() {
             [Settings.RANGE_WIDTH.NAME]:                        Settings.RANGE_WIDTH.DEFAULT,
             [Settings.RANGE_HEIGHT.NAME]:                       Settings.RANGE_HEIGHT.DEFAULT,
             [Settings.TAB_VIEW_SCROLL_DISTANCE.NAME]:           Settings.TAB_VIEW_SCROLL_DISTANCE.NORMAL,
+            [Settings.TAB_VIEW_SCROLL_INTERVAL_IN_MS.NAME]:     Settings.TAB_VIEW_SCROLL_INTERVAL_IN_MS.DEFAULT,
             [Settings.MENU_AREA_SCROLL_DISTANCE.NAME]:          Settings.MENU_AREA_SCROLL_DISTANCE.NORMAL,
             [Settings.MENU_AREA_SCROLL_INTERVAL_IN_MS.NAME]:    Settings.MENU_AREA_SCROLL_INTERVAL_IN_MS.DEFAULT,
             [Settings.USE_NAV_AREAS.NAME]:                      Settings.USE_NAV_AREAS.DEFAULT,
@@ -437,8 +438,16 @@ function getTabScrollDistance() {
     return getSetting(Settings.TAB_VIEW_SCROLL_DISTANCE.NAME).then(value => parseInt(value, 10));
 }
 
+function getTabScrollInterval() {
+    return getSetting(Settings.TAB_VIEW_SCROLL_INTERVAL_IN_MS.NAME).then(value => parseInt(value, 10));
+}
+
 function getMenuScrollDistance() {
     return getSetting(Settings.MENU_AREA_SCROLL_DISTANCE.NAME).then(value => parseInt(value, 10));
+}
+
+function getMenuScrollInterval() {
+    return getSetting(Settings.MENU_AREA_SCROLL_INTERVAL_IN_MS.NAME).then(value => parseInt(value, 10));
 }
 
 function getDwellTime() {
@@ -451,10 +460,6 @@ function getQuickDwellRange() {
 
 function getKeyboardDwellTime() {
     return getSetting(Settings.KEYBOARD_DWELL_TIME.NAME).then(value => parseInt(value, 10));
-}
-
-function getMenuScrollInterval() {
-    return getSetting(Settings.MENU_AREA_SCROLL_INTERVAL_IN_MS.NAME).then(value => parseInt(value, 10));
 }
 
 function getDefaultLayout() {
@@ -568,13 +573,6 @@ function updateKeyboardDwellTime(value) {
     return updateUserSetting(Settings.KEYBOARD_DWELL_TIME.NAME, value);
 }
 
-function updateMenuScrollInterval(value) {
-    if (typeof value !== 'number') {
-        throw new Error('Menu Scroll Interval must be a number');
-    }
-    return updateUserSetting(Settings.MENU_AREA_SCROLL_INTERVAL_IN_MS.NAME, value);
-}
-
 function updateDefaultLayout(value) {
     if (typeof value !== 'string') {
         throw new Error('Default Layout must be a string');
@@ -609,6 +607,7 @@ module.exports = {
     getUseRobotJS,
     getIsReadModeActive,
     getTabScrollDistance,
+    getTabScrollInterval,
     getMenuScrollDistance,
     getMenuScrollInterval,
     getDwellTime,
@@ -631,7 +630,6 @@ module.exports = {
     updateDwellTime,
     updateQuickDwellRange,
     updateKeyboardDwellTime,
-    updateMenuScrollInterval,
     updateDefaultLayout,
     updatePreviousAppVersion,
 };
