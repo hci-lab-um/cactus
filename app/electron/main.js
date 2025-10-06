@@ -885,16 +885,17 @@ ipcMain.on('ipc-exit-browser', async (event) => {
 ipcMain.on('ipc-quick-click-scroll-up', (event) => {
     try {
         let activeTab = tabList.find(tab => tab.isActive === true);
-        // Start scrolling up repeatedly
-        quickClickScrollInterval = setInterval(() => {
-            activeTab.webContentsView.webContents.executeJavaScript(`
-                window.scrollBy({
-                    top: (${scrollDistance * -1}),
-                    left: 0,
-                    behavior: "smooth"
-                });
-            `);
-        }, 10); // Adjust the interval time (in milliseconds) as needed
+        activeTab.webContentsView.webContents.send('ipc-tabview-scroll-up');
+        // // Start scrolling up repeatedly
+        // quickClickScrollInterval = setInterval(() => {
+        //     activeTab.webContentsView.webContents.executeJavaScript(`
+        //         window.scrollBy({
+        //             top: (${scrollDistance * -1}),
+        //             left: 0,
+        //             behavior: "smooth"
+        //         });
+        //     `);
+        // }, 10); // Adjust the interval time (in milliseconds) as needed
     } catch (err) {
         logger.error('Error scrolling up:', err.message);
     }
@@ -903,16 +904,17 @@ ipcMain.on('ipc-quick-click-scroll-up', (event) => {
 ipcMain.on('ipc-quick-click-scroll-down', (event) => {
     try {
         let activeTab = tabList.find(tab => tab.isActive === true);
-        // Start scrolling down repeatedly
-        quickClickScrollInterval = setInterval(() => {
-            activeTab.webContentsView.webContents.executeJavaScript(`
-                window.scrollBy({
-                    top: ${scrollDistance},
-                    left: 0,
-                    behavior: "smooth"
-                });
-            `);
-        }, 10); // Adjust the interval time (in milliseconds) as needed
+        activeTab.webContentsView.webContents.send('ipc-tabview-scroll-down');
+        // // Start scrolling down repeatedly
+        // quickClickScrollInterval = setInterval(() => {
+        //     activeTab.webContentsView.webContents.executeJavaScript(`
+        //         window.scrollBy({
+        //             top: ${scrollDistance},
+        //             left: 0,
+        //             behavior: "smooth"
+        //         });
+        //     `);
+        // }, 10); // Adjust the interval time (in milliseconds) as needed
     } catch (err) {
         logger.error('Error scrolling down:', err.message);
     }
@@ -921,10 +923,8 @@ ipcMain.on('ipc-quick-click-scroll-down', (event) => {
 ipcMain.on('ipc-quick-click-scroll-stop', (event) => {
     try {
         // Stop the scrolling
-        if (quickClickScrollInterval) {
-            clearInterval(quickClickScrollInterval);
-            quickClickScrollInterval = null;
-        }
+        let activeTab = tabList.find(tab => tab.isActive === true);
+        activeTab.webContentsView.webContents.send('ipc-tabview-scroll-stop');
     } catch (err) {
         logger.error('Error stopping scroll:', err.message);
     }

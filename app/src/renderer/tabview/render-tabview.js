@@ -225,6 +225,32 @@ window.cactusAPI.on('ipc-tabview-update-scroll-distance', (newScrollDistance) =>
 	}
 });
 
+window.cactusAPI.on('ipc-tabview-scroll-up', () => {
+	try {
+		console.log("Scroll up event received");
+		startScrolling('up');
+	} catch (error) {
+		window.cactusAPI.logError(`Error updating scroll distance: ${error.message}`);
+	}
+});
+
+window.cactusAPI.on('ipc-tabview-scroll-down', () => {
+	try {
+		console.log("Scroll down event received");
+		startScrolling('down');
+	} catch (error) {
+		window.cactusAPI.logError(`Error updating scroll distance: ${error.message}`);
+	}
+});
+
+window.cactusAPI.on('ipc-tabview-scroll-stop', () => {
+	try {
+		stopScrolling();
+	} catch (error) {
+		window.cactusAPI.logError(`Error updating scroll distance: ${error.message}`);
+	}
+});
+
 window.cactusAPI.on('ipc-tabview-back', () => {
 	try {
 		window.history.back();
@@ -557,64 +583,71 @@ function initScrollableElements() {
 				scrollDownButton_outerDiv.appendChild(scrollDownButton);
 				element.appendChild(scrollDownButton_outerDiv); // Scroll up buttons are inserted as the last child
 			});
-
-			function startScrolling(direction, element = null) {
-				const updatedScrollDistance = direction === 'down' ? scrollDistance : -scrollDistance;
-				console.log('Scroll Distance:', updatedScrollDistance);
-				console.log('Scroll Interval (ms):', scrollIntervalInMs);
-
-				if (intervalIds.length !== 0) {
-					intervalIds.forEach(intervalId => {
-						clearInterval(intervalId);
-					});
-				}
-
-				intervalIds.push(setInterval(() => {
-					element.scrollBy({
-						top: updatedScrollDistance,
-						left: 0,
-						behavior: "smooth"
-					});
-
-					isScrollingUsingButtons = true; // Set the flag to indicate scrolling is in progress
-					checkIfElementIsAtTop(element, scrollUpButton_outerDiv, scrollUpButton);
-					checkIfElementIsAtBottom(element, scrollDownButton_outerDiv, scrollDownButton);
-				}, scrollIntervalInMs));
-			}
-
-			function stopScrolling() {
-				intervalIds.forEach(intervalId => {
-					clearInterval(intervalId);
-				});
-				isScrollingUsingButtons = false;
-				generateQuadTree();
-				if (window.useNavAreas) generateNavAreasTree();
-			}
-
-			function checkIfElementIsAtTop(element, scrollUpButton_outerDiv, scrollUpButton) {
-				// if element is at the top, hide the scroll up button
-				if (element.scrollTop === 0) {
-					scrollUpButton_outerDiv.style.display = 'none';
-					scrollUpButton.style.display = 'none';
-				} else {
-					scrollUpButton_outerDiv.style.display = 'block';
-					scrollUpButton.style.display = 'flex';
-				}
-			}
-
-			function checkIfElementIsAtBottom(element, scrollDownButton_outerDiv, scrollDownButton) {
-				// if element is at the bottom, hide the scroll down button
-				if (Math.floor(element.scrollHeight - element.scrollTop) === element.clientHeight) {
-					scrollDownButton_outerDiv.style.display = 'none';
-					scrollDownButton.style.display = 'none';
-				} else {
-					scrollDownButton_outerDiv.style.display = 'block';
-					scrollDownButton.style.display = 'flex';
-				}
-			}
 		}
 	} catch (error) {
 		window.cactusAPI.logError(`Error initializing scrollable elements: ${error.message}`);
+	}
+}
+
+function startScrolling(direction, element = null) {
+	const updatedScrollDistance = direction === 'down' ? scrollDistance : -scrollDistance;
+	console.log('Scrolling Element:', element);
+
+	if (intervalIds.length !== 0) {
+		intervalIds.forEach(intervalId => {
+			clearInterval(intervalId);
+		});
+	}
+
+	intervalIds.push(setInterval(() => {
+		// Handle window object differently
+        if (element) {
+			element.scrollBy({
+                top: updatedScrollDistance,
+                left: 0,
+                behavior: "smooth"
+            });
+        } else {
+			document.documentElement.scrollTop += updatedScrollDistance;
+			document.body.scrollTop += updatedScrollDistance; // For Safari			
+        }
+
+		isScrollingUsingButtons = true; // Set the flag to indicate scrolling is in progress
+		if (element) {
+			checkIfElementIsAtTop(element, scrollUpButton_outerDiv, scrollUpButton);
+			checkIfElementIsAtBottom(element, scrollDownButton_outerDiv, scrollDownButton);
+		}
+	}, scrollIntervalInMs));
+}
+
+function stopScrolling() {
+	intervalIds.forEach(intervalId => {
+		clearInterval(intervalId);
+	});
+	isScrollingUsingButtons = false;
+	generateQuadTree();
+	if (window.useNavAreas) generateNavAreasTree();
+}
+
+function checkIfElementIsAtTop(element, scrollUpButton_outerDiv, scrollUpButton) {
+	// if element is at the top, hide the scroll up button
+	if (element.scrollTop === 0) {
+		scrollUpButton_outerDiv.style.display = 'none';
+		scrollUpButton.style.display = 'none';
+	} else {
+		scrollUpButton_outerDiv.style.display = 'block';
+		scrollUpButton.style.display = 'flex';
+	}
+}
+
+function checkIfElementIsAtBottom(element, scrollDownButton_outerDiv, scrollDownButton) {
+	// if element is at the bottom, hide the scroll down button
+	if (Math.floor(element.scrollHeight - element.scrollTop) === element.clientHeight) {
+		scrollDownButton_outerDiv.style.display = 'none';
+		scrollDownButton.style.display = 'none';
+	} else {
+		scrollDownButton_outerDiv.style.display = 'block';
+		scrollDownButton.style.display = 'flex';
 	}
 }
 
