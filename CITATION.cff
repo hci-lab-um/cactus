@@ -19,7 +19,8 @@ url: "https://hci-lab-um.github.io/cactus/"
 license: "MIT"
 keywords:
   - cactus
-  - eye-gaze browser
-  - dwelling
-  - accessibility
+  - browser
+  - eye-tracking
+  - assistive technology
+  - multi-modal
   - electron
