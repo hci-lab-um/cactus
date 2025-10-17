@@ -50,6 +50,13 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 ## License
 [GPL3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
+## Citing this work
+To use this work you need to cite it using the following APA citation: 
+
+**Buhagiar, M., Calleja, D., & Porter, C. (2025). CACTUS (Version 1.0.6) [Computer software]. https://hci-lab-um.github.io/cactus/**
+
+Alternatively, go to the main branch in the repository and click on "Cite this repository" for more citation styles.
+
 ## Setup and Usage Instructions
 
 - Ensure your eye tracker or pointer device is properly calibrated.
