@@ -1,0 +1,25 @@
+cff-version: "1.2.0"
+message: "If you use this software, please cite it as below."
+title: "CACTUS"
+version: "1.0.6"
+date-released: "2025-05-26"
+authors:
+- family-names: "Buhagiar"
+  given-names: "Marie"
+  orcid: "https://orcid.org/0009-0001-5234-7052"
+- family-names: "Calleja"
+  given-names: "Daniel"
+  orcid: "https://orcid.org/0009-0002-4401-8766"
+- family-names: "Porter"
+  given-names: "Chris"
+  orcid: "https://orcid.org/0000-0003-3813-2941"
+repository-type: "git"
+repository-url: "https://github.com/hci-lab-um/cactus"
+url: "https://hci-lab-um.github.io/cactus/"
+license: "MIT"
+keywords:
+  - cactus
+  - eye-gaze browser
+  - dwelling
+  - accessibility
+  - electron
