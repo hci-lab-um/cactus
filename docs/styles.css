@@ -152,6 +152,11 @@ body {
   background-size: cover;
 }
 
+.card-bg--dark {
+  background-image: url('./assets/hero-background-dark.png');
+  background-size: cover;
+}
+
 /* ----------------- */
 /*  Arrow animation  */
 /* ----------------- */
@@ -684,6 +689,26 @@ body {
   .carousel-control-next {
     width: 9%;
   }
+}
+
+
+/* --------------------- */
+/*      Recognition      */
+/* --------------------- */
+.recognition-card {
+  -webkit-transition: all .5s ease;
+  -moz-transition: all .5s ease;
+  -ms-transition: all .5s ease;
+  -o-transition: all .5s ease;
+  transition: all .5s ease;
+}
+
+.recognition-card:hover {
+  -webkit-transform: scale(1.1);
+  -moz-transform: scale(1.1);
+  -ms-transform: scale(1.1);
+  -o-transform: scale(1.1);
+  transform: scale(1.1);
 }
 
 /* --------------- */
