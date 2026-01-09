@@ -71,7 +71,7 @@
 		"devtron": "^1.4.0",
 		"electron": "^31.3.1",
 		"electron-builder": "^26.0.12",
-		"eslint": "^5.16.0",
+		"eslint": "^9.32.0",
 		"gulp": "^4.0.2",
 		"gulp-sass": "^5.1.0",
 		"node-sass": "^9.0.0"
